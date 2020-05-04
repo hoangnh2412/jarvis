@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "k0BWt54xT60t8nOPNDKoYMang79mARshhX0VSXobLhMIRps6uBaxtT4KMXx2rDrXEP3GDBDws4/XNycPx7BAkg==",
+  "success": true,
+  "projectFilePath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure/Infrastructure.csproj",
+  "expectedPackageFiles": [
+    "/Users/mac/.nuget/packages/newtonsoft.json/12.0.3/newtonsoft.json.12.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

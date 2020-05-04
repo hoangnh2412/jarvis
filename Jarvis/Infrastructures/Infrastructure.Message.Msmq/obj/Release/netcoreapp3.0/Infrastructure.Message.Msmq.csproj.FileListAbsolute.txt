@@ -1,0 +1,12 @@
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Msmq/bin/Release/netcoreapp3.0/Infrastructure.Message.Msmq.deps.json
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Msmq/bin/Release/netcoreapp3.0/Infrastructure.Message.Msmq.dll
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Msmq/bin/Release/netcoreapp3.0/Infrastructure.Message.Msmq.pdb
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Msmq/bin/Release/netcoreapp3.0/Experimental.System.Messaging.dll
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Msmq/bin/Release/netcoreapp3.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Msmq/bin/Release/netcoreapp3.0/Newtonsoft.Json.dll
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Msmq/obj/Release/netcoreapp3.0/Infrastructure.Message.Msmq.csprojAssemblyReference.cache
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Msmq/obj/Release/netcoreapp3.0/Infrastructure.Message.Msmq.AssemblyInfoInputs.cache
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Msmq/obj/Release/netcoreapp3.0/Infrastructure.Message.Msmq.AssemblyInfo.cs
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Msmq/obj/Release/netcoreapp3.0/Infrastructure.Message.Msmq.csproj.CopyComplete
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Msmq/obj/Release/netcoreapp3.0/Infrastructure.Message.Msmq.dll
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Msmq/obj/Release/netcoreapp3.0/Infrastructure.Message.Msmq.pdb

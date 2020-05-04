@@ -1,0 +1,19 @@
+{
+  "name": "einvoice",
+  "version": "1.0.0",
+  "description": "Einvoice",
+  "repository": {
+    "type": "git",
+    "url": "https://hoangnh@gitlab.com/hoangnh/digital-invoice-api.git "
+  },
+  "author": "AppleNguyen",
+  "license": "MIT",
+  "dependencies": {
+    "browser-sync": "^2.26.4",
+    "gulp-inject": "^5.0.2",
+    "run-sequence": "^2.2.1"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1"
+  }
+}

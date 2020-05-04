@@ -1,0 +1,10 @@
+﻿{
+  "profiles": {
+    "Service.RabbitMq.PubSub": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

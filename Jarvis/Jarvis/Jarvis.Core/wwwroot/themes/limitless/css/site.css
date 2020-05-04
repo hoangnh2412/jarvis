@@ -1,0 +1,13 @@
+﻿.panel-xs > .panel-heading,
+.panel-xs > .panel-body {
+    padding: 10px;
+}
+
+.panel-xs .table > thead > tr > th,
+.panel-xs .table > tbody > tr > th,
+.panel-xs .table > tfoot > tr > th,
+.panel-xs .table > thead > tr > td,
+.panel-xs .table > tbody > tr > td,
+.panel-xs .table > tfoot > tr > td {
+    padding: 3px 5px;
+}

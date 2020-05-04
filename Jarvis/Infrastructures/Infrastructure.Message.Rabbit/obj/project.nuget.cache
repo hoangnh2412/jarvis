@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "dgSpecHash": "gAhw0lnZaxBNHZv52ToPHYGP85jysH69M9Lp8f9//GnDym40fXWbh8bpu+eC0nnBHN7pew4rMRGSsgEHQf5EMQ==",
+  "success": true,
+  "projectFilePath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Rabbit/Infrastructure.Message.Rabbit.csproj",
+  "expectedPackageFiles": [
+    "/Users/mac/.nuget/packages/microsoft.extensions.configuration.abstractions/3.1.2/microsoft.extensions.configuration.abstractions.3.1.2.nupkg.sha512",
+    "/Users/mac/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/3.1.2/microsoft.extensions.dependencyinjection.abstractions.3.1.2.nupkg.sha512",
+    "/Users/mac/.nuget/packages/microsoft.extensions.fileproviders.abstractions/3.1.2/microsoft.extensions.fileproviders.abstractions.3.1.2.nupkg.sha512",
+    "/Users/mac/.nuget/packages/microsoft.extensions.hosting.abstractions/3.1.2/microsoft.extensions.hosting.abstractions.3.1.2.nupkg.sha512",
+    "/Users/mac/.nuget/packages/microsoft.extensions.logging.abstractions/3.1.2/microsoft.extensions.logging.abstractions.3.1.2.nupkg.sha512",
+    "/Users/mac/.nuget/packages/microsoft.extensions.options/3.1.2/microsoft.extensions.options.3.1.2.nupkg.sha512",
+    "/Users/mac/.nuget/packages/microsoft.extensions.primitives/3.1.2/microsoft.extensions.primitives.3.1.2.nupkg.sha512",
+    "/Users/mac/.nuget/packages/rabbitmq.client/5.1.2/rabbitmq.client.5.1.2.nupkg.sha512"
+  ],
+  "logs": []
+}

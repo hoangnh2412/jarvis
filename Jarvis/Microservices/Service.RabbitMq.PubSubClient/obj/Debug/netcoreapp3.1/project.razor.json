@@ -1,0 +1,19 @@
+{
+  "FilePath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Microservices/Service.RabbitMq.PubSubClient/Service.RabbitMq.PubSubClient.csproj",
+  "Configuration": {
+    "ConfigurationName": "MVC-3.0",
+    "LanguageVersion": "3.0",
+    "Extensions": [
+      {
+        "ExtensionName": "MVC-3.0"
+      }
+    ]
+  },
+  "ProjectWorkspaceState": {
+    "TagHelpers": [],
+    "CSharpLanguageVersion": 800
+  },
+  "RootNamespace": "Service.RabbitMq.PubSubClient",
+  "Documents": [],
+  "SerializationFormat": "0.2"
+}

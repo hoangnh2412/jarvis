@@ -1,0 +1,46 @@
+<div class="login-box">
+    <div class="login-logo">
+        <a href="/"><b>VNIs</b> 3.0</a>
+    </div>
+    <div class="login-box-body">
+        <p class="login-box-msg">Đăng nhập tài khoản của bạn</p>
+
+        <form name="frmLogin" ng-submit="$ctrl.login(frmLogin)" ng-validate="$ctrl.validationOptions">
+            
+            <div class="form-group has-feedback">
+                <input type="text" ng-model="$ctrl.identity.username" name="username" class="form-control" placeholder="Tài khoản" />
+                <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+            </div>
+            <div class="form-group has-feedback">
+                <input type="password" ng-model="$ctrl.identity.password" name="password" class="form-control" placeholder="Mật khẩu">
+                <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+            </div>
+            <div class="form-group has-feedback" ng-if="$ctrl.loginType === 'UseTenantCode'">
+                <input type="text" ng-model="$ctrl.tenant" name="tenant" class="form-control" placeholder="Mã doanh nghiệp" />
+                <span class="glyphicon glyphicon-gift form-control-feedback"></span>
+            </div>
+            <!-- <div class="row">
+                <div class="col-xs-6">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox"> Tự động đăng nhập
+                        </label>
+                    </div>
+                </div>
+                <div class="col-xs-6">
+                    
+                </div>
+            </div> -->
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <button type="submit" class="btn btn-primary btn-block btn-flat"><i class="fa fa-signin"></i> Đăng nhập</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="text-center">
+            <a href="#">Quên mật khẩu</a><br>
+            <a href="register.html" class="text-center">Đăng ký tài khoản mới</a>
+        </div>
+    </div>
+</div>

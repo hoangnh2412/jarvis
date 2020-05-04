@@ -1,0 +1,155 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\app\core\core.module.js" />
+    <EmbeddedResource Include="wwwroot\app\core\core.template.html" />
+    <EmbeddedResource Include="wwwroot\app\core\labels\label-create.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\core\labels\label-create.template.html" />
+    <EmbeddedResource Include="wwwroot\app\core\labels\label-read.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\core\labels\label-read.template.html" />
+    <EmbeddedResource Include="wwwroot\app\core\labels\label-update.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\core\labels\label-update.template.html" />
+    <EmbeddedResource Include="wwwroot\app\core\labels\label.route.js" />
+    <EmbeddedResource Include="wwwroot\app\core\labels\label.service.js" />
+    <EmbeddedResource Include="wwwroot\app\core\settings\setting.service.js" />
+    <EmbeddedResource Include="wwwroot\app\core\settings\settings.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\core\settings\settings.route.js" />
+    <EmbeddedResource Include="wwwroot\app\core\settings\settings.template.html" />
+    <EmbeddedResource Include="wwwroot\app\core\tenant-info\tenant-info.component.js" />
+    <EmbeddedResource Include="wwwroot\app\core\tenant-info\tenant-info.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\core\tenant-info\tenant-info.service.js" />
+    <EmbeddedResource Include="wwwroot\app\core\tenant-info\tenant-info.template.html" />
+    <EmbeddedResource Include="wwwroot\app\core\tenants\tenant-create.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\core\tenants\tenant-create.template.html" />
+    <EmbeddedResource Include="wwwroot\app\core\tenants\tenant-read.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\core\tenants\tenant-read.template.html" />
+    <EmbeddedResource Include="wwwroot\app\core\tenants\tenant-update.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\core\tenants\tenant-update.template.html" />
+    <EmbeddedResource Include="wwwroot\app\core\tenants\tenant.route.js" />
+    <EmbeddedResource Include="wwwroot\app\core\tenants\tenant.service.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\change-password\change-password.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\change-password\change-password.route.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\change-password\change-password.template.html" />
+    <EmbeddedResource Include="wwwroot\app\identity\forgot-password\forgot-password.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\forgot-password\forgot-password.route.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\forgot-password\forgot-password.template.html" />
+    <EmbeddedResource Include="wwwroot\app\identity\identity.module.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\identity.template.html" />
+    <EmbeddedResource Include="wwwroot\app\identity\login\login.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\login\login.route.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\login\login.template.html" />
+    <EmbeddedResource Include="wwwroot\app\identity\profile\profile.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\profile\profile.route.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\profile\profile.service.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\profile\profile.template.html" />
+    <EmbeddedResource Include="wwwroot\app\identity\roles\role-create.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\roles\role-create.template.html" />
+    <EmbeddedResource Include="wwwroot\app\identity\roles\role-read.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\roles\role-read.template.html" />
+    <EmbeddedResource Include="wwwroot\app\identity\roles\role-update.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\roles\role-update.template.html" />
+    <EmbeddedResource Include="wwwroot\app\identity\roles\role.route.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\roles\role.service.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\users\user-create.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\users\user-create.template.html" />
+    <EmbeddedResource Include="wwwroot\app\identity\users\user-read.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\users\user-read.template.html" />
+    <EmbeddedResource Include="wwwroot\app\identity\users\user-update.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\users\user-update.template.html" />
+    <EmbeddedResource Include="wwwroot\app\identity\users\user.route.js" />
+    <EmbeddedResource Include="wwwroot\app\identity\users\user.service.js" />
+    <EmbeddedResource Include="wwwroot\app\jarvis.module.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\alert\alert.component.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\alert\alert.template.html" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\footer\footer.component.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\footer\footer.template.html" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\loading\loading.component.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\loading\loading.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\loading\loading.template.html" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\navbar\navbar.component.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\navbar\navbar.template.html" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\sidebar\sidebar.component.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\sidebar\sidebar.template.html" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\topbar\topbar.component.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\topbar\topbar.template.html" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\user-info\user-info.component.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\components\user-info\user-info.template.html" />
+    <EmbeddedResource Include="wwwroot\app\shared\configs\chart.config.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\configs\validate.config.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\directives\autofocus.directive.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\directives\convertToNumber.directive.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\directives\tooltip.directive.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\filters\new-line.filter.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\services\cache.service.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\services\component.service.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\services\http.service.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\services\meta-tag.service.js" />
+    <EmbeddedResource Include="wwwroot\fonts\font-awesome\font-awesome.css" />
+    <EmbeddedResource Include="wwwroot\fonts\font-awesome\fonts\fontawesome-webfont.eot" />
+    <EmbeddedResource Include="wwwroot\fonts\font-awesome\fonts\fontawesome-webfont.svg" />
+    <EmbeddedResource Include="wwwroot\fonts\font-awesome\fonts\fontawesome-webfont.ttf" />
+    <EmbeddedResource Include="wwwroot\fonts\font-awesome\fonts\fontawesome-webfont.woff" />
+    <EmbeddedResource Include="wwwroot\fonts\font-awesome\fonts\fontawesome-webfont.woff2" />
+    <EmbeddedResource Include="wwwroot\fonts\font-awesome\fonts\FontAwesome.otf" />
+    <EmbeddedResource Include="wwwroot\fonts\glyphicons\fonts\glyphicons-halflings-regular.eot" />
+    <EmbeddedResource Include="wwwroot\fonts\glyphicons\fonts\glyphicons-halflings-regular.svg" />
+    <EmbeddedResource Include="wwwroot\fonts\glyphicons\fonts\glyphicons-halflings-regular.ttf" />
+    <EmbeddedResource Include="wwwroot\fonts\glyphicons\fonts\glyphicons-halflings-regular.woff" />
+    <EmbeddedResource Include="wwwroot\fonts\glyphicons\fonts\glyphicons-halflings-regular.woff2" />
+    <EmbeddedResource Include="wwwroot\fonts\glyphicons\glyphicons.css" />
+    <EmbeddedResource Include="wwwroot\libs\angular\angular.js" />
+    <EmbeddedResource Include="wwwroot\libs\angular\angular-ui-router.js" />
+    <EmbeddedResource Include="wwwroot\libs\angular\lazyload\ocLazyLoad.js" />
+    <EmbeddedResource Include="wwwroot\libs\angular\angular-storage.js" />
+    <EmbeddedResource Include="wwwroot\libs\angular\angular-sanitize.js" />
+    <EmbeddedResource Include="wwwroot\libs\angular\loading-bar\angular-loading-bar.js" />
+    <EmbeddedResource Include="wwwroot\libs\angular\angular-sweet-alert.js" />
+    <EmbeddedResource Include="wwwroot\libs\angular\loading-bar\angular-loading-bar.css" />
+    <EmbeddedResource Include="wwwroot\libs\angular\ui-bootstrap-tpls-2-5-0.js" />
+    <EmbeddedResource Include="wwwroot\libs\angular\angular-validate.js" />
+    <EmbeddedResource Include="wwwroot\libs\jquery\sweet-alert.js" />
+    <EmbeddedResource Include="wwwroot\libs\jquery\moment.js" />
+    <EmbeddedResource Include="wwwroot\libs\jquery\moment-with-locales.js" />
+    <EmbeddedResource Include="wwwroot\libs\jquery\jquery-validate.js" />
+    <EmbeddedResource Include="wwwroot\libs\styles\hint.css" />
+    <EmbeddedResource Include="wwwroot\themes\adminlte\css\AdminLTE.css" />
+    <EmbeddedResource Include="wwwroot\themes\adminlte\css\site.css" />
+    <EmbeddedResource Include="wwwroot\themes\adminlte\css\skins\all-skins.min.css" />
+    <EmbeddedResource Include="wwwroot\themes\adminlte\css\spinner.css" />
+    <EmbeddedResource Include="wwwroot\themes\adminlte\js\adminlte.js" />
+    <EmbeddedResource Include="wwwroot\themes\adminlte\js\site.js" />
+    <EmbeddedResource Include="wwwroot\themes\adminlte\lib\bootstrap\bootstrap.css" />
+    <EmbeddedResource Include="wwwroot\themes\adminlte\lib\bootstrap\bootstrap.min.js" />
+    <EmbeddedResource Include="wwwroot\themes\adminlte\lib\jquery\jquery.min.js" />
+    <EmbeddedResource Include="wwwroot\styles\adminlte.css" />
+    <EmbeddedResource Include="wwwroot\styles\datepicker.css" />
+    <EmbeddedResource Include="wwwroot\styles\helper.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.2.0" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.8.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.6.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0-rc4" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="5.0.0-rc4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Infrastructures\Infrastructure.Caching.Redis\Infrastructure.Caching.Redis.csproj" />
+    <ProjectReference Include="..\..\Infrastructures\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\Jarvis.Core.Database\Jarvis.Core.Database.csproj" />
+  </ItemGroup>
+
+</Project>

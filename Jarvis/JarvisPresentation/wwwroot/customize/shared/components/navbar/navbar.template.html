@@ -1,0 +1,61 @@
+<header class="main-header">
+    <a href="index2.html" class="logo">
+        <span class="logo-mini"><b>VNI</b>s</span>
+        <span class="logo-lg"><b>VN</b>Ivoices</span>
+    </a>
+
+    <nav class="navbar navbar-static-top" role="navigation">
+        <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button"><span class="sr-only">Toggle navigation</span></a>
+        <div class="navbar-custom-menu">
+            <ul class="nav navbar-nav">
+                <!--<li>
+                    <a href="#">
+                        <span>Phiên sẽ hết hạn sau </span>
+                        <span class="badge bg-red">10:30</span>
+                    </a>
+                </li>-->
+                <li class="dropdown user user-menu">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                        <img src="imgs/avatar.png" class="user-image" alt="{{$ctrl.context.userInfo.fullName}}">
+                        <span class="hidden-xs">{{$ctrl.context.userInfo.fullName}}</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="user-header">
+                            <img src="imgs/avatar.png" class="img-circle" alt="{{$ctrl.context.userInfo.fullName}}">
+                            <p>
+                                <span>{{$ctrl.context.userInfo.fullName}}</span>
+                                <br />
+                                <span>{{$ctrl.context.userName}}</span>
+                                <small>Sử dụng ngày {{$ctrl.context.createAt | date: 'dd/MM/yyyy'}}</small>
+                            </p>
+                        </li>
+                        <!--<li class="user-body">
+                            <div class="row">
+                                <div class="col-xs-4 text-center">
+                                    <a href="#">Followers</a>
+                                </div>
+                                <div class="col-xs-4 text-center">
+                                    <a href="#">Sales</a>
+                                </div>
+                                <div class="col-xs-4 text-center">
+                                    <a href="#">Friends</a>
+                                </div>
+                            </div>
+                        </li>-->
+                        <li class="user-footer">
+                            <div class="pull-left">
+                                <a ui-sref="profile" class="btn btn-default btn-flat">Tài khoản</a>
+                            </div>
+                            <div class="pull-right">
+                                <button type="button" ng-click="$ctrl.logout()" class="btn btn-default btn-flat">Đăng xuất</button>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                <!--<li>
+                    <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
+                </li>-->
+            </ul>
+        </div>
+    </nav>
+</header>
