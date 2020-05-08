@@ -23,10 +23,10 @@ namespace Service.RabbitMq.PubSub
                 {
                     services.Configure<RabbitOption>(hostContext.Configuration.GetSection("RabbitMq"));
                     AddWorker<WorkerPreProcess>(services, "RabbitMq:Workers:PreProcess");
-                    AddWorker<WorkerVoiceAnalyze>(services, "RabbitMq:Workers:Eat");
-                    AddWorker<WorkerVoicePriorityAnalyze>(services, "RabbitMq:Workers:CodeRelease");
-                    AddWorker<WorkerS2TAnalyze>(services, "RabbitMq:Workers:Code");
-                    AddWorker<WorkerS2TPriorityAnalyze>(services, "RabbitMq:Workers:CodeHotfix");
+                    AddWorker<WorkerEat>(services, "RabbitMq:Workers:Eat");
+                    AddWorker<WorkerCode>(services, "RabbitMq:Workers:Code");
+                    // AddWorker<WorkerCodeHotfix>(services, "RabbitMq:Workers:CodeHotfix");
+                    // AddWorker<WorkerCodeRelease>(services, "RabbitMq:Workers:CodeRelease");
                 });
 
         private static void AddWorker<T>(IServiceCollection services, string name) where T : class, IHostedService

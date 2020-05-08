@@ -13,11 +13,11 @@ using RabbitMQ.Client.Events;
 
 namespace Service.RabbitMq.PubSub
 {
-    public class WorkerVoiceAnalyze : RabbitClient
+    public class WorkerEat : RabbitClient
     {
         private readonly RabbitQueueOption _queueOption;
 
-        public WorkerVoiceAnalyze(RabbitQueueOption queueOption, IOptions<RabbitOption> rabbitOptions) : base(queueOption, rabbitOptions)
+        public WorkerEat(RabbitQueueOption queueOption, IOptions<RabbitOption> rabbitOptions) : base(queueOption, rabbitOptions)
         {
             _queueOption = queueOption;
         }
