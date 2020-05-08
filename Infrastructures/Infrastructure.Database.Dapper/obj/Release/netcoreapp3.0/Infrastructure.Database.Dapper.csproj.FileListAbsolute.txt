@@ -1,0 +1,13 @@
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.Dapper/bin/Release/netcoreapp3.0/Infrastructure.Database.Dapper.deps.json
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.Dapper/bin/Release/netcoreapp3.0/Infrastructure.Database.Dapper.dll
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.Dapper/bin/Release/netcoreapp3.0/Infrastructure.Database.Dapper.pdb
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.Dapper/bin/Release/netcoreapp3.0/Infrastructure.Database.dll
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.Dapper/bin/Release/netcoreapp3.0/Infrastructure.dll
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.Dapper/bin/Release/netcoreapp3.0/Infrastructure.Database.pdb
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.Dapper/bin/Release/netcoreapp3.0/Infrastructure.pdb
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.Dapper/obj/Release/netcoreapp3.0/Infrastructure.Database.Dapper.csprojAssemblyReference.cache
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.Dapper/obj/Release/netcoreapp3.0/Infrastructure.Database.Dapper.AssemblyInfoInputs.cache
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.Dapper/obj/Release/netcoreapp3.0/Infrastructure.Database.Dapper.AssemblyInfo.cs
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.Dapper/obj/Release/netcoreapp3.0/Infrastructure.Database.Dapper.csproj.CopyComplete
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.Dapper/obj/Release/netcoreapp3.0/Infrastructure.Database.Dapper.dll
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.Dapper/obj/Release/netcoreapp3.0/Infrastructure.Database.Dapper.pdb

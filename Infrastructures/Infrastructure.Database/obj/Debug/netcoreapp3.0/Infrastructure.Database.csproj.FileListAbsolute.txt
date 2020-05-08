@@ -1,0 +1,12 @@
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/bin/Debug/netcoreapp3.0/Infrastructure.Database.deps.json
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/bin/Debug/netcoreapp3.0/Infrastructure.Database.dll
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/bin/Debug/netcoreapp3.0/Infrastructure.Database.pdb
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/bin/Debug/netcoreapp3.0/Infrastructure.dll
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/bin/Debug/netcoreapp3.0/Infrastructure.pdb
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/obj/Debug/netcoreapp3.0/Infrastructure.Database.csprojAssemblyReference.cache
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/obj/Debug/netcoreapp3.0/Infrastructure.Database.AssemblyInfoInputs.cache
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/obj/Debug/netcoreapp3.0/Infrastructure.Database.AssemblyInfo.cs
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/obj/Debug/netcoreapp3.0/Infrastructure.Database.csproj.CopyComplete
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/obj/Debug/netcoreapp3.0/Infrastructure.Database.dll
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/obj/Debug/netcoreapp3.0/Infrastructure.Database.pdb
+/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/bin/Debug/netcoreapp3.0/Newtonsoft.Json.dll

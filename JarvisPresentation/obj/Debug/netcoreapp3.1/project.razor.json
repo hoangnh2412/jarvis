@@ -1,0 +1,16 @@
+{
+  "FilePath": "/Users/mac/Documents/Working/Projects/Github/Jarvis/JarvisPresentation/JarvisPresentation.csproj",
+  "Configuration": {
+    "ConfigurationName": "MVC-3.0",
+    "LanguageVersion": "3.0",
+    "Extensions": [
+      {
+        "ExtensionName": "MVC-3.0"
+      }
+    ]
+  },
+  "ProjectWorkspaceState": null,
+  "RootNamespace": "JarvisPresentation",
+  "Documents": [],
+  "SerializationFormat": "0.2"
+}

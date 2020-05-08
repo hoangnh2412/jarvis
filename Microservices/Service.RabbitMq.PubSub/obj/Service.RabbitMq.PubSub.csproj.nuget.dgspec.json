@@ -1,0 +1,212 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Microservices/Service.RabbitMq.PubSub/Service.RabbitMq.PubSub.csproj": {}
+  },
+  "projects": {
+    "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Rabbit/Infrastructure.Message.Rabbit.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Rabbit/Infrastructure.Message.Rabbit.csproj",
+        "projectName": "Infrastructure.Message.Rabbit",
+        "projectPath": "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Rabbit/Infrastructure.Message.Rabbit.csproj",
+        "packagesPath": "/Users/mac/.nuget/packages/",
+        "outputPath": "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Rabbit/obj/",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "/Users/mac/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.1"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.1": {
+            "projectReferences": {
+              "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Infrastructures/Infrastructure/Infrastructure.csproj": {
+                "projectPath": "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Infrastructures/Infrastructure/Infrastructure.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "dependencies": {
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[3.1.3, )"
+            },
+            "Microsoft.Extensions.Hosting.Abstractions": {
+              "target": "Package",
+              "version": "[3.1.2, )"
+            },
+            "Microsoft.Extensions.Logging.Abstractions": {
+              "target": "Package",
+              "version": "[3.1.2, )"
+            },
+            "Microsoft.Extensions.Options": {
+              "target": "Package",
+              "version": "[3.1.2, )"
+            },
+            "RabbitMQ.Client": {
+              "target": "Package",
+              "version": "[5.1.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.1.201/RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Infrastructures/Infrastructure/Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Infrastructures/Infrastructure/Infrastructure.csproj",
+        "projectName": "Infrastructure",
+        "projectPath": "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Infrastructures/Infrastructure/Infrastructure.csproj",
+        "packagesPath": "/Users/mac/.nuget/packages/",
+        "outputPath": "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Infrastructures/Infrastructure/obj/",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "/Users/mac/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.1"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.1": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "dependencies": {
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[12.0.3, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.1.201/RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Microservices/Service.RabbitMq.PubSub/Service.RabbitMq.PubSub.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Microservices/Service.RabbitMq.PubSub/Service.RabbitMq.PubSub.csproj",
+        "projectName": "Service.RabbitMq.PubSub",
+        "projectPath": "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Microservices/Service.RabbitMq.PubSub/Service.RabbitMq.PubSub.csproj",
+        "packagesPath": "/Users/mac/.nuget/packages/",
+        "outputPath": "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Microservices/Service.RabbitMq.PubSub/obj/",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "/Users/mac/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.1"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.1": {
+            "projectReferences": {
+              "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Rabbit/Infrastructure.Message.Rabbit.csproj": {
+                "projectPath": "/Users/mac/Documents/Working/Projects/Github/Jarvis/Jarvis/Infrastructures/Infrastructure.Message.Rabbit/Infrastructure.Message.Rabbit.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "dependencies": {
+            "Microsoft.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[3.1.3, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.1.201/RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

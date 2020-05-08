@@ -1,0 +1,142 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Caching.Redis/Infrastructure.Caching.Redis.csproj": {}
+  },
+  "projects": {
+    "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Caching.Redis/Infrastructure.Caching.Redis.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Caching.Redis/Infrastructure.Caching.Redis.csproj",
+        "projectName": "Infrastructure.Caching.Redis",
+        "projectPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Caching.Redis/Infrastructure.Caching.Redis.csproj",
+        "packagesPath": "/Users/mac/.nuget/packages/",
+        "outputPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Caching.Redis/obj/",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "/Users/mac/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.1"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.1": {
+            "projectReferences": {
+              "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Caching/Infrastructure.Caching.csproj": {
+                "projectPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Caching/Infrastructure.Caching.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "dependencies": {
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[12.0.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.1.201/RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Caching/Infrastructure.Caching.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Caching/Infrastructure.Caching.csproj",
+        "projectName": "Infrastructure.Caching",
+        "projectPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Caching/Infrastructure.Caching.csproj",
+        "packagesPath": "/Users/mac/.nuget/packages/",
+        "outputPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Caching/obj/",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "/Users/mac/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.1"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.1": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "dependencies": {
+            "Microsoft.Extensions.Caching.Abstractions": {
+              "target": "Package",
+              "version": "[3.1.2, )"
+            },
+            "Microsoft.Extensions.Caching.StackExchangeRedis": {
+              "target": "Package",
+              "version": "[3.1.2, )"
+            },
+            "Microsoft.Extensions.Options": {
+              "target": "Package",
+              "version": "[3.1.2, )"
+            },
+            "StackExchange.Redis": {
+              "target": "Package",
+              "version": "[2.0.601, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.1.201/RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

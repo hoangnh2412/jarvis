@@ -1,0 +1,8 @@
+2020/04/08 00:57:32.701 | INFO |  |  |  | User profile is available. Using '/Users/mac/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest. 
+2020/04/08 00:57:33.431 | INFO |  |  |  | Now listening on: https://localhost:5001 
+2020/04/08 00:57:33.433 | INFO |  |  |  | Now listening on: http://localhost:5000 
+2020/04/08 00:57:33.435 | INFO |  |  |  | Application started. Press Ctrl+C to shut down. 
+2020/04/08 00:57:33.435 | INFO |  |  |  | Hosting environment: Development 
+2020/04/08 00:57:33.435 | INFO |  |  |  | Content root path: /Users/mac/Documents/Working/Projects/Jarvis/Jarvis/JarvisPresentation 
+2020/04/08 01:00:38.286 | INFO | ::1 | GET | http://localhost/api/values | Request starting HTTP/1.1 GET http://localhost:5000/api/values   
+2020/04/08 01:00:38.418 | INFO | ::1 | GET | http://localhost/api/values | Request finished in 132.943ms 307  

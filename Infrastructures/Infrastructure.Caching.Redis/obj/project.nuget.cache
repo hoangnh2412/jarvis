@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "dgSpecHash": "js18m7Jlk9mn/fOO+HVGgwEMsu08hnMM7jI353USQsq+sk0WDvXO7jFm/qZgb9oAyoZjLQeXNf3IiUXfDmTrVg==",
+  "success": true,
+  "projectFilePath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Caching.Redis/Infrastructure.Caching.Redis.csproj",
+  "expectedPackageFiles": [
+    "/Users/mac/.nuget/packages/microsoft.extensions.caching.abstractions/3.1.2/microsoft.extensions.caching.abstractions.3.1.2.nupkg.sha512",
+    "/Users/mac/.nuget/packages/microsoft.extensions.caching.stackexchangeredis/3.1.2/microsoft.extensions.caching.stackexchangeredis.3.1.2.nupkg.sha512",
+    "/Users/mac/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/3.1.2/microsoft.extensions.dependencyinjection.abstractions.3.1.2.nupkg.sha512",
+    "/Users/mac/.nuget/packages/microsoft.extensions.options/3.1.2/microsoft.extensions.options.3.1.2.nupkg.sha512",
+    "/Users/mac/.nuget/packages/microsoft.extensions.primitives/3.1.2/microsoft.extensions.primitives.3.1.2.nupkg.sha512",
+    "/usr/local/share/dotnet/sdk/NuGetFallbackFolder/microsoft.netcore.platforms/2.0.0/microsoft.netcore.platforms.2.0.0.nupkg.sha512",
+    "/usr/local/share/dotnet/sdk/NuGetFallbackFolder/microsoft.win32.registry/4.5.0/microsoft.win32.registry.4.5.0.nupkg.sha512",
+    "/Users/mac/.nuget/packages/newtonsoft.json/12.0.2/newtonsoft.json.12.0.2.nupkg.sha512",
+    "/Users/mac/.nuget/packages/pipelines.sockets.unofficial/2.0.22/pipelines.sockets.unofficial.2.0.22.nupkg.sha512",
+    "/Users/mac/.nuget/packages/stackexchange.redis/2.0.601/stackexchange.redis.2.0.601.nupkg.sha512",
+    "/Users/mac/.nuget/packages/system.buffers/4.4.0/system.buffers.4.4.0.nupkg.sha512",
+    "/Users/mac/.nuget/packages/system.configuration.configurationmanager/4.5.0/system.configuration.configurationmanager.4.5.0.nupkg.sha512",
+    "/Users/mac/.nuget/packages/system.diagnostics.performancecounter/4.5.0/system.diagnostics.performancecounter.4.5.0.nupkg.sha512",
+    "/Users/mac/.nuget/packages/system.io.pipelines/4.5.1/system.io.pipelines.4.5.1.nupkg.sha512",
+    "/Users/mac/.nuget/packages/system.runtime.compilerservices.unsafe/4.5.2/system.runtime.compilerservices.unsafe.4.5.2.nupkg.sha512",
+    "/usr/local/share/dotnet/sdk/NuGetFallbackFolder/system.security.accesscontrol/4.5.0/system.security.accesscontrol.4.5.0.nupkg.sha512",
+    "/Users/mac/.nuget/packages/system.security.cryptography.protecteddata/4.5.0/system.security.cryptography.protecteddata.4.5.0.nupkg.sha512",
+    "/usr/local/share/dotnet/sdk/NuGetFallbackFolder/system.security.permissions/4.5.0/system.security.permissions.4.5.0.nupkg.sha512",
+    "/usr/local/share/dotnet/sdk/NuGetFallbackFolder/system.security.principal.windows/4.5.0/system.security.principal.windows.4.5.0.nupkg.sha512",
+    "/usr/local/share/dotnet/sdk/NuGetFallbackFolder/system.threading.channels/4.5.0/system.threading.channels.4.5.0.nupkg.sha512"
+  ],
+  "logs": []
+}

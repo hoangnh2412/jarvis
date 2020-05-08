@@ -1,0 +1,253 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.EntityFramework.MySql/Infrastructure.Database.EntityFramework.MySql.csproj": {}
+  },
+  "projects": {
+    "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.EntityFramework.MySql/Infrastructure.Database.EntityFramework.MySql.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.EntityFramework.MySql/Infrastructure.Database.EntityFramework.MySql.csproj",
+        "projectName": "Infrastructure.Database.EntityFramework.MySql",
+        "projectPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.EntityFramework.MySql/Infrastructure.Database.EntityFramework.MySql.csproj",
+        "packagesPath": "/Users/mac/.nuget/packages/",
+        "outputPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.EntityFramework.MySql/obj/",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "/Users/mac/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.0": {
+            "projectReferences": {
+              "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.EntityFramework/Infrastructure.Database.EntityFramework.csproj": {
+                "projectPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.EntityFramework/Infrastructure.Database.EntityFramework.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.0": {
+          "dependencies": {
+            "Pomelo.EntityFrameworkCore.MySql": {
+              "target": "Package",
+              "version": "[3.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.0.101/RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.EntityFramework/Infrastructure.Database.EntityFramework.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.EntityFramework/Infrastructure.Database.EntityFramework.csproj",
+        "projectName": "Infrastructure.Database.EntityFramework",
+        "projectPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.EntityFramework/Infrastructure.Database.EntityFramework.csproj",
+        "packagesPath": "/Users/mac/.nuget/packages/",
+        "outputPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database.EntityFramework/obj/",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "/Users/mac/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.0": {
+            "projectReferences": {
+              "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/Infrastructure.Database.csproj": {
+                "projectPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/Infrastructure.Database.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.0": {
+          "dependencies": {
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[3.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.0.101/RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/Infrastructure.Database.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/Infrastructure.Database.csproj",
+        "projectName": "Infrastructure.Database",
+        "projectPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/Infrastructure.Database.csproj",
+        "packagesPath": "/Users/mac/.nuget/packages/",
+        "outputPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure.Database/obj/",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "/Users/mac/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.0": {
+            "projectReferences": {
+              "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure/Infrastructure.csproj": {
+                "projectPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure/Infrastructure.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.0": {
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.0.101/RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure/Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure/Infrastructure.csproj",
+        "projectName": "Infrastructure",
+        "projectPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure/Infrastructure.csproj",
+        "packagesPath": "/Users/mac/.nuget/packages/",
+        "outputPath": "/Users/mac/Documents/Working/Projects/Jarvis/Jarvis/Infrastructures/Infrastructure/obj/",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "/Users/mac/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.0": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.0": {
+          "dependencies": {
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[12.0.3, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/3.0.101/RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

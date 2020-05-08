@@ -1,0 +1,13 @@
+/Users/mac/Documents/Working/VNIs/Einvoice/Einvoice/Infrastructures/Infrastructure.Database.SqlGenerator/bin/Release/netcoreapp2.1/appsettings.json
+/Users/mac/Documents/Working/VNIs/Einvoice/Einvoice/Infrastructures/Infrastructure.Database.SqlGenerator/bin/Release/netcoreapp2.1/Infrastructure.Database.SqlGenerator.deps.json
+/Users/mac/Documents/Working/VNIs/Einvoice/Einvoice/Infrastructures/Infrastructure.Database.SqlGenerator/bin/Release/netcoreapp2.1/Infrastructure.Database.SqlGenerator.dll
+/Users/mac/Documents/Working/VNIs/Einvoice/Einvoice/Infrastructures/Infrastructure.Database.SqlGenerator/bin/Release/netcoreapp2.1/Infrastructure.Database.SqlGenerator.pdb
+/Users/mac/Documents/Working/VNIs/Einvoice/Einvoice/Infrastructures/Infrastructure.Database.SqlGenerator/bin/Release/netcoreapp2.1/Infrastructure.dll
+/Users/mac/Documents/Working/VNIs/Einvoice/Einvoice/Infrastructures/Infrastructure.Database.SqlGenerator/bin/Release/netcoreapp2.1/Infrastructure.pdb
+/Users/mac/Documents/Working/VNIs/Einvoice/Einvoice/Infrastructures/Infrastructure.Database.SqlGenerator/obj/Release/netcoreapp2.1/Infrastructure.Database.SqlGenerator.csprojAssemblyReference.cache
+/Users/mac/Documents/Working/VNIs/Einvoice/Einvoice/Infrastructures/Infrastructure.Database.SqlGenerator/obj/Release/netcoreapp2.1/Infrastructure.Database.SqlGenerator.csproj.CoreCompileInputs.cache
+/Users/mac/Documents/Working/VNIs/Einvoice/Einvoice/Infrastructures/Infrastructure.Database.SqlGenerator/obj/Release/netcoreapp2.1/Infrastructure.Database.SqlGenerator.AssemblyInfoInputs.cache
+/Users/mac/Documents/Working/VNIs/Einvoice/Einvoice/Infrastructures/Infrastructure.Database.SqlGenerator/obj/Release/netcoreapp2.1/Infrastructure.Database.SqlGenerator.AssemblyInfo.cs
+/Users/mac/Documents/Working/VNIs/Einvoice/Einvoice/Infrastructures/Infrastructure.Database.SqlGenerator/obj/Release/netcoreapp2.1/Infrastructure.Database.SqlGenerator.csproj.CopyComplete
+/Users/mac/Documents/Working/VNIs/Einvoice/Einvoice/Infrastructures/Infrastructure.Database.SqlGenerator/obj/Release/netcoreapp2.1/Infrastructure.Database.SqlGenerator.dll
+/Users/mac/Documents/Working/VNIs/Einvoice/Einvoice/Infrastructures/Infrastructure.Database.SqlGenerator/obj/Release/netcoreapp2.1/Infrastructure.Database.SqlGenerator.pdb
