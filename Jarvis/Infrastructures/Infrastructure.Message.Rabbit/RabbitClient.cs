@@ -2,24 +2,30 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
 namespace Infrastructure.Message.Rabbit
 {
-    public abstract class RabbitClient : BackgroundService
+    public abstract class RabbitClient<TInput, TOutput> : BackgroundService
+        where TInput : class
+        where TOutput : class
+
     {
-        private readonly RabbitQueueOption _queueOptions;
-        private readonly RabbitOption _rabbitOptions;
-        private readonly IModel _channel;
+        protected readonly RabbitQueueOption _queueOptions;
+        protected readonly RabbitOption _rabbitOptions;
+        protected readonly IModel _channel;
 
         public RabbitClient(
-            RabbitQueueOption queueOption,
+            string name,
+            IConfiguration configuration,
             IOptions<RabbitOption> rabbitOptions)
         {
-            _queueOptions = queueOption;
+            _queueOptions = configuration.GetSection(name).Get<RabbitQueueOption>();
             _rabbitOptions = rabbitOptions.Value;
             Console.WriteLine($"QueueName: {_queueOptions.QueueName}");
 
@@ -74,7 +80,15 @@ namespace Infrastructure.Message.Rabbit
                 var consumer = new AsyncEventingBasicConsumer(_channel);
                 consumer.Received += async (model, ea) =>
                 {
-                    await HandleAsync(ea, _channel);
+                    var message = Encoding.UTF8.GetString(ea.Body);
+
+                    TInput input;
+                    if (typeof(TInput) == typeof(String))
+                        input = message as TInput;
+                    else
+                        input = JsonConvert.DeserializeObject<TInput>(message);
+
+                    await HandleAsync(ea, input);
                 };
                 _channel.BasicConsume(
                     queue: _queueOptions.QueueName,
@@ -84,24 +98,41 @@ namespace Infrastructure.Message.Rabbit
             return Task.CompletedTask;
         }
 
-        public void TagDeliveryMessage(BasicDeliverEventArgs ea, IModel channel)
+        public void BasicAck(BasicDeliverEventArgs ea)
         {
-            channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+            _channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
         }
 
-        public virtual void Publish(BasicDeliverEventArgs ea, IModel channel, Func<string> handleMessage)
+        public virtual void Publish(TOutput message)
+        {
+            Publish(message, () =>
+            {
+                return _queueOptions.Output.ExchangeName;
+            }, () =>
+            {
+                return _queueOptions.Output.RoutingKey;
+            });
+        }
+
+        public virtual void Publish(TOutput output, Func<string> exchangeName, Func<string> routingKey)
         {
             if (_queueOptions.Output == null)
                 return;
 
-            var body = Encoding.UTF8.GetBytes(handleMessage());
+            byte[] body;
+            if (output.GetType() == typeof(String))
+                body = Encoding.UTF8.GetBytes(output.ToString());
+            else
+                body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(output));
 
-            var properties = channel.CreateBasicProperties();
+
+            var properties = _channel.CreateBasicProperties();
             properties.Persistent = true;
 
-            channel.BasicPublish(exchange: _queueOptions.Output.ExchangeName, routingKey: _queueOptions.Output.RoutingKey, basicProperties: properties, body: body);
+            _channel.BasicPublish(exchange: exchangeName.Invoke(), routingKey: routingKey.Invoke(), basicProperties: properties, body: body);
         }
 
-        public abstract Task HandleAsync(BasicDeliverEventArgs ea, IModel channel);
+        public abstract Task HandleAsync(BasicDeliverEventArgs ea, TInput input);
+
     }
 }
