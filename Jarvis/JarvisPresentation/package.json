@@ -1,19 +1,18 @@
 {
-  "name": "einvoice",
-  "version": "1.0.0",
-  "description": "Einvoice",
+  "name": "jarvis",
+  "version": "1.4.1",
+  "description": "Jarvis Framework",
   "repository": {
     "type": "git",
-    "url": "https://hoangnh@gitlab.com/hoangnh/digital-invoice-api.git "
+    "url": "https://github.com/hoangnh2412/jarvis.git"
   },
   "author": "AppleNguyen",
   "license": "MIT",
-  "dependencies": {
-    "browser-sync": "^2.26.4",
+  "dependencies": {},
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "browser-sync": "^2.26.7",
     "gulp-inject": "^5.0.2",
     "run-sequence": "^2.2.1"
-  },
-  "devDependencies": {
-    "gulp": "^3.9.1"
   }
 }

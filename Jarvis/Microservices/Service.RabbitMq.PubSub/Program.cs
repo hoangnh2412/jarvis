@@ -25,8 +25,8 @@ namespace Service.RabbitMq.PubSub
                     AddWorker<WorkerPreProcess>(services, "RabbitMq:Workers:PreProcess");
                     AddWorker<WorkerEat>(services, "RabbitMq:Workers:Eat");
                     AddWorker<WorkerCode>(services, "RabbitMq:Workers:Code");
-                    // AddWorker<WorkerCodeHotfix>(services, "RabbitMq:Workers:CodeHotfix");
-                    // AddWorker<WorkerCodeRelease>(services, "RabbitMq:Workers:CodeRelease");
+                    AddWorker<WorkerCodeHotfix>(services, "RabbitMq:Workers:CodeHotfix");
+                    AddWorker<WorkerCodeRelease>(services, "RabbitMq:Workers:CodeRelease");
                 });
 
         private static void AddWorker<T>(IServiceCollection services, string name) where T : class, IHostedService
@@ -34,10 +34,9 @@ namespace Service.RabbitMq.PubSub
             services.AddHostedService(serviceProvider =>
             {
                 var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-                var rabbitQueueOption = configuration.GetSection(name).Get<RabbitQueueOption>();
                 var rabbitOption = serviceProvider.GetService<IOptions<RabbitOption>>();
 
-                return (T)Activator.CreateInstance(typeof(T), new object[] { rabbitQueueOption, rabbitOption });
+                return (T)Activator.CreateInstance(typeof(T), new object[] { name, configuration, rabbitOption });
             });
         }
     }
