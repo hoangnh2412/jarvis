@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Infrastructure.Message.Rabbit;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,31 +14,23 @@ using RabbitMQ.Client.Events;
 
 namespace Service.RabbitMq.PubSub
 {
-    public class WorkerCodeRelease : RabbitClient
+    public class WorkerCodeRelease : RabbitClient<string, string>
     {
-        private readonly RabbitQueueOption _queueOption;
-
-        public WorkerCodeRelease(RabbitQueueOption queueOption, IOptions<RabbitOption> rabbitOptions) : base(queueOption, rabbitOptions)
+        public WorkerCodeRelease(string name, IConfiguration configuration, IOptions<RabbitOption> rabbitOptions) : base(name, configuration, rabbitOptions)
         {
-            _queueOption = queueOption;
         }
 
-        public override async Task HandleAsync(BasicDeliverEventArgs ea, IModel channel)
+        public override async Task HandleAsync(BasicDeliverEventArgs ea, string message)
         {
             try
             {
-                var message = Encoding.UTF8.GetString(ea.Body);
-                Console.WriteLine($" [>] {_queueOption.ConnectionName} Received: {message}");
+                Console.WriteLine($" [>] {_queueOptions.ConnectionName} Received: {message}");
 
                 var number = int.Parse(message) + 5;
-                Console.WriteLine($" [...] {_queueOption.ConnectionName} working on {number}s");
+                Console.WriteLine($" [...] {_queueOptions.ConnectionName} working on {number}s");
                 await Task.Delay(number * 1000);
 
-                Publish(ea, channel, () =>
-                {
-                    Console.WriteLine($" [-] {_queueOption.ConnectionName} Sent {message}");
-                    return message;
-                });
+                Publish(message);
             }
             catch (Exception ex)
             {
@@ -45,7 +38,7 @@ namespace Service.RabbitMq.PubSub
             }
             finally
             {
-                TagDeliveryMessage(ea, channel);
+                BasicAck(ea);
             }
         }
     }
