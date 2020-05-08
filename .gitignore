@@ -279,7 +279,3 @@ obj/
 packages/
 
 #Allow
-Jarvis/Jarvis/Modules/**/*.*
-Jarvis/Modules/**/*.dll
-Jarvis/Jarvis/Plugins/**/*.*
-Jarvis/Plugins/**/*.dll
