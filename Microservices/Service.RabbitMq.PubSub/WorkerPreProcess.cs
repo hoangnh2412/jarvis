@@ -16,8 +16,13 @@ namespace Service.RabbitMq.PubSub
 {
     public class WorkerPreProcess : RabbitClient<string, string>
     {
-        public WorkerPreProcess(string name, IConfiguration configuration, IOptions<RabbitOption> rabbitOptions) : base(name, configuration, rabbitOptions)
+        public WorkerPreProcess(IConfiguration configuration, IOptions<RabbitOption> rabbitOptions) : base(configuration, rabbitOptions)
         {
+            InitChannel(configuration, "PreProcess");
+            BasicQos();
+            InitQueue(queueName: "preprocess");
+            InitInput(exchangeName: "preprocess", routingKeys: new List<string> { "#" });
+            InitOutput(exchangeName: "relax");
         }
 
         public override async Task HandleAsync(BasicDeliverEventArgs ea, string message)
@@ -30,7 +35,7 @@ namespace Service.RabbitMq.PubSub
                 Console.WriteLine($" [...] {_queueOptions.ConnectionName} working on {number}s");
                 await Task.Delay(number * 1000);
 
-                Publish(message);
+                Publish(message, "relax", "");
             }
             catch (Exception ex)
             {

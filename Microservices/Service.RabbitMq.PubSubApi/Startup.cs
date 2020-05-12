@@ -29,13 +29,7 @@ namespace Service.RabbitMq.PubSubApi
         {
             services.AddControllers();
             services.Configure<RabbitOption>(Configuration.GetSection("RabbitMq"));
-            services.AddSingleton<ITestService, TestService>(serviceProvider =>
-            {
-                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-                var rabbitQueueOption = configuration.GetSection("RabbitMq:Queues:Test").Get<RabbitQueueOption>();
-                var rabbitOption = serviceProvider.GetService<IOptions<RabbitOption>>();
-                return new TestService(rabbitQueueOption, rabbitOption);
-            });
+            services.AddSingleton<ITestService, TestService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

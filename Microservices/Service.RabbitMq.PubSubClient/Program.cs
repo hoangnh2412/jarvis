@@ -30,13 +30,7 @@ namespace Service.RabbitMq.PubSubClient
             var services = new ServiceCollection();
             services.AddSingleton<IConfiguration>(configuration);
             services.Configure<RabbitOption>(configuration.GetSection("RabbitMq"));
-            services.AddSingleton<ITestService, TestService>(serviceProvider =>
-            {
-                var rabbitOption = serviceProvider.GetService<IOptions<RabbitOption>>();
-                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-                var rabbitQueueOption = configuration.GetSection("RabbitMq:Queues:Test").Get<RabbitQueueOption>();
-                return new TestService(rabbitQueueOption, rabbitOption);
-            });
+            services.AddSingleton<ITestService, TestService>();
             return services.BuildServiceProvider();
         }
     }
