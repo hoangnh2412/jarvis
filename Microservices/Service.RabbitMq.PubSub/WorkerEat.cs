@@ -16,8 +16,13 @@ namespace Service.RabbitMq.PubSub
 {
     public class WorkerEat : RabbitClient<string, string>
     {
-        public WorkerEat(string name, IConfiguration configuration, IOptions<RabbitOption> rabbitOptions) : base(name, configuration, rabbitOptions)
+        public WorkerEat(IConfiguration configuration, IOptions<RabbitOption> rabbitOptions) : base(configuration, rabbitOptions)
         {
+            InitChannel(configuration, "Eat");
+            BasicQos();
+            InitQueue(queueName: "eat");
+            InitInput(exchangeName: "relax", routingKeys: new List<string> { "#" });
+            InitOutput(exchangeName: "working");
         }
 
         public override async Task HandleAsync(BasicDeliverEventArgs ea, string message)
@@ -30,7 +35,7 @@ namespace Service.RabbitMq.PubSub
                 Console.WriteLine($" [...] {_queueOptions.ConnectionName} working on {number}s");
                 await Task.Delay(number * 1000);
 
-                Publish(message);
+                Publish(message, "working", "");
             }
             catch (Exception ex)
             {
