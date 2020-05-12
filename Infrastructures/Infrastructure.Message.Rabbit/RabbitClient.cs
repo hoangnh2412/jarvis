@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,18 +17,22 @@ namespace Infrastructure.Message.Rabbit
         where TOutput : class
 
     {
-        protected readonly RabbitQueueOption _queueOptions;
         protected readonly RabbitOption _rabbitOptions;
-        protected readonly IModel _channel;
+        protected RabbitQueueOption _queueOptions { get; private set; }
+        protected IModel _channel { get; private set; }
+        protected QueueDeclareOk _queue { get; private set; }
 
         public RabbitClient(
-            string name,
             IConfiguration configuration,
             IOptions<RabbitOption> rabbitOptions)
         {
-            _queueOptions = configuration.GetSection(name).Get<RabbitQueueOption>();
             _rabbitOptions = rabbitOptions.Value;
-            Console.WriteLine($"QueueName: {_queueOptions.QueueName}");
+        }
+
+        protected void InitChannel(IConfiguration configuration, string name)
+        {
+            _queueOptions = configuration.GetSection($"RabbitMq:Workers:{name}").Get<RabbitQueueOption>();
+            Console.WriteLine($"Config: {JsonConvert.SerializeObject(_queueOptions)}");
 
             var factory = new ConnectionFactory()
             {
@@ -42,35 +47,42 @@ namespace Infrastructure.Message.Rabbit
             var connection = factory.CreateConnection($"{_queueOptions.ConnectionName}_{Thread.CurrentThread.ManagedThreadId}");
 
             _channel = connection.CreateModel();
+        }
 
-            //Dequeue mỗi lần 1 message
+        protected void BasicQos(uint prefetchSize = 0, ushort prefetchCount = 1, bool global = false)
+        {
             _channel.BasicQos(
-                prefetchSize: 0,
-                prefetchCount: 1,
-                global: false);
+                prefetchSize: prefetchSize,
+                prefetchCount: prefetchCount, //Dequeue mỗi lần 1 message
+                global: global);
+        }
 
-            //Input
-            _channel.QueueDeclare(
-                queue: _queueOptions.QueueName,
-                durable: true, //The queue will survive when RabbitMQ restart (Queue vẫn tồn tại/sống sót sau khi RabbitMQ/broker bị restart)
-                exclusive: false, //The queue will be deleted when that connection closes (Queue sẽ bị xoá khi connection close)
-                autoDelete: false, //Queue that has had at least one consumer is deleted when last consumer unsubscribes (Queue sẽ bị xoá khi consumer unsubcribe)
-                arguments: null); //TTL, queue length limit
-
-            _channel.ExchangeDeclare(exchange: _queueOptions.Input.ExchangeName, type: ExchangeType.Topic);
-            foreach (var routingKey in _queueOptions.Input.RoutingKey)
+        protected virtual void InitInput(string exchangeName, List<string> routingKeys)
+        {
+            _channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
+            foreach (var routingKey in routingKeys)
             {
                 _channel.QueueBind(
-                    queue: _queueOptions.QueueName,
-                    exchange: _queueOptions.Input.ExchangeName,
+                    queue: _queue.QueueName,
+                    exchange: exchangeName,
                     routingKey: routingKey);
             }
+        }
 
-            //Output
-            if (_queueOptions.Output != null)
-            {
-                _channel.ExchangeDeclare(exchange: _queueOptions.Output.ExchangeName, type: ExchangeType.Topic);
-            }
+        protected virtual void InitQueue(string queueName, bool durable = true, bool exclusive = false, bool autoDelete = false, IDictionary<string, object> arguments = null)
+        {
+            _queue = _channel.QueueDeclare(
+                queue: queueName,
+                durable: durable, //The queue will survive when RabbitMQ restart (Queue vẫn tồn tại/sống sót sau khi RabbitMQ/broker bị restart)
+                exclusive: exclusive, //The queue will be deleted when that connection closes (Queue sẽ bị xoá khi connection close)
+                autoDelete: autoDelete, //Queue that has had at least one consumer is deleted when last consumer unsubscribes (Queue sẽ bị xoá khi consumer unsubcribe)
+                arguments: arguments //TTL, queue length limit
+            );
+        }
+
+        protected virtual void InitOutput(string exchangeName)
+        {
+            _channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -91,34 +103,20 @@ namespace Infrastructure.Message.Rabbit
                     await HandleAsync(ea, input);
                 };
                 _channel.BasicConsume(
-                    queue: _queueOptions.QueueName,
+                    queue: _queue.QueueName,
                     autoAck: false,
                     consumer: consumer);
             }
             return Task.CompletedTask;
         }
 
-        public void BasicAck(BasicDeliverEventArgs ea)
+        public void BasicAck(BasicDeliverEventArgs ea, bool multiple = false)
         {
-            _channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+            _channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple);
         }
 
-        public virtual void Publish(TOutput message)
+        public virtual void Publish(TOutput output, string exchangeName, string routingKey)
         {
-            Publish(message, () =>
-            {
-                return _queueOptions.Output.ExchangeName;
-            }, () =>
-            {
-                return _queueOptions.Output.RoutingKey;
-            });
-        }
-
-        public virtual void Publish(TOutput output, Func<string> exchangeName, Func<string> routingKey)
-        {
-            if (_queueOptions.Output == null)
-                return;
-
             byte[] body;
             if (output.GetType() == typeof(String))
                 body = Encoding.UTF8.GetBytes(output.ToString());
@@ -129,7 +127,12 @@ namespace Infrastructure.Message.Rabbit
             var properties = _channel.CreateBasicProperties();
             properties.Persistent = true;
 
-            _channel.BasicPublish(exchange: exchangeName.Invoke(), routingKey: routingKey.Invoke(), basicProperties: properties, body: body);
+            _channel.BasicPublish(exchange: exchangeName, routingKey: routingKey, basicProperties: properties, body: body);
+        }
+
+        public virtual void Publish(TOutput output, Func<string> exchangeName, Func<string> routingKey)
+        {
+            Publish(output, exchangeName.Invoke(), routingKey.Invoke());
         }
 
         public abstract Task HandleAsync(BasicDeliverEventArgs ea, TInput input);

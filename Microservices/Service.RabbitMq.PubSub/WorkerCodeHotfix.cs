@@ -16,8 +16,13 @@ namespace Service.RabbitMq.PubSub
 {
     public class WorkerCodeHotfix : RabbitClient<string, string>
     {
-        public WorkerCodeHotfix(string name, IConfiguration configuration, IOptions<RabbitOption> rabbitOptions) : base(name, configuration, rabbitOptions)
+        public WorkerCodeHotfix(IConfiguration configuration, IOptions<RabbitOption> rabbitOptions) : base(configuration, rabbitOptions)
         {
+            InitChannel(configuration, "CodeHotfix");
+            BasicQos();
+            InitQueue(queueName: "code-hotfix");
+            InitInput(exchangeName: "working", routingKeys: new List<string> { "*.*.code.hotfix", "*.*.code.hotfix-release" });
+            InitOutput(exchangeName: "sleep");
         }
 
         public override async Task HandleAsync(BasicDeliverEventArgs ea, string message)
@@ -30,7 +35,7 @@ namespace Service.RabbitMq.PubSub
                 Console.WriteLine($" [...] {_queueOptions.ConnectionName} working on {number}s");
                 await Task.Delay(number * 1000);
 
-                Publish(message);
+                Publish(message, "sleep", "");
             }
             catch (Exception ex)
             {

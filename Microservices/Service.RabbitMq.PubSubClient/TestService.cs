@@ -1,6 +1,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using Infrastructure.Message.Rabbit;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
@@ -11,16 +12,17 @@ namespace Service.RabbitMq.PubSubClient
         Task PublishAsync(string message);
     }
 
-    public class TestService : RabbitService, ITestService
+    public class TestService : RabbitService<string>, ITestService
     {
-        public TestService(RabbitQueueOption queueOption, IOptions<RabbitOption> rabbitOptions) : base(queueOption, rabbitOptions)
+        public TestService(IConfiguration configuration, IOptions<RabbitOption> rabbitOptions) : base(configuration, rabbitOptions)
         {
+            InitChannel(configuration, "Test");
+            InitOutput(exchangeName: "preprocess");
         }
 
         public Task PublishAsync(string message)
         {
-            var body = Encoding.UTF8.GetBytes(message);
-            Publish(body);
+            Publish(message, "preprocess", "");
             return Task.CompletedTask;
         }
     }
