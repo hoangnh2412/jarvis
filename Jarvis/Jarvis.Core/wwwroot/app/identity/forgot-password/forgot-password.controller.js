@@ -7,7 +7,9 @@
         ctrl.validationOptions = {
             rules: {
                 new_password: {
-                    required: true
+                    required: true,
+                    minlength: 6,
+                    regex: /^\S[^\t\n\r]+[\S]$/
                 },
                 confirm_password: {
                     required: true,
@@ -15,6 +17,9 @@
                 }
             },
             messages: {
+                new_password: {
+                    regex: "mật khẩu không chứa ký tự tab và không bắt đầu hoặc kết thúc bằng khoảng trắng"
+                },
                 confirm_password: {
                     equalTo: 'Mật khẩu không khớp!'
                 }
@@ -36,8 +41,9 @@
                 sweetAlert.error('Lỗi', 'Mật khẩu xác nhận không khớp, yêu cầu nhập lại');
                 return;
             }
-
+            ctrl.loading = true;
             httpService.post('/identity/reset-forgot-password', ctrl.identity).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     sweetAlert.success('Thành công', 'Bạn đã đổi mật khẩu thành công, vui lòng đăng nhập lại');
                     cacheService.clean();

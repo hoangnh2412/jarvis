@@ -108,9 +108,9 @@
                 }
             };
         }])
-        .factory('permissionService', ['cacheService', 'CONST_PERMISSION', 'APP_CONFIG', function (cacheService, CONST_PERMISSION, APP_CONFIG) {
+        .factory('permissionService', ['cacheService', 'APP_CONFIG', function (cacheService, APP_CONFIG) {
             return {
-                hasPermission: function (claim) {
+                hasClaim: function (claim) {
                     var context = cacheService.get('context');
 
                     if (context)
@@ -119,12 +119,33 @@
                                 return true;
                             }
 
-                            if (prop === 'Special_TenantAdmin' && APP_CONFIG.claimOfTenantAdmins.includes(CONST_PERMISSION[claims[0]])) {
+                            if (prop === 'Special_TenantAdmin' && APP_CONFIG.claimOfTenantAdmins.includes(claim)) {
                                 return true;
                             }
 
                             if (prop === claim) {
                                 return true;
+                            }
+                        }
+                    return false;
+                },
+                hasClaims: function (claims) {
+                    var context = cacheService.get('context');
+
+                    if (context)
+                        for (var prop in context.claims) {
+                            if (prop === 'Special_DoEnything') {
+                                return true;
+                            }
+
+                            for (var i = 0; i < claims.length; i++) {
+                                if (prop === 'Special_TenantAdmin' && APP_CONFIG.claimOfTenantAdmins.includes(claims[i])) {
+                                    return true;
+                                }
+
+                                if (prop === claims[i]) {
+                                    return true;
+                                }
                             }
                         }
                     return false;

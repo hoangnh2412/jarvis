@@ -13,19 +13,30 @@
         ctrl.validationOptions = {
             rules: {
                 fullName: {
-                    required: true
+                    required: true,
+                    whiteSpace: true
                 },
                 email: {
-                    multipleEmails: true
+                    singleEmail: true,
+                    maxlength: 256
                 },
                 userName: {
-                    required: true
+                    required: true,
+                    maxlength: 256,
+                    regex: /^[a-zA-Z0-9][\w-\/]{0,}[a-zA-Z0-9]$|^[a-zA-Z0-9]$/
+                }
+            },
+            messages: {
+                userName: {
+                    regex: "Tài khoản đăng nhập viết không dấu, được phép chứa các ký tự đặc biệt -, _, / và không đặt ở đầu hoặc cuối"
                 }
             }
         };
 
         ctrl.getUser = function (id) {
+            ctrl.loading = true;
             userService.getById(id).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     ctrl.user = response.data;
                     ctrl.getRoles();
@@ -34,7 +45,9 @@
         };
 
         ctrl.getRoles = function () {
+            ctrl.loading = true;
             userService.getRoles({ page: 1, size: 99999 }).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     ctrl.roles = response.data.data;
 
@@ -64,7 +77,9 @@
                 }
             }
 
+            ctrl.loading = true;
             userService.post(ctrl.user).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     sweetAlert.swal({
                         title: "Thành công",

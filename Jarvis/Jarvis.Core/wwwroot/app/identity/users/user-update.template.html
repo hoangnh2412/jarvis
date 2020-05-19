@@ -9,9 +9,9 @@
 </section>
 
 <section class="content container-fluid">
-    <div class="box box-success">
-        <div class="box-body">
-            <form name="frmUser" ng-submit="$ctrl.save(frmUser)" ng-validate="$ctrl.validationOptions" class="form-horizontal">
+    <form name="frmUser" ng-submit="$ctrl.save(frmUser)" ng-validate="$ctrl.validationOptions" class="form-horizontal">
+        <div class="box box-success">
+            <div class="box-body">
                 <div class="form-group">
                     <label class="col-md-2 col-sm-4 control-label">Tài khoản</label>
                     <div class="col-md-10 col-sm-8">
@@ -42,13 +42,13 @@
                         <div class="checkbox" ng-repeat="role in $ctrl.roles track by $index"><label><input type="checkbox" ng-model="role.select" value="{{role.id}}"> {{role.name}}</label></div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <div class="col-md-offset-2 col-md-10 col-sm-offset-4 col-sm-8">
-                        <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> Lưu</button>
-                        <a ui-sref="identity.backend.user" class="btn btn-danger"><i class="fa fa-close"></i> Hủy</a>
-                    </div>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10 col-sm-offset-4 col-sm-8 text-right">
+                <button type="submit" class="btn btn-success" ng-disabled="$ctrl.loading"><i class="fa fa-save"></i> Lưu</button>
+                <a ui-sref="identity.backend.user" class="btn btn-danger" ng-disabled="$ctrl.loading"><i class="fa fa-close"></i> Hủy</a>
+            </div>
+        </div>
+    </form>
 </section>

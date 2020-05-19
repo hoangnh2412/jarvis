@@ -25,7 +25,7 @@
         };
 
         this.setDefault = function (code) {
-            return httpService.post('/installation/tenant/' + code);
+            return httpService.post('/tenants/catalog/' + code);
         };
     };
 

@@ -42,9 +42,9 @@
             </div>
     
             <div class="row">
-                <div class="col-md-offset-2 col-md-10 col-sm-offset-4 col-sm-8">
-                    <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> Lưu</button>
-                    <a ui-sref="core.tenant.read" class="btn btn-danger"><i class="fa fa-close"></i> Hủy</a>
+                <div class="col-md-offset-2 col-md-10 col-sm-offset-4 col-sm-8 text-right">
+                    <button type="submit" class="btn btn-success" ng-disabled="$ctrl.loading"><i class="fa fa-save"></i> Lưu</button>
+                    <a ui-sref="core.tenant.read" class="btn btn-danger" ng-disabled="$ctrl.loading"><i class="fa fa-close"></i> Hủy</a>
                 </div>
             </div>
         </form>

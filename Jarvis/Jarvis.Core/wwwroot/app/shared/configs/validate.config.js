@@ -56,17 +56,13 @@
                 min: $validatorProvider.format("Vui lòng nhập giá trị lớn hơn hoặc bằng {0}.")
             });
 
-            $validatorProvider.addMethod("taxCode", function (value, element) {
-                return this.optional(element) || validateTaxCode(value);
-            }, "Vui lòng nhập mã số thuế hợp lệ.");
-
-            $validatorProvider.addMethod("multipleEmails", function (value, element) {
-                return validateMultipleEmail(this, value, element);
-            }, "Vui lòng nhập địa chỉ email hợp lệ.");
-
             $validatorProvider.addMethod("regex", function (value, element, params) {
                 return this.optional(element) || params.test(value);
             }, "Vui lòng nhập chuỗi hợp lệ.");
+
+            $validatorProvider.addMethod("taxCode", function (value, element) {
+                return this.optional(element) || validateTaxCode(value);
+            }, "Vui lòng nhập mã số thuế hợp lệ.");
 
             function validateTaxCode(code) {
                 // valid chỉ được nhập số và dấu -
@@ -102,6 +98,10 @@
                 return true;
             };
 
+            $validatorProvider.addMethod("multipleEmails", function (value, element) {
+                return validateMultipleEmail(this, value, element);
+            }, "Vui lòng nhập địa chỉ email hợp lệ.");
+
             function validateMultipleEmail(contruct, emailStrings, element) {
                 var listEmail = emailStrings.split(';');
 
@@ -109,16 +109,54 @@
 
                 if (len == 0) return false;
 
-                // kiểm tra từng email trong chuỗi có hợp lệ theo method email mặc định của validator
+                //// kiểm tra từng email trong chuỗi có hợp lệ theo method email mặc định của validator
+                //for (var i = 0; i < len; i++) {
+                //    if (listEmail[i] != "") {
+                //        listEmail[i] = listEmail[i].trim();
+                //        if (!$.validator.methods.email.call(contruct, listEmail[i], element))
+                //            return false;
+                //    }
+                //}
+
+                // kiểm tra từng email trong chuỗi có hợp lệ theo rule customize
                 for (var i = 0; i < len; i++) {
                     if (listEmail[i] != "") {
                         listEmail[i] = listEmail[i].trim();
-                        if (!$.validator.methods.email.call(contruct, listEmail[i], element))
+                        if (!validateEmailFomat(listEmail[i]))
                             return false;
                     }
                 }
 
                 return true;
             };
+
+            $validatorProvider.addMethod("singleEmail", function (value) {
+                return validateEmailFomat(value);
+            }, "Vui lòng nhập địa chỉ email hợp lệ.");
+
+            function validateEmailFomat(email) {
+                var regexEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+                var checkRegexEmail = regexEmail.test(email);
+                if (checkRegexEmail)
+                    return true;
+                return false;
+            }
+
+            $validatorProvider.addMethod("whiteSpace", function (value) {
+                return validateWhiteSpace(value);
+            }, "Không chỉ nhập khoảng trắng.");
+
+            function validateWhiteSpace(string) {
+                if (string.trim().length === 0)
+                    return false;
+                return true;
+            }
+
+            // hàm check range cho các số >= 1000 khi dùng với ng-number-only
+            $validatorProvider.addMethod("rangeCustom", function (value, element, param) {
+                var val = value.toString().replace(/,/g, '');
+                return this.optional(element) || (val >= param[0] && val <= param[1]);
+            }, $validatorProvider.format("Vui lòng nhập giá trị từ {0} đến {1}."));
         }]);
 }());

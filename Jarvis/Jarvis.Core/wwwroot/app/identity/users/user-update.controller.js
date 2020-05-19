@@ -12,19 +12,20 @@
         ctrl.validationOptions = {
             rules: {
                 fullName: {
-                    required: true
+                    required: true,
+                    whiteSpace: true
                 },
                 email: {
-                    multipleEmails: true
-                },
-                userName: {
-                    required: true
+                    singleEmail: true,
+                    maxlength: 256
                 }
             }
         };
 
         ctrl.getUser = function (id) {
+            ctrl.loading = true;
             userService.getById(id).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     ctrl.user = response.data;
                     ctrl.getRoles();
@@ -33,7 +34,9 @@
         };
 
         ctrl.getRoles = function () {
+            ctrl.loading = true;
             userService.getRoles({ page: 1, size: 99999 }).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     ctrl.roles = response.data.data;
 
@@ -63,7 +66,9 @@
                 }
             }
 
+            ctrl.loading = true;
             userService.put(ctrl.user).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     sweetAlert.swal({
                         title: "Thành công",

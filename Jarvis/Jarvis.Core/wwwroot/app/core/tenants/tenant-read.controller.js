@@ -16,7 +16,9 @@
         };
 
         ctrl.getItems = function () {
+            ctrl.loading = true;
             tenantService.paging(ctrl.paging).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     ctrl.items = response.data.data;
                     ctrl.totalItems = response.data.totalItems;
@@ -36,8 +38,10 @@
 
         ctrl.delete = function (code) {
             sweetAlert.confirm(function () {
+                ctrl.loading = true;
                 return tenantService.delete(code);
             }, function (result) {
+                ctrl.loading = false;
                 if (result.value) {
                     if (result.value.status === 200) {
                         sweetAlert.success('Thành công', 'Bạn đã khoá CHI NHÁNH thành công!');
