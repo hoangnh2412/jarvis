@@ -25,7 +25,9 @@
         };
 
         ctrl.getUsers = function () {
+            ctrl.loading = true;
             userService.get(ctrl.paging).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     ctrl.users = response.data.data;
                     ctrl.totalItems = response.data.totalItems;
@@ -35,8 +37,10 @@
 
         ctrl.delete = function (id) {
             sweetAlert.confirm(function () {
+                ctrl.loading = true;
                 return userService.delete(id);
             }, function (result) {
+                ctrl.loading = false;
                 if (result.value) {
                     if (result.value.status === 200) {
                         sweetAlert.success('Thành công', 'Bạn đã xóa TÀI KHOẢN thành công!');
@@ -64,7 +68,9 @@
         };
 
         ctrl.lock = function (id) {
+            ctrl.loading = true;
             userService.lock(id).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     sweetAlert.success('Thành công', 'Bạn đã KHÓA TÀI KHOẢN thành công!');
                     ctrl.getUsers();
@@ -73,7 +79,9 @@
         };
 
         ctrl.unlock = function (id) {
+            ctrl.loading = true;
             userService.unlock(id).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     sweetAlert.success('Thành công', 'Bạn đã MỞ KHÓA TÀI KHOẢN thành công!');
                     ctrl.getUsers();
@@ -88,7 +96,9 @@
 
             var email = { emails: ctrl.emails };
 
+            ctrl.loading = true;
             userService.resetPassword(ctrl.idSelect, email).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     $('#modal-reset-password').modal('hide');
                     sweetAlert.success('Thành công', 'Email đổi mật khẩu đã được xếp vào hàng đợi để gửi. Vui lòng kiểm tra email để lấy mật khẩu mới cho tài khoản!');

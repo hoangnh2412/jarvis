@@ -82,7 +82,7 @@ namespace Jarvis.Core
 
                 var name = Assembly.GetEntryAssembly().GetName().Name;
                 var paths = new List<string>();
-                paths.AddRange(wwwroots.Where(x => x.Path.StartsWith("Jarvis")).Select(x => x.FullPath));
+                paths.AddRange(wwwroots.Where(x => x.Path.Contains("Jarvis.Core")).Select(x => x.FullPath));
                 foreach (var module in modules)
                 {
                     paths.AddRange(wwwroots.Where(x => x.Path.StartsWith(module)).Select(x => x.FullPath));

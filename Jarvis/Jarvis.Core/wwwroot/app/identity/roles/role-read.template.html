@@ -9,7 +9,7 @@
 
 <section class="content container-fluid">
     <div class="margin-bottom">
-        <a ui-sref="identity.backend.role.create" class="btn btn-success" ng-if="$ctrl.permissionService.hasClaims(['Role_Create'])"><i class="fa fa-plus"></i> Tạo mới</a>
+        <a ui-sref="identity.backend.role.create" class="btn btn-success" ng-if="$ctrl.permissionService.hasClaims(['Role_Create'])" ng-disabled="$ctrl.loading"><i class="fa fa-plus"></i> Tạo mới</a>
     </div>
 
     <div class="box box-success">
@@ -40,8 +40,8 @@
                     <tr ng-repeat="role in $ctrl.roles">
                         <td>{{role.name}}</td>
                         <td class=" text-center">
-                            <a ui-sref="identity.backend.role.update({id: role.id})" class="btn btn-xs btn-warning" ng-if="$ctrl.permissionService.hasClaims(['Role_Update'])"><i class="fa fa-edit"></i></a>
-                            <button type="button" ng-click="$ctrl.delete(role.id)" class="btn btn-xs btn-danger" ng-if="$ctrl.permissionService.hasClaims(['Role_Delete'])"><i class="fa fa-remove"></i></button>
+                            <a ui-sref="identity.backend.role.update({id: role.id})" class="btn btn-xs btn-warning" ng-if="$ctrl.permissionService.hasClaims(['Role_Update'])" ng-disabled="$ctrl.loading"><i class="fa fa-edit"></i></a>
+                            <button type="button" ng-click="$ctrl.delete(role.id)" class="btn btn-xs btn-danger" ng-if="$ctrl.permissionService.hasClaims(['Role_Delete'])" ng-disabled="$ctrl.loading"><i class="fa fa-remove"></i></button>
                         </td>
                     </tr>
                 </tbody>
