@@ -35,11 +35,25 @@ namespace Infrastructure.Abstractions.Validations
             if (!result.Success)
                 return result;
 
-            foreach (IValidationRule<T, ValidationResult> validator in _validators)
+            foreach (var validator in _validators)
             {
-                result = await validator.HandleAsync(input);
-                if (!result.Success)
-                    return result;
+                var type = validator.GetType();
+
+                var rule = type.GetInterfaces().FirstOrDefault(x => x.FullName == typeof(IValidationRuleAsync<T, ValidationResult>).FullName);
+                if (rule != null)
+                {
+                    result = await ((IValidationRuleAsync<T, ValidationResult>)validator).HandleAsync(input);
+                    if (!result.Success)
+                        return result;
+                }
+
+                rule = type.GetInterfaces().FirstOrDefault(x => x.FullName == typeof(IValidationRule<T, ValidationResult>).FullName);
+                if (rule != null)
+                {
+                    result = ((IValidationRule<T, ValidationResult>)validator).Handle(input);
+                    if (!result.Success)
+                        return result;
+                }
             }
 
             return new ValidationResult(true);
