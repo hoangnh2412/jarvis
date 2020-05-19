@@ -8,14 +8,40 @@
         ctrl.validationOptions = {
             rules: {
                 fullName: {
-                    required: true
+                    required: true,
+                    whiteSpace: true
                 },
                 email: {
                     multipleEmails: true
                 }
             }
         };
+        ctrl.validationOptionsChangePassword = {
+            rules: {
+                oldPassword: {
+                    required: true
+                },
+                newPassword: {
+                    required: true,
+                    minlength: 6,
+                    regex: /^\S[^\t\n\r]+[\S]$/
+                },
+                confirmPassword: {
+                    required: true,
+                    equalTo: '#new_password'
+                }
+            },
+            messages: {
+                newPassword: {
+                    regex: "mật khẩu không chứa ký tự tab và không bắt đầu hoặc kết thúc bằng khoảng trắng"
+                },
+                confirmPassword: {
+                    equalTo: 'Mật khẩu không khớp!'
+                }
+            }
+        };
         ctrl.myCroppedImage = null;
+        ctrl.ActChangePassword = false;
 
         ctrl.$onInit = function () {
             ctrl.getProfile();
@@ -26,7 +52,9 @@
                 return;
             }
 
+            ctrl.loading = true;
             profileService.postProfile(ctrl.user).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     sweetAlert.success('Thành công', 'Bạn đã cập nhật thông tin thành công');
 
@@ -42,7 +70,9 @@
         };
 
         ctrl.getProfile = function () {
+            ctrl.loading = true;
             profileService.getProfile().then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     ctrl.user = response.data;
                 }
@@ -62,9 +92,11 @@
                 showLoaderOnConfirm: true,
                 allowOutsideClick: false,
                 preConfirm: function () {
+                    ctrl.loading = true;
                     return profileService.deleteProfile(id);
                 }
             }, function (result) {
+                ctrl.loading = false;
                 if (result.value) {
                     if (result.value.status === 200) {
                         sweetAlert.success('Đã xóa', 'Bạn đã xóa TÀI KHOẢN thành công!');
@@ -105,6 +137,22 @@
 
         ctrl.showAvatar = function () {
             $('#modal-show-avatar').modal('show');
+        };
+
+        ctrl.changePassword = function (form) {
+            if (!form.validate()) {
+                return;
+            }
+
+            ctrl.loading = true;
+            profileService.changePassword(ctrl.password).then(function (response) {
+                ctrl.loading = false;
+                if (response.status === 200) {
+                    sweetAlert.success('Thành công', 'Bạn đã đổi mật khẩu thành công, vui lòng đăng nhập lại');
+                    cacheService.clean();
+                    $state.go('identity.frontend.login');
+                }
+            });
         };
     };
 

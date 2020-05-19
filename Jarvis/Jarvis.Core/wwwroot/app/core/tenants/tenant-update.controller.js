@@ -13,29 +13,23 @@
         ctrl.validationOptions = {
             rules: {
                 hostName: {
-                    required: true
+                    required: true,
+                    maxlength: 250
                 },
                 taxCode: {
                     required: true,
-                    taxCode: true
+                    taxCode: true,
+                    maxlength: 50
                 },
                 address: {
-                    required: true
+                    required: true,
+                    whiteSpace: true,
+                    maxlength: 500
                 },
                 fullNameVi: {
-                    required: true
-                },
-                fullName: {
-                    required: true
-                },
-                username: {
-                    required: true
-                },
-                password: {
-                    required: true
-                },
-                confirmPassword: {
-                    required: true
+                    required: true,
+                    whiteSpace: true,
+                    maxlength: 250
                 }
             }
         };
@@ -45,7 +39,9 @@
         };
 
         ctrl.getItem = function () {
+            ctrl.loading = true;
             tenantService.get($stateParams.code).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     ctrl.model = response.data;
                 }
@@ -56,8 +52,9 @@
             if (!form.validate()) {
                 return;
             }
-
+            ctrl.loading = true;
             tenantService.put(ctrl.model).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     sweetAlert.swal({
                         title: "Thành công",

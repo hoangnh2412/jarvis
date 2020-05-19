@@ -10,7 +10,9 @@
                     required: true
                 },
                 newPassword: {
-                    required: true
+                    required: true,
+                    minlength: 6,
+                    regex: /^\S[^\t\n\r]+[\S]$/
                 },
                 confirmPassword: {
                     required: true,
@@ -18,22 +20,26 @@
                 }
             },
             messages: {
+                newPassword: {
+                    regex: "Mật khẩu không chứa ký tự tab và không bắt đầu hoặc kết thúc bằng khoảng trắng"
+                },
                 confirmPassword: {
                     equalTo: 'Mật khẩu không khớp!'
                 }
             }
         };
 
-        ctrl.$onInit = () => {
+        ctrl.$onInit = function () {
 
         };
 
-        ctrl.login = (form) => {
+        ctrl.changePass = function (form) {
             if (!form.validate()) {
                 return;
             }
-
-            httpService.post('/profile/change-password', ctrl.password).then((response) => {
+            ctrl.loading = true;
+            httpService.post('/profile/change-password', ctrl.password).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     sweetAlert.success('Thành công', 'Bạn đã đổi mật khẩu thành công, vui lòng đăng nhập lại');
                     cacheService.clean();

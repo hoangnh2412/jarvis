@@ -27,7 +27,7 @@
                     profileService: ['$ocLazyLoad', function ($ocLazyLoad) {
                         return $ocLazyLoad.load('/app/jarvis/identity/profile/profile.service.js');
                     }],
-                    profileController: ['$ocLazyLoad', 'profileService', function ($ocLazyLoad, profileService) {
+                    profileController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
                         return $ocLazyLoad.load(componentService.getControllerUrl('uiProfile', '/app/identity/profile/profile.controller.js'));
                     }],
                     imgCrop: ['$ocLazyLoad', function ($ocLazyLoad) {

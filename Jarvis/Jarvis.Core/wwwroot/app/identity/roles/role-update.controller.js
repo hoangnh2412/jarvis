@@ -10,7 +10,8 @@
         ctrl.validationOptions = {
             rules: {
                 name: {
-                    required: true
+                    required: true,
+                    whiteSpace: true
                 }
             }
         };
@@ -21,7 +22,9 @@
         };
 
         ctrl.getRole = function (id) {
+            ctrl.loading = true;
             roleService.getById(id).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     ctrl.role = response.data;
                 }
@@ -35,7 +38,9 @@
 
             var role = ctrl.prepareSave();
 
+            ctrl.loading = true;
             roleService.put(role).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     sweetAlert.swal({
                         title: "Thành công",
@@ -48,7 +53,9 @@
         };
 
         ctrl.getClaims = function (id) {
+            ctrl.loading = true;
             roleService.getClaims(id).then(function (response) {
+                ctrl.loading = false;
                 if (response.status !== 200) {
                     return;
                 }

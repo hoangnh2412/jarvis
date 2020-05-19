@@ -13,7 +13,7 @@
                 <div class="box-body box-profile">
                     <div style="position: relative;">
                         <img class="profile-user-img img-responsive img-circle object-fit-cover" role="button" ng-src="{{$ctrl.context.userInfo.avatarPath ? $ctrl.context.userInfo.avatarPath : 'imgs/avatar.png'}}" alt="{{$ctrl.context.userInfo.fullName}}" ng-click="$ctrl.showAvatar()" title="Xem ảnh">
-                        <label for="fileAvatar" class="upload-button" role="button" title="Thay đổi ảnh đại diện">
+                        <label for="fileAvatar" class="upload-button" role="button" title="Thay đổi ảnh đại diện"  ng-disabled="$ctrl.loading">
                             <i class="fa fa-camera" aria-hidden="true"></i>
                         </label>
                     </div>
@@ -27,8 +27,9 @@
                         <li class="list-group-item"><b>Email</b> <a class="pull-right overflow-ellipsis" title="{{$ctrl.context.email}}">{{$ctrl.context.email}}</a></li>
                     </ul>
 
-                    <a ui-sref="identity.frontend.change-password" class="btn btn-default btn-block">Đổi mật khẩu</a>
-                    <button type="button" ng-click="$ctrl.delete()" class="btn btn-danger btn-block"><b>Xóa tài khoản</b></button>
+                    <a class="btn btn-default btn-block" ng-click="$ctrl.ActChangePassword=false">Thay đổi thông tin cá nhân</a>
+                    <a class="btn btn-default btn-block" ng-click="$ctrl.ActChangePassword=true">Đổi mật khẩu</a>
+                    <button type="button" ng-click="$ctrl.delete()" class="btn btn-danger btn-block" ng-disabled="$ctrl.loading"><b>Xóa tài khoản</b></button>
                 </div>
             </div>
             <!--<div class="box box-primary">
@@ -62,11 +63,11 @@
             </div>-->
         </div>
 
-        <div class="col-md-9">
+        <div class="col-md-9" ng-if="!$ctrl.ActChangePassword">
             <div class="nav-tabs-custom">
                 <ul class="nav nav-tabs">
-                    <li class="active"><a href="#settings" data-toggle="tab">Thông tin cá nhân</a></li>
-                    <!--<li><a href="#timeline" data-toggle="tab">Lịch sử hoạt động</a></li>-->
+                    <li class="active"><a href="/profile#settings" data-toggle="tab">Thông tin cá nhân</a></li>
+                    <!--<li><a href="/profile#timeline" data-toggle="tab">Lịch sử hoạt động</a></li>-->
                 </ul>
                 <div class="tab-content">
                     <div class="active tab-pane" id="settings">
@@ -92,7 +93,7 @@
 
                             <div class="form-group">
                                 <div class="col-sm-offset-2 col-sm-10">
-                                    <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> Lưu</button>
+                                    <button type="submit" class="btn btn-success" ng-disabled="$ctrl.loading"><i class="fa fa-save"></i> Lưu</button>
                                 </div>
                             </div>
                         </form>
@@ -182,6 +183,43 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="col-md-9" ng-if="$ctrl.ActChangePassword">
+            <form name="frmChangePassword" ng-submit="$ctrl.changePassword(frmChangePassword)" ng-validate="$ctrl.validationOptionsChangePassword" class="form-horizontal">
+                <div class="box box-success">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Đổi mật khẩu</h3>
+                    </div>
+                    <div class="box-body">
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">Mật khẩu cũ</label>
+                            <div class="col-md-10">
+                                <input type="password" ng-model="$ctrl.password.oldPassword" name="oldPassword" class="form-control" placeholder="Mật khẩu cũ" jv-autofocus />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">Mật khẩu mới</label>
+                            <div class="col-md-10">
+                                <input type="password" ng-model="$ctrl.password.newPassword" name="newPassword" id="new_password" class="form-control" placeholder="Mật khẩu mới">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">Nhập lại khẩu mới</label>
+                            <div class="col-md-10">
+                                <input type="password" ng-model="$ctrl.password.confirmPassword" name="confirmPassword" class="form-control" placeholder="Mật khẩu mới">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <button type="submit" class="btn btn-success" ng-disabled="$ctrl.loading"><i class="fa fa-check-square-o"></i> Xác nhận</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </form>
         </div>
     </div>
 </section>

@@ -21,7 +21,9 @@
         }
 
         ctrl.getRoles = function () {
+            ctrl.loading = true;
             roleService.get(ctrl.paging).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     ctrl.roles = response.data.data;
                     ctrl.totalItems = response.data.totalItems;
@@ -31,8 +33,10 @@
 
         ctrl.delete = function (id) {
             sweetAlert.confirm(function () {
+                ctrl.loading = true;
                 return roleService.delete(id);
             }, function (result) {
+                ctrl.loading = false;
                 if (result.value) {
                     if (result.value.status === 200) {
                         sweetAlert.success('Đã xóa', 'Bạn đã xóa QUYỀN thành công!');

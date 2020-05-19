@@ -13,26 +13,39 @@
         ctrl.validationOptions = {
             rules: {
                 hostName: {
-                    required: true
+                    required: true,
+                    maxlength: 250
                 },
                 taxCode: {
                     required: true,
-                    taxCode: true
+                    taxCode: true,
+                    maxlength: 50
                 },
                 address: {
-                    required: true
+                    required: true,
+                    whiteSpace: true,
+                    maxlength: 500
                 },
                 fullNameVi: {
-                    required: true
+                    required: true,
+                    whiteSpace: true,
+                    maxlength: 250
                 },
                 fullName: {
-                    required: true
+                    required: true,
+                    whiteSpace: true
                 },
                 username: {
-                    required: true
+                    required: true,
+                    maxlength: 256
+                },
+                email: {
+                    maxlength: 500
                 },
                 password: {
-                    required: true
+                    required: true,
+                    minlength: 6,
+                    regex: /^\S[^\t\n\r]+[\S]$/
                 },
                 confirmPassword: {
                     required: true,
@@ -40,6 +53,9 @@
                 }
             },
             messages: {
+                newPassword: {
+                    regex: "mật khẩu không chứa ký tự tab và không bắt đầu hoặc kết thúc bằng khoảng trắng"
+                },
                 confirmPassword: {
                     equalTo: 'Mật khẩu không khớp!'
                 }
@@ -53,8 +69,9 @@
             if (!form.validate()) {
                 return;
             }
-
+            ctrl.loading = true;
             tenantService.post(ctrl.model).then(function (response) {
+                ctrl.loading = false;
                 if (response.status === 200) {
                     sweetAlert.swal({
                         title: "Thành công",

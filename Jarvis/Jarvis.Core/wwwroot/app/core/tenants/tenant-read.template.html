@@ -9,7 +9,7 @@
     
     <section class="content container-fluid">
         <div class="margin-bottom">
-            <button type="button" class="btn btn-success" ng-if="$ctrl.permissionService.hasClaims(['Tenant_Create'])" ng-click="$ctrl.create()"><i class="fa fa-plus"></i> Tạo mới</button>
+            <button type="button" class="btn btn-success" ng-if="$ctrl.permissionService.hasClaims(['Tenant_Create'])" ng-click="$ctrl.create()" ng-disabled="$ctrl.loading"><i class="fa fa-plus"></i> Tạo mới</button>
         </div>
     
         <div class="box box-success">
@@ -43,13 +43,13 @@
                     <tbody>
                         <tr ng-repeat="item in $ctrl.items">
                             <td>{{item.info.taxCode}}</td>
-                            <td>{{item.hostName}}</td>
+                            <td class="break-word">{{item.hostName}}</td>
                             <td>{{item.info.fullNameVi}}</td>
                             <td>{{item.info.address}}</td>
                             <td>{{item.isEnable}}</td>
                             <td class="text-center">
-                                <button type="button" ng-click="$ctrl.update(item.code)" ng-if="$ctrl.permissionService.hasClaims(['Tenant_Update']) && !item.isEnable" data-toggle="tooltip" data-placement="top" title="Sửa" class="btn btn-xs btn-warning"><i class="fa fa-edit"></i></button>
-                                <button type="button" ng-click="$ctrl.delete(item.code)" ng-if="$ctrl.permissionService.hasClaims(['Tenant_Delete']) && !item.isEnable" data-toggle="tooltip" data-placement="top" title="Xóa" class="btn btn-xs btn-danger"><i class="fa fa-remove"></i></button>
+                                <button type="button" ng-click="$ctrl.update(item.code)" ng-if="$ctrl.permissionService.hasClaims(['Tenant_Update']) && !item.isEnable" data-toggle="tooltip" data-placement="top" title="Sửa" class="btn btn-xs btn-warning" ng-disabled="$ctrl.loading"><i class="fa fa-edit"></i></button>
+                                <button type="button" ng-click="$ctrl.delete(item.code)" ng-if="$ctrl.permissionService.hasClaims(['Tenant_Delete']) && !item.isEnable" data-toggle="tooltip" data-placement="top" title="Xóa" class="btn btn-xs btn-danger" ng-disabled="$ctrl.loading"><i class="fa fa-remove"></i></button>
                             </td>
                         </tr>
                     </tbody>

@@ -69,6 +69,11 @@
                     if (currentTenant.code !== tenant.code) {
                         cacheService.set('currentTenant', tenant);
                         ctrl.currentTenant = currentTenant;
+                        // reset cache luu tìm ki?m trang danh sách hóa don trong context
+                        if (Object.keys(ctrl.context.cache).length !== 0) {
+                            ctrl.context.cache = {};
+                            cacheService.set('context', ctrl.context);
+                        }
                         $state.reload();
                     }
                 });
