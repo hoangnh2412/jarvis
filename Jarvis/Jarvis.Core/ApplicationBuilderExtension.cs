@@ -15,13 +15,13 @@ namespace Jarvis.Core
 {
     public static class ApplicationBuilderExtension
     {
-        public static void UseConfigJarvisDefault(this IApplicationBuilder app)
+        public static void UseConfigJarvisDefault(this IApplicationBuilder app, params string[] modules)
         {
             app.UseAuthentication();
             app.UseHsts();
             app.UseHttpsRedirection();
 
-            app.UseConfigUI();
+            app.UseConfigUI(modules);
             app.UseConfigJarvisUI();
 
             app.UseRouting();
@@ -59,7 +59,7 @@ namespace Jarvis.Core
             });
         }
 
-        public static void UseConfigUI(this IApplicationBuilder app)
+        public static void UseConfigUI(this IApplicationBuilder app, params string[] modules)
         {
             var env = app.ApplicationServices.GetService<IWebHostEnvironment>();
 
@@ -83,7 +83,10 @@ namespace Jarvis.Core
                 var name = Assembly.GetEntryAssembly().GetName().Name;
                 var paths = new List<string>();
                 paths.AddRange(wwwroots.Where(x => x.Path.StartsWith("Jarvis")).Select(x => x.FullPath));
-                paths.AddRange(wwwroots.Where(x => x.Path.StartsWith("Modules")).Select(x => x.FullPath));
+                foreach (var module in modules)
+                {
+                    paths.AddRange(wwwroots.Where(x => x.Path.StartsWith(module)).Select(x => x.FullPath));
+                }
                 paths.AddRange(wwwroots.Where(x => x.Path == Path.Combine(name, "wwwroot")).Select(x => x.FullPath));
 
                 foreach (var path in paths)

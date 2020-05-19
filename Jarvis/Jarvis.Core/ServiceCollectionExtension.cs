@@ -30,6 +30,7 @@ using Jarvis.Core.Theming;
 using Jarvis.Core.Abstractions;
 using Jarvis.Core.Services;
 using Jarvis.Core.Permissions;
+using Infrastructure.Abstractions.Validations;
 
 namespace Jarvis.Core
 {
@@ -44,6 +45,9 @@ namespace Jarvis.Core
             services.AddConfigSwagger();
 
             services.AddHttpContextAccessor();
+
+            services.AddScoped<IValidatorFactory, ValidatorFactory>();
+            services.AddScoped<IValidationContext, ValidationContext>();
         }
 
         public static void AddConfigJarvis(this IServiceCollection services)
@@ -232,6 +236,19 @@ namespace Jarvis.Core
             //    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
             //    options.SlidingExpiration = true;
             //});
+        }
+
+        public static void AddConfigValidator<T>(this IServiceCollection services, List<Type> rules) where T : class
+        {
+            foreach (var rule in rules)
+            {
+                services.AddScoped(typeof(IValidationRule), rule);
+            }
+
+            services.AddScoped<IValidator, Validator<T>>((provider) =>
+            {
+                return new Validator<T>(provider, rules);
+            });
         }
 
         public static void AddTheming(this IServiceCollection services)
