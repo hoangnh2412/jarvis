@@ -12,9 +12,9 @@ namespace Service.RabbitMq.PubSubApi
         Task PublishAsync(string message);
     }
 
-    public class TestService : RabbitService<string>, ITestService
+    public class TestService : RabbitService, ITestService
     {
-        public TestService(IConfiguration configuration, IOptions<RabbitOption> rabbitOptions) : base(configuration, rabbitOptions)
+        public TestService(IConfiguration configuration, IOptions<RabbitOption> rabbitOptions) : base(rabbitOptions)
         {
             InitChannel(configuration, "Test");
             InitOutput(exchangeName: "preprocess");

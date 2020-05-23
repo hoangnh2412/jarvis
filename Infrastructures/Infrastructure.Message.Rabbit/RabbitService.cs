@@ -8,16 +8,14 @@ using RabbitMQ.Client;
 
 namespace Infrastructure.Message.Rabbit
 {
-    public abstract class RabbitService<TOutput>
-        where TOutput : class
+    public abstract class RabbitService
     {
         protected readonly RabbitOption _rabbitOptions;
-        protected RabbitQueueOption _queueOptions { get; private set; }
-        protected IModel _channel { get; private set; }
-        protected QueueDeclareOk _queue { get; private set; }
+        protected RabbitQueueOption QueueOptions { get; private set; }
+        protected IModel Channel { get; private set; }
+        protected QueueDeclareOk Queue { get; private set; }
 
         public RabbitService(
-            IConfiguration configuration,
             IOptions<RabbitOption> rabbitOptions)
         {
             _rabbitOptions = rabbitOptions.Value;
@@ -26,8 +24,8 @@ namespace Infrastructure.Message.Rabbit
 
         protected void InitChannel(IConfiguration configuration, string name)
         {
-            _queueOptions = configuration.GetSection($"RabbitMq:Workers:{name}").Get<RabbitQueueOption>();
-            Console.WriteLine($"Config: {JsonConvert.SerializeObject(_queueOptions)}");
+            QueueOptions = configuration.GetSection($"RabbitMq:Workers:{name}").Get<RabbitQueueOption>();
+            Console.WriteLine($"Config: {JsonConvert.SerializeObject(QueueOptions)}");
 
             var factory = new ConnectionFactory()
             {
@@ -39,29 +37,29 @@ namespace Infrastructure.Message.Rabbit
                 DispatchConsumersAsync = true
             };
 
-            var connection = factory.CreateConnection($"{_queueOptions.ConnectionName}_{Thread.CurrentThread.ManagedThreadId}");
+            var connection = factory.CreateConnection($"{QueueOptions.ConnectionName}_{Thread.CurrentThread.ManagedThreadId}");
 
-            _channel = connection.CreateModel();
+            Channel = connection.CreateModel();
         }
 
         protected virtual void InitOutput(string exchangeName)
         {
-            _channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
+            Channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
         }
 
-        public virtual void Publish(TOutput output, string exchangeName, string routingKey)
+        public virtual void Publish<T>(T output, string exchangeName, string routingKey)
         {
             byte[] body;
-            if (output.GetType() == typeof(String))
+            if (output.GetType() == typeof(string))
                 body = Encoding.UTF8.GetBytes(output.ToString());
             else
                 body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(output));
 
 
-            var properties = _channel.CreateBasicProperties();
+            var properties = Channel.CreateBasicProperties();
             properties.Persistent = true;
 
-            _channel.BasicPublish(exchange: exchangeName, routingKey: routingKey, basicProperties: properties, body: body);
+            Channel.BasicPublish(exchange: exchangeName, routingKey: routingKey, basicProperties: properties, body: body);
         }
     }
 }
