@@ -210,7 +210,7 @@ namespace Jarvis.Core.Controllers
             //phân biệt ra sửa và thêm
             //Sửa setting
             var repo = _uowCore.GetRepository<ISettingRepository>();
-            var entities = await repo.GetByGroupAsync(tenantCode, group);
+            var entities = await repo.GetByGroupTenantAsync(tenantCode, group);
             var entityByKey = entities.GroupBy(x => x.Key, x => x)
                                        .ToDictionary(x => x.Key, x => x.FirstOrDefault());
 
