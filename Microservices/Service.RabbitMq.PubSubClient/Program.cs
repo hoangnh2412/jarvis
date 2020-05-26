@@ -14,8 +14,8 @@ namespace Service.RabbitMq.PubSubClient
             Console.WriteLine("Hello World!");
             var services = ServiceConfigure(args);
 
-            var testService = services.GetService<ITestService>();
-            await testService.PublishAsync(args[0]);
+            // var testService = services.GetService<ITestService>();
+            // await testService.PublishAsync(args[0]);
             Console.WriteLine("Done");
         }
 
@@ -30,7 +30,7 @@ namespace Service.RabbitMq.PubSubClient
             var services = new ServiceCollection();
             services.AddSingleton<IConfiguration>(configuration);
             services.Configure<RabbitOption>(configuration.GetSection("RabbitMq"));
-            services.AddSingleton<ITestService, TestService>();
+            // services.AddSingleton<ITestService, TestService>();
             return services.BuildServiceProvider();
         }
     }

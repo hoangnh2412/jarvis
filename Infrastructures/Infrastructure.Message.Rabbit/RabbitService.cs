@@ -1,65 +1,44 @@
-using System;
 using System.Text;
-using System.Threading;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 
 namespace Infrastructure.Message.Rabbit
 {
+    public interface IRabbitService
+    {
+        void Publish<T>(T message, string exchangeName, string routingKey);
+    }
+
     public abstract class RabbitService
     {
-        protected readonly RabbitOption _rabbitOptions;
-        protected RabbitQueueOption QueueOptions { get; private set; }
-        protected IModel Channel { get; private set; }
         protected QueueDeclareOk Queue { get; private set; }
 
+        private readonly IRabbitChannel _rabbitChannel;
+
         public RabbitService(
-            IOptions<RabbitOption> rabbitOptions)
+            IRabbitChannel rabbitChannel)
         {
-            _rabbitOptions = rabbitOptions.Value;
+            _rabbitChannel = rabbitChannel;
         }
 
-
-        protected void InitChannel(IConfiguration configuration, string name)
+        protected virtual void InitExchange(string exchangeName)
         {
-            QueueOptions = configuration.GetSection($"RabbitMq:Workers:{name}").Get<RabbitQueueOption>();
-            Console.WriteLine($"Config: {JsonConvert.SerializeObject(QueueOptions)}");
-
-            var factory = new ConnectionFactory()
-            {
-                HostName = _rabbitOptions.HostName,
-                UserName = _rabbitOptions.UserName,
-                Password = _rabbitOptions.Password,
-                Port = _rabbitOptions.Port,
-                VirtualHost = _rabbitOptions.VirtualHost,
-                DispatchConsumersAsync = true
-            };
-
-            var connection = factory.CreateConnection($"{QueueOptions.ConnectionName}_{Thread.CurrentThread.ManagedThreadId}");
-
-            Channel = connection.CreateModel();
+            _rabbitChannel.GetChannel().ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
         }
 
-        protected virtual void InitOutput(string exchangeName)
-        {
-            Channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
-        }
-
-        public virtual void Publish<T>(T output, string exchangeName, string routingKey)
+        public virtual void Publish<T>(T message, string exchangeName, string routingKey)
         {
             byte[] body;
-            if (output.GetType() == typeof(string))
-                body = Encoding.UTF8.GetBytes(output.ToString());
+            if (message.GetType() == typeof(string))
+                body = Encoding.UTF8.GetBytes(message.ToString());
             else
-                body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(output));
+                body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
 
 
-            var properties = Channel.CreateBasicProperties();
+            var properties = _rabbitChannel.GetChannel().CreateBasicProperties();
             properties.Persistent = true;
 
-            Channel.BasicPublish(exchange: exchangeName, routingKey: routingKey, basicProperties: properties, body: body);
+            _rabbitChannel.GetChannel().BasicPublish(exchange: exchangeName, routingKey: routingKey, basicProperties: properties, body: body);
         }
     }
 }
