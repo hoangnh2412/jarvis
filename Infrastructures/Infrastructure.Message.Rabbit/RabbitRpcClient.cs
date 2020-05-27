@@ -18,12 +18,12 @@ namespace Infrastructure.Message.Rabbit
         where TResponse : class
     {
         protected readonly RabbitOption _rabbitOptions;
-        protected readonly IRabbitChannel _rabbitChannel;
+        protected readonly IRabbitBus _rabbitChannel;
         protected QueueDeclareOk Queue { get; private set; }
         private string _subcribeExchange;
 
         public RabbitRpcClient(
-            IRabbitChannel rabbitChannel,
+            IRabbitBus rabbitChannel,
             IOptions<RabbitOption> rabbitOptions)
         {
             _rabbitChannel = rabbitChannel;

@@ -15,11 +15,11 @@ namespace Infrastructure.Message.Rabbit
         where TOutput : class
     {
         protected readonly RabbitOption _rabbitOptions;
-        private readonly IRabbitChannel _rabbitChannel;
+        private readonly IRabbitBus _rabbitChannel;
         protected QueueDeclareOk Queue { get; private set; }
 
         public RabbitClient(
-            IRabbitChannel rabbitChannel)
+            IRabbitBus rabbitChannel)
         {
             _rabbitChannel = rabbitChannel;
         }

@@ -13,10 +13,10 @@ namespace Infrastructure.Message.Rabbit
     {
         protected QueueDeclareOk Queue { get; private set; }
 
-        private readonly IRabbitChannel _rabbitChannel;
+        private readonly IRabbitBus _rabbitChannel;
 
         public RabbitService(
-            IRabbitChannel rabbitChannel)
+            IRabbitBus rabbitChannel)
         {
             _rabbitChannel = rabbitChannel;
         }

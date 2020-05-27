@@ -23,14 +23,14 @@ namespace Infrastructure.Message.Rabbit
         where TResponse : class
     {
         protected readonly RabbitOption _rabbitOptions;
-        protected readonly IRabbitChannel _rabbitChannel;
+        protected readonly IRabbitBus _rabbitChannel;
         protected QueueDeclareOk Queue { get; private set; }
         protected IBasicProperties Props { get; private set; }
         protected ConcurrentDictionary<string, TaskCompletionSource<RabbitRpcResponseModel<TResponse>>> ResponseQueue = new ConcurrentDictionary<string, TaskCompletionSource<RabbitRpcResponseModel<TResponse>>>();
         protected AsyncEventingBasicConsumer Consumer { get; private set; }
 
         public RabbitRpcService(
-            IRabbitChannel rabbitChannel)
+            IRabbitBus rabbitChannel)
         {
             _rabbitChannel = rabbitChannel;
         }

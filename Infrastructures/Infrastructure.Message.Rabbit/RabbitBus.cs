@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Infrastructure.Message.Rabbit
 {
-    public interface IRabbitChannel
+    public interface IRabbitBus
     {
         void InitChannel(string name);
 
@@ -16,7 +16,7 @@ namespace Infrastructure.Message.Rabbit
         RabbitQueueOption GetRabbitQueueOption();
     }
 
-    public class RabbitChannel : IRabbitChannel
+    public class RabbitBus : IRabbitBus
     {
         protected readonly RabbitOption _rabbitOptions;
         protected RabbitQueueOption QueueOptions { get; private set; }
@@ -24,7 +24,7 @@ namespace Infrastructure.Message.Rabbit
 
         private readonly IConfiguration _configuration;
 
-        public RabbitChannel(
+        public RabbitBus(
             IConfiguration configuration,
             IOptions<RabbitOption> rabbitOptions)
         {
