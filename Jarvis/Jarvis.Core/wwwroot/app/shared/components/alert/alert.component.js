@@ -12,8 +12,8 @@
                 context: '='
             }
         })
-        .controller('alertController', ['$scope', 'APP_CONFIG', function ($scope, APP_CONFIG) {
+        .controller('alertController', ['$scope', 'VNIS_CONFIG', function ($scope, VNIS_CONFIG) {
             var ctrl = $scope.$ctrl;
-            ctrl.message = APP_CONFIG.MESSAGE;
+            ctrl.message = VNIS_CONFIG.MESSAGE;
         }]);
 }());

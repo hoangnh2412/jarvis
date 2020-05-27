@@ -37,6 +37,14 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             return RemoveDefaultSettings(tenantCode, settings);
         }
 
+        public async Task<List<Setting>> GetByGroupTenantAsync(Guid tenantCode, string group)
+        {
+            IQueryable<Setting> query = Query.Where(x => x.Group == group);
+            query = query.QueryByTenantCode(tenantCode);
+            return await query.AsQueryable().ToListAsync();
+        }
+
+
         public async Task<List<Setting>> GetByTenantCodeAsync(Guid tenantCode)
         {
             IQueryable<Setting> query = Query.Where(x => x.TenantCode == Guid.Empty || x.TenantCode == tenantCode);

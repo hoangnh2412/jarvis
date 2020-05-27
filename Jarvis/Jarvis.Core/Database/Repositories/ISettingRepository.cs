@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Infrastructure.Database.Abstractions;
-using Jarvis.Core.Constants;
 using Jarvis.Core.Database.Poco;
-using Jarvis.Core.Models;
 
 namespace Jarvis.Core.Database.Repositories
 {
@@ -26,5 +24,7 @@ namespace Jarvis.Core.Database.Repositories
 
 
         Task<List<Setting>> GetByTenantCodesAsync(List<Guid> tenantCodes);
+
+        Task<List<Setting>> GetByGroupTenantAsync(Guid tenantCode, string group);
     }
 }
