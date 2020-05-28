@@ -20,7 +20,6 @@ namespace Infrastructure.Message.Rabbit
         protected readonly RabbitOption _rabbitOptions;
         protected readonly IRabbitBus _rabbitChannel;
         protected QueueDeclareOk Queue { get; private set; }
-        private string _subcribeExchange;
 
         public RabbitRpcClient(
             IRabbitBus rabbitChannel,
@@ -65,7 +64,7 @@ namespace Infrastructure.Message.Rabbit
                     }
                     finally
                     {
-                        _rabbitChannel.GetChannel().BasicPublish(exchange: _subcribeExchange, routingKey: props.ReplyTo, basicProperties: replyProps, body: Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(response)));
+                        _rabbitChannel.GetChannel().BasicPublish(props.ReplyToAddress, replyProps, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(response)));
                         _rabbitChannel.GetChannel().BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                     }
                 };
@@ -103,11 +102,6 @@ namespace Infrastructure.Message.Rabbit
                     exchange: exchangeName,
                     routingKey: routingKey);
             }
-        }
-
-        protected void SetSubcribeExchange(string value)
-        {
-            _subcribeExchange = value;
         }
 
         public abstract Task<TResponse> HandleRequestAsync(TRequest request);

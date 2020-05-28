@@ -34,6 +34,9 @@ namespace Infrastructure.Message.Rabbit
 
         public void InitChannel(string name)
         {
+            if (Channel != null)
+                return;
+
             QueueOptions = _configuration.GetSection($"RabbitMq:Workers:{name}").Get<RabbitQueueOption>();
             Console.WriteLine($"Config: {JsonConvert.SerializeObject(QueueOptions)}");
 

@@ -54,12 +54,16 @@ namespace Infrastructure.Message.Rabbit
                 global: global);
         }
 
-        protected void InitConsumer()
+        protected void InitConsumer(string exchangeName, string routingKey)
         {
             Props = _rabbitChannel.GetChannel().CreateBasicProperties();
             var correlationId = Guid.NewGuid().ToString();
             Props.CorrelationId = correlationId;
-            Props.ReplyTo = Queue.QueueName;
+            //Props.ReplyTo = Queue.QueueName;
+            Props.ReplyToAddress = new PublicationAddress(
+                exchangeType: ExchangeType.Topic, 
+                exchangeName: exchangeName,
+                routingKey: routingKey);
 
             Consumer = new AsyncEventingBasicConsumer(_rabbitChannel.GetChannel());
             Consumer.Received += async (model, ea) =>
