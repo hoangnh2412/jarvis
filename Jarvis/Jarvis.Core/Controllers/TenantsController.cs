@@ -475,14 +475,14 @@ namespace Jarvis.Core.Controllers
         {
             var allClaims = new List<string>();
 
-            var crudPolicies = _moduleManager.GetInstances<IAuthorizationPolicy>();
+            var crudPolicies = _moduleManager.GetInstances<IAuthorizationCrudPolicy>();
             foreach (var policy in crudPolicies)
             {
                 //Các quyền CRUD ko sử dụng abstract
-                // allClaims.Add($"{policy.Name}_Read");
-                // allClaims.Add($"{policy.Name}_Create");
-                // allClaims.Add($"{policy.Name}_Update");
-                // allClaims.Add($"{policy.Name}_Delete");
+                allClaims.Add($"{policy.Name}_Read");
+                allClaims.Add($"{policy.Name}_Create");
+                allClaims.Add($"{policy.Name}_Update");
+                allClaims.Add($"{policy.Name}_Delete");
             }
 
             var policies = _moduleManager.GetInstances<IAuthorizationPolicy>();
