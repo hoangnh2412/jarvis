@@ -19,6 +19,9 @@ using Infrastructure.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Infrastructure.Abstractions;
 using Infrastructure;
+using Infrastructure.Message.Rabbit;
+using Einvoice.Utils.Common.Constants;
+using Newtonsoft.Json;
 
 namespace Jarvis.Core.Controllers
 {
@@ -33,9 +36,9 @@ namespace Jarvis.Core.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IPasswordValidator<User> _passwordValidator;
         private readonly IPasswordHasher<User> _passwordHasher;
-        //private readonly IConnectionMultiplexer _redis;
         private readonly IDistributedCache _cache;
         private readonly IModuleManager _moduleManager;
+        private readonly IRabbitService _rabbitService;
 
         public TenantsController(
             ICoreUnitOfWork uow,
@@ -43,18 +46,18 @@ namespace Jarvis.Core.Controllers
             IPasswordValidator<User> passwordValidator,
             IWorkContext workContext,
             IPasswordHasher<User> passwordHasher,
-            //IConnectionMultiplexer redis,
             IDistributedCache cache,
-            IModuleManager moduleManager)
+            IModuleManager moduleManager,
+            IRabbitService rabbitService)
         {
             _uow = uow;
             _userManager = userManager;
             _passwordValidator = passwordValidator;
             _workContext = workContext;
             _passwordHasher = passwordHasher;
-            //_redis = redis;
             _cache = cache;
             _moduleManager = moduleManager;
+            _rabbitService = rabbitService;
         }
 
         [HttpGet]
@@ -223,31 +226,30 @@ namespace Jarvis.Core.Controllers
             await _uow.CommitAsync();
 
             ////gửi mail thông báo tài khoản root mật khẩu
-            //var db = _redis.GetDatabase();
-            //await db.ListLeftPushAsync(KeyQueueBackground.SendMail, JsonConvert.SerializeObject(new
-            //{
-            //    Action = "SendAccountTenant",
-            //    Datas = JsonConvert.SerializeObject(new
-            //    {
-            //        TenantCode = currentTenant.Code,
-            //        IdUser = rootUser.Id,
-            //        Password = passwordRoot,
-            //    })
-            //}));
+            _rabbitService.Publish(new
+            {
+                Action = EmailAction.SendAccountTenant.ToString(),
+                Datas = JsonConvert.SerializeObject(new
+                {
+                    TenantCode = currentTenant.Code,
+                    IdUser = rootUser.Id,
+                    Password = passwordRoot,
+                })
+            }, RabbitMqKey.GenerateContentMail.ExchangeName, RabbitMqKey.GenerateContentMail.PublishRouting);
 
             ////gửi mail thông báo tài khoản admin mật khẩu nếu là password tự động
             if (isRandomPassword)
             {
-                //    await db.ListLeftPushAsync(KeyQueueBackground.SendMail, JsonConvert.SerializeObject(new
-                //    {
-                //        Action = "SendAccountTenant",
-                //        Datas = JsonConvert.SerializeObject(new
-                //        {
-                //            TenantCode = currentTenant.Code,
-                //            IdUser = adminUser.Id,
-                //            Password = model.User.Password,
-                //        })
-                //    }));
+                _rabbitService.Publish(new
+                {
+                    Action = EmailAction.SendAccountTenant.ToString(),
+                    Datas = JsonConvert.SerializeObject(new
+                    {
+                        TenantCode = currentTenant.Code,
+                        IdUser = adminUser.Id,
+                        Password = model.User.Password,
+                    })
+                }, RabbitMqKey.GenerateContentMail.ExchangeName, RabbitMqKey.GenerateContentMail.PublishRouting);
             }
 
             return Ok(new

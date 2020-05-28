@@ -22,6 +22,8 @@ using Jarvis.Models.Identity.Models.Identity;
 using Jarvis.Core.Models.Identity;
 using Infrastructure.Extensions;
 using Jarvis.Core.Abstractions;
+using Infrastructure.Message.Rabbit;
+using Einvoice.Utils.Common.Constants;
 
 namespace Jarvis.Core.Services
 {
@@ -77,7 +79,7 @@ namespace Jarvis.Core.Services
         private readonly IEnumerable<IUserInfoService> _userInfoServices;
         private readonly IDistributedCache _cache;
         private readonly IWorkContext _workContext;
-        //private readonly IConnectionMultiplexer _redis;
+        private readonly IRabbitService _rabbitService;
 
         public IdentityService(
             IOptions<IdentityOption> options,
@@ -88,7 +90,7 @@ namespace Jarvis.Core.Services
             ICoreUnitOfWork uow,
             IEnumerable<IUserInfoService> userInfoServices,
             IDistributedCache cache,
-            //IConnectionMultiplexer redis,
+            IRabbitService rabbitService,
             IWorkContext workContext)
         {
             _options = options.Value;
@@ -100,7 +102,7 @@ namespace Jarvis.Core.Services
             _userInfoServices = userInfoServices;
             _cache = cache;
             _workContext = workContext;
-            //_redis = redis;
+            _rabbitService = rabbitService;
         }
 
         public async Task<TokenModel> LoginAsync(Guid tenantCode, LoginModel model)
@@ -244,18 +246,18 @@ namespace Jarvis.Core.Services
             if (!userEmails.Contains(model.Email))
                 throw new Exception("Email không trùng với email của tài khoản. Vui lòng nhập đúng email của tài khoản");
 
-            //var db = _redis.GetDatabase();
-            //await db.ListLeftPushAsync(KeyQueueBackground.SendMail, JsonConvert.SerializeObject(new
-            //{
-            //    Action = "SendForgotPassword",
-            //    Datas = JsonConvert.SerializeObject(new
-            //    {
-            //        HostName = model.HostName,
-            //        IdUser = user.Id,
-            //        Email = model.Email,
-            //        TenantCode = tenantHost.Code
-            //    })
-            //}));
+            ////gửi mail thông báo tài khoản root mật khẩu
+            _rabbitService.Publish(new
+            {
+                Action = EmailAction.SendForgotPassword.ToString(),
+                Datas = JsonConvert.SerializeObject(new
+                {
+                    HostName = model.HostName,
+                    IdUser = user.Id,
+                    Email = model.Email,
+                    TenantCode = tenantHost.Code
+                })
+            }, RabbitMqKey.GenerateContentMail.ExchangeName, RabbitMqKey.GenerateContentMail.PublishRouting);
         }
 
         public async Task ResetForgotPasswordAsync(ResetForgotPasswordModel model)

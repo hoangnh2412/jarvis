@@ -147,7 +147,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Einvoice.Utils\Einvoice.Utils.Common\Einvoice.Utils.Common.csproj" />
     <ProjectReference Include="..\..\Infrastructures\Infrastructure.Caching.Redis\Infrastructure.Caching.Redis.csproj" />
+    <ProjectReference Include="..\..\Infrastructures\Infrastructure.Message.Rabbit\Infrastructure.Message.Rabbit.csproj" />
     <ProjectReference Include="..\..\Infrastructures\Infrastructure\Infrastructure.csproj" />
     <ProjectReference Include="..\Jarvis.Core.Database\Jarvis.Core.Database.csproj" />
   </ItemGroup>
