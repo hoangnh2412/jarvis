@@ -235,7 +235,7 @@ namespace Jarvis.Core.Controllers
                     IdUser = rootUser.Id,
                     Password = passwordRoot,
                 })
-            }, RabbitMqKey.GenerateContentMail.ExchangeName, RabbitMqKey.GenerateContentMail.PublishRouting);
+            }, RabbitMqKey.Exchanges.Events, RabbitMqKey.Routings.GeneratedContentMail);
 
             ////gửi mail thông báo tài khoản admin mật khẩu nếu là password tự động
             if (isRandomPassword)
@@ -249,7 +249,7 @@ namespace Jarvis.Core.Controllers
                         IdUser = adminUser.Id,
                         Password = model.User.Password,
                     })
-                }, RabbitMqKey.GenerateContentMail.ExchangeName, RabbitMqKey.GenerateContentMail.PublishRouting);
+                }, RabbitMqKey.Exchanges.Events, RabbitMqKey.Routings.GeneratedContentMail);
             }
 
             return Ok(new
