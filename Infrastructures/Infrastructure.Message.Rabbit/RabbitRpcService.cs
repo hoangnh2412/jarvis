@@ -23,21 +23,21 @@ namespace Infrastructure.Message.Rabbit
         where TResponse : class
     {
         protected readonly RabbitOption _rabbitOptions;
-        protected readonly IRabbitBus _rabbitChannel;
+        protected readonly IRabbitBusClient _busClient;
         protected QueueDeclareOk Queue { get; private set; }
         protected IBasicProperties Props { get; private set; }
         protected ConcurrentDictionary<string, TaskCompletionSource<RabbitRpcResponseModel<TResponse>>> ResponseQueue = new ConcurrentDictionary<string, TaskCompletionSource<RabbitRpcResponseModel<TResponse>>>();
         protected AsyncEventingBasicConsumer Consumer { get; private set; }
 
         public RabbitRpcService(
-            IRabbitBus rabbitChannel)
+            IRabbitBusClient busClient)
         {
-            _rabbitChannel = rabbitChannel;
+            _busClient = busClient;
         }
 
         protected virtual void InitQueue(string queueName, bool durable = true, bool exclusive = false, bool autoDelete = false, IDictionary<string, object> arguments = null)
         {
-            Queue = _rabbitChannel.GetChannel().QueueDeclare(
+            Queue = _busClient.GetChannel().QueueDeclare(
                 queue: queueName,
                 durable: durable, //The queue will survive when RabbitMQ restart (Queue vẫn tồn tại/sống sót sau khi RabbitMQ/broker bị restart)
                 exclusive: exclusive, //The queue will be deleted when that connection closes (Queue sẽ bị xoá khi connection close)
@@ -48,7 +48,7 @@ namespace Infrastructure.Message.Rabbit
 
         protected void BasicQos(uint prefetchSize = 0, ushort prefetchCount = 1, bool global = false)
         {
-            _rabbitChannel.GetChannel().BasicQos(
+            _busClient.GetChannel().BasicQos(
                 prefetchSize: prefetchSize,
                 prefetchCount: prefetchCount, //Dequeue mỗi lần 1 message
                 global: global);
@@ -56,7 +56,7 @@ namespace Infrastructure.Message.Rabbit
 
         protected void InitConsumer(string exchangeName, string routingKey)
         {
-            Props = _rabbitChannel.GetChannel().CreateBasicProperties();
+            Props = _busClient.GetChannel().CreateBasicProperties();
             var correlationId = Guid.NewGuid().ToString();
             Props.CorrelationId = correlationId;
             //Props.ReplyTo = Queue.QueueName;
@@ -65,7 +65,7 @@ namespace Infrastructure.Message.Rabbit
                 exchangeName: exchangeName,
                 routingKey: routingKey);
 
-            Consumer = new AsyncEventingBasicConsumer(_rabbitChannel.GetChannel());
+            Consumer = new AsyncEventingBasicConsumer(_busClient.GetChannel());
             Consumer.Received += async (model, ea) =>
             {
                 if (ea.BasicProperties.CorrelationId != correlationId)
@@ -87,18 +87,18 @@ namespace Infrastructure.Message.Rabbit
                 }
                 finally
                 {
-                    _rabbitChannel.GetChannel().BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                    _busClient.GetChannel().BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                 }
             };
-            _rabbitChannel.GetChannel().BasicConsume(queue: Queue.QueueName, autoAck: false, consumer: Consumer);
+            _busClient.GetChannel().BasicConsume(queue: Queue.QueueName, autoAck: false, consumer: Consumer);
         }
 
         protected virtual void InitInput(string exchangeName, List<string> routingKeys)
         {
-            _rabbitChannel.GetChannel().ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
+            _busClient.GetChannel().ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
             foreach (var routingKey in routingKeys)
             {
-                _rabbitChannel.GetChannel().QueueBind(
+                _busClient.GetChannel().QueueBind(
                     queue: Queue.QueueName,
                     exchange: exchangeName,
                     routingKey: routingKey);
@@ -112,7 +112,7 @@ namespace Infrastructure.Message.Rabbit
 
             var messageBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
 
-            _rabbitChannel.GetChannel().BasicPublish(exchange: exchangeName, routingKey: routingKey, basicProperties: Props, body: messageBytes);
+            _busClient.GetChannel().BasicPublish(exchange: exchangeName, routingKey: routingKey, basicProperties: Props, body: messageBytes);
             //Channel.BasicConsume(queue: Queue.QueueName, autoAck: false, consumer: Consumer);
 
             cancellationToken.Register(() => ResponseQueue.TryRemove(Props.CorrelationId, out var tmp));
