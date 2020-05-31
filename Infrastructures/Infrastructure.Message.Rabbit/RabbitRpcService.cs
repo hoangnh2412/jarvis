@@ -15,7 +15,7 @@ namespace Infrastructure.Message.Rabbit
         where TRequest : class
         where TResponse : class
     {
-        Task<RabbitRpcResponseModel<TResponse>> PublishAsync(TRequest message, string exchangeName, string routingKey, CancellationToken cancellationToken = default);
+        Task<TResponse> PublishAsync(TRequest message, PublicationAddress requestPublicationAddress, PublicationAddress responsePublicationAddress, CancellationToken cancellationToken = default);
     }
 
     public abstract class RabbitRpcService<TRequest, TResponse>
@@ -25,8 +25,7 @@ namespace Infrastructure.Message.Rabbit
         protected readonly RabbitOption _rabbitOptions;
         protected readonly IRabbitBusClient _busClient;
         protected QueueDeclareOk Queue { get; private set; }
-        protected IBasicProperties Props { get; private set; }
-        protected ConcurrentDictionary<string, TaskCompletionSource<RabbitRpcResponseModel<TResponse>>> ResponseQueue = new ConcurrentDictionary<string, TaskCompletionSource<RabbitRpcResponseModel<TResponse>>>();
+        protected ConcurrentDictionary<string, TaskCompletionSource<TResponse>> ResponseQueue = new ConcurrentDictionary<string, TaskCompletionSource<TResponse>>();
         protected AsyncEventingBasicConsumer Consumer { get; private set; }
 
         public RabbitRpcService(
@@ -54,31 +53,19 @@ namespace Infrastructure.Message.Rabbit
                 global: global);
         }
 
-        protected void InitConsumer(string exchangeName, string routingKey)
+        protected void InitConsumer()
         {
-            Props = _busClient.GetChannel().CreateBasicProperties();
-            var correlationId = Guid.NewGuid().ToString();
-            Props.CorrelationId = correlationId;
-            //Props.ReplyTo = Queue.QueueName;
-            Props.ReplyToAddress = new PublicationAddress(
-                exchangeType: ExchangeType.Topic, 
-                exchangeName: exchangeName,
-                routingKey: routingKey);
-
             Consumer = new AsyncEventingBasicConsumer(_busClient.GetChannel());
             Consumer.Received += async (model, ea) =>
             {
-                if (ea.BasicProperties.CorrelationId != correlationId)
-                    return;
-
-                if (!ResponseQueue.TryRemove(ea.BasicProperties.CorrelationId, out TaskCompletionSource<RabbitRpcResponseModel<TResponse>> tcs))
+                if (!ResponseQueue.TryRemove(ea.BasicProperties.CorrelationId, out TaskCompletionSource<TResponse> tcs))
                     return;
 
                 try
                 {
                     var body = ea.Body;
                     var response = Encoding.UTF8.GetString(body.ToArray());
-                    tcs.TrySetResult(JsonConvert.DeserializeObject<RabbitRpcResponseModel<TResponse>>(response));
+                    tcs.TrySetResult(JsonConvert.DeserializeObject<TResponse>(response));
                     await Task.Yield();
                 }
                 catch (Exception ex)
@@ -105,17 +92,23 @@ namespace Infrastructure.Message.Rabbit
             }
         }
 
-        public Task<RabbitRpcResponseModel<TResponse>> PublishAsync(TRequest message, string exchangeName, string routingKey, CancellationToken cancellationToken = default)
+        public Task<TResponse> PublishAsync(TRequest message, PublicationAddress requestPublicationAddress, PublicationAddress responsePublicationAddress, CancellationToken cancellationToken = default)
         {
-            var tcs = new TaskCompletionSource<RabbitRpcResponseModel<TResponse>>();
-            ResponseQueue.TryAdd(Props.CorrelationId, tcs);
+            var props = _busClient.GetChannel().CreateBasicProperties();
+            var correlationId = Guid.NewGuid().ToString();
+            props.CorrelationId = correlationId;
+            props.ReplyToAddress = responsePublicationAddress;
 
-            var messageBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
+            var tcs = new TaskCompletionSource<TResponse>();
+            ResponseQueue.TryAdd(props.CorrelationId, tcs);
 
-            _busClient.GetChannel().BasicPublish(exchange: exchangeName, routingKey: routingKey, basicProperties: Props, body: messageBytes);
-            //Channel.BasicConsume(queue: Queue.QueueName, autoAck: false, consumer: Consumer);
+            _busClient.GetChannel().BasicPublish(
+                addr: requestPublicationAddress,
+                basicProperties: props,
+                body: Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message))
+            );
 
-            cancellationToken.Register(() => ResponseQueue.TryRemove(Props.CorrelationId, out var tmp));
+            cancellationToken.Register(() => ResponseQueue.TryRemove(props.CorrelationId, out var tmp));
             return tcs.Task;
         }
     }

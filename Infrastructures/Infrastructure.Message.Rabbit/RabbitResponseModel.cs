@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Infrastructure.Message.Rabbit
 {
-    public class RabbitRpcResponseModel<T>
+    public class RabbitResponseModel<T>
     {
         public bool Succeeded { get; set; }
         public Exception Exception { get; set; }

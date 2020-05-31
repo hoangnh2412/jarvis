@@ -36,7 +36,7 @@ namespace Infrastructure.Message.Rabbit
                 var consumer = new AsyncEventingBasicConsumer(_rabbitChannel.GetChannel());
                 consumer.Received += async (model, ea) =>
                 {
-                    RabbitRpcResponseModel<TResponse> response = null;
+                    RabbitResponseModel<TResponse> response = null;
                     var props = ea.BasicProperties;
                     var replyProps = _rabbitChannel.GetChannel().CreateBasicProperties();
                     replyProps.CorrelationId = props.CorrelationId;
@@ -46,7 +46,7 @@ namespace Infrastructure.Message.Rabbit
                         var message = Encoding.UTF8.GetString(ea.Body);
                         var request = JsonConvert.DeserializeObject<TRequest>(message);
 
-                        response = new RabbitRpcResponseModel<TResponse>
+                        response = new RabbitResponseModel<TResponse>
                         {
                             Data = await HandleRequestAsync(request),
                             Succeeded = true,
@@ -55,7 +55,7 @@ namespace Infrastructure.Message.Rabbit
                     }
                     catch (Exception ex)
                     {
-                        response = new RabbitRpcResponseModel<TResponse>
+                        response = new RabbitResponseModel<TResponse>
                         {
                             Exception = ex,
                             Succeeded = false,
