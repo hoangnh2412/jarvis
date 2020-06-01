@@ -215,7 +215,7 @@ namespace Jarvis.Core.Services
             if (token == null)
                 return;
 
-            await _cache.RemoveAsync($"TokenInfos:{token.Id}");
+            await _cache.RemoveAsync($":TokenInfos:{token.Id}");
 
             repoToken.Delete(token);
             await _uow.CommitAsync();
