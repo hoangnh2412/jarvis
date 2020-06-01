@@ -206,18 +206,19 @@ namespace Jarvis.Core.Services
             if (userCode == Guid.Empty)
                 return;
 
-            var userAgent = NetworkExtension.GetUserAgent(_httpContextAccessor.HttpContext.Request);
-            var localIpAddress = NetworkExtension.GetLocalIpAddress(_httpContextAccessor.HttpContext.Request).ToString();
-            var remoteIpAddress = NetworkExtension.GetRemoteIpAddress(_httpContextAccessor.HttpContext.Request).ToString();
-
+            //Lấy toàn bộ token theo User
             var repoToken = _uow.GetRepository<ITokenRepository>();
-            var token = await repoToken.GetByUserAsync(userCode, userAgent, localIpAddress, remoteIpAddress);
-            if (token == null)
+            var tokens = await repoToken.GetByUserAsync(userCode);
+            if (tokens.Count == 0)
                 return;
 
-            await _cache.RemoveAsync($":TokenInfos:{token.Id}");
+            //Xóa toàn bộ cache
+            foreach (var token in tokens)
+            {
+                await _cache.RemoveAsync($":TokenInfos:{token.Code}");
+            }
 
-            repoToken.Delete(token);
+            repoToken.Deletes(tokens);
             await _uow.CommitAsync();
         }
 
