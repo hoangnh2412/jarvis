@@ -293,13 +293,13 @@ namespace Jarvis.Core.Services
 
             TokenInfo token = null;
             //Lấy token từ cache theo IdUser
-            var bytes = await _cache.GetAsync($"Sessions:{userCode}");
+            var bytes = await _cache.GetAsync($":Sessions:{userCode}");
             if (bytes != null)
             {
                 var tokenCodes = JsonConvert.DeserializeObject<List<Guid>>(Encoding.UTF8.GetString(bytes));
                 foreach (var tokenCode in tokenCodes)
                 {
-                    bytes = await _cache.GetAsync($"TokenInfos:{tokenCode}");
+                    bytes = await _cache.GetAsync($":TokenInfos:{tokenCode}");
                     if (bytes != null)
                     {
                         var tokenInfo = JsonConvert.DeserializeObject<TokenInfo>(Encoding.UTF8.GetString(bytes));
@@ -325,11 +325,11 @@ namespace Jarvis.Core.Services
                     return null;
 
                 var idTokens = tokens.Select(x => x.Code).ToList();
-                await _cache.SetAsync($"Sessions:{userCode}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(idTokens)));
+                await _cache.SetAsync($":Sessions:{userCode}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(idTokens)));
 
                 var cacheOption = new DistributedCacheEntryOptions();
                 cacheOption.AbsoluteExpiration = token.ExpireAt;
-                await _cache.SetAsync($"TokenInfos:{token.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
+                await _cache.SetAsync($":TokenInfos:{token.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
             }
 
             return token;
