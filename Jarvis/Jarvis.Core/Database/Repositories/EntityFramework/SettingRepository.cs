@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Jarvis.Core.Models;
 using Jarvis.Core.Permissions;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text;
@@ -77,7 +76,7 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             var settings = await query.AsQueryable().ToListAsync();
             settings = RemoveDefaultSettings(tenantCode, settings);
 
-            return settings.FirstOrDefault(x => x.TenantCode == tenantCode);
+            return settings.FirstOrDefault();
         }
 
         public async Task<Setting> GetByKeyAsync(string cacheKey, Guid tenantCode, string key)
