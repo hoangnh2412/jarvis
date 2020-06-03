@@ -52,6 +52,9 @@ namespace Jarvis.Core.Controllers
         public async Task<IActionResult> GetSessionAsync()
         {
             var session = await _workContext.GetSessionAsync();
+            if (session == null)
+                return Unauthorized();
+
             return Ok(session);
         }
 

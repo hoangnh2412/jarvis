@@ -39,6 +39,8 @@ namespace Jarvis.Core.Controllers
         public async Task<IActionResult> GetNavigationAsync()
         {
             var session = await _workContext.GetSessionAsync();
+            if (session == null)
+                return Unauthorized();
 
             var navigation = _navigationService.GetNavigation(session);
             return Ok(navigation);
@@ -73,8 +75,10 @@ namespace Jarvis.Core.Controllers
             //_._.G
             //_._.H
 
-            var tenants = new List<HierarchyTenantModel>();
             var session = await _workContext.GetSessionAsync();
+            if (session == null)
+                return Unauthorized();
+
             var repoTenant = _uow.GetRepository<ITenantRepository>();
             var hierarchy = (await repoTenant.GetHierarchyByCodeAsync(session.TenantInfo.Code)).Select(x => new HierarchyTenantModel
             {
@@ -88,6 +92,7 @@ namespace Jarvis.Core.Controllers
                 CreatedAt = x.CreatedAt
             }).ToList();
 
+            var tenants = new List<HierarchyTenantModel>();
             if (hierarchy.Count == 0)
                 return Ok(tenants);
 

@@ -17,25 +17,37 @@ namespace Jarvis.Core
     {
         public static void UseConfigJarvisDefault(this IApplicationBuilder app, params string[] modules)
         {
-            app.UseAuthentication();
             app.UseHsts();
+            
             app.UseHttpsRedirection();
 
-            app.UseConfigUI(modules);
-            app.UseConfigJarvisUI();
+            app.UseConfigStaticFiles(modules);
 
             app.UseRouting();
+            app.UseConfigJarvisUI();
+
+            app.UseCors(builder =>
+            {
+                builder.AllowAnyOrigin();
+                builder.AllowAnyHeader();
+                builder.AllowAnyMethod();
+                builder.WithExposedHeaders("Content-Disposition");
+            });
+
+            app.UseAuthentication();
             app.UseAuthorization();
+            
+            //Custom middlewares
+            app.UseConfigSwagger();
+            app.UseConfigMiddlewares();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
-
-            app.UseConfigSwagger();
-            app.UseConfigMiddleware();
         }
 
-        public static void UseConfigMiddleware(this IApplicationBuilder app)
+        public static void UseConfigMiddlewares(this IApplicationBuilder app)
         {
             app.UseWhen(httpContext =>
             {
@@ -59,7 +71,7 @@ namespace Jarvis.Core
             });
         }
 
-        public static void UseConfigUI(this IApplicationBuilder app, params string[] modules)
+        public static void UseConfigStaticFiles(this IApplicationBuilder app, params string[] modules)
         {
             var env = app.ApplicationServices.GetService<IWebHostEnvironment>();
 

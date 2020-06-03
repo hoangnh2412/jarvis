@@ -115,7 +115,7 @@ namespace Jarvis.Core.Services
             var token = await repoToken.GetByCodeAsync(tokenCode.Value);
 
             if (token == null)
-                throw new Exception("Phiên làm việc hết hạn hoặc đã bị đăng xuất");
+                return null;
 
             _currentToken = JsonConvert.DeserializeObject<SessionModel>(token.Metadata);
 
@@ -174,6 +174,9 @@ namespace Jarvis.Core.Services
         public async Task<bool> HasClaimsAsync(List<string> claims)
         {
             var session = await GetSessionAsync();
+            if (session == null)
+                return false;
+
             if (session.Claims.ContainsKey(nameof(SpecialPolicy.Special_DoEnything)) || session.Claims.Any(x => claims.Contains(x.Key)))
                 return true;
             return false;
@@ -187,6 +190,9 @@ namespace Jarvis.Core.Services
             claims.AddRange(specials.Select(x => x.Name).ToList());
 
             var session = await GetSessionAsync();
+            if (session == null)
+                return claims;
+
             claims.AddRange(session.Claims.Keys.Where(x => x.StartsWith(prefix)).ToList());
             return claims;
         }
@@ -194,8 +200,11 @@ namespace Jarvis.Core.Services
         public async Task<KeyValuePair<ClaimOfResource, ClaimOfChildResource>> GetClaimOfResourceAsync(string claim)
         {
             var session = await GetSessionAsync();
+            if (session == null)
+                return new KeyValuePair<ClaimOfResource, ClaimOfChildResource>(default, default);
+
             if (!session.Claims.ContainsKey(claim))
-                return new KeyValuePair<ClaimOfResource, ClaimOfChildResource>(default(ClaimOfResource), default(ClaimOfChildResource));
+                return new KeyValuePair<ClaimOfResource, ClaimOfChildResource>(default, default);
 
             return session.Claims[claim];
         }
@@ -203,6 +212,8 @@ namespace Jarvis.Core.Services
         public async Task<ContextModel> GetContextAsync(string policy)
         {
             var session = await GetSessionAsync();
+            if (session == null)
+                return null;
 
             KeyValuePair<ClaimOfResource, ClaimOfChildResource> claim = new KeyValuePair<ClaimOfResource, ClaimOfChildResource>(default(ClaimOfResource), default(ClaimOfChildResource));
             if (session.Claims.ContainsKey(policy))
