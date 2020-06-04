@@ -311,7 +311,7 @@ namespace Jarvis.Core.Controllers
                 //xóa cache
                 foreach (var item in deletes)
                 {
-                    _cache.Remove($"TenantHost:{item.HostName}");
+                    _cache.Remove($":TenantHost:{item.HostName}");
                 }
 
                 //xóa token của các tk trong chi nhánh này
@@ -365,7 +365,7 @@ namespace Jarvis.Core.Controllers
                     tenantHost.Set(x => x.DeletedVersion, tenantHost.Id));
 
                 //xóa cache
-                _cache.Remove($"TenantHost:{tenantHost.HostName}");
+                _cache.Remove($":TenantHost:{tenantHost.HostName}");
             }
 
             //xóa token của các tk trong chi nhánh này
