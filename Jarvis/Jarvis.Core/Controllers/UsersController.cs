@@ -20,6 +20,8 @@ using Jarvis.Core.Database;
 using Jarvis.Core.Abstractions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Infrastructure.Message.Rabbit;
+using Einvoice.Utils.Common.Constants;
 
 namespace Jarvis.Core.Controllers
 {
@@ -33,19 +35,22 @@ namespace Jarvis.Core.Controllers
         private readonly IWorkContext _workcontext;
         private readonly ICoreUnitOfWork _uow;
         private readonly IDistributedCache _cache;
+        private readonly IRabbitService _rabbitService;
 
         public UsersController(
             IIdentityService identityService,
             IEnumerable<IUserInfoService> userInfoServices,
             IWorkContext workcontext,
             ICoreUnitOfWork uow,
-            IDistributedCache cache)
+            IDistributedCache cache,
+            IRabbitService rabbitService)
         {
             _identityService = identityService;
             _userInfoServices = userInfoServices;
             _workcontext = workcontext;
             _uow = uow;
             _cache = cache;
+            _rabbitService = rabbitService;
         }
 
         [HttpGet]
@@ -123,9 +128,13 @@ namespace Jarvis.Core.Controllers
         {
             var tenantCode = await _workcontext.GetTenantCodeAsync();
 
+            var isRandomPassword = false;
             //Nếu ko nhập pasword sẽ tự động random
             if (string.IsNullOrEmpty(model.Password))
+            {
+                isRandomPassword = true;
                 model.Password = RandomExtension.Random(10);
+            }
 
             var idUser = await _identityService.CreateAsync(tenantCode, new CreateUserModel
             {
@@ -145,6 +154,19 @@ namespace Jarvis.Core.Controllers
             await _uow.CommitAsync();
 
             //Tạo job send mail
+            if (isRandomPassword)
+            {
+                _rabbitService.Publish(new
+                {
+                    Action = EmailAction.SendAccount.ToString(),
+                    Datas = JsonConvert.SerializeObject(new
+                    {
+                        TenantCode = tenantCode,
+                        IdUser = idUser,
+                        Password = model.Password,
+                    })
+                }, RabbitMqKey.Exchanges.Events, RabbitMqKey.Routings.CreatedUser);
+            }
 
             return Ok();
         }

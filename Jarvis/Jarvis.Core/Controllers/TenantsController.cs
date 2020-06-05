@@ -235,7 +235,7 @@ namespace Jarvis.Core.Controllers
                     IdUser = rootUser.Id,
                     Password = passwordRoot,
                 })
-            }, RabbitMqKey.Exchanges.Events, RabbitMqKey.Routings.GeneratedContentMail);
+            }, RabbitMqKey.Exchanges.Events, RabbitMqKey.Routings.CreateTenant);
 
             ////gửi mail thông báo tài khoản admin mật khẩu nếu là password tự động
             if (isRandomPassword)
@@ -249,7 +249,7 @@ namespace Jarvis.Core.Controllers
                         IdUser = adminUser.Id,
                         Password = model.User.Password,
                     })
-                }, RabbitMqKey.Exchanges.Events, RabbitMqKey.Routings.GeneratedContentMail);
+                }, RabbitMqKey.Exchanges.Events, RabbitMqKey.Routings.CreateTenant);
             }
 
             return Ok(new
@@ -311,7 +311,7 @@ namespace Jarvis.Core.Controllers
                 //xóa cache
                 foreach (var item in deletes)
                 {
-                    _cache.Remove($"TenantHost:{item.HostName}");
+                    _cache.Remove($":TenantHost:{item.HostName}");
                 }
 
                 //xóa token của các tk trong chi nhánh này
@@ -365,7 +365,7 @@ namespace Jarvis.Core.Controllers
                     tenantHost.Set(x => x.DeletedVersion, tenantHost.Id));
 
                 //xóa cache
-                _cache.Remove($"TenantHost:{tenantHost.HostName}");
+                _cache.Remove($":TenantHost:{tenantHost.HostName}");
             }
 
             //xóa token của các tk trong chi nhánh này

@@ -62,27 +62,34 @@ namespace Infrastructure.Message.Rabbit
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            for (int i = 0; i < _rabbitChannel.GetRabbitQueueOption().NumberOfConsumer; i++)
+            try
             {
-                var consumer = new AsyncEventingBasicConsumer(_rabbitChannel.GetChannel());
-                consumer.Received += async (model, ea) =>
+                for (int i = 0; i < _rabbitChannel.GetRabbitQueueOption().NumberOfConsumer; i++)
                 {
-                    var message = Encoding.UTF8.GetString(ea.Body);
+                    var consumer = new AsyncEventingBasicConsumer(_rabbitChannel.GetChannel());
+                    consumer.Received += async (model, ea) =>
+                    {
+                        var message = Encoding.UTF8.GetString(ea.Body);
 
-                    TInput input;
-                    if (typeof(TInput) == typeof(String))
-                        input = message as TInput;
-                    else
-                        input = JsonConvert.DeserializeObject<TInput>(message);
+                        TInput input;
+                        if (typeof(TInput) == typeof(String))
+                            input = message as TInput;
+                        else
+                            input = JsonConvert.DeserializeObject<TInput>(message);
 
-                    await HandleAsync(ea, input);
-                };
-                _rabbitChannel.GetChannel().BasicConsume(
-                    queue: Queue.QueueName,
-                    autoAck: false,
-                    consumer: consumer);
+                        await HandleAsync(ea, input);
+                    };
+                    _rabbitChannel.GetChannel().BasicConsume(
+                        queue: Queue.QueueName,
+                        autoAck: false,
+                        consumer: consumer);
+                }
+                return Task.CompletedTask;
             }
-            return Task.CompletedTask;
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         public void BasicAck(BasicDeliverEventArgs ea, bool multiple = false)
