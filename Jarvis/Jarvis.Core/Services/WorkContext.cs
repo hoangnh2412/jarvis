@@ -27,15 +27,31 @@ namespace Jarvis.Core.Services
 
         Guid GetUserCode();
 
-        Guid GetTenantCodeByCurrentUser();
-
         Task<User> GetUserAsync();
 
+        /// <summary>
+        /// Lấy sesstion theo token
+        /// </summary>
+        /// <returns></returns>
         Task<SessionModel> GetSessionAsync();
 
+        /// <summary>
+        /// Lấy TenantCode theo domain hoặc querystring
+        /// </summary>
+        /// <returns></returns>
         Task<Guid> GetTenantCodeAsync();
 
+        /// <summary>
+        /// Lấy Tenant theo domain hoặc querystring
+        /// </summary>
+        /// <returns></returns>
         Task<Tenant> GetCurrentTenantAsync();
+
+        /// <summary>
+        /// Lấy TenantCode trong token
+        /// </summary>
+        /// <returns></returns>
+        Guid GetTenantCode();
 
         Task<bool> HasClaimsAsync(List<string> claims);
 
@@ -97,7 +113,9 @@ namespace Jarvis.Core.Services
         public async Task<SessionModel> GetSessionAsync()
         {
             if (_currentToken != null)
+            {
                 return _currentToken;
+            }
 
             var tokenCode = GetTokenCode();
             if (tokenCode == null)
@@ -163,7 +181,7 @@ namespace Jarvis.Core.Services
             return Guid.Empty;
         }
 
-        public Guid GetTenantCodeByCurrentUser()
+        public Guid GetTenantCode()
         {
             var tenantCode = _httpContext.User.FindFirstValue(ClaimTypes.GroupSid);
             if (tenantCode != null)
