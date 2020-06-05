@@ -62,34 +62,33 @@ namespace Infrastructure.Message.Rabbit
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            try
+            for (int i = 0; i < _rabbitChannel.GetRabbitQueueOption().NumberOfConsumer; i++)
             {
-                for (int i = 0; i < _rabbitChannel.GetRabbitQueueOption().NumberOfConsumer; i++)
+                var consumer = new AsyncEventingBasicConsumer(_rabbitChannel.GetChannel());
+                consumer.Received += async (model, ea) =>
                 {
-                    var consumer = new AsyncEventingBasicConsumer(_rabbitChannel.GetChannel());
-                    consumer.Received += async (model, ea) =>
+                    TInput input;
+                    var message = Encoding.UTF8.GetString(ea.Body);
+                    try
                     {
-                        var message = Encoding.UTF8.GetString(ea.Body);
-
-                        TInput input;
                         if (typeof(TInput) == typeof(String))
                             input = message as TInput;
                         else
                             input = JsonConvert.DeserializeObject<TInput>(message);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
 
-                        await HandleAsync(ea, input);
-                    };
-                    _rabbitChannel.GetChannel().BasicConsume(
-                        queue: Queue.QueueName,
-                        autoAck: false,
-                        consumer: consumer);
-                }
-                return Task.CompletedTask;
+                    await HandleAsync(ea, input);
+                };
+                _rabbitChannel.GetChannel().BasicConsume(
+                    queue: Queue.QueueName,
+                    autoAck: false,
+                    consumer: consumer);
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            return Task.CompletedTask;
         }
 
         public void BasicAck(BasicDeliverEventArgs ea, bool multiple = false)
