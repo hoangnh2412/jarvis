@@ -13,6 +13,8 @@ namespace Infrastructure.Message.Rabbit
 
         IModel GetChannel();
 
+        IConnection GetConnection();
+
         RabbitQueueOption GetRabbitQueueOption();
     }
 
@@ -21,6 +23,7 @@ namespace Infrastructure.Message.Rabbit
         protected readonly RabbitOption _rabbitOptions;
         protected RabbitQueueOption QueueOptions { get; private set; }
         protected IModel Channel { get; private set; }
+        protected IConnection Connection { get; private set; }
 
         private readonly IConfiguration _configuration;
 
@@ -50,14 +53,19 @@ namespace Infrastructure.Message.Rabbit
                 DispatchConsumersAsync = true
             };
 
-            var connection = factory.CreateConnection($"{QueueOptions.ConnectionName}_{Thread.CurrentThread.ManagedThreadId}");
+            Connection = factory.CreateConnection($"{QueueOptions.ConnectionName}_{Thread.CurrentThread.ManagedThreadId}");
 
-            Channel = connection.CreateModel();
+            Channel = Connection.CreateModel();
         }
 
         public IModel GetChannel()
         {
             return Channel;
+        }
+
+        public IConnection GetConnection()
+        {
+            return Connection;
         }
 
         public RabbitQueueOption GetRabbitQueueOption()

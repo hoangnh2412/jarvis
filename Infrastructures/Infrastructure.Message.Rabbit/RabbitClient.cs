@@ -116,6 +116,12 @@ namespace Infrastructure.Message.Rabbit
             Publish(output, exchangeName.Invoke(), routingKey.Invoke());
         }
 
+        public override Task StopAsync(CancellationToken cancellationToken)
+        {
+            _rabbitChannel.GetConnection().Close();
+            return base.StopAsync(cancellationToken);
+        }
+
         public abstract Task HandleAsync(BasicDeliverEventArgs ea, TInput input);
     }
 }
