@@ -5,7 +5,7 @@
         .module('identity')
         .component('uiUserRead', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiUserRead', '/app/identity/users/user-read.template.html');
+                return componentService.getJarvisTemplateUrl('uiUserRead', '/app/identity/users/user-read.template.html');
             }],
             controller: 'userReadController',
             bindings: {
@@ -14,7 +14,7 @@
         })
         .component('uiUserCreate', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiUserCreate', '/app/identity/users/user-create.template.html');
+                return componentService.getJarvisTemplateUrl('uiUserCreate', '/app/identity/users/user-create.template.html');
             }],
             controller: 'userCreateController',
             bindings: {
@@ -23,7 +23,7 @@
         })
         .component('uiUserUpdate', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiUserUpdate', '/app/identity/users/user-update.template.html');
+                return componentService.getJarvisTemplateUrl('uiUserUpdate', '/app/identity/users/user-update.template.html');
             }],
             controller: 'userUpdateController',
             bindings: {
@@ -49,7 +49,7 @@
                 },
                 resolve: {
                     userReadController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiUserRead', '/app/identity/users/user-read.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiUserRead', '/app/identity/users/user-read.controller.js'));
                     }]
                 }
             });
@@ -62,7 +62,7 @@
                 },
                 resolve: {
                     userCreateController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiUserCreate', '/app/identity/users/user-create.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiUserCreate', '/app/identity/users/user-create.controller.js'));
                     }],
                     roleService: ['$ocLazyLoad', function ($ocLazyLoad) {
                         return $ocLazyLoad.load('/app/jarvis/identity/roles/role.service.js');
@@ -78,7 +78,7 @@
                 },
                 resolve: {
                     userUpdateController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiUserUpdate', '/app/identity/users/user-update.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiUserUpdate', '/app/identity/users/user-update.controller.js'));
                     }],
                     roleService: ['$ocLazyLoad', function ($ocLazyLoad) {
                         return $ocLazyLoad.load('/app/jarvis/identity/roles/role.service.js');

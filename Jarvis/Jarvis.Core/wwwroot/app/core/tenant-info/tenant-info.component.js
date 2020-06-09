@@ -5,7 +5,7 @@
         .module('core')
         .component('uiTenantInfo', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiTenantInfo', '/app/core/tenant-info/tenant-info.template.html');
+                return componentService.getJarvisTemplateUrl('uiTenantInfo', '/app/core/tenant-info/tenant-info.template.html');
             }],
             controller: 'tenantInfoController',
             bindings: {
@@ -21,7 +21,7 @@
                 },
                 resolve: {
                     tenantInfoController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiTenantInfo', '/app/core/tenant-info/tenant-info.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiTenantInfo', '/app/core/tenant-info/tenant-info.controller.js'));
                     }],
                     tenantInfoService: ['$ocLazyLoad', function ($ocLazyLoad) {
                         return $ocLazyLoad.load('/app/jarvis/core/tenant-info/tenant-info.service.js');

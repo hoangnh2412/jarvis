@@ -5,7 +5,7 @@
         .module('jarvis')
         .component('uiSidebar', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiSidebar', '/app/shared/components/sidebar/sidebar.template.html');
+                return componentService.getJarvisTemplateUrl('uiSidebar', '/app/shared/components/sidebar/sidebar.template.html');
             }],
             controller: 'sidebarController',
             bindings: {

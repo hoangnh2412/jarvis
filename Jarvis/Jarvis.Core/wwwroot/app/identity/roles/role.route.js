@@ -5,7 +5,7 @@
         .module('identity')
         .component('uiRoleRead', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiRoleRead', '/app/identity/roles/role-read.template.html');
+                return componentService.getJarvisTemplateUrl('uiRoleRead', '/app/identity/roles/role-read.template.html');
             }],
             controller: 'roleReadController',
             bindings: {
@@ -14,7 +14,7 @@
         })
         .component('uiRoleCreate', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiRoleCreate', '/app/identity/roles/role-create.template.html');
+                return componentService.getJarvisTemplateUrl('uiRoleCreate', '/app/identity/roles/role-create.template.html');
             }],
             controller: 'roleCreateController',
             bindings: {
@@ -23,7 +23,7 @@
         })
         .component('uiRoleUpdate', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiRoleUpdate', '/app/identity/roles/role-update.template.html');
+                return componentService.getJarvisTemplateUrl('uiRoleUpdate', '/app/identity/roles/role-update.template.html');
             }],
             controller: 'roleUpdateController',
             bindings: {
@@ -49,7 +49,7 @@
                 },
                 resolve: {
                     rolesController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiRoleRead', '/app/identity/roles/role-read.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiRoleRead', '/app/identity/roles/role-read.controller.js'));
                     }]
                 }
             });
@@ -62,7 +62,7 @@
                 },
                 resolve: {
                     roleCreateController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiRoleCreate', '/app/identity/roles/role-create.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiRoleCreate', '/app/identity/roles/role-create.controller.js'));
                     }]
                 }
             });
@@ -75,7 +75,7 @@
                 },
                 resolve: {
                     roleUpdateController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiRoleUpdate', '/app/identity/roles/role-update.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiRoleUpdate', '/app/identity/roles/role-update.controller.js'));
                     }]
                 }
             });

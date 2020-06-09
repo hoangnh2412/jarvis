@@ -5,7 +5,7 @@
         .module('jarvis')
         .component('uiAlert', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiAlert', '/app/shared/components/alert/alert.template.html');
+                return componentService.getJarvisTemplateUrl('uiAlert', '/app/shared/components/alert/alert.template.html');
             }],
             controller: 'alertController',
             bindings: {

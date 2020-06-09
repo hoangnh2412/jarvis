@@ -5,7 +5,7 @@
         .module('identity')
         .component('uiProfile', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiProfile', '/app/identity/profile/profile.template.html');
+                return componentService.getJarvisTemplateUrl('uiProfile', '/app/identity/profile/profile.template.html');
             }],
             controller: 'profileController',
             bindings: {
@@ -24,11 +24,11 @@
                 //    $body.addClass('hold-transition skin-blue sidebar-mini sidebar-collapse');
                 //},
                 resolve: {
-                    profileService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/jarvis/identity/profile/profile.service.js');
+                    profileService: ['$ocLazyLoad', 'APP_CONFIG', function ($ocLazyLoad, APP_CONFIG) {
+                        return $ocLazyLoad.load(APP_CONFIG.BASE_PATH ? APP_CONFIG.BASE_PATH + '/app/jarvis/identity/profile/profile.service.js' : '/app/jarvis/identity/profile/profile.service.js');
                     }],
                     profileController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiProfile', '/app/identity/profile/profile.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiProfile', '/app/identity/profile/profile.controller.js'));
                     }],
                     imgCrop: ['$ocLazyLoad', function ($ocLazyLoad) {
                         return $ocLazyLoad.load('moduleImgCrop');

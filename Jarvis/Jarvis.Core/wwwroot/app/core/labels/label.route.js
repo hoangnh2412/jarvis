@@ -5,7 +5,7 @@
         .module('core')
         .component('uiLabelRead', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiLabelRead', '/app/core/labels/label-read.template.html');
+                return componentService.getJarvisTemplateUrl('uiLabelRead', '/app/core/labels/label-read.template.html');
             }],
             controller: 'labelReadController',
             bindings: {
@@ -14,7 +14,7 @@
         })
         .component('uiLabelCreate', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiLabelCreate', '/app/core/labels/label-create.template.html');
+                return componentService.getJarvisTemplateUrl('uiLabelCreate', '/app/core/labels/label-create.template.html');
             }],
             controller: 'labelCreateController',
             bindings: {
@@ -23,7 +23,7 @@
         })
         .component('uiLabelUpdate', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiLabelUpdate', '/app/core/labels/label-update.template.html');
+                return componentService.getJarvisTemplateUrl('uiLabelUpdate', '/app/core/labels/label-update.template.html');
             }],
             controller: 'labelUpdateController',
             bindings: {
@@ -49,7 +49,7 @@
                 },
                 resolve: {
                     labelReadController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiLabelRead', '/app/core/labels/label-read.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiLabelRead', '/app/core/labels/label-read.controller.js'));
                     }]
                 }
             });
@@ -62,7 +62,7 @@
                 },
                 resolve: {
                     labelController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiLabelCreate', '/app/core/labels/label-create.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiLabelCreate', '/app/core/labels/label-create.controller.js'));
                     }]
                 }
             });
@@ -75,7 +75,7 @@
                 },
                 resolve: {
                     labelController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiLabelUpdate', '/app/core/labels/label-update.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiLabelUpdate', '/app/core/labels/label-update.controller.js'));
                     }]
                 }
             });

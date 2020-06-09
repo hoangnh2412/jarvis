@@ -5,7 +5,7 @@
         .module('identity')
         .component('uiLogin', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiLogin', '/app/identity/login/login.template.html');
+                return componentService.getJarvisTemplateUrl('uiLogin', '/app/identity/login/login.template.html');
             }],
             controller: 'loginController',
             bindings: {
@@ -32,7 +32,7 @@
                         return $ocLazyLoad.load('moduleAutofocus');
                     }],
                     loginController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiLogin', '/app/identity/login/login.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiLogin', '/app/identity/login/login.controller.js'));
                     }]
                 }
             });

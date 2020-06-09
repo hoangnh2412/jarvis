@@ -5,7 +5,7 @@
         .module('jarvis')
         .component('uiNavbar', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiNavbar', '/app/shared/components/navbar/navbar.template.html');
+                return componentService.getJarvisTemplateUrl('uiNavbar', '/app/shared/components/navbar/navbar.template.html');
             }],
             controller: 'navbarController',
             bindings: {
