@@ -258,7 +258,7 @@ namespace Jarvis.Core.Services
                     Email = model.Email,
                     TenantCode = tenantHost.Code
                 })
-            }, RabbitMqKey.Exchanges.Events, RabbitMqKey.Routings.GeneratedContentMail);
+            }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.GeneratedContentMail);
         }
 
         public async Task ResetForgotPasswordAsync(ResetForgotPasswordModel model)

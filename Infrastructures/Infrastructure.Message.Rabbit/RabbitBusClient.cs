@@ -6,12 +6,15 @@ namespace Infrastructure.Message.Rabbit
     public interface IRabbitBusClient
     {
         IModel GetChannel();
+
+        IConnection GetConnection();
     }
 
     public class RabbitBusClient : IRabbitBusClient
     {
         private readonly RabbitOption _rabbitOption;
         private readonly IModel _channel;
+        private readonly IConnection _connection;
 
         public RabbitBusClient(IOptions<RabbitOption> rabbitOption)
         {
@@ -27,13 +30,22 @@ namespace Infrastructure.Message.Rabbit
                 DispatchConsumersAsync = true
             };
 
-            var connection = factory.CreateConnection();
-            _channel = connection.CreateModel();
+            _connection = factory.CreateConnection();
+            _channel = _connection.CreateModel();
+
+            _channel.ExchangeDeclare(exchange: RabbitKey.Exchanges.Events, type: ExchangeType.Topic);
+            _channel.ExchangeDeclare(exchange: RabbitKey.Exchanges.Commands, type: ExchangeType.Topic);
+            _channel.ExchangeDeclare(exchange: RabbitKey.Exchanges.Queries, type: ExchangeType.Topic);
         }
 
         public IModel GetChannel()
         {
             return _channel;
+        }
+
+        public IConnection GetConnection()
+        {
+            return _connection;
         }
     }
 }

@@ -114,6 +114,12 @@ namespace Infrastructure.Message.Rabbit
         }
 
 
+        public override Task StopAsync(CancellationToken cancellationToken)
+        {
+            _rabbitBusClient.GetConnection().Close();
+            return base.StopAsync(cancellationToken);
+        }
+
         public abstract int GetNumberOfconsumer();
 
         public abstract Task HandleAsync(BasicDeliverEventArgs ea, TRequest request);

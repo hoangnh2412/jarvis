@@ -165,7 +165,7 @@ namespace Jarvis.Core.Controllers
                         IdUser = idUser,
                         Password = model.Password,
                     })
-                }, RabbitMqKey.Exchanges.Events, RabbitMqKey.Routings.CreatedUser);
+                }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.CreatedUser);
             }
 
             return Ok();
