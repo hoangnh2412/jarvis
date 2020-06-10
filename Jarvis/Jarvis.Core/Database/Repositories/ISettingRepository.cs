@@ -16,6 +16,8 @@ namespace Jarvis.Core.Database.Repositories
 
         Task<Setting> GetByKeyAsync(Guid tenantCode, string key);
 
+        Task<Setting> GetByKeyAsNoTrackingAsync(Guid tenantCode, string key);
+
         Task<Setting> GetByKeyAsync(string cacheKey, Guid tenantCode, string key);
 
         Task<Setting> GetByKeyAsync(string key);

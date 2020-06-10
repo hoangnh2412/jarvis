@@ -79,6 +79,17 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             return settings.FirstOrDefault();
         }
 
+        public async Task<Setting> GetByKeyAsNoTrackingAsync(Guid tenantCode, string key)
+        {
+            IQueryable<Setting> query = Query.Where(x => x.Key == key);
+            query = query.Where(x => x.TenantCode == Guid.Empty || x.TenantCode == tenantCode);
+
+            var settings = await query.AsQueryable().AsNoTracking().ToListAsync();
+            settings = RemoveDefaultSettings(tenantCode, settings);
+
+            return settings.FirstOrDefault();
+        }
+
         public async Task<Setting> GetByKeyAsync(string cacheKey, Guid tenantCode, string key)
         {
             if (cacheKey == null)
