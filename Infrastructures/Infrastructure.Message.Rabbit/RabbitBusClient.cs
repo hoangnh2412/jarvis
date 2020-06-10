@@ -36,6 +36,7 @@ namespace Infrastructure.Message.Rabbit
             _channel.ExchangeDeclare(exchange: RabbitKey.Exchanges.Events, type: ExchangeType.Topic);
             _channel.ExchangeDeclare(exchange: RabbitKey.Exchanges.Commands, type: ExchangeType.Topic);
             _channel.ExchangeDeclare(exchange: RabbitKey.Exchanges.Queries, type: ExchangeType.Topic);
+            _channel.ExchangeDeclare(exchange: RabbitKey.Exchanges.Rpc, type: ExchangeType.Topic);
         }
 
         public IModel GetChannel()

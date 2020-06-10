@@ -24,6 +24,7 @@ namespace Infrastructure.Message.Rabbit
     {
         protected readonly RabbitOption _rabbitOptions;
         protected readonly IRabbitBusClient _busClient;
+        protected IModel Channel { get; private set; }
         protected QueueDeclareOk Queue { get; private set; }
         protected ConcurrentDictionary<string, TaskCompletionSource<TResponse>> ResponseQueue = new ConcurrentDictionary<string, TaskCompletionSource<TResponse>>();
         protected AsyncEventingBasicConsumer Consumer { get; private set; }
@@ -32,11 +33,12 @@ namespace Infrastructure.Message.Rabbit
             IRabbitBusClient busClient)
         {
             _busClient = busClient;
+            Channel = _busClient.GetChannel();
         }
 
         protected virtual void InitQueue(string queueName, bool durable = true, bool exclusive = false, bool autoDelete = false, IDictionary<string, object> arguments = null)
         {
-            Queue = _busClient.GetChannel().QueueDeclare(
+            Queue = Channel.QueueDeclare(
                 queue: queueName,
                 durable: durable, //The queue will survive when RabbitMQ restart (Queue vẫn tồn tại/sống sót sau khi RabbitMQ/broker bị restart)
                 exclusive: exclusive, //The queue will be deleted when that connection closes (Queue sẽ bị xoá khi connection close)
@@ -47,7 +49,7 @@ namespace Infrastructure.Message.Rabbit
 
         protected void BasicQos(uint prefetchSize = 0, ushort prefetchCount = 1, bool global = false)
         {
-            _busClient.GetChannel().BasicQos(
+            Channel.BasicQos(
                 prefetchSize: prefetchSize,
                 prefetchCount: prefetchCount, //Dequeue mỗi lần 1 message
                 global: global);
@@ -55,7 +57,7 @@ namespace Infrastructure.Message.Rabbit
 
         protected void InitConsumer()
         {
-            Consumer = new AsyncEventingBasicConsumer(_busClient.GetChannel());
+            Consumer = new AsyncEventingBasicConsumer(Channel);
             Consumer.Received += async (model, ea) =>
             {
                 if (!ResponseQueue.TryRemove(ea.BasicProperties.CorrelationId, out TaskCompletionSource<TResponse> tcs))
@@ -74,18 +76,18 @@ namespace Infrastructure.Message.Rabbit
                 }
                 finally
                 {
-                    _busClient.GetChannel().BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                    Channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                 }
             };
-            _busClient.GetChannel().BasicConsume(queue: Queue.QueueName, autoAck: false, consumer: Consumer);
+            Channel.BasicConsume(queue: Queue.QueueName, autoAck: false, consumer: Consumer);
         }
 
         protected virtual void InitInput(string exchangeName, List<string> routingKeys)
         {
-            _busClient.GetChannel().ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
+            Channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
             foreach (var routingKey in routingKeys)
             {
-                _busClient.GetChannel().QueueBind(
+                Channel.QueueBind(
                     queue: Queue.QueueName,
                     exchange: exchangeName,
                     routingKey: routingKey);
@@ -94,7 +96,7 @@ namespace Infrastructure.Message.Rabbit
 
         public Task<TResponse> PublishAsync(TRequest message, PublicationAddress requestPublicationAddress, PublicationAddress responsePublicationAddress, CancellationToken cancellationToken = default)
         {
-            var props = _busClient.GetChannel().CreateBasicProperties();
+            var props = Channel.CreateBasicProperties();
             var correlationId = Guid.NewGuid().ToString();
             props.CorrelationId = correlationId;
             props.ReplyToAddress = responsePublicationAddress;
@@ -102,7 +104,7 @@ namespace Infrastructure.Message.Rabbit
             var tcs = new TaskCompletionSource<TResponse>();
             ResponseQueue.TryAdd(props.CorrelationId, tcs);
 
-            _busClient.GetChannel().BasicPublish(
+            Channel.BasicPublish(
                 addr: requestPublicationAddress,
                 basicProperties: props,
                 body: Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message))

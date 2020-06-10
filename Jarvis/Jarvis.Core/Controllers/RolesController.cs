@@ -211,9 +211,9 @@ namespace Jarvis.Core.Controllers
                     ModuleCode = x.ModuleCode,
                     ModuleName = x.ModuleName,
                     Resource = ClaimOfResource.Tenant.ToString(),
-                    Resources = x.ClaimOfResource.ToDictionary(y => y.ToString(), y => y.ToDisplayName()),
+                    Resources = x.ClaimOfResource.ToDictionary(y => y.ToString(), y => y.GetName()),
                     ChildResource = ClaimOfChildResource.None.ToString(),
-                    ChildResources = x.ClaimOfChildResources.ToDictionary(y => y.ToString(), y => y.ToDisplayName())
+                    ChildResources = x.ClaimOfChildResources.ToDictionary(y => y.ToString(), y => y.GetName())
                 }).ToList());
             }
 
@@ -237,8 +237,8 @@ namespace Jarvis.Core.Controllers
                 claim.ModuleCode = policy.ModuleCode;
                 claim.ModuleName = policy.ModuleName;
 
-                claim.Resources = policy.ClaimOfResource.ToDictionary(x => x.ToString(), x => x.ToDisplayName());
-                claim.ChildResources = policy.ClaimOfChildResources.ToDictionary(x => x.ToString(), x => x.ToDisplayName());
+                claim.Resources = policy.ClaimOfResource.ToDictionary(x => x.ToString(), x => x.GetName());
+                claim.ChildResources = policy.ClaimOfChildResources.ToDictionary(x => x.ToString(), x => x.GetName());
 
                 if (roleClaims.ContainsKey(policy.Code))
                 {

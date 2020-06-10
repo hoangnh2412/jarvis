@@ -94,16 +94,13 @@ namespace Infrastructure.Message.Rabbit
             }
         }
 
-        public virtual void Publish(TResponse message, PublicationAddress publicationAddress)
+        public virtual void Publish(PublicationAddress publicationAddress, IBasicProperties properties, TResponse message)
         {
             byte[] body;
             if (message.GetType() == typeof(string))
                 body = Encoding.UTF8.GetBytes(message.ToString());
             else
                 body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
-
-            var properties = Channel.CreateBasicProperties();
-            properties.Persistent = true;
 
             Channel.BasicPublish(addr: publicationAddress, basicProperties: properties, body: body);
         }

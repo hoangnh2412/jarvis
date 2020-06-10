@@ -7,6 +7,7 @@
             public static string Events = "events";
             public static string Commands = "commands";
             public static string Queries = "queries";
+            public static string Rpc = "rpc";
         }
     }
 }

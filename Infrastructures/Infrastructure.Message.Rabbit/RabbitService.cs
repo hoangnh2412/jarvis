@@ -13,17 +13,19 @@ namespace Infrastructure.Message.Rabbit
     {
         protected QueueDeclareOk Queue { get; private set; }
 
+        protected IModel Channel { get; }
         private readonly IRabbitBusClient _busClient;
 
         public RabbitService(
             IRabbitBusClient busClient)
         {
             _busClient = busClient;
+            Channel = _busClient.GetChannel();
         }
 
         protected virtual void InitExchange(string exchangeName)
         {
-            _busClient.GetChannel().ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
+            Channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
         }
 
         public virtual void Publish<T>(T message, string exchangeName, string routingKey)
@@ -35,10 +37,10 @@ namespace Infrastructure.Message.Rabbit
                 body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
 
 
-            var properties = _busClient.GetChannel().CreateBasicProperties();
+            var properties = Channel.CreateBasicProperties();
             properties.Persistent = true;
 
-            _busClient.GetChannel().BasicPublish(exchange: exchangeName, routingKey: routingKey, basicProperties: properties, body: body);
+            Channel.BasicPublish(exchange: exchangeName, routingKey: routingKey, basicProperties: properties, body: body);
         }
     }
 }
