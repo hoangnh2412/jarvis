@@ -158,7 +158,7 @@ namespace Jarvis.Core.Controllers
             {
                 _rabbitService.Publish(new
                 {
-                    Action = EmailAction.SendAccount.ToString(),
+                    Action = EmailAction.SendAccountTenant.ToString(),
                     Datas = JsonConvert.SerializeObject(new
                     {
                         TenantCode = tenantCode,
