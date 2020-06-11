@@ -481,13 +481,36 @@ namespace Jarvis.Core.Services
             await DeleteTokenAsync(user);
         }
 
+        //public async Task ChangePasswordAsync(Guid idUser, ChangePasswordModel model)
+        //{
+        //    var user = await _userManager.FindByIdAsync(idUser.ToString());
+        //    var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+        //    if (!result.Succeeded)
+        //        throw new Exception(string.Join(';', result.Errors.Select(x => x.Description).ToList()));
+
+        //    //Xóa toàn bộ token
+        //    await DeleteTokenAsync(user);
+        //}
+
+
         public async Task ChangePasswordAsync(Guid idUser, ChangePasswordModel model)
         {
-            var user = await _userManager.FindByIdAsync(idUser.ToString());
-            var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-            if (!result.Succeeded)
-                throw new Exception(string.Join(';', result.Errors.Select(x => x.Description).ToList()));
+            var repoUser = _uow.GetRepository<IUserRepository>();
+            var user = await repoUser.FindByIdAsync(idUser);
+            if (user == null)
+                throw new Exception("Không tìm thấy tài khoản");
 
+            var isOldPassword = await _userManager.CheckPasswordAsync(user, model.OldPassword);
+            if (!isOldPassword)
+                throw new Exception("Mật khẩu cũ không đúng");
+
+            user.PasswordHash = _passwordHasher.HashPassword(user, model.NewPassword);
+
+            repoUser.UpdateFields(user,
+                                  user.Set(x => x.PasswordHash, user.PasswordHash));
+
+            await _uow.CommitAsync();
+          
             //Xóa toàn bộ token
             await DeleteTokenAsync(user);
         }
