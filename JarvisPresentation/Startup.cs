@@ -75,14 +75,6 @@ namespace JarvisPresentation
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseCors(builder =>
-            {
-                builder.AllowAnyOrigin();
-                builder.AllowAnyHeader();
-                builder.AllowAnyMethod();
-                builder.WithExposedHeaders("Content-Disposition");
-            });
-
             app.UseConfigJarvisDefault();
         }
     }

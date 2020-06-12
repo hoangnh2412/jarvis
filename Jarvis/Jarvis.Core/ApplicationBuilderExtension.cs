@@ -17,22 +17,32 @@ namespace Jarvis.Core
     {
         public static void UseConfigJarvisDefault(this IApplicationBuilder app, params string[] modules)
         {
-            app.UseAuthentication();
             app.UseHsts();
             app.UseHttpsRedirection();
 
             app.UseConfigUI(modules);
-            app.UseConfigJarvisUI();
 
+            app.UseConfigJarvisUI();
             app.UseRouting();
+
+            app.UseCors(builder =>
+            {
+                builder.AllowAnyOrigin();
+                builder.AllowAnyHeader();
+                builder.AllowAnyMethod();
+                builder.WithExposedHeaders("Content-Disposition");
+            });
+
+            app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseConfigSwagger();
+            app.UseConfigMiddleware();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
-
-            app.UseConfigSwagger();
-            app.UseConfigMiddleware();
         }
 
         public static void UseConfigMiddleware(this IApplicationBuilder app)
@@ -172,7 +182,7 @@ namespace Jarvis.Core
                         if (path.Contains(".woff2"))
                             context.Response.ContentType = "application/font-woff2";
 
-                        if (path.Contains(".woff") )
+                        if (path.Contains(".woff"))
                             context.Response.ContentType = "application/font-woff";
 
                         if (path.Contains(".ttf"))
