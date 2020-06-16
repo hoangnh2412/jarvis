@@ -20,6 +20,7 @@ namespace Infrastructure.Message.Rabbit
         protected readonly RabbitOption _rabbitOptions;
         protected RabbitQueueOption _queueOptions { get; private set; }
         protected IModel _channel { get; private set; }
+        protected IConnection _connection { get; private set; }
         protected QueueDeclareOk _queue { get; private set; }
 
         public RabbitClient(
@@ -44,9 +45,9 @@ namespace Infrastructure.Message.Rabbit
                 DispatchConsumersAsync = true
             };
 
-            var connection = factory.CreateConnection($"{_queueOptions.ConnectionName}_{Thread.CurrentThread.ManagedThreadId}");
+            _connection = factory.CreateConnection($"{_queueOptions.ConnectionName}_{Thread.CurrentThread.ManagedThreadId}");
 
-            _channel = connection.CreateModel();
+            _channel = _connection.CreateModel();
         }
 
         protected void BasicQos(uint prefetchSize = 0, ushort prefetchCount = 1, bool global = false)
@@ -133,6 +134,12 @@ namespace Infrastructure.Message.Rabbit
         public virtual void Publish(TOutput output, Func<string> exchangeName, Func<string> routingKey)
         {
             Publish(output, exchangeName.Invoke(), routingKey.Invoke());
+        }
+
+        public override Task StopAsync(CancellationToken cancellationToken)
+        {
+            _connection.Close();
+            return base.StopAsync(cancellationToken);
         }
 
         public abstract Task HandleAsync(BasicDeliverEventArgs ea, TInput input);
