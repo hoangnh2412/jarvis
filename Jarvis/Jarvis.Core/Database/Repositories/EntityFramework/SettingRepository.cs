@@ -69,7 +69,7 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             var settings = await query.AsQueryable().ToListAsync();
             settings = RemoveDefaultSettings(tenantCode, settings);
 
-            return settings.FirstOrDefault(x => x.TenantCode == tenantCode);
+            return settings.FirstOrDefault();
         }
 
         public async Task<Setting> GetByKeyAsync(string cacheKey, Guid tenantCode, string key)
