@@ -21,7 +21,7 @@ using Infrastructure.Abstractions;
 using Infrastructure;
 using Infrastructure.Message.Rabbit;
 using Einvoice.Utils.Common.Constants;
-using Newtonsoft.Json;
+using Einvoice.Utils.Common.Messages;
 
 namespace Jarvis.Core.Controllers
 {
@@ -226,29 +226,29 @@ namespace Jarvis.Core.Controllers
             await _uow.CommitAsync();
 
             ////gửi mail thông báo tài khoản root mật khẩu
-            _rabbitService.Publish(new
+            _rabbitService.Publish(new GenerateContentMailMessageModel<BaseGenerateContentMaillModel>
             {
                 Action = EmailAction.SendAccountTenant.ToString(),
-                Datas = JsonConvert.SerializeObject(new
+                Datas = new BaseGenerateContentMaillModel
                 {
                     TenantCode = currentTenant.Code,
                     IdUser = rootUser.Id,
                     Password = passwordRoot,
-                })
+                }
             }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.CreateTenant);
 
             ////gửi mail thông báo tài khoản admin mật khẩu nếu là password tự động
             if (isRandomPassword)
             {
-                _rabbitService.Publish(new
+                _rabbitService.Publish(new GenerateContentMailMessageModel<BaseGenerateContentMaillModel>
                 {
                     Action = EmailAction.SendAccountTenant.ToString(),
-                    Datas = JsonConvert.SerializeObject(new
+                    Datas = new BaseGenerateContentMaillModel
                     {
                         TenantCode = currentTenant.Code,
                         IdUser = adminUser.Id,
                         Password = model.User.Password,
-                    })
+                    }
                 }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.CreateTenant);
             }
 

@@ -24,6 +24,7 @@ using Infrastructure.Extensions;
 using Jarvis.Core.Abstractions;
 using Infrastructure.Message.Rabbit;
 using Einvoice.Utils.Common.Constants;
+using Einvoice.Utils.Common.Messages;
 
 namespace Jarvis.Core.Services
 {
@@ -248,16 +249,16 @@ namespace Jarvis.Core.Services
                 throw new Exception("Email không trùng với email của tài khoản. Vui lòng nhập đúng email của tài khoản");
 
             ////gửi mail thông báo tài khoản root mật khẩu
-            _rabbitService.Publish(new
+            _rabbitService.Publish(new GenerateContentMailMessageModel<BaseGenerateContentMaillModel>
             {
                 Action = EmailAction.SendForgotPassword.ToString(),
-                Datas = JsonConvert.SerializeObject(new
+                Datas = new BaseGenerateContentMaillModel
                 {
                     HostName = model.HostName,
                     IdUser = user.Id,
                     Emails = model.Email,
                     TenantCode = tenantHost.Code
-                })
+                }
             }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.ForgotPassword);
         }
 
@@ -573,19 +574,19 @@ namespace Jarvis.Core.Services
             repoUser.Update(user);
             await _uow.CommitAsync();
 
-            ////gửi mail
-            //var db = _redis.GetDatabase();
-            //await db.ListLeftPushAsync(KeyQueueBackground.SendMail, JsonConvert.SerializeObject(new
-            //{
-            //    Action = "ResetPassword",
-            //    Datas = JsonConvert.SerializeObject(new
-            //    {
-            //        Emails = emails,
-            //        Password = password,
-            //        TenantCode = tenantCode,
-            //        IdUser = user.Id
-            //    })
-            //}));
+
+            ////gửi mail thông báo tài khoản root mật khẩu
+            _rabbitService.Publish(new GenerateContentMailMessageModel<BaseGenerateContentMaillModel>
+            {
+                Action = EmailAction.ResetPassword.ToString(),
+                Datas = new BaseGenerateContentMaillModel
+                {
+                    Emails = emails,
+                    Password = password,
+                    TenantCode = tenantCode,
+                    IdUser = user.Id
+                }
+            }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.ResetPassword);
         }
 
 

@@ -22,6 +22,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Infrastructure.Message.Rabbit;
 using Einvoice.Utils.Common.Constants;
+using Einvoice.Utils.Common.Messages;
 
 namespace Jarvis.Core.Controllers
 {
@@ -156,15 +157,15 @@ namespace Jarvis.Core.Controllers
             //Tạo job send mail
             if (isRandomPassword)
             {
-                _rabbitService.Publish(new
+                _rabbitService.Publish(new GenerateContentMailMessageModel<BaseGenerateContentMaillModel>
                 {
                     Action = EmailAction.SendAccountTenant.ToString(),
-                    Datas = JsonConvert.SerializeObject(new
+                    Datas = new BaseGenerateContentMaillModel
                     {
                         TenantCode = tenantCode,
                         IdUser = idUser,
                         Password = model.Password,
-                    })
+                    }
                 }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.CreatedUser);
             }
 
