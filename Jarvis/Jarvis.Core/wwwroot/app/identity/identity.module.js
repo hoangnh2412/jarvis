@@ -51,6 +51,20 @@
                         if (response.config.responseType && response.config.responseType === 'arraybuffer') {
                             var stringError = new TextDecoder().decode(response.data);
                             sweetAlert.error("Lỗi", stringError);
+                        } else if (response.data.errors) {
+                            if (Object.keys(response.data.errors).length > 0) {
+                                var err = '';
+                                Object.keys(response.data.errors).forEach(function (e) {
+                                    for (var i = 0; i < response.data.errors[e].length; i++) {
+                                        err += response.data.errors[e][i] + '</br>';
+                                    };
+                                });
+                                swal.fire({
+                                    title: "Lỗi",
+                                    html: err,
+                                    type: "error"
+                                });
+                            }
                         } else
                             sweetAlert.error("Lỗi", response.data);
                         return response;
