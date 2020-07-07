@@ -324,18 +324,16 @@ namespace Jarvis.Core
         {
             public void Apply(OpenApiOperation operation, OperationFilterContext context)
             {
-                // if (operation.Parameters == null)
-                //     operation.Parameters = new List<IParameter>();
+                if (operation.Parameters == null)
+                    operation.Parameters = new List<OpenApiParameter>();
 
-                // operation.Parameters.Add(new NonBodyParameter
-                // {
-                //     Name = "Envelope",
-                //     In = "header",
-                //     Type = "string",
-                //     Required = false,
-                //     Default = null,
-                //     Description = "1 = Wrap, 0 = No wrap"
-                // });
+                operation.Parameters.Add(new OpenApiParameter
+                {
+                    Name = "Envelope",
+                    In = ParameterLocation.Header,
+                    Required = false,
+                    Description = "1 = Wrap, 0 = No wrap"
+                });
 
                 // operation.Parameters.Add(new NonBodyParameter
                 // {

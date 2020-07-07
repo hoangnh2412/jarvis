@@ -28,22 +28,59 @@ namespace Jarvis.Core.Middlewares
 
         public async Task Invoke(HttpContext context)
         {
-            Stream originalBody = context.Response.Body;
+            Stream originalResponseBody = context.Response.Body;
+            string responseBody = null;
+
             try
             {
-                string responseBody = null;
-
-                using (var stream = new MemoryStream())
+                using (MemoryStream stream = new MemoryStream())
                 {
                     context.Response.Body = stream;
-
                     await _next(context);
-
-                    context.Response.Body.Seek(0, SeekOrigin.Begin);
-                    responseBody = await new StreamReader(context.Response.Body).ReadToEndAsync();
-                    context.Response.Body.Seek(0, SeekOrigin.Begin);
+                    responseBody = await GetResponseBodyAsync(context.Response);
+                    await stream.CopyToAsync(originalResponseBody);
                 }
+            }
+            catch (Exception ex)
+            {
+                responseBody = ex.Message;
+                // context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                throw ex;
+            }
+            // catch (Exception ex)
+            // {
+            //     // _logger.LogError(default(EventId), ex, ex.Message);
 
+            //     // if (ex.InnerException != null)
+            //     //     _logger.LogError(default(EventId), ex, ex.InnerException.Message);
+
+            //     //var response = new ApiResultModel<object>();
+            //     //response.Succeeded = false;
+            //     //response.Code = StatusCodes.Status500InternalServerError;
+            //     //response.Message = ex.Message;
+
+            //     //if (int.TryParse(ex.Message, out int code) && ErrorStore.VI.ContainsKey((ErrorCodes.ErrorDefault)code))
+            //     //{
+            //     //    response.Code = code;
+            //     //    response.Message = ErrorStore.VI[(ErrorCodes.ErrorDefault)code];
+            //     //}
+            //     //else
+            //     //{
+            //     //    response.Code = ErrorCodes.ErrorDefault.ChuaXacDinh.GetHashCode();
+            //     //    response.Message = ex.Message;
+            //     //}
+
+            //     ////Thêm tham số cho thông báo
+            //     //if (ex.Data != null && ex.Data.Count > 0)
+            //     //{
+            //     //    foreach (var item in ex.Data.Keys)
+            //     //    {
+            //     //        response.Message = response.Message.Replace(item.ToString(), ex.Data[item.ToString()].ToString());
+            //     //    }
+            //     //}
+            // }
+            finally
+            {
                 ResponseModel<object> response = new ResponseModel<object>();
                 switch (context.Response.StatusCode)
                 {
@@ -57,8 +94,10 @@ namespace Jarvis.Core.Middlewares
                         response.Succeeded = false;
                         response.Code = StatusCodes.Status400BadRequest;
                         response.Message = "Tham số không hợp lệ";
-                        //var errors = responseBody.JsonDeserialize<Dictionary<string, List<string>>>();
-                        //response.Errors = errors.SelectMany(x => x.Value).Select(x => new ErrorModel { Description = x }).ToArray();
+
+                        // var errors = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(responseBody);
+                        // response.Data = errors.Values.SelectMany(x => x).ToList();
+                        // response.Data = errors.SelectMany(x => x.Value).Select(x => new ErrorModel { Description = x }).ToArray();
                         break;
                     case StatusCodes.Status403Forbidden:
                         response.Succeeded = false;
@@ -91,53 +130,28 @@ namespace Jarvis.Core.Middlewares
                         break;
                 }
 
-                await WriteResponse(originalBody, response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(default(EventId), ex, ex.Message);
-
-                if (ex.InnerException != null)
-                    _logger.LogError(default(EventId), ex, ex.InnerException.Message);
-
-                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                context.Response.ContentType = "application/json;charset=UTF-8";
-
-                //var response = new ApiResultModel<object>();
-                //response.Succeeded = false;
-                //response.Code = StatusCodes.Status500InternalServerError;
-                //response.Message = ex.Message;
-
-                //if (int.TryParse(ex.Message, out int code) && ErrorStore.VI.ContainsKey((ErrorCodes.ErrorDefault)code))
-                //{
-                //    response.Code = code;
-                //    response.Message = ErrorStore.VI[(ErrorCodes.ErrorDefault)code];
-                //}
-                //else
-                //{
-                //    response.Code = ErrorCodes.ErrorDefault.ChuaXacDinh.GetHashCode();
-                //    response.Message = ex.Message;
-                //}
-
-                ////Thêm tham số cho thông báo
-                //if (ex.Data != null && ex.Data.Count > 0)
-                //{
-                //    foreach (var item in ex.Data.Keys)
-                //    {
-                //        response.Message = response.Message.Replace(item.ToString(), ex.Data[item.ToString()].ToString());
-                //    }
-                //}
-
-                var buffer = Encoding.UTF8.GetBytes(ex.Message);
-                using (var output = new MemoryStream(buffer))
+                try
                 {
-                    await output.CopyToAsync(originalBody);
+                    context.Response.Body = originalResponseBody;
+                    // context.Response.StatusCode = StatusCodes.Status200OK;
+                    // context.Response.ContentType = "application/json;charset=UTF-8";
+
+                    await WriteResponse(originalResponseBody, response);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
                 }
             }
-            finally
-            {
-                context.Response.Body = originalBody;
-            }
+        }
+
+        private static async Task<string> GetResponseBodyAsync(HttpResponse response)
+        {
+            response.Body.Seek(0, SeekOrigin.Begin);
+            var text = await new StreamReader(response.Body).ReadToEndAsync();
+            response.Body.Seek(0, SeekOrigin.Begin);
+
+            return text;
         }
 
         private static async Task WriteResponse(Stream originalBody, ResponseModel<object> response)

@@ -49,25 +49,9 @@ namespace Jarvis.Core.Middlewares
             catch (Exception ex)
             {
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-
-                // string body;
-                // if (context.Request.Headers.ContainsKey("Envelope"))
-                // {
-                //     context.Response.ContentType = "application/json;charset=UTF-8";
-
-                //     body = JsonConvert.SerializeObject(new
-                //     {
-                //         Message = ex.Message
-                //     });
-                // }
-                // else
-                // {
-
-                // }
-
                 context.Response.ContentType = "text/plain;charset=UTF-8";
-                var body = ex.Message;
-                var bytes = Encoding.UTF8.GetBytes(body);
+                
+                var bytes = Encoding.UTF8.GetBytes(ex.Message);
                 using (var output = new MemoryStream(bytes))
                 {
                     await output.CopyToAsync(originalResponseBody);
