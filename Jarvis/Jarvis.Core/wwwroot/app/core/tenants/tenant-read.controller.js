@@ -44,7 +44,7 @@
                 ctrl.loading = false;
                 if (result.value) {
                     if (result.value.status === 200) {
-                        sweetAlert.success('Thành công', 'Bạn đã khoá CHI NHÁNH thành công!');
+                        sweetAlert.success('Thành công', 'Bạn đã xóa CHI NHÁNH thành công!');
                         ctrl.getItems();
                     } else {
                         sweetAlert.error("Lỗi", result.value.data);
