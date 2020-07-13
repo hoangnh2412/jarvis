@@ -53,6 +53,7 @@
                     controllerAs: '$ctrl',
                     appendTo: angular.element('.box-modal'),
                     backdrop: false,
+                    size: 'lg',
                     resolve: {
                         currentTenant: function () {
                             return ctrl.currentTenant;
