@@ -14,21 +14,34 @@
             rules: {
                 fullName: {
                     required: true,
-                    whiteSpace: true
+                    whiteSpace: true,
+                    maxlength: 250
                 },
                 email: {
                     singleEmail: true,
                     maxlength: 256
                 },
+                phoneNumber: {
+                    maxlength: 50
+                },
                 userName: {
                     required: true,
                     maxlength: 256,
                     regex: /^[a-zA-Z0-9][\w-\/]{0,}[a-zA-Z0-9]$|^[a-zA-Z0-9]$/
+                },
+                password: {
+                    required: true,
+                    minlength: 6,
+                    maxlength: 100,
+                    regex: /^\S[^\t\n\r]+[\S]$/
                 }
             },
             messages: {
                 userName: {
                     regex: "Tài khoản đăng nhập viết không dấu, được phép chứa các ký tự đặc biệt -, _, / và không đặt ở đầu hoặc cuối"
+                },
+                password: {
+                    regex: "Mật khẩu không chứa ký tự tab và không bắt đầu hoặc kết thúc bằng khoảng trắng"
                 }
             }
         };

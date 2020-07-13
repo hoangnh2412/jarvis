@@ -164,5 +164,37 @@
                 var val = value.toString().replace(/,/g, '');
                 return this.optional(element) || val > param;
             }, $validatorProvider.format("Vui lòng nhập giá trị lớn hơn {0}."));
+
+            $validatorProvider.addMethod("multipleHostName", function (value, element) {
+                return validateMultipleHostName(this, value, element);
+            }, "Vui lòng nhập tên miền hợp lệ, chỉ chứa các ký tự đặc biệt . và -, các ký tự đặc biệt không đặt ở đầu hoặc cuối tên miền");
+
+            function validateMultipleHostName(contruct, hostStrings, element) {
+                var listHost = hostStrings.split(';');
+
+                var len = listHost.length;
+
+                if (len == 0) return false;
+
+                // kiểm tra từng domain trong chuỗi có hợp lệ
+                for (var i = 0; i < len; i++) {
+                    if (listHost[i] != "") {
+                        listHost[i] = listHost[i].trim();
+                        if (!validateHostFomat(listHost[i]))
+                            return false;
+                    }
+                }
+
+                return true;
+            };
+
+            function validateHostFomat(host) {
+                var regexHost = /^[^`~!@#$%^&*()_=+\\\]\[\/{}';":?>,<\s\.-][^`~!@#$%^&*()_=+\\\]\[\/{}';":?>,<\s]{0,248}[^`~!@#$%^&*()_=+\\\]\[\/{}';":?>,<\s\.-]{1,249}$|^[^`~!@#$%^&*()_=+\\\]\[\/{}';":?>,<\s\.-]{1,250}$/;
+
+                var checkRegexHost = regexHost.test(host);
+                if (checkRegexHost)
+                    return true;
+                return false;
+            }
         }]);
 }());
