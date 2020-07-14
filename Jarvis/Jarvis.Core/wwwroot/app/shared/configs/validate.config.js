@@ -99,7 +99,7 @@
             };
 
             $validatorProvider.addMethod("multipleEmails", function (value, element) {
-                return validateMultipleEmail(this, value, element);
+                return this.optional(element) || validateMultipleEmail(this, value, element);
             }, "Vui lòng nhập địa chỉ email hợp lệ.");
 
             function validateMultipleEmail(contruct, emailStrings, element) {
@@ -131,7 +131,7 @@
             };
 
             $validatorProvider.addMethod("singleEmail", function (value) {
-                return validateEmailFomat(value);
+                return this.optional(element) || validateEmailFomat(value);
             }, "Vui lòng nhập địa chỉ email hợp lệ.");
 
             function validateEmailFomat(email) {
@@ -143,8 +143,8 @@
                 return false;
             }
 
-            $validatorProvider.addMethod("whiteSpace", function (value) {
-                return validateWhiteSpace(value);
+            $validatorProvider.addMethod("whiteSpace", function (value, element) {
+                return this.optional(element) || validateWhiteSpace(value);
             }, "Không chỉ nhập khoảng trắng.");
 
             function validateWhiteSpace(string) {
@@ -166,7 +166,7 @@
             }, $validatorProvider.format("Vui lòng nhập giá trị lớn hơn {0}."));
 
             $validatorProvider.addMethod("multipleHostName", function (value, element) {
-                return validateMultipleHostName(this, value, element);
+                return this.optional(element) || validateMultipleHostName(this, value, element);
             }, "Vui lòng nhập tên miền hợp lệ, chỉ chứa các ký tự đặc biệt . và -, các ký tự đặc biệt không đặt ở đầu hoặc cuối tên miền");
 
             function validateMultipleHostName(contruct, hostStrings, element) {
