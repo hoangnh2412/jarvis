@@ -130,7 +130,7 @@
                 return true;
             };
 
-            $validatorProvider.addMethod("singleEmail", function (value) {
+            $validatorProvider.addMethod("singleEmail", function (value, element) {
                 return this.optional(element) || validateEmailFomat(value);
             }, "Vui lòng nhập địa chỉ email hợp lệ.");
 
