@@ -92,7 +92,7 @@ namespace Jarvis.Core.Permissions
 
     public class LabelNavigation : INavigation
     {
-        public string Name => "Quarn lý nhãn";
+        public string Name => "Quản lý nhãn";
 
         public string Code => "labels";
 
