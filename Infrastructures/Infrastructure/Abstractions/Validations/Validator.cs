@@ -61,10 +61,10 @@ namespace Infrastructure.Abstractions.Validations
 
         private ValidationResult ModelValidate(object input)
         {
-            var context = new System.ComponentModel.DataAnnotations.ValidationContext(input);
-            var results = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
-            var isValid = System.ComponentModel.DataAnnotations.Validator.TryValidateObject(input, context, results);
-            var message = string.Join(';', results.Select(x => x.ErrorMessage));
+            var context = new System.ComponentModel.DataAnnotations.ValidationContext(input, null, null);
+            var validationResults = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
+            bool isValid = System.ComponentModel.DataAnnotations.Validator.TryValidateObject(input, context, validationResults, true);
+            var message = string.Join("; ", validationResults.Select(x => x.ErrorMessage));
             return new ValidationResult(isValid, message);
         }
     }

@@ -5,15 +5,15 @@
         .module('jarvis')
         .component('uiAlert', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiAlert', '/app/shared/components/alert/alert.template.html');
+                return componentService.getJarvisTemplateUrl('uiAlert', '/app/shared/components/alert/alert.template.html');
             }],
             controller: 'alertController',
             bindings: {
                 context: '='
             }
         })
-        .controller('alertController', ['$scope', 'APP_CONFIG', function ($scope, APP_CONFIG) {
+        .controller('alertController', ['$scope', 'VNIS_CONFIG', function ($scope, VNIS_CONFIG) {
             var ctrl = $scope.$ctrl;
-            ctrl.message = APP_CONFIG.MESSAGE;
+            ctrl.message = VNIS_CONFIG.MESSAGE;
         }]);
 }());

@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 using Jarvis.Core.Models.Tenant;
 using System;
 using Jarvis.Core.Permissions;
+using Infrastructure.Abstractions.Events;
+using Jarvis.Core.Models.Events.Tenants;
+using Jarvis.Core.Events.Tenants;
 
 namespace Jarvis.Core.Controllers
 {
@@ -22,13 +25,16 @@ namespace Jarvis.Core.Controllers
     {
         private readonly ICoreUnitOfWork _uow;
         private readonly IWorkContext _workContext;
+        private readonly IEventFactory _eventFactory;
 
         public TenantInfoController(
             ICoreUnitOfWork uow,
-            IWorkContext workContext)
+            IWorkContext workContext,
+            IEventFactory eventFactory)
         {
             _uow = uow;
             _workContext = workContext;
+            _eventFactory = eventFactory;
         }
 
         [HttpGet]
@@ -77,7 +83,8 @@ namespace Jarvis.Core.Controllers
                 var metadata = metadatas.FirstOrDefault(x => x.Key == key);
 
                 //Nếu DB ko lưu value thì trả về null
-                model.Metadata.Add(new MetadataModel {
+                model.Metadata.Add(new MetadataModel
+                {
                     Key = key,
                     Name = name,
                     Value = metadata == null ? null : metadata.Value
@@ -89,12 +96,12 @@ namespace Jarvis.Core.Controllers
 
         [HttpPut]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Update))]
-        public async Task<IActionResult> PutAsync([FromBody]TenantInfoModel command)
+        public async Task<IActionResult> PutAsync([FromBody] TenantInfoModel command)
         {
-            var idTenant = await _workContext.GetTenantCodeAsync();
+            var tenantCode = await _workContext.GetTenantCodeAsync();
 
             var repoTenant = _uow.GetRepository<ITenantRepository>();
-            var info = await repoTenant.GetInfoByCodeAsync(idTenant);
+            var info = await repoTenant.GetInfoByCodeAsync(tenantCode);
             info.City = command.City;
             info.District = command.District;
             info.LegalName = command.LegalName;
@@ -107,6 +114,14 @@ namespace Jarvis.Core.Controllers
 
             repoTenant.UpdateInfo(info);
             await _uow.CommitAsync();
+
+            _eventFactory.GetOrAddEvent<IEvent<TenantInfoUpdatedEventModel>, ITenantInfoUpdatedEvent>().ForEach((e) =>
+            {
+                e.PublishAsync(new TenantInfoUpdatedEventModel
+                {
+                    TenantCode = tenantCode
+                });
+            });
             return Ok();
         }
     }

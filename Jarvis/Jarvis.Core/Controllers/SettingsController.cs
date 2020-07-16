@@ -12,6 +12,9 @@ using Jarvis.Core.Database.Repositories;
 using Jarvis.Core.Services;
 using System.Threading.Tasks;
 using Infrastructure.Extensions;
+using Infrastructure.Abstractions.Events;
+using Jarvis.Core.Models.Events.Settings;
+using Jarvis.Core.Events.Settings;
 
 namespace Jarvis.Core.Controllers
 {
@@ -23,15 +26,18 @@ namespace Jarvis.Core.Controllers
         private readonly ICoreUnitOfWork _uowCore;
         private readonly IWorkContext _workContext;
         private readonly ISettingService _settingService;
+        private readonly IEventFactory _eventFactory;
 
         public SettingsController(
             ICoreUnitOfWork uowCore,
             IWorkContext workContext,
-            ISettingService settingService)
+            ISettingService settingService,
+            IEventFactory eventFactory)
         {
             _uowCore = uowCore;
             _workContext = workContext;
             _settingService = settingService;
+            _eventFactory = eventFactory;
         }
 
         /// <summary>
@@ -110,13 +116,14 @@ namespace Jarvis.Core.Controllers
 
         [HttpGet("group/{key}")]
         [Authorize(nameof(CorePolicy.SettingPolicy.Setting_Read))]
-        public async Task<IActionResult> GetGroupAsync([FromRoute]string key)
+        public async Task<IActionResult> GetGroupAsync([FromRoute] string key)
         {
             var tenantCode = await _workContext.GetTenantCodeAsync();
 
             var settingRepo = _uowCore.GetRepository<ISettingRepository>();
             var settings = await settingRepo.GetByGroupAsync(tenantCode, key);
-            return Ok(settings.Select(x => new {
+            return Ok(settings.Select(x => new
+            {
                 x.Id,
                 x.Key,
                 x.Value
@@ -125,13 +132,14 @@ namespace Jarvis.Core.Controllers
 
         [HttpGet("{key}")]
         [Authorize(nameof(CorePolicy.SettingPolicy.Setting_Read))]
-        public async Task<IActionResult> GetSettingAsync([FromRoute]string key)
+        public async Task<IActionResult> GetSettingAsync([FromRoute] string key)
         {
             var tenantCode = await _workContext.GetTenantCodeAsync();
 
             var settingRepo = _uowCore.GetRepository<ISettingRepository>();
             var setting = await settingRepo.GetByKeyAsync(tenantCode, key);
-            return Ok(new {
+            return Ok(new
+            {
                 setting.Id,
                 setting.Key,
                 setting.Value
@@ -140,7 +148,7 @@ namespace Jarvis.Core.Controllers
 
         [AllowAnonymous]
         [HttpGet("share")]
-        public async Task<IActionResult> GetShareByKeyAsync([FromQuery]SettingKey key)
+        public async Task<IActionResult> GetShareByKeyAsync([FromQuery] SettingKey key)
         {
             var repo = _uowCore.GetRepository<ISettingRepository>();
             var setting = await repo.GetByKeyAsync(key.ToString());
@@ -202,15 +210,15 @@ namespace Jarvis.Core.Controllers
 
         [HttpPost("{group}")]
         [Authorize(nameof(CorePolicy.SettingPolicy.Setting_Update))]
-        public async Task<IActionResult> PostAsync([FromRoute]string group, [FromBody]List<SettingModel> command)
+        public async Task<IActionResult> PostAsync([FromRoute] string group, [FromBody] List<SettingModel> command)
         {
             var tenantCode = await _workContext.GetTenantCodeAsync();
             var usercode = _workContext.GetUserCode();
 
             //phân biệt ra sửa và thêm
-            //Sửa
+            //Sửa setting
             var repo = _uowCore.GetRepository<ISettingRepository>();
-            var entities = await repo.GetByGroupAsync(tenantCode, group);
+            var entities = await repo.GetByGroupTenantAsync(tenantCode, group);
             var entityByKey = entities.GroupBy(x => x.Key, x => x)
                                        .ToDictionary(x => x.Key, x => x.FirstOrDefault());
 
@@ -272,9 +280,19 @@ namespace Jarvis.Core.Controllers
                 hasChange = true;
             }
 
-            if (hasChange)
-                await _uowCore.CommitAsync();
+            if (!hasChange)
+                return Ok();
 
+            await _uowCore.CommitAsync();
+
+            //Notification
+            _eventFactory.GetOrAddEvent<IEvent<SettingUpdatedEventModel>, ISettingUpdatedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new SettingUpdatedEventModel
+                {
+                    Group = group
+                });
+            });
             return Ok();
         }
     }

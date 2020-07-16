@@ -1,4 +1,5 @@
 ﻿using Jarvis.Core.Constants;
+using Jarvis.Core.Database.Poco;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,7 +16,6 @@ namespace Jarvis.Core.Models
         public Dictionary<string, KeyValuePair<ClaimOfResource, ClaimOfChildResource>> Claims { get; set; }
         public SessionInfoModel UserInfo { get; set; }
         public SessionTenantModel TenantInfo { get; set; }
-        public SessionOrganizationModel OrganizationInfo { get; set; }
     }
 
     public class SessionInfoModel
@@ -31,12 +31,5 @@ namespace Jarvis.Core.Models
         public string TaxCode { get; set; }
         public string FullNameVi { get; set; }
         public string FullNameEn { get; set; }
-    }
-
-    public class SessionOrganizationModel
-    {
-        public Guid Code { get; set; }
-        public string Name { get; set; }
-        public string FullName { get; set; }
     }
 }

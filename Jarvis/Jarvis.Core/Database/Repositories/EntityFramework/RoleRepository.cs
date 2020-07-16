@@ -20,6 +20,13 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
         }
 
+        public async Task<Role> GetRoleByIdAsync(Guid tenantCode, Guid id)
+        {
+            IQueryable<Role> query = DbSet.Where(x => x.Id == id);
+            query = query.QueryByTenantCode(tenantCode);
+            return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
+        }
+
         public async Task<Paged<Role>> PagingAsync(ContextModel context, Paging paging)
         {
             var paged = await Query

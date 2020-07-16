@@ -1,10 +1,11 @@
-﻿using Infrastructure;
+﻿using Infrastructure.Abstractions;
+using Infrastructure.Abstractions.Events;
 using Infrastructure.Caching.Redis;
 using Infrastructure.Database.Abstractions;
-using Infrastructure.Database.EntityFramework;
 using Jarvis.Core;
 using Jarvis.Core.Database;
 using Jarvis.Core.Database.SqlServer;
+using Jarvis.Core.Events;
 using Jarvis.Core.Models;
 using JarvisPresentation.Domains;
 using Microsoft.AspNetCore.Builder;
@@ -50,7 +51,7 @@ namespace JarvisPresentation
                 });
             });
             services.AddScoped<ICoreUnitOfWork, CoreUnitOfWork>();
-            
+
             services.AddConfigJarvisDefault<CoreDbContext>();
             services.AddConfigAuthentication();
             services.AddConfigAuthorization();
@@ -66,6 +67,8 @@ namespace JarvisPresentation
                 return new TestDbContext(Configuration.GetConnectionString("Core"));
             });
             services.AddScoped<ITestUnitOfWork, TestUnitOfWork>();
+
+            services.AddSingleton<IEventFactory, EventFactory>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

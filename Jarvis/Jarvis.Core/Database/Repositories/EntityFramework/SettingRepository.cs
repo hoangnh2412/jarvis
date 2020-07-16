@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Jarvis.Core.Models;
 using Jarvis.Core.Permissions;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text;
@@ -37,6 +36,14 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             return RemoveDefaultSettings(tenantCode, settings);
         }
 
+        public async Task<List<Setting>> GetByGroupTenantAsync(Guid tenantCode, string group)
+        {
+            IQueryable<Setting> query = Query.Where(x => x.Group == group);
+            query = query.QueryByTenantCode(tenantCode);
+            return await query.AsQueryable().ToListAsync();
+        }
+
+
         public async Task<List<Setting>> GetByTenantCodeAsync(Guid tenantCode)
         {
             IQueryable<Setting> query = Query.Where(x => x.TenantCode == Guid.Empty || x.TenantCode == tenantCode);
@@ -67,6 +74,17 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             query = query.Where(x => x.TenantCode == Guid.Empty || x.TenantCode == tenantCode);
 
             var settings = await query.AsQueryable().ToListAsync();
+            settings = RemoveDefaultSettings(tenantCode, settings);
+
+            return settings.FirstOrDefault();
+        }
+
+        public async Task<Setting> GetByKeyAsNoTrackingAsync(Guid tenantCode, string key)
+        {
+            IQueryable<Setting> query = Query.Where(x => x.Key == key);
+            query = query.Where(x => x.TenantCode == Guid.Empty || x.TenantCode == tenantCode);
+
+            var settings = await query.AsQueryable().AsNoTracking().ToListAsync();
             settings = RemoveDefaultSettings(tenantCode, settings);
 
             return settings.FirstOrDefault();

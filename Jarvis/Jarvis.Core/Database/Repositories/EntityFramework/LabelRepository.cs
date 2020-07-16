@@ -34,5 +34,12 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             query = query.QueryByPermission(context);
             return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
         }
+
+        public async Task<Label> GetByCodeAsync(Guid tenantCode, Guid code)
+        {
+            IQueryable<Label> query = DbSet.Where(x => x.Code == code);
+            query = query.QueryByTenantCode(tenantCode);
+            return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
+        }
     }
 }

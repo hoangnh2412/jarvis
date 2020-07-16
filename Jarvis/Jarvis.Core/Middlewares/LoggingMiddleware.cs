@@ -69,7 +69,6 @@ namespace Jarvis.Core.Middlewares
             }
 
             watch.Stop();
-            _logger.LogCritical($"| {watch.ElapsedMilliseconds}");
         }
 
         private static async Task<string> GetRequestBodyAsync(HttpRequest request)

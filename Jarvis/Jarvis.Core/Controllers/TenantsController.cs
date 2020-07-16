@@ -19,6 +19,9 @@ using Infrastructure.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using Infrastructure.Abstractions;
 using Infrastructure;
+using Infrastructure.Abstractions.Events;
+using Jarvis.Core.Models.Events.Tenants;
+using Jarvis.Core.Events.Tenants;
 
 namespace Jarvis.Core.Controllers
 {
@@ -33,9 +36,9 @@ namespace Jarvis.Core.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IPasswordValidator<User> _passwordValidator;
         private readonly IPasswordHasher<User> _passwordHasher;
-        //private readonly IConnectionMultiplexer _redis;
         private readonly IDistributedCache _cache;
         private readonly IModuleManager _moduleManager;
+        private readonly IEventFactory _eventFactory;
 
         public TenantsController(
             ICoreUnitOfWork uow,
@@ -43,23 +46,23 @@ namespace Jarvis.Core.Controllers
             IPasswordValidator<User> passwordValidator,
             IWorkContext workContext,
             IPasswordHasher<User> passwordHasher,
-            //IConnectionMultiplexer redis,
             IDistributedCache cache,
-            IModuleManager moduleManager)
+            IModuleManager moduleManager,
+            IEventFactory eventFactory)
         {
             _uow = uow;
             _userManager = userManager;
             _passwordValidator = passwordValidator;
             _workContext = workContext;
             _passwordHasher = passwordHasher;
-            //_redis = redis;
             _cache = cache;
             _moduleManager = moduleManager;
+            _eventFactory = eventFactory;
         }
 
         [HttpGet]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Read))]
-        public async Task<IActionResult> GetAsync([FromQuery]Paging paging)
+        public async Task<IActionResult> GetAsync([FromQuery] Paging paging)
         {
             var idTenant = await _workContext.GetTenantCodeAsync();
             var repoTenant = _uow.GetRepository<ITenantRepository>();
@@ -146,7 +149,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpGet("{code}")]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Read))]
-        public async Task<IActionResult> GetAsync([FromRoute]Guid code)
+        public async Task<IActionResult> GetAsync([FromRoute] Guid code)
         {
             var repoTenant = _uow.GetRepository<ITenantRepository>();
             var tenant = await repoTenant.GetByCodeAsync(code);
@@ -178,7 +181,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpPost]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Create))]
-        public async Task<IActionResult> PostAsync([FromBody]CreateTenantCommand model)
+        public async Task<IActionResult> PostAsync([FromBody] CreateTenantCommand model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -222,33 +225,45 @@ namespace Jarvis.Core.Controllers
 
             await _uow.CommitAsync();
 
-            ////gửi mail thông báo tài khoản root mật khẩu
-            //var db = _redis.GetDatabase();
-            //await db.ListLeftPushAsync(KeyQueueBackground.SendMail, JsonConvert.SerializeObject(new
-            //{
-            //    Action = "SendAccountTenant",
-            //    Datas = JsonConvert.SerializeObject(new
-            //    {
-            //        TenantCode = currentTenant.Code,
-            //        IdUser = rootUser.Id,
-            //        Password = passwordRoot,
-            //    })
-            //}));
-
-            ////gửi mail thông báo tài khoản admin mật khẩu nếu là password tự động
-            if (isRandomPassword)
+            _eventFactory.GetOrAddEvent<IEvent<TenantCreatedEventModel>, ITenantCreatedEvent>().ForEach(async (e) =>
             {
-                //    await db.ListLeftPushAsync(KeyQueueBackground.SendMail, JsonConvert.SerializeObject(new
-                //    {
-                //        Action = "SendAccountTenant",
-                //        Datas = JsonConvert.SerializeObject(new
-                //        {
-                //            TenantCode = currentTenant.Code,
-                //            IdUser = adminUser.Id,
-                //            Password = model.User.Password,
-                //        })
-                //    }));
-            }
+                await e.PublishAsync(new TenantCreatedEventModel
+                {
+                    TenantCode = currentTenant.Code,
+                    IdUserRoot = rootUser.Id,
+                    PasswordUserRoot = passwordRoot,
+                    IdUserAdmin = adminUser.Id,
+                    PasswordUserAdmin = model.User.Password,
+                    IsRandomPasswordAdmin = isRandomPassword
+                });
+            });
+
+            // //gửi mail thông báo tài khoản root mật khẩu
+            // _rabbitService.Publish(new GenerateContentMailMessageModel<BaseGenerateContentMaillModel>
+            // {
+            //     Action = EmailAction.SendAccountTenant.ToString(),
+            //     Datas = new BaseGenerateContentMaillModel
+            //     {
+            //         TenantCode = currentTenant.Code,
+            //         IdUser = rootUser.Id,
+            //         Password = passwordRoot,
+            //     }
+            // }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.CreateTenant);
+
+            // //gửi mail thông báo tài khoản admin mật khẩu nếu là password tự động
+            // if (isRandomPassword)
+            // {
+            //     _rabbitService.Publish(new GenerateContentMailMessageModel<BaseGenerateContentMaillModel>
+            //     {
+            //         Action = EmailAction.SendAccountTenant.ToString(),
+            //         Datas = new BaseGenerateContentMaillModel
+            //         {
+            //             TenantCode = currentTenant.Code,
+            //             IdUser = adminUser.Id,
+            //             Password = model.User.Password,
+            //         }
+            //     }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.CreateTenant);
+            // }
 
             return Ok(new
             {
@@ -258,7 +273,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpPut("{code}")]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Update))]
-        public async Task<IActionResult> PutAsync([FromRoute]Guid code, [FromBody]UpdateTenantCommand model)
+        public async Task<IActionResult> PutAsync([FromRoute] Guid code, [FromBody] UpdateTenantCommand model)
         {
             var userCode = _workContext.GetUserCode();
             var repoTenant = _uow.GetRepository<ITenantRepository>();
@@ -309,7 +324,7 @@ namespace Jarvis.Core.Controllers
                 //xóa cache
                 foreach (var item in deletes)
                 {
-                    _cache.Remove($"TenantHost:{item.HostName}");
+                    _cache.Remove($":TenantHost:{item.HostName}");
                 }
 
                 //xóa token của các tk trong chi nhánh này
@@ -331,12 +346,20 @@ namespace Jarvis.Core.Controllers
                 info.Set(x => x.Address, model.Info.Address));
 
             await _uow.CommitAsync();
+
+            _eventFactory.GetOrAddEvent<IEvent<TenantUpdatedEventModel>, ITenantUpdatedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new TenantUpdatedEventModel
+                {
+                    TenantCode = tenant.Code
+                });
+            });
             return Ok();
         }
 
         [HttpDelete("{code}")]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Delete))]
-        public async Task<IActionResult> DeleteAsync([FromRoute]Guid code)
+        public async Task<IActionResult> DeleteAsync([FromRoute] Guid code)
         {
             var userCode = _workContext.GetUserCode();
             var repoTenant = _uow.GetRepository<ITenantRepository>();
@@ -363,7 +386,7 @@ namespace Jarvis.Core.Controllers
                     tenantHost.Set(x => x.DeletedVersion, tenantHost.Id));
 
                 //xóa cache
-                _cache.Remove($"TenantHost:{tenantHost.HostName}");
+                _cache.Remove($":TenantHost:{tenantHost.HostName}");
             }
 
             //xóa token của các tk trong chi nhánh này
@@ -371,6 +394,13 @@ namespace Jarvis.Core.Controllers
 
             await _uow.CommitAsync();
 
+            _eventFactory.GetOrAddEvent<IEvent<TenantDeletedEventModel>, ITenantDeletedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new TenantDeletedEventModel
+                {
+                    TenantCode = tenant.Code
+                });
+            });
             return Ok();
         }
 
@@ -389,7 +419,7 @@ namespace Jarvis.Core.Controllers
                 repoTokenInfo.Delete(token);
 
                 //xóa token trong cache
-                await _cache.RemoveAsync($"TokenInfos:{token.Code}");
+                await _cache.RemoveAsync($":TokenInfos:{token.Code}");
             }
         }
 
@@ -473,14 +503,14 @@ namespace Jarvis.Core.Controllers
         {
             var allClaims = new List<string>();
 
-            var crudPolicies = _moduleManager.GetInstances<IAuthorizationPolicy>();
+            var crudPolicies = _moduleManager.GetInstances<IAuthorizationCrudPolicy>();
             foreach (var policy in crudPolicies)
             {
                 //Các quyền CRUD ko sử dụng abstract
-                // allClaims.Add($"{policy.Name}_Read");
-                // allClaims.Add($"{policy.Name}_Create");
-                // allClaims.Add($"{policy.Name}_Update");
-                // allClaims.Add($"{policy.Name}_Delete");
+                allClaims.Add($"{policy.Name}_Read");
+                allClaims.Add($"{policy.Name}_Create");
+                allClaims.Add($"{policy.Name}_Update");
+                allClaims.Add($"{policy.Name}_Delete");
             }
 
             var policies = _moduleManager.GetInstances<IAuthorizationPolicy>();

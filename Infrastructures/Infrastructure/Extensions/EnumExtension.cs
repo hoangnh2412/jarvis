@@ -10,9 +10,9 @@ namespace Infrastructure.Extensions
 {
     public static class EnumExtension
     {
-        public static string ToDisplayName(this Enum enumValue)
+        public static string GetName(this Enum value)
         {
-            var items = enumValue.GetType().GetMember(enumValue.ToString());
+            var items = value.GetType().GetMember(value.ToString());
             if (items.Length == 0)
                 return null;
 
@@ -21,6 +21,42 @@ namespace Infrastructure.Extensions
                 return items.First().GetCustomAttribute<DisplayNameAttribute>().DisplayName;
             else
                 return item.GetName();
+        }
+
+        public static string GetShortName(this Enum value)
+        {
+            var items = value.GetType().GetMember(value.ToString());
+            if (items.Length == 0)
+                return null;
+
+            var item = items.First().GetCustomAttribute<DisplayAttribute>();
+            if (item == null)
+                return null;
+            return item.GetShortName();
+        }
+
+        public static string GetDescription(this Enum value)
+        {
+            var items = value.GetType().GetMember(value.ToString());
+            if (items.Length == 0)
+                return null;
+
+            var item = items.First().GetCustomAttribute<DisplayAttribute>();
+            if (item == null)
+                return null;
+            return item.GetDescription();
+        }
+
+        public static string GetGroupName(this Enum value)
+        {
+            var items = value.GetType().GetMember(value.ToString());
+            if (items.Length == 0)
+                return null;
+
+            var item = items.First().GetCustomAttribute<DisplayAttribute>();
+            if (item == null)
+                return null;
+            return item.GetGroupName();
         }
 
         public static Dictionary<int, string> ToDictionaryByHashCode<T>()
@@ -107,7 +143,7 @@ namespace Infrastructure.Extensions
             }
             return results;
         }
-        
+
         public static KeyValuePair<bool, string>[] ToTrueFalse<T>()
         {
             var items = GetValues<T>();

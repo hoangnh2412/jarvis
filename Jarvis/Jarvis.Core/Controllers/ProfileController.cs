@@ -7,6 +7,9 @@ using Jarvis.Core.Database.Repositories;
 using System.Threading.Tasks;
 using Jarvis.Models.Identity.Models.Identity;
 using System;
+using Infrastructure.Abstractions.Events;
+using Jarvis.Core.Models.Events.Profile;
+using Jarvis.Core.Events.Profile;
 
 namespace Jarvis.Core.Controllers
 {
@@ -18,15 +21,18 @@ namespace Jarvis.Core.Controllers
         private readonly IWorkContext _workContext;
         private readonly IIdentityService _identityService;
         private readonly ICoreUnitOfWork _uow;
+        private readonly IEventFactory _eventFactory;
 
         public ProfileController(
             IWorkContext workContext,
             IIdentityService identityService,
-            ICoreUnitOfWork uow)
+            ICoreUnitOfWork uow,
+            IEventFactory eventFactory)
         {
             _workContext = workContext;
             _identityService = identityService;
             _uow = uow;
+            _eventFactory = eventFactory;
         }
 
         [HttpGet("user")]
@@ -47,7 +53,7 @@ namespace Jarvis.Core.Controllers
         }
 
         [HttpPost("user")]
-        public async Task<IActionResult> PostAsync([FromBody]ProfileModel model)
+        public async Task<IActionResult> PostAsync([FromBody] ProfileModel model)
         {
             var user = await _workContext.GetUserAsync();
             var repoUser = _uow.GetRepository<IUserRepository>();
@@ -71,6 +77,14 @@ namespace Jarvis.Core.Controllers
             }
 
             await _uow.CommitAsync();
+
+            _eventFactory.GetOrAddEvent<IEvent<ProfileUpdatedEventModel>, IProfileUpdatedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new ProfileUpdatedEventModel
+                {
+                    IdUser = user.Id
+                });
+            });
             return Ok();
         }
 
@@ -79,17 +93,34 @@ namespace Jarvis.Core.Controllers
         {
             var user = await _workContext.GetUserAsync();
             await _identityService.DeleteAsync(user.Id);
+
+            _eventFactory.GetOrAddEvent<IEvent<ProfileDeletedEventModel>, IProfileDeletedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new ProfileDeletedEventModel
+                {
+                    IdUser = user.Id
+                });
+            });
             return Ok();
         }
 
         [HttpPost("change-password")]
-        public async Task<IActionResult> ChangePasswordAsync([FromBody]ChangePasswordModel model)
+        public async Task<IActionResult> ChangePasswordAsync([FromBody] ChangePasswordModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var user = await _workContext.GetUserAsync();
             await _identityService.ChangePasswordAsync(user.Id, model);
+
+            _eventFactory.GetOrAddEvent<IEvent<ProfilePasswordChangedEventModel>, IProfilePasswordChangedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new ProfilePasswordChangedEventModel
+                {
+                    IdUser = user.Id,
+                    Password = model.NewPassword
+                });
+            });
             return Ok();
         }
     }

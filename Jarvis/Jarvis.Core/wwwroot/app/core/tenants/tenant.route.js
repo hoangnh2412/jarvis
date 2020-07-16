@@ -5,7 +5,7 @@
         .module('core')
         .component('uiTenantRead', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiTenantRead', '/app/core/tenants/tenant-read.template.html');
+                return componentService.getJarvisTemplateUrl('uiTenantRead', '/app/core/tenants/tenant-read.template.html');
             }],
             controller: 'tenantReadController',
             bindings: {
@@ -14,7 +14,7 @@
         })
         .component('uiTenantCreate', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiTenantCreate', '/app/core/tenants/tenant-create.template.html');
+                return componentService.getJarvisTemplateUrl('uiTenantCreate', '/app/core/tenants/tenant-create.template.html');
             }],
             controller: 'tenantCreateController',
             bindings: {
@@ -23,7 +23,7 @@
         })
         .component('uiTenantUpdate', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiTenantUpdate', '/app/core/tenants/tenant-update.template.html');
+                return componentService.getJarvisTemplateUrl('uiTenantUpdate', '/app/core/tenants/tenant-update.template.html');
             }],
             controller: 'tenantUpdateController',
             bindings: {
@@ -49,7 +49,7 @@
                 },
                 resolve: {
                     tenantReadController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiTenantRead', '/app/core/tenants/tenant-read.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiTenantRead', '/app/core/tenants/tenant-read.controller.js'));
                     }]
                 }
             });
@@ -62,7 +62,7 @@
                 },
                 resolve: {
                     tenantCreateController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiTenantCreate', '/app/core/tenants/tenant-create.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiTenantCreate', '/app/core/tenants/tenant-create.controller.js'));
                     }]
                 }
             });
@@ -75,7 +75,7 @@
                 },
                 resolve: {
                     tenantUpdateController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiTenantUpdate', '/app/core/tenants/tenant-update.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiTenantUpdate', '/app/core/tenants/tenant-update.controller.js'));
                     }]
                 }
             });

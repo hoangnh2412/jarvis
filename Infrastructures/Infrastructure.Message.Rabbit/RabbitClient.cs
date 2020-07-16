@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -15,56 +13,32 @@ namespace Infrastructure.Message.Rabbit
     public abstract class RabbitClient<TInput, TOutput> : BackgroundService
         where TInput : class
         where TOutput : class
-
     {
         protected readonly RabbitOption _rabbitOptions;
-        protected RabbitQueueOption _queueOptions { get; private set; }
-        protected IModel _channel { get; private set; }
-        protected IConnection _connection { get; private set; }
-        protected QueueDeclareOk _queue { get; private set; }
+        private readonly IRabbitBus _rabbitChannel;
+        protected QueueDeclareOk Queue { get; private set; }
 
         public RabbitClient(
-            IConfiguration configuration,
-            IOptions<RabbitOption> rabbitOptions)
+            IRabbitBus rabbitChannel)
         {
-            _rabbitOptions = rabbitOptions.Value;
-        }
-
-        protected void InitChannel(IConfiguration configuration, string name)
-        {
-            _queueOptions = configuration.GetSection($"RabbitMq:Workers:{name}").Get<RabbitQueueOption>();
-            Console.WriteLine($"Config: {JsonConvert.SerializeObject(_queueOptions)}");
-
-            var factory = new ConnectionFactory()
-            {
-                HostName = _rabbitOptions.HostName,
-                UserName = _rabbitOptions.UserName,
-                Password = _rabbitOptions.Password,
-                Port = _rabbitOptions.Port,
-                VirtualHost = _rabbitOptions.VirtualHost,
-                DispatchConsumersAsync = true
-            };
-
-            _connection = factory.CreateConnection($"{_queueOptions.ConnectionName}_{Thread.CurrentThread.ManagedThreadId}");
-
-            _channel = _connection.CreateModel();
+            _rabbitChannel = rabbitChannel;
         }
 
         protected void BasicQos(uint prefetchSize = 0, ushort prefetchCount = 1, bool global = false)
         {
-            _channel.BasicQos(
+            _rabbitChannel.GetChannel().BasicQos(
                 prefetchSize: prefetchSize,
                 prefetchCount: prefetchCount, //Dequeue mỗi lần 1 message
                 global: global);
         }
 
-        protected virtual void InitInput(string exchangeName, List<string> routingKeys)
+        protected virtual void InitBinding(string exchangeName, List<string> routingKeys)
         {
-            _channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
+            _rabbitChannel.GetChannel().ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
             foreach (var routingKey in routingKeys)
             {
-                _channel.QueueBind(
-                    queue: _queue.QueueName,
+                _rabbitChannel.GetChannel().QueueBind(
+                    queue: Queue.QueueName,
                     exchange: exchangeName,
                     routingKey: routingKey);
             }
@@ -72,7 +46,7 @@ namespace Infrastructure.Message.Rabbit
 
         protected virtual void InitQueue(string queueName, bool durable = true, bool exclusive = false, bool autoDelete = false, IDictionary<string, object> arguments = null)
         {
-            _queue = _channel.QueueDeclare(
+            Queue = _rabbitChannel.GetChannel().QueueDeclare(
                 queue: queueName,
                 durable: durable, //The queue will survive when RabbitMQ restart (Queue vẫn tồn tại/sống sót sau khi RabbitMQ/broker bị restart)
                 exclusive: exclusive, //The queue will be deleted when that connection closes (Queue sẽ bị xoá khi connection close)
@@ -81,30 +55,36 @@ namespace Infrastructure.Message.Rabbit
             );
         }
 
-        protected virtual void InitOutput(string exchangeName)
+        protected virtual void InitExchange(string exchangeName)
         {
-            _channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
+            _rabbitChannel.GetChannel().ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Topic);
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            for (int i = 0; i < _queueOptions.NumberOfConsumer; i++)
+            for (int i = 0; i < _rabbitChannel.GetRabbitQueueOption().NumberOfConsumer; i++)
             {
-                var consumer = new AsyncEventingBasicConsumer(_channel);
+                var consumer = new AsyncEventingBasicConsumer(_rabbitChannel.GetChannel());
                 consumer.Received += async (model, ea) =>
                 {
-                    var message = Encoding.UTF8.GetString(ea.Body);
-
                     TInput input;
-                    if (typeof(TInput) == typeof(String))
-                        input = message as TInput;
-                    else
-                        input = JsonConvert.DeserializeObject<TInput>(message);
+                    var message = Encoding.UTF8.GetString(ea.Body);
+                    try
+                    {
+                        if (typeof(TInput) == typeof(String))
+                            input = message as TInput;
+                        else
+                            input = JsonConvert.DeserializeObject<TInput>(message);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
 
                     await HandleAsync(ea, input);
                 };
-                _channel.BasicConsume(
-                    queue: _queue.QueueName,
+                _rabbitChannel.GetChannel().BasicConsume(
+                    queue: Queue.QueueName,
                     autoAck: false,
                     consumer: consumer);
             }
@@ -113,7 +93,7 @@ namespace Infrastructure.Message.Rabbit
 
         public void BasicAck(BasicDeliverEventArgs ea, bool multiple = false)
         {
-            _channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple);
+            _rabbitChannel.GetChannel().BasicAck(deliveryTag: ea.DeliveryTag, multiple);
         }
 
         public virtual void Publish(TOutput output, string exchangeName, string routingKey)
@@ -125,10 +105,10 @@ namespace Infrastructure.Message.Rabbit
                 body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(output));
 
 
-            var properties = _channel.CreateBasicProperties();
+            var properties = _rabbitChannel.GetChannel().CreateBasicProperties();
             properties.Persistent = true;
 
-            _channel.BasicPublish(exchange: exchangeName, routingKey: routingKey, basicProperties: properties, body: body);
+            _rabbitChannel.GetChannel().BasicPublish(exchange: exchangeName, routingKey: routingKey, basicProperties: properties, body: body);
         }
 
         public virtual void Publish(TOutput output, Func<string> exchangeName, Func<string> routingKey)
@@ -138,11 +118,10 @@ namespace Infrastructure.Message.Rabbit
 
         public override Task StopAsync(CancellationToken cancellationToken)
         {
-            _connection.Close();
+            _rabbitChannel.GetConnection().Close();
             return base.StopAsync(cancellationToken);
         }
 
         public abstract Task HandleAsync(BasicDeliverEventArgs ea, TInput input);
-
     }
 }

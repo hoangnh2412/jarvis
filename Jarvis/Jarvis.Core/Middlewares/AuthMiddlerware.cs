@@ -51,7 +51,7 @@ namespace Jarvis.Core.Middlewares
             var token = jwtHandler.ReadToken(auth);
 
             //lấy token từ cache
-            var bytes = await _cache.GetAsync($"TokenInfos:{token.Id}");
+            var bytes = await _cache.GetAsync($":TokenInfos:{token.Id}");
 
             if (bytes != null)
             {
@@ -67,7 +67,7 @@ namespace Jarvis.Core.Middlewares
                 //lưu vào cache
                 var cacheOption = new DistributedCacheEntryOptions();
                 cacheOption.AbsoluteExpiration = tokenInfo.ExpireAt;
-                await _cache.SetAsync($"TokenInfos:{tokenInfo.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(tokenInfo)), cacheOption);
+                await _cache.SetAsync($":TokenInfos:{tokenInfo.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(tokenInfo)), cacheOption);
 
                 await _next.Invoke(context);
                 return;

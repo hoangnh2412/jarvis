@@ -10,6 +10,9 @@ using System.Linq;
 using Jarvis.Core.Database.Repositories;
 using Jarvis.Core.Services;
 using System.Threading.Tasks;
+using Infrastructure.Abstractions.Events;
+using Jarvis.Core.Models.Events.Labels;
+using Jarvis.Core.Events.Labels;
 
 namespace Jarvis.Core.Controllers
 {
@@ -20,18 +23,21 @@ namespace Jarvis.Core.Controllers
     {
         private readonly ICoreUnitOfWork _uow;
         private readonly IWorkContext _workcontext;
+        private readonly IEventFactory _eventFactory;
 
         public LabelsController(
             ICoreUnitOfWork uow,
-            IWorkContext workcontext)
+            IWorkContext workcontext,
+            IEventFactory eventFactory)
         {
             _uow = uow;
             _workcontext = workcontext;
+            _eventFactory = eventFactory;
         }
 
         [HttpGet]
         [Authorize(nameof(CorePolicy.LabelPolicy.Label_Read))]
-        public async Task<IActionResult> GetAsync([FromQuery]Paging paging)
+        public async Task<IActionResult> GetAsync([FromQuery] Paging paging)
         {
             var context = await _workcontext.GetContextAsync(nameof(CorePolicy.LabelPolicy.Label_Read));
 
@@ -64,32 +70,43 @@ namespace Jarvis.Core.Controllers
         [Authorize(nameof(CorePolicy.LabelPolicy.Label_Create))]
         public async Task<IActionResult> PostAsync([FromBody] LabelModel model)
         {
-            var context = await _workcontext.GetContextAsync(nameof(CorePolicy.LabelPolicy.Label_Create));
-
+            var tenantCode = await _workcontext.GetTenantCodeAsync();
+            var code = Guid.NewGuid();
             var repo = _uow.GetRepository<ILabelRepository>();
             await repo.InsertAsync(new Label
             {
                 Color = model.Color,
                 Description = model.Description,
                 Icon = model.Icon,
-                Code = Guid.NewGuid(),
-                TenantCode = await _workcontext.GetTenantCodeAsync(),
+                Code = code,
+                TenantCode = tenantCode,
                 Name = model.Name,
                 CreatedAt = DateTime.Now,
                 CreatedAtUtc = DateTime.UtcNow,
                 CreatedBy = _workcontext.GetUserCode()
             });
             await _uow.CommitAsync();
+
+            _eventFactory.GetOrAddEvent<IEvent<LabelCreatedEventModel>, ILabelCreatedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new LabelCreatedEventModel
+                {
+                    TenantCode = tenantCode,
+                    Code = code,
+                    Name = model.Name
+                });
+            });
             return Ok();
         }
 
         [HttpPut("{code}")]
         [Authorize(nameof(CorePolicy.LabelPolicy.Label_Update))]
-        public async Task<IActionResult> PutAsync([FromRoute]Guid code, [FromBody]LabelModel model)
+        public async Task<IActionResult> PutAsync([FromRoute] Guid code, [FromBody] LabelModel model)
         {
-            var permission = await _workcontext.GetContextAsync(nameof(CorePolicy.LabelPolicy.Label_Update));
+            var tenantCode = await _workcontext.GetTenantCodeAsync();
+
             var repo = _uow.GetRepository<ILabelRepository>();
-            var label = await repo.GetByCodeAsync(permission, code);
+            var label = await repo.GetByCodeAsync(tenantCode, code);
             if (label == null)
                 return NotFound();
 
@@ -103,23 +120,40 @@ namespace Jarvis.Core.Controllers
             repo.Update(label);
             await _uow.CommitAsync();
 
+            _eventFactory.GetOrAddEvent<IEvent<LabelUpdatedEventModel>, ILabelUpdatedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new LabelUpdatedEventModel
+                {
+                    TenantCode = tenantCode,
+                    Code = code,
+                    Name = model.Name
+                });
+            });
             return Ok();
         }
 
         [HttpDelete("{code}")]
         [Authorize(nameof(CorePolicy.LabelPolicy.Label_Delete))]
-        public async Task<IActionResult> DeleteAsync([FromRoute]Guid code)
+        public async Task<IActionResult> DeleteAsync([FromRoute] Guid code)
         {
-            var context = await _workcontext.GetContextAsync(nameof(CorePolicy.LabelPolicy.Label_Delete));
+            var tenantCode = await _workcontext.GetTenantCodeAsync();
 
             var repo = _uow.GetRepository<ILabelRepository>();
-            var label = await repo.GetByCodeAsync(context, code);
+            var label = await repo.GetByCodeAsync(tenantCode, code);
             if (label == null)
                 return NotFound();
 
             repo.Delete(label);
             await _uow.CommitAsync();
 
+            _eventFactory.GetOrAddEvent<IEvent<LabelDeletedEventModel>, ILabelDeletedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new LabelDeletedEventModel
+                {
+                    TenantCode = tenantCode,
+                    Code = code
+                });
+            });
             return Ok();
         }
     }

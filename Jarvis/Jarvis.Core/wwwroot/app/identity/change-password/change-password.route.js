@@ -5,7 +5,7 @@
         .module('identity')
         .component('uiChangePassword', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiChangePassword', '/app/identity/change-password/change-password.template.html');
+                return componentService.getJarvisTemplateUrl('uiChangePassword', '/app/identity/change-password/change-password.template.html');
             }],
             controller: 'changePasswordController',
             bindings: {
@@ -29,7 +29,7 @@
                 },
                 resolve: {
                     changePasswordController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiChangePassword', '/app/identity/change-password/change-password.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiChangePassword', '/app/identity/change-password/change-password.controller.js'));
                     }]
                 }
             });

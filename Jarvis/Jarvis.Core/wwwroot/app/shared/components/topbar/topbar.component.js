@@ -5,7 +5,7 @@
         .module('jarvis')
         .component('uiTopbar', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiTopbar', '/app/shared/components/topbar/topbar.template.html');
+                return componentService.getJarvisTemplateUrl('uiTopbar', '/app/shared/components/topbar/topbar.template.html');
             }],
             controller: 'topbarController',
             bindings: {

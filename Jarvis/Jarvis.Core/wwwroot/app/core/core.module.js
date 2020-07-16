@@ -5,7 +5,7 @@
         .module('core', [])
         .component('uiCore', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiCore', '/app/core/core.template.html');
+                return componentService.getJarvisTemplateUrl('uiCore', '/app/core/core.template.html');
             }],
             bindings: {
                 context: '='

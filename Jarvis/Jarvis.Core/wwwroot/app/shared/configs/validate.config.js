@@ -158,5 +158,11 @@
                 var val = value.toString().replace(/,/g, '');
                 return this.optional(element) || (val >= param[0] && val <= param[1]);
             }, $validatorProvider.format("Vui lòng nhập giá trị từ {0} đến {1}."));
+
+            // hàm check min - nhập số lớn hơn param
+            $validatorProvider.addMethod("minStrict", function (value, element, param) {
+                var val = value.toString().replace(/,/g, '');
+                return this.optional(element) || val > param;
+            }, $validatorProvider.format("Vui lòng nhập giá trị lớn hơn {0}."));
         }]);
 }());

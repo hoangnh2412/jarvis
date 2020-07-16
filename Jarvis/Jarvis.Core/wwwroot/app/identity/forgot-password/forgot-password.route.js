@@ -5,7 +5,7 @@
         .module('identity')
         .component('uiForgotPassword', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiForgotPassword', '/app/identity/forgot-password/forgot-password.template.html');
+                return componentService.getJarvisTemplateUrl('uiForgotPassword', '/app/identity/forgot-password/forgot-password.template.html');
             }],
             controller: 'forgotPasswordController',
             bindings: {
@@ -24,7 +24,7 @@
                         return $ocLazyLoad.load('moduleAutofocus');
                     }],
                     forgotPasswordController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiForgotPassword', '/app/identity/forgot-password/forgot-password.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiForgotPassword', '/app/identity/forgot-password/forgot-password.controller.js'));
                     }]
                 }
             });

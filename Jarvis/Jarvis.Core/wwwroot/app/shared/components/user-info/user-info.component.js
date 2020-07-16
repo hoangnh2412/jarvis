@@ -5,7 +5,7 @@
         .module('jarvis')
         .component('uiUserInfo', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiUserInfo', '/app/shared/components/user-info/user-info.template.html');
+                return componentService.getJarvisTemplateUrl('uiUserInfo', '/app/shared/components/user-info/user-info.template.html');
             }],
             controller: 'userInfoController',
             bindings: {

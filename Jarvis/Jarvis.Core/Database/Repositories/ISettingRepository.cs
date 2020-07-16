@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Infrastructure.Database.Abstractions;
-using Jarvis.Core.Constants;
 using Jarvis.Core.Database.Poco;
-using Jarvis.Core.Models;
 
 namespace Jarvis.Core.Database.Repositories
 {
@@ -18,6 +16,8 @@ namespace Jarvis.Core.Database.Repositories
 
         Task<Setting> GetByKeyAsync(Guid tenantCode, string key);
 
+        Task<Setting> GetByKeyAsNoTrackingAsync(Guid tenantCode, string key);
+
         Task<Setting> GetByKeyAsync(string cacheKey, Guid tenantCode, string key);
 
         Task<Setting> GetByKeyAsync(string key);
@@ -26,5 +26,7 @@ namespace Jarvis.Core.Database.Repositories
 
 
         Task<List<Setting>> GetByTenantCodesAsync(List<Guid> tenantCodes);
+
+        Task<List<Setting>> GetByGroupTenantAsync(Guid tenantCode, string group);
     }
 }

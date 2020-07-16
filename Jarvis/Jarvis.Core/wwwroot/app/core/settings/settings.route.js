@@ -5,7 +5,7 @@
         .module('core')
         .component('uiSettings', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getTemplateUrl('uiSettings', '/app/core/settings/settings.template.html');
+                return componentService.getJarvisTemplateUrl('uiSettings', '/app/core/settings/settings.template.html');
             }],
             controller: 'settingsController',
             bindings: {
@@ -21,7 +21,7 @@
                 },
                 resolve: {
                     settingsController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getControllerUrl('uiSettings', '/app/core/settings/settings.controller.js'));
+                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiSettings', '/app/core/settings/settings.controller.js'));
                     }],
                     settingService: ['$ocLazyLoad', function ($ocLazyLoad) {
                         return $ocLazyLoad.load('/app/core/settings/setting.service.js');

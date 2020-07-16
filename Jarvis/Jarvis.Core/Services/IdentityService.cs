@@ -29,7 +29,7 @@ namespace Jarvis.Core.Services
     {
         Task<TokenModel> LoginAsync(Guid tenantCode, LoginModel model);
 
-        Task LogoutAsync();
+        Task LogoutAsync(Guid userCode);
 
         Task RegisterAsync(Guid tenantCode, RegisterModel model);
 
@@ -39,9 +39,9 @@ namespace Jarvis.Core.Services
 
         Task ChangePasswordAsync(Guid idUser, ChangePasswordModel model);
 
-        Task LockAsync(Guid idUser, string time);
+        Task LockAsync(Guid tenantCode, Guid idUser, string time);
 
-        Task UnlockAsync(Guid idUser, string time);
+        Task UnlockAsync(Guid tenantCode, Guid idUser, string time);
 
         /// <summary>
         /// đổi mật khẩu
@@ -77,7 +77,6 @@ namespace Jarvis.Core.Services
         private readonly IEnumerable<IUserInfoService> _userInfoServices;
         private readonly IDistributedCache _cache;
         private readonly IWorkContext _workContext;
-        //private readonly IConnectionMultiplexer _redis;
 
         public IdentityService(
             IOptions<IdentityOption> options,
@@ -88,7 +87,6 @@ namespace Jarvis.Core.Services
             ICoreUnitOfWork uow,
             IEnumerable<IUserInfoService> userInfoServices,
             IDistributedCache cache,
-            //IConnectionMultiplexer redis,
             IWorkContext workContext)
         {
             _options = options.Value;
@@ -100,7 +98,6 @@ namespace Jarvis.Core.Services
             _userInfoServices = userInfoServices;
             _cache = cache;
             _workContext = workContext;
-            //_redis = redis;
         }
 
         public async Task<TokenModel> LoginAsync(Guid tenantCode, LoginModel model)
@@ -198,27 +195,23 @@ namespace Jarvis.Core.Services
             };
         }
 
-        public async Task LogoutAsync()
+        public async Task LogoutAsync(Guid userCode)
         {
-            var userCode = _workContext.GetUserCode();
-            if (userCode == Guid.Empty)
-                return;
-
-            var userAgent = NetworkExtension.GetUserAgent(_httpContextAccessor.HttpContext.Request);
-            var localIpAddress = NetworkExtension.GetLocalIpAddress(_httpContextAccessor.HttpContext.Request).ToString();
-            var remoteIpAddress = NetworkExtension.GetRemoteIpAddress(_httpContextAccessor.HttpContext.Request).ToString();
-
+            //Lấy toàn bộ token theo User
             var repoToken = _uow.GetRepository<ITokenRepository>();
-            var token = await repoToken.GetByUserAsync(userCode, userAgent, localIpAddress, remoteIpAddress);
-            if (token == null)
+            var tokens = await repoToken.GetByUserAsync(userCode);
+            if (tokens.Count == 0)
                 return;
 
-            await _cache.RemoveAsync($"TokenInfos:{token.Id}");
+            //Xóa toàn bộ cache
+            foreach (var token in tokens)
+            {
+                await _cache.RemoveAsync($":TokenInfos:{token.Code}");
+            }
 
-            repoToken.Delete(token);
+            repoToken.Deletes(tokens);
             await _uow.CommitAsync();
         }
-
 
         public async Task ForgotPasswordAsync(ForgotPasswordModel model)
         {
@@ -233,7 +226,7 @@ namespace Jarvis.Core.Services
             var repoUser = _uow.GetRepository<IUserRepository>();
             var user = await repoUser.FindUserByUsernameAsync(tenantHost.Code, model.UserName);
             if (user == null)
-                throw new Exception("Không tìm thấy thông tin tài khoản");
+                throw new Exception("Tài khoản không tồn tại");
 
             //kiểm tra có đúng là mail của tài khoản hay không
             if (string.IsNullOrEmpty(user.Email))
@@ -244,18 +237,18 @@ namespace Jarvis.Core.Services
             if (!userEmails.Contains(model.Email))
                 throw new Exception("Email không trùng với email của tài khoản. Vui lòng nhập đúng email của tài khoản");
 
-            //var db = _redis.GetDatabase();
-            //await db.ListLeftPushAsync(KeyQueueBackground.SendMail, JsonConvert.SerializeObject(new
-            //{
-            //    Action = "SendForgotPassword",
-            //    Datas = JsonConvert.SerializeObject(new
-            //    {
-            //        HostName = model.HostName,
-            //        IdUser = user.Id,
-            //        Email = model.Email,
-            //        TenantCode = tenantHost.Code
-            //    })
-            //}));
+            // //gửi mail thông báo tài khoản root mật khẩu
+            // _rabbitService.Publish(new GenerateContentMailMessageModel<BaseGenerateContentMaillModel>
+            // {
+            //     Action = EmailAction.SendForgotPassword.ToString(),
+            //     Datas = new BaseGenerateContentMaillModel
+            //     {
+            //         HostName = model.HostName,
+            //         IdUser = user.Id,
+            //         Emails = model.Email,
+            //         TenantCode = tenantHost.Code
+            //     }
+            // }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.ForgotPassword);
         }
 
         public async Task ResetForgotPasswordAsync(ResetForgotPasswordModel model)
@@ -264,7 +257,7 @@ namespace Jarvis.Core.Services
             var repoUser = _uow.GetRepository<IUserRepository>();
             var user = await repoUser.FindByIdAsync(model.Id);
             if (user == null)
-                throw new Exception("Không tìm thấy thông tin tài khoản");
+                throw new Exception("Tài khoản không tồn tại");
 
             if (model.SecurityStamp != user.SecurityStamp)
                 throw new Exception("Tài khoản đã được đổi mật khẩu. Thời gian đổi mật khẩu đã hết hạn");
@@ -291,13 +284,13 @@ namespace Jarvis.Core.Services
 
             TokenInfo token = null;
             //Lấy token từ cache theo IdUser
-            var bytes = await _cache.GetAsync($"Sessions:{userCode}");
+            var bytes = await _cache.GetAsync($":Sessions:{userCode}");
             if (bytes != null)
             {
                 var tokenCodes = JsonConvert.DeserializeObject<List<Guid>>(Encoding.UTF8.GetString(bytes));
                 foreach (var tokenCode in tokenCodes)
                 {
-                    bytes = await _cache.GetAsync($"TokenInfos:{tokenCode}");
+                    bytes = await _cache.GetAsync($":TokenInfos:{tokenCode}");
                     if (bytes != null)
                     {
                         var tokenInfo = JsonConvert.DeserializeObject<TokenInfo>(Encoding.UTF8.GetString(bytes));
@@ -323,11 +316,11 @@ namespace Jarvis.Core.Services
                     return null;
 
                 var idTokens = tokens.Select(x => x.Code).ToList();
-                await _cache.SetAsync($"Sessions:{userCode}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(idTokens)));
+                await _cache.SetAsync($":Sessions:{userCode}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(idTokens)));
 
                 var cacheOption = new DistributedCacheEntryOptions();
                 cacheOption.AbsoluteExpiration = token.ExpireAt;
-                await _cache.SetAsync($"TokenInfos:{token.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
+                await _cache.SetAsync($":TokenInfos:{token.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
             }
 
             return token;
@@ -381,7 +374,7 @@ namespace Jarvis.Core.Services
             var repoUser = _uow.GetRepository<IUserRepository>();
             //kiểm tra xem đã bị trùng username chưa
             if (await repoUser.AnyAsync(x => x.UserName == model.Username && x.TenantCode == idTenant))
-                throw new Exception("Tài khoản đã bị trùng");
+                throw new Exception("Tài khoản đã tồn tại");
 
             var idUser = Guid.NewGuid();
             var user = new User
@@ -415,7 +408,7 @@ namespace Jarvis.Core.Services
 
             //kiểm tra xem đã bị trùng username chưa
             if (await repoUser.AnyAsync(x => x.UserName == model.Username && x.TenantCode == idTenant))
-                throw new Exception("Tài khoản đã bị trùng");
+                throw new Exception("Tài khoản đã tồn tại");
 
             var idUser = Guid.NewGuid();
             var user = new User
@@ -461,6 +454,9 @@ namespace Jarvis.Core.Services
         {
             //Xóa tài khoản
             var user = await _userManager.FindByIdAsync(idUser.ToString());
+            if (user == null)
+                throw new Exception("Tài khoản không tồn tại");
+
             var result = await _userManager.DeleteAsync(user);
             if (!result.Succeeded)
                 throw new Exception(string.Join(';', result.Errors.Select(x => x.Description).ToList()));
@@ -478,20 +474,50 @@ namespace Jarvis.Core.Services
             await DeleteTokenAsync(user);
         }
 
+        //public async Task ChangePasswordAsync(Guid idUser, ChangePasswordModel model)
+        //{
+        //    var user = await _userManager.FindByIdAsync(idUser.ToString());
+        //    var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+        //    if (!result.Succeeded)
+        //        throw new Exception(string.Join(';', result.Errors.Select(x => x.Description).ToList()));
+
+        //    //Xóa toàn bộ token
+        //    await DeleteTokenAsync(user);
+        //}
+
+
         public async Task ChangePasswordAsync(Guid idUser, ChangePasswordModel model)
         {
-            var user = await _userManager.FindByIdAsync(idUser.ToString());
-            var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-            if (!result.Succeeded)
-                throw new Exception(string.Join(';', result.Errors.Select(x => x.Description).ToList()));
+            var repoUser = _uow.GetRepository<IUserRepository>();
+            var user = await repoUser.FindByIdAsync(idUser);
+            if (user == null)
+                throw new Exception("Tài khoản không tồn tại");
+
+            var isOldPassword = await _userManager.CheckPasswordAsync(user, model.OldPassword);
+            if (!isOldPassword)
+                throw new Exception("Mật khẩu cũ không đúng");
+
+            user.PasswordHash = _passwordHasher.HashPassword(user, model.NewPassword);
+
+            repoUser.UpdateFields(user,
+                                  user.Set(x => x.PasswordHash, user.PasswordHash));
+
+            await _uow.CommitAsync();
 
             //Xóa toàn bộ token
             await DeleteTokenAsync(user);
         }
 
-        public async Task LockAsync(Guid idUser, string time)
+        public async Task LockAsync(Guid tenantCode, Guid idUser, string time)
         {
-            var user = await _userManager.FindByIdAsync(idUser.ToString());
+            var repo = _uow.GetRepository<IUserRepository>();
+            var user = await repo.FindUserByIdAsync(tenantCode, idUser);
+            if (user == null)
+                throw new Exception("Tài khoản không tồn tại");
+
+            user = await _userManager.FindByIdAsync(idUser.ToString());
+            if (user == null)
+                throw new Exception("Tài khoản không tồn tại");
 
             IdentityResult result;
             if (string.IsNullOrEmpty(time))
@@ -511,9 +537,16 @@ namespace Jarvis.Core.Services
             await DeleteTokenAsync(user);
         }
 
-        public async Task UnlockAsync(Guid idUser, string time)
+        public async Task UnlockAsync(Guid tenantCode, Guid idUser, string time)
         {
-            var user = await _userManager.FindByIdAsync(idUser.ToString());
+            var repo = _uow.GetRepository<IUserRepository>();
+            var user = await repo.FindUserByIdAsync(tenantCode, idUser);
+            if (user == null)
+                throw new Exception("Tài khoản không tồn tại");
+
+            user = await _userManager.FindByIdAsync(idUser.ToString());
+            if (user == null)
+                throw new Exception("Tài khoản không tồn tại");
 
             IdentityResult result;
             if (string.IsNullOrEmpty(time))
@@ -547,19 +580,19 @@ namespace Jarvis.Core.Services
             repoUser.Update(user);
             await _uow.CommitAsync();
 
-            ////gửi mail
-            //var db = _redis.GetDatabase();
-            //await db.ListLeftPushAsync(KeyQueueBackground.SendMail, JsonConvert.SerializeObject(new
-            //{
-            //    Action = "ResetPassword",
-            //    Datas = JsonConvert.SerializeObject(new
-            //    {
-            //        Emails = emails,
-            //        Password = password,
-            //        TenantCode = tenantCode,
-            //        IdUser = user.Id
-            //    })
-            //}));
+
+            ////gửi mail thông báo tài khoản root mật khẩu
+            // _rabbitService.Publish(new GenerateContentMailMessageModel<BaseGenerateContentMaillModel>
+            // {
+            //     Action = EmailAction.ResetPassword.ToString(),
+            //     Datas = new BaseGenerateContentMaillModel
+            //     {
+            //         Emails = emails,
+            //         Password = password,
+            //         TenantCode = tenantCode,
+            //         IdUser = user.Id
+            //     }
+            // }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.ResetPassword);
         }
 
 

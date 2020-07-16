@@ -18,12 +18,14 @@ namespace Jarvis.Core
         public static void UseConfigJarvisDefault(this IApplicationBuilder app, params string[] modules)
         {
             app.UseHsts();
+
             app.UseHttpsRedirection();
 
-            app.UseConfigUI(modules);
+            app.UseConfigStaticFiles(modules);
 
             app.UseConfigJarvisUI();
             app.UseRouting();
+            app.UseConfigJarvisUI();
 
             app.UseCors(builder =>
             {
@@ -36,8 +38,9 @@ namespace Jarvis.Core
             app.UseAuthentication();
             app.UseAuthorization();
 
+            //Custom middlewares
             app.UseConfigSwagger();
-            app.UseConfigMiddleware();
+            app.UseConfigMiddlewares();
 
             app.UseEndpoints(endpoints =>
             {
@@ -45,31 +48,44 @@ namespace Jarvis.Core
             });
         }
 
-        public static void UseConfigMiddleware(this IApplicationBuilder app)
+        public static void UseConfigMiddlewares(this IApplicationBuilder app)
         {
-            app.UseWhen(httpContext =>
-            {
-                if (httpContext.Request.Path.ToString().StartsWith("/swagger"))
-                    return false;
+            // app.UseWhen(httpContext => !httpContext.Request.Path.ToString().StartsWith("/swagger"), appBuilder =>
+            // {
+            //     appBuilder.UseMiddleware<AuthMiddlerware>();
+            // });
 
-                if (!httpContext.Request.Headers.ContainsKey("Envelope"))
-                    return true;
+            // app.UseWhen(httpContext =>
+            // {
+            //     if (httpContext.Request.Path.ToString().StartsWith("/swagger"))
+            //         return false;
 
-                return false;
-            }, appBuilder =>
-            {
-                appBuilder.UseMiddleware<ResponseMiddleware>();
-            });
+            //     if (httpContext.Request.Headers.ContainsKey("Envelope"))
+            //     {
+            //         var data = httpContext.Request.Headers["Envelope"].ToString();
+            //         return true;
+            //     }
+
+            //     return false;
+            // }, appBuilder =>
+            // {
+            //     appBuilder.UseMiddleware<ResponseMiddleware>();
+            // });
+
+            // app.UseWhen(httpContext => !httpContext.Request.Path.ToString().StartsWith("/swagger"), appBuilder =>
+            // {
+            //     appBuilder.UseMiddleware<LoggingMiddleware>();
+            // });
 
             app.UseWhen(httpContext => !httpContext.Request.Path.ToString().StartsWith("/swagger"), appBuilder =>
             {
-                appBuilder.UseMiddleware<AuthMiddlerware>();
                 appBuilder.UseMiddleware<ResponseMiddleware>();
                 appBuilder.UseMiddleware<LoggingMiddleware>();
+                appBuilder.UseMiddleware<AuthMiddlerware>();
             });
         }
 
-        public static void UseConfigUI(this IApplicationBuilder app, params string[] modules)
+        public static void UseConfigStaticFiles(this IApplicationBuilder app, params string[] modules)
         {
             var env = app.ApplicationServices.GetService<IWebHostEnvironment>();
 
