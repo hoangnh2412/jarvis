@@ -31,6 +31,7 @@ using Jarvis.Core.Abstractions;
 using Jarvis.Core.Services;
 using Jarvis.Core.Permissions;
 using Infrastructure.Abstractions.Validations;
+using Infrastructure.Abstractions.Events;
 
 namespace Jarvis.Core
 {
@@ -47,6 +48,7 @@ namespace Jarvis.Core
             services.AddHttpContextAccessor();
 
             services.AddScoped<IValidatorFactory, ValidatorFactory>();
+            services.AddScoped<IEventFactory, EventFactory>();
             services.AddScoped<IValidationContext, ValidationContext>();
         }
 

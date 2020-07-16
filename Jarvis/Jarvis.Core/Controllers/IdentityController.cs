@@ -131,7 +131,7 @@ namespace Jarvis.Core.Controllers
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
         {
             var tenantCode = await _workContext.GetTenantCodeAsync();
-            await _identityService.ForgotPasswordAsync(model);
+            var idUser = await _identityService.ForgotPasswordAsync(model);
 
             _eventFactory.GetOrAddEvent<IEvent<IdentityPasswordForgotedEventModel>, IIdentityPasswordForgotedEvent>().ForEach(async (e) =>
             {
@@ -139,9 +139,11 @@ namespace Jarvis.Core.Controllers
                 {
                     Email = model.Email,
                     TenantCode = tenantCode,
-                    UserName = model.UserName
+                    UserName = model.UserName,
+                    IdUser = idUser
                 });
             });
+
             return Ok();
         }
 

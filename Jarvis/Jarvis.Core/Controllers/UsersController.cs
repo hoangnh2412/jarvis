@@ -341,14 +341,18 @@ namespace Jarvis.Core.Controllers
 
             var tenantCode = await _workcontext.GetTenantCodeAsync();
 
-            await _identityService.ResetPasswordAsync(tenantCode, id, model.Emails);
+            var password = RandomExtension.Random(10);
+
+            await _identityService.ResetPasswordAsync(tenantCode, id, password, model.Emails);
 
             _eventFactory.GetOrAddEvent<IEvent<UserPasswordResetedEventModel>, IUserPasswordResetedEvent>().ForEach(async (e) =>
             {
                 await e.PublishAsync(new UserPasswordResetedEventModel
                 {
                     IdUser = id,
-                    TenantCode = tenantCode
+                    TenantCode = tenantCode,
+                    Emails = model.Emails,
+                    Password = password
                 });
             });
             return Ok();
@@ -388,7 +392,7 @@ namespace Jarvis.Core.Controllers
         /// <summary>
         /// xóa token của tài khoản
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="idUser"></param>
         /// <returns></returns>
         private async Task DeleteTokenAsync(Guid idUser)
         {
