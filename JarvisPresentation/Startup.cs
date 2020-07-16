@@ -2,6 +2,8 @@
 using Infrastructure.Abstractions.Events;
 using Infrastructure.Caching.Redis;
 using Infrastructure.Database.Abstractions;
+using Infrastructure.File.Abstractions;
+using Infrastructure.File.Minio;
 using Jarvis.Core;
 using Jarvis.Core.Database;
 using Jarvis.Core.Database.SqlServer;
@@ -14,6 +16,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace JarvisPresentation
 {
@@ -67,6 +71,31 @@ namespace JarvisPresentation
                 return new TestDbContext(Configuration.GetConnectionString("Core"));
             });
             services.AddScoped<ITestUnitOfWork, TestUnitOfWork>();
+
+            //Minio
+            services.Configure<MinioOptions>((options) =>
+            {
+                options.AccessKey = "Q3AM3UQ867SPQQA43P2F";
+                options.BucketName = "vnis";
+                options.Endpoint = "192.168.1.6:5000";
+                options.Region = "us-east-1";
+                options.SecretKey = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG";
+            });
+            services.AddSingleton<IFileService, MinioService>((serviceProvider) =>
+            {
+                var options = serviceProvider.GetService<IOptions<MinioOptions>>();
+                var logger = serviceProvider.GetService<ILogger<MinioService>>();
+                return new MinioService(
+                    minioOptions: options,
+                    minio: new Minio.MinioClient(
+                        options.Value.Endpoint,
+                        options.Value.AccessKey,
+                        options.Value.SecretKey,
+                        options.Value.Region
+                    ),
+                    logger: logger
+                );
+            });
 
             services.AddSingleton<IEventFactory, EventFactory>();
         }
