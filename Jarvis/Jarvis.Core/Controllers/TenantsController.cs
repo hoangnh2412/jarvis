@@ -238,33 +238,6 @@ namespace Jarvis.Core.Controllers
                 });
             });
 
-            // //gửi mail thông báo tài khoản root mật khẩu
-            // _rabbitService.Publish(new GenerateContentMailMessageModel<BaseGenerateContentMaillModel>
-            // {
-            //     Action = EmailAction.SendAccountTenant.ToString(),
-            //     Datas = new BaseGenerateContentMaillModel
-            //     {
-            //         TenantCode = currentTenant.Code,
-            //         IdUser = rootUser.Id,
-            //         Password = passwordRoot,
-            //     }
-            // }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.CreateTenant);
-
-            // //gửi mail thông báo tài khoản admin mật khẩu nếu là password tự động
-            // if (isRandomPassword)
-            // {
-            //     _rabbitService.Publish(new GenerateContentMailMessageModel<BaseGenerateContentMaillModel>
-            //     {
-            //         Action = EmailAction.SendAccountTenant.ToString(),
-            //         Datas = new BaseGenerateContentMaillModel
-            //         {
-            //             TenantCode = currentTenant.Code,
-            //             IdUser = adminUser.Id,
-            //             Password = model.User.Password,
-            //         }
-            //     }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.CreateTenant);
-            // }
-
             return Ok(new
             {
                 TenantCode = tenantInfo.Code,

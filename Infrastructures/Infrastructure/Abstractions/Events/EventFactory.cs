@@ -73,10 +73,10 @@ namespace Infrastructure.Abstractions.Events
 
                 var service = services.FirstOrDefault();
                 if (service == null)
-                    return null;
+                    return new List<TImplement>();
 
                 if (!(service is TImplement))
-                    return null;
+                    return new List<TImplement>();
 
                 return services.Select(x => (TImplement)x).ToList();
             }

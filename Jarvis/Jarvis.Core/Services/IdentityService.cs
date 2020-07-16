@@ -48,7 +48,7 @@ namespace Jarvis.Core.Services
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        Task ForgotPasswordAsync(ForgotPasswordModel model);
+        Task<Guid> ForgotPasswordAsync(ForgotPasswordModel model);
 
         /// <summary>
         /// đổi mật khâu khi chọn quên mật khẩu
@@ -60,10 +60,11 @@ namespace Jarvis.Core.Services
         /// <summary>
         /// tk admin đổi mk cho các tk dưới
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="tenantCode"></param>
+        /// <param name="idUser"></param>
         /// <param name="emails"></param>
         /// <returns></returns>
-        Task ResetPasswordAsync(Guid id, Guid id1, string emails);
+        Task ResetPasswordAsync(Guid tenantCode, Guid idUser, string emails, string emails1);
     }
 
     public class IdentityService : IIdentityService
@@ -213,7 +214,7 @@ namespace Jarvis.Core.Services
             await _uow.CommitAsync();
         }
 
-        public async Task ForgotPasswordAsync(ForgotPasswordModel model)
+        public async Task<Guid> ForgotPasswordAsync(ForgotPasswordModel model)
         {
             //lấy ra link hiện tại 
             var repoTenant = _uow.GetRepository<ITenantRepository>();
@@ -237,18 +238,7 @@ namespace Jarvis.Core.Services
             if (!userEmails.Contains(model.Email))
                 throw new Exception("Email không trùng với email của tài khoản. Vui lòng nhập đúng email của tài khoản");
 
-            // //gửi mail thông báo tài khoản root mật khẩu
-            // _rabbitService.Publish(new GenerateContentMailMessageModel<BaseGenerateContentMaillModel>
-            // {
-            //     Action = EmailAction.SendForgotPassword.ToString(),
-            //     Datas = new BaseGenerateContentMaillModel
-            //     {
-            //         HostName = model.HostName,
-            //         IdUser = user.Id,
-            //         Emails = model.Email,
-            //         TenantCode = tenantHost.Code
-            //     }
-            // }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.ForgotPassword);
+            return user.Id;
         }
 
         public async Task ResetForgotPasswordAsync(ResetForgotPasswordModel model)
@@ -566,7 +556,7 @@ namespace Jarvis.Core.Services
             await DeleteTokenAsync(user);
         }
 
-        public async Task ResetPasswordAsync(Guid tenantCode, Guid idUser, string emails)
+        public async Task ResetPasswordAsync(Guid tenantCode, Guid idUser, string password, string emails)
         {
             var repoUser = _uow.GetRepository<IUserRepository>();
             var user = await repoUser.FindByIdAsync(idUser);
@@ -574,25 +564,10 @@ namespace Jarvis.Core.Services
             if (user == null)
                 throw new Exception("Tài khoản không tồn tại");
 
-            var password = RandomExtension.Random(10);
             user.PasswordHash = _passwordHasher.HashPassword(user, password);
 
             repoUser.Update(user);
             await _uow.CommitAsync();
-
-
-            ////gửi mail thông báo tài khoản root mật khẩu
-            // _rabbitService.Publish(new GenerateContentMailMessageModel<BaseGenerateContentMaillModel>
-            // {
-            //     Action = EmailAction.ResetPassword.ToString(),
-            //     Datas = new BaseGenerateContentMaillModel
-            //     {
-            //         Emails = emails,
-            //         Password = password,
-            //         TenantCode = tenantCode,
-            //         IdUser = user.Id
-            //     }
-            // }, RabbitKey.Exchanges.Events, RabbitMqKey.Routings.ResetPassword);
         }
 
 

@@ -6,5 +6,8 @@ namespace Jarvis.Core.Models.Events.Users
     {
         public Guid TenantCode { get; set; }
         public Guid IdUser { get; set; }
+
+        public string Emails { get; set; }
+        public string Password { get; set; }
     }
 }
