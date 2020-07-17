@@ -45,10 +45,18 @@ namespace JarvisPresentation.Controllers
             return Ok();
         }
 
+        [HttpDelete("deletes")]
+        public async Task<IActionResult> DeletesAsync()
+        {
+            var files = _fileService.GetFileNames("test");
+            await _fileService.DeletesAsync(files);
+            return Ok();
+        }
+
         [HttpGet("view")]
         public async Task<IActionResult> ViewAsync()
         {
-            var url = await _fileService.GetLinkAsync("avatar.png", 60);
+            var url = await _fileService.ViewAsync("avatar.png", 60);
             return Ok();
         }
     }

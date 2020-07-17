@@ -40,6 +40,13 @@ namespace Infrastructure.File.Abstractions
         /// <param name="fileName">Tên file</param>
         /// <param name="expireTime">Thời gian link tồn tại (giây)</param>
         /// <returns></returns>
-        Task<string> GetLinkAsync(string fileName, int expireTime);
+        Task<string> ViewAsync(string fileName, int expireTime);
+
+        /// <summary>
+        /// Lấy danh sách file
+        /// </summary>
+        /// <param name="prefix"></param>
+        /// <returns></returns>
+        List<string> GetFileNames(string prefix = null);
     }
 }

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reactive.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using Infrastructure.File.Abstractions;
 using Microsoft.Extensions.Logging;
@@ -41,6 +43,8 @@ namespace Infrastructure.File.Minio
                 ex => _logger.LogError(ex.Message, ex),
                 () => _logger.LogDebug($"Thực hiện xong thao tác xoá trên bucket {_minioOptions.BucketName}")
             );
+            observable.Wait();
+            subscription.Dispose();
         }
 
         public async Task<byte[]> DownloadAsync(string fileName)
@@ -56,7 +60,7 @@ namespace Infrastructure.File.Minio
             return bytes;
         }
 
-        public async Task<string> GetLinkAsync(string fileName, int expireTime)
+        public async Task<string> ViewAsync(string fileName, int expireTime)
         {
             return await _minio.PresignedGetObjectAsync(_minioOptions.BucketName, fileName, expireTime);
         }
@@ -79,6 +83,20 @@ namespace Infrastructure.File.Minio
                 contentType: "application/octet-stream",
                 metaData: null,
                 sse: null);
+        }
+
+        public List<string> GetFileNames(string prefix = null)
+        {
+            var fileNames = new List<string>();
+            IObservable<Item> observable = _minio.ListObjectsAsync(_minioOptions.BucketName, prefix, true);
+            IDisposable subscription = observable.Subscribe(
+                item => fileNames.Add(item.Key),
+                ex => _logger.LogError(ex.Message, ex),
+                () => _logger.LogDebug("Done")
+            );
+            observable.Wait();
+            subscription.Dispose();
+            return fileNames;
         }
     }
 }
