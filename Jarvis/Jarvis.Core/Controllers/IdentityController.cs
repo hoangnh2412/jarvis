@@ -140,7 +140,8 @@ namespace Jarvis.Core.Controllers
                     Email = model.Email,
                     TenantCode = tenantCode,
                     UserName = model.UserName,
-                    IdUser = idUser
+                    IdUser = idUser,
+                    HostName = model.HostName
                 });
             });
 
