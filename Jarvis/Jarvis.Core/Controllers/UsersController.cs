@@ -24,6 +24,7 @@ using Infrastructure.Caching;
 using Infrastructure.Abstractions.Events;
 using Jarvis.Core.Events.Users;
 using Jarvis.Core.Models.Events.Users;
+using Jarvis.Core.Models.Identity;
 
 namespace Jarvis.Core.Controllers
 {
@@ -126,30 +127,26 @@ namespace Jarvis.Core.Controllers
 
         [HttpPost]
         [Authorize(nameof(CorePolicy.UserPolicy.User_Create))]
-        public async Task<IActionResult> PostAsync([FromBody] UserModel model)
+        public async Task<IActionResult> PostAsync([FromBody] CreateUserModel command)
         {
             var tenantCode = await _workcontext.GetTenantCodeAsync();
 
             var isRandomPassword = false;
-            //Nếu ko nhập pasword sẽ tự động random
-            if (string.IsNullOrEmpty(model.Password))
+
+            //Nếu ko nhập pasword => bắt buộc nhập email và sẽ tự động random password
+            if (string.IsNullOrEmpty(command.Password))
             {
+                if (string.IsNullOrEmpty(command.Email))
+                    throw new Exception("Email tài khoản không được để trống khi chọn password tự động");
+
                 isRandomPassword = true;
-                model.Password = RandomExtension.Random(10);
+                command.Password = RandomExtension.Random(10);
             }
 
-            var idUser = await _identityService.CreateAsync(tenantCode, new CreateUserModel
-            {
-                Username = model.UserName,
-                Password = model.Password,
-                FullName = model.Infos.FullName,
-                PhoneNumber = model.PhoneNumber,
-                Email = model.Email,
-                Metadata = model.Metadata
-            });
+            var idUser = await _identityService.CreateAsync(tenantCode, command);
 
             var repoUser = _uow.GetRepository<IUserRepository>();
-            foreach (var idRole in model.IdRoles)
+            foreach (var idRole in command.IdRoles)
             {
                 await repoUser.AssignRoleToUserAsync(idUser, idRole);
             }
@@ -160,13 +157,13 @@ namespace Jarvis.Core.Controllers
             {
                 await e.PublishAsync(new UserCreatedEventModel
                 {
-                    Email = model.Email,
-                    FullName = model.Infos.FullName,
+                    Email = command.Email,
+                    FullName = command.Infos.FullName,
                     IdUser = idUser,
-                    Password = model.Password,
+                    Password = command.Password,
                     IsRandomPassword = isRandomPassword,
                     TenantCode = tenantCode,
-                    UserName = model.UserName
+                    UserName = command.UserName
                 });
             });
 
@@ -175,7 +172,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpPut("{id}")]
         [Authorize(nameof(CorePolicy.UserPolicy.User_Update))]
-        public async Task<IActionResult> PutAsync([FromRoute] Guid id, [FromBody] UserModel model)
+        public async Task<IActionResult> PutAsync([FromRoute] Guid id, [FromBody] UpdateUserModel command)
         {
             var tenantCode = await _workcontext.GetTenantCodeAsync();
             var repoUser = _uow.GetRepository<IUserRepository>();
@@ -184,8 +181,8 @@ namespace Jarvis.Core.Controllers
                 return NotFound();
 
             repoUser.UpdateUserFields(user,
-                user.Set(x => x.PhoneNumber, model.PhoneNumber),
-                user.Set(x => x.Email, model.Email));
+                user.Set(x => x.PhoneNumber, command.PhoneNumber),
+                user.Set(x => x.Email, command.Email));
 
             var info = await repoUser.FindUserInfoByIdAsync(id);
             if (info == null)
@@ -193,19 +190,19 @@ namespace Jarvis.Core.Controllers
 
             //Update user info
             repoUser.UpdateUserInfoFields(info,
-                info.Set(x => x.FullName, model.Infos.FullName),
-                info.Set(x => x.AvatarPath, model.Infos.AvatarPath));
+                info.Set(x => x.FullName, command.Infos.FullName),
+                info.Set(x => x.AvatarPath, command.Infos.AvatarPath));
 
             //Update role
             var repoUserRole = _uow.GetRepository<IPermissionRepository>();
             var roles = await repoUserRole.FindRolesByUserAsync(user.Id);
             var idRoles = roles.Select(x => x.RoleId);
 
-            var deleteUserRoles = roles.Where(x => idRoles.Except(model.IdRoles).Contains(x.RoleId)).ToList();
+            var deleteUserRoles = roles.Where(x => idRoles.Except(command.IdRoles).Contains(x.RoleId)).ToList();
 
             repoUserRole.DeleteUserRoles(deleteUserRoles);
 
-            await repoUserRole.InsertUserRolesAsync(model.IdRoles
+            await repoUserRole.InsertUserRolesAsync(command.IdRoles
                 .Except(idRoles)
                 .Select(x => new IdentityUserRole<Guid>
                 {
@@ -215,7 +212,7 @@ namespace Jarvis.Core.Controllers
                 .ToList());
 
             //xóa token của tk nếu sửa quyền
-            if (idRoles.Except(model.IdRoles).Any() || model.IdRoles.Except(idRoles).Any())
+            if (idRoles.Except(command.IdRoles).Any() || command.IdRoles.Except(idRoles).Any())
             {
                 await DeleteTokenAsync(id);
             }
@@ -224,7 +221,7 @@ namespace Jarvis.Core.Controllers
 
             foreach (var item in _userInfoServices)
             {
-                await item.UpdateAsync(id, model.Metadata);
+                await item.UpdateAsync(id, command.Metadata);
             }
 
             //Notification
@@ -232,11 +229,11 @@ namespace Jarvis.Core.Controllers
             {
                 e.PublishAsync(new UserUpdatedEventModel
                 {
-                    Email = model.Email,
-                    FullName = model.Infos.FullName,
+                    Email = command.Email,
+                    FullName = command.Infos.FullName,
                     IdUser = id,
                     TenantCode = tenantCode,
-                    UserName = model.UserName
+                    UserName = user.UserName
                 });
             });
 
