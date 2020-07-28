@@ -6,8 +6,6 @@ namespace Infrastructure
 {
     public class ApplicationInfo
     {
-        public string Name { get; set; }
-        public string Version { get; set; }
         public string TargetFramework { get; set; }
     }
 }
