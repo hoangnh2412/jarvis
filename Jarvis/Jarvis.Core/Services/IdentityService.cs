@@ -397,7 +397,7 @@ namespace Jarvis.Core.Services
             var repoUser = _uow.GetRepository<IUserRepository>();
 
             //kiểm tra xem đã bị trùng username chưa
-            if (await repoUser.AnyAsync(x => x.UserName == model.Username && x.TenantCode == idTenant))
+            if (await repoUser.AnyAsync(x => x.UserName == model.UserName && x.TenantCode == idTenant))
                 throw new Exception("Tài khoản đã tồn tại");
 
             var idUser = Guid.NewGuid();
@@ -409,10 +409,10 @@ namespace Jarvis.Core.Services
                 TenantCode = idTenant,
                 CreatedBy = _workContext.GetUserCode(),
                 LockoutEnabled = true,
-                UserName = model.Username,
+                UserName = model.UserName,
                 PhoneNumber = model.PhoneNumber,
                 Email = model.Email,
-                NormalizedUserName = model.Username.ToUpper(),
+                NormalizedUserName = model.UserName.ToUpper(),
                 SecurityStamp = Guid.NewGuid().ToString(),
             };
 
@@ -427,7 +427,7 @@ namespace Jarvis.Core.Services
             {
                 Id = idUser,
                 AvatarPath = null,
-                FullName = model.FullName
+                FullName = model.Infos.FullName
             });
             await _uow.CommitAsync();
 
