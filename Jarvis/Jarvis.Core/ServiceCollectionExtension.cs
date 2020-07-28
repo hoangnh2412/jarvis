@@ -291,7 +291,11 @@ namespace Jarvis.Core
                 //Comment mô tả API
                 string rootPath;
                 if (env.IsDevelopment())
-                    rootPath = Path.Combine(env.ContentRootPath, "bin", "Debug", configuration.GetSection("ApplicationInfo:TargetFramework").Value);
+                {
+                    // rootPath = Path.Combine(env.ContentRootPath, "bin", "Debug", configuration.GetSection("ApplicationInfo:TargetFramework").Value);
+                    // rootPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                    rootPath = AppContext.BaseDirectory;
+                }
                 else
                     rootPath = env.ContentRootPath;
 
