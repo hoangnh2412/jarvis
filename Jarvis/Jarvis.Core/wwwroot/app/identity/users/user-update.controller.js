@@ -13,11 +13,15 @@
             rules: {
                 fullName: {
                     required: true,
-                    whiteSpace: true
+                    whiteSpace: true,
+                    maxlength: 250
                 },
                 email: {
                     singleEmail: true,
                     maxlength: 256
+                },
+                phoneNumber: {
+                    maxlength: 50
                 }
             }
         };

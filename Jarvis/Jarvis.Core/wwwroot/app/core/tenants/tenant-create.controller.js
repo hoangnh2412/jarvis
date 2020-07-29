@@ -14,7 +14,8 @@
             rules: {
                 hostName: {
                     required: true,
-                    maxlength: 250
+                    maxlength: 250,
+                    multipleHostName: true
                 },
                 taxCode: {
                     required: true,
@@ -33,14 +34,17 @@
                 },
                 fullName: {
                     required: true,
-                    whiteSpace: true
+                    whiteSpace: true,
+                    maxlength: 250
                 },
                 username: {
                     required: true,
-                    maxlength: 256
+                    maxlength: 256,
+                    regex: /^[a-zA-Z0-9][\w-\/]{0,}[a-zA-Z0-9]$|^[a-zA-Z0-9]$/
                 },
                 email: {
-                    maxlength: 500
+                    maxlength: 500,
+                    singleEmail: true
                 },
                 password: {
                     required: true,
@@ -58,6 +62,9 @@
                 },
                 confirmPassword: {
                     equalTo: 'Mật khẩu không khớp!'
+                },
+                userName: {
+                    regex: "Tài khoản đăng nhập viết không dấu, được phép chứa các ký tự đặc biệt -, _, / và không đặt ở đầu hoặc cuối"
                 }
             }
         };
