@@ -13,7 +13,7 @@
             }
         })
         .config(function ($stateProvider) {
-            $stateProvider.state('identity.frontend.change-password', {
+            $stateProvider.state('identity.backend.change-password', {
                 url: '/change-password',
                 component: 'uiChangePassword',
                 data: {

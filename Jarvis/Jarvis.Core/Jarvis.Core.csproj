@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="wwwroot\app\identity\identity.backend.template.html" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="wwwroot\app\core\core.module.js" />
     <EmbeddedResource Include="wwwroot\app\core\core.template.html" />
     <EmbeddedResource Include="wwwroot\app\core\labels\label-create.controller.js" />
@@ -38,8 +42,9 @@
     <EmbeddedResource Include="wwwroot\app\identity\forgot-password\forgot-password.controller.js" />
     <EmbeddedResource Include="wwwroot\app\identity\forgot-password\forgot-password.route.js" />
     <EmbeddedResource Include="wwwroot\app\identity\forgot-password\forgot-password.template.html" />
+    <EmbeddedResource Include="wwwroot\app\identity\identity.backend.template.html" />
     <EmbeddedResource Include="wwwroot\app\identity\identity.module.js" />
-    <EmbeddedResource Include="wwwroot\app\identity\identity.template.html" />
+    <EmbeddedResource Include="wwwroot\app\identity\identity.frontend.template.html" />
     <EmbeddedResource Include="wwwroot\app\identity\login\login.controller.js" />
     <EmbeddedResource Include="wwwroot\app\identity\login\login.route.js" />
     <EmbeddedResource Include="wwwroot\app\identity\login\login.template.html" />

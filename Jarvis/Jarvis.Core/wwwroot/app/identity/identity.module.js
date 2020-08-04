@@ -192,12 +192,12 @@
 
             $stateProvider.state('identity.backend', {
                 abstract: true,
-                templateUrl: '/app/identity/identity.template.html'
+                templateUrl: '/app/identity/identity.backend.template.html'
             });
 
             $stateProvider.state('identity.frontend', {
                 abstract: true,
-                template: '<ui-view context="$ctrl.context"></ui-view>'
+                templateUrl: '/app/identity/identity.frontend.template.html'
             });
         }])
         .config(['$ocLazyLoadProvider', function ($ocLazyLoadProvider) {

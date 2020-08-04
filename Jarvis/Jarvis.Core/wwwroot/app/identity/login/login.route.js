@@ -16,14 +16,14 @@
             $stateProvider.state('identity.frontend.login', {
                 url: '/login',
                 component: 'uiLogin',
-                // onEnter: function () {
-                //     var $body = angular.element('body');
-                //     $body.addClass('hold-transition login-page');
-                // },
-                // onExit: function () {
-                //     var $body = angular.element('body');
-                //     $body.removeClass();
-                // },
+                onEnter: function () {
+                    var $body = angular.element('body');
+                    $body.addClass('hold-transition login-page');
+                },
+                onExit: function () {
+                    var $body = angular.element('body');
+                    $body.removeClass();
+                },
                 resolve: {
                     validate: ['$ocLazyLoad', function ($ocLazyLoad) {
                         return $ocLazyLoad.load('moduleValidate');
