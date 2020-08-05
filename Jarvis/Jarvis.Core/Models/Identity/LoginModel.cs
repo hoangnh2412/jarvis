@@ -4,7 +4,7 @@ namespace Jarvis.Models.Identity.Models.Identity
 {
     public class LoginModel
     {
-        [MaxLength(250, ErrorMessage = "Tên đăng nhập phải nhỏ hơn 250 ký tự")]
+        [MaxLength(256, ErrorMessage = "Tên đăng nhập phải nhỏ hơn 256 ký tự")]
         [Required(ErrorMessage = "Tên đăng nhập không được để trống")]
         public string UserName { get; set; }
 
