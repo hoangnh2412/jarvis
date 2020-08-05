@@ -16,6 +16,14 @@
             $stateProvider.state('identity.frontend.forgot-password', {
                 url: '/forgot-password?:idUser&:key',
                 component: 'uiForgotPassword',
+                onEnter: function () {
+                    var $body = angular.element('body');
+                    $body.addClass('hold-transition login-page');
+                },
+                onExit: function () {
+                    var $body = angular.element('body');
+                    $body.removeClass();
+                },
                 resolve: {
                     validate: ['$ocLazyLoad', function ($ocLazyLoad) {
                         return $ocLazyLoad.load('moduleValidate');
