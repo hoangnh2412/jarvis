@@ -177,16 +177,16 @@ namespace Jarvis.Core
                 {
                     builder.Run(async context =>
                     {
-                        await context.Response.WriteAsync(file.Value);
+                        if (path.Contains(".woff"))
+                            context.Response.ContentType = "application/font-woff";
 
                         if (path.Contains(".woff2"))
                             context.Response.ContentType = "application/font-woff2";
 
-                        if (path.Contains(".woff"))
-                            context.Response.ContentType = "application/font-woff";
-
                         if (path.Contains(".ttf"))
                             context.Response.ContentType = "application/font-ttf";
+
+                        await context.Response.WriteAsync(file.Value);
                     });
                 });
             }

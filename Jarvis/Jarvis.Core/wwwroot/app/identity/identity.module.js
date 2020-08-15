@@ -178,7 +178,10 @@
 
             $stateProvider.state('identity.backend', {
                 abstract: true,
-                templateUrl: '/app/identity/identity.template.html'
+                templateProvider: ['$templateRequest', 'componentService', function ($templateRequest, componentService) {
+                    var tplName = componentService.getTemplateUrl('uiIdentity', '/app/identity/identity.template.html');
+                    return $templateRequest(tplName);
+                }],
             });
 
             $stateProvider.state('identity.frontend', {
