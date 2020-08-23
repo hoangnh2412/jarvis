@@ -8,7 +8,7 @@ namespace Jarvis.Core.Database.Poco
     {
         public int Id { get; set; }
         public Guid IdUser { get; set; }
-        public bool IsManager { get; set; }
+        public int Level { get; set; }
         public Guid OrganizationCode { get; set; }
     }
 }

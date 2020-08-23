@@ -52,6 +52,13 @@ namespace Jarvis.Core.Database.Repositories
         Task<User> FindByIdAsync(Guid id);
 
         /// <summary>
+        /// lấy tài khoản theo code
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        Task<List<User>> FindByIdsAsync(List<Guid> ids);
+
+        /// <summary>
         /// lấy các tài khoản đc gán quyền theo idRole
         /// </summary>
         /// <param name="idRole"></param>

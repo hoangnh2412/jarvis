@@ -9,6 +9,9 @@ using Jarvis.Core.Database;
 using Jarvis.Core.Permissions;
 using Jarvis.Core.Database.Repositories;
 using System.Threading.Tasks;
+using System.Linq;
+using Jarvis.Core.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Jarvis.Core.Controllers
 {
@@ -29,47 +32,36 @@ namespace Jarvis.Core.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get([FromRoute]Guid code, [FromQuery]Paging paging)
+        public async Task<IActionResult> GetAsync([FromRoute] Guid code)
         {
-            var repo = _uow.GetRepository<IOrganizationUserRepository>();
-            var users = repo.GetUsersByOrganizationAsync(code);
+            var repoOrganizationUser = _uow.GetRepository<IOrganizationUserRepository>();
+            var users = (await repoOrganizationUser.GetUsersByOrganizationAsync(code)).Select(x => (OrganizationUserModel)x);
             return Ok(users);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> PostAsync([FromRoute]Guid code, [FromBody]List<Guid> idUsers)
+        [HttpPost("{idUser}/{level}")]
+        public async Task<IActionResult> PostAsync([FromRoute] Guid code, [FromRoute] Guid idUser, [FromRoute] int level)
         {
             var repo = _uow.GetRepository<IOrganizationUserRepository>();
-            var items = new List<OrganizationUser>();
-            foreach (var idUser in idUsers)
+            await repo.InsertAsync(new OrganizationUser
             {
-                items.Add(new OrganizationUser
-                {
-                    OrganizationCode = code,
-                    IdUser = idUser
-                });
-            }
-
-            await repo.InsertsAsync(items);
+                OrganizationCode = code,
+                IdUser = idUser,
+                Level = level
+            });
             await _uow.CommitAsync();
             return Ok();
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> DeleteAsync([FromRoute]Guid code, [FromBody]List<Guid> idUsers)
+        [HttpDelete("{idUser}")]
+        public async Task<IActionResult> DeleteAsync([FromRoute] Guid code, [FromRoute] Guid idUser)
         {
             var repo = _uow.GetRepository<IOrganizationUserRepository>();
-            var items = new List<OrganizationUser>();
-            foreach (var idUser in idUsers)
-            {
-                items.Add(new OrganizationUser
-                {
-                    OrganizationCode = code,
-                    IdUser = idUser
-                });
-            }
+            var user = await repo.GetQuery().FirstOrDefaultAsync(x => x.OrganizationCode == code && x.IdUser == idUser);
+            if (user == null)
+                return NotFound();
 
-            repo.Deletes(items);
+            repo.Delete(user);
             await _uow.CommitAsync();
             return Ok();
         }

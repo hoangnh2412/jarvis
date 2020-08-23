@@ -153,6 +153,15 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
         }
 
+        public async Task<List<User>> FindByIdsAsync(List<Guid> ids)
+        {
+            IQueryable<User> query = StorageContext.Set<User>();
+            query = query.Where(x => ids.Contains(x.Id));
+            query = query.QueryByDeletedBy();
+
+            return await query.ToListAsync();
+        }
+
         public async Task<List<IdentityUserRole<Guid>>> FindByIdRoleAsync(Guid idRole)
         {
             IQueryable<IdentityUserRole<Guid>> query = StorageContext.Set<IdentityUserRole<Guid>>();

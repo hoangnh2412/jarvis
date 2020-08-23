@@ -55,13 +55,6 @@ namespace Jarvis.Core.Database.MySql
                 builder.HasIndex(x => new { x.IdUser, x.OrganizationCode }).IsUnique();
             });
 
-            modelBuilder.Entity<OrganizationRole>(builder =>
-            {
-                builder.ToTable("core_organization_role");
-                builder.HasKey(x => new { x.IdRole, x.OrganizationCode });
-                builder.HasIndex(x => new { x.IdRole, x.OrganizationCode }).IsUnique();
-            });
-
             modelBuilder.Entity<Tenant>(builder =>
             {
                 builder.ToTable("core_tenant");

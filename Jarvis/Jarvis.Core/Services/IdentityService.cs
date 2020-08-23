@@ -22,6 +22,8 @@ using Jarvis.Models.Identity.Models.Identity;
 using Jarvis.Core.Models.Identity;
 using Infrastructure.Extensions;
 using Jarvis.Core.Abstractions;
+using Infrastructure.Database.Abstractions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Jarvis.Core.Services
 {
@@ -150,7 +152,8 @@ namespace Jarvis.Core.Services
                     expires: expireAt,
                     signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_options.SecretKey)), SecurityAlgorithms.HmacSha256));
 
-                var accessToken = new JwtSecurityTokenHandler().WriteToken(jwt);
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var accessToken = tokenHandler.WriteToken(jwt);
 
                 session = new SessionModel
                 {
@@ -161,7 +164,8 @@ namespace Jarvis.Core.Services
                     CreatedAt = user.CreatedAt,
                     UserInfo = await GetInfoAsync(user.Id),
                     TenantInfo = await GetTenantInfoAsync(user.TenantCode),
-                    Claims = await GetClaimsAsync(user.Id)
+                    Claims = await GetClaimsAsync(user.Id),
+                    OrganizationInfos = await GetOrganizationAsync(user.Id)
                 };
 
                 token = new TokenInfo
@@ -374,6 +378,37 @@ namespace Jarvis.Core.Services
             ParsePermission(permissions, roleClaims);
 
             return permissions;
+        }
+
+        private async Task<List<SessionOrganizationModel>> GetOrganizationAsync(Guid idUser)
+        {
+            var repoOrganizationUser = _uow.GetRepository<IRepository<OrganizationUser>>();
+            var organizationUsers = await repoOrganizationUser.GetQuery()
+                .Where(x => x.IdUser == idUser)
+                .ToListAsync();
+
+            var codes = organizationUsers.Select(x => x.OrganizationCode).ToList();
+            var repoOrganizationUnit = _uow.GetRepository<IRepository<OrganizationUnit>>();
+            var organizations = await repoOrganizationUnit.GetQuery()
+                .Where(x => codes.Contains(x.Code))
+                .Select(x => new SessionOrganizationModel
+                {
+                    Code = x.Code,
+                    FullName = x.FullName,
+                    Name = x.Name
+                })
+                .ToListAsync();
+
+            foreach (var item in organizations)
+            {
+                var organizationUser = organizationUsers.FirstOrDefault(x => x.OrganizationCode == item.Code);
+                if (organizationUser != null)
+                {
+                    item.Level = organizationUser.Level;
+                }
+            }
+
+            return organizations;
         }
 
         public async Task RegisterAsync(Guid idTenant, RegisterModel model)
