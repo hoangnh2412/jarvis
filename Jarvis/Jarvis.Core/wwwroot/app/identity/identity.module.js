@@ -47,7 +47,21 @@
                         return response;
                     }
 
-                    if (response.status === 500 || response.status === 400) {
+                    if (response.status === 400) {
+                        for (const key in response.data.errors) {
+                            if (response.data.errors.hasOwnProperty(key)) {
+                                const element = response.data.errors[key];
+
+                                var errors = '';
+                                for (let i = 0; i < element.length; i++) {
+                                    errors += key + ': ' + element[i] + '</br>';
+                                }
+                                sweetAlert.error("Lỗi", errors);
+                            }
+                        }
+                    }
+
+                    if (response.status === 500) {
                         if (response.config.responseType && response.config.responseType === 'arraybuffer') {
                             var stringError = new TextDecoder().decode(response.data);
                             sweetAlert.error("Lỗi", stringError);
