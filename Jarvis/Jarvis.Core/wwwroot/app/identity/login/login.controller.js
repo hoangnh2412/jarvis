@@ -25,7 +25,7 @@
         };
 
         ctrl.$onInit = function () {
-            
+
         };
 
         ctrl.login = function (form) {
@@ -59,11 +59,7 @@
                     });
 
                     $timeout(function () {
-                        if (Object.keys(ctrl.context.claims).length === 0)
-                            $state.go('portals.portal');
-                        else {
-                            $state.go(getStateNameByUrl(APP_CONFIG.DASHBOARD_URL));
-                        }
+                        $state.go(getStateNameByUrl(APP_CONFIG.DASHBOARD_URL));
                     });
                 }
             });
