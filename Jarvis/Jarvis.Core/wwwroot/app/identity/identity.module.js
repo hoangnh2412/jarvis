@@ -50,8 +50,30 @@
                     if (response.status === 500 || response.status === 400) {
                         if (response.config.responseType && response.config.responseType === 'arraybuffer') {
                             var stringError = new TextDecoder().decode(response.data);
-                            sweetAlert.error("Lỗi", stringError);
-                        } else if (response.data.errors) {
+                            try {
+                                var responseParse = JSON.parse(stringError);
+                                if (responseParse.errors && Object.keys(responseParse.errors).length > 0) {
+                                    var err = '';
+                                    Object.keys(responseParse.errors).forEach(function (e) {
+                                        for (var i = 0; i < responseParse.errors[e].length; i++) {
+                                            err += responseParse.errors[e][i] + '</br>';
+                                        };
+                                    });
+                                    swal.fire({
+                                        title: "Lỗi",
+                                        html: err,
+                                        type: "error"
+                                    });
+                                    stringError = undefined;
+                                }
+                            }
+                            catch (e) { }
+                            finally {
+                                if (stringError)
+                                    sweetAlert.error("Lỗi", stringError);
+                            }
+                        }
+                        else if (response.data.errors) {
                             if (Object.keys(response.data.errors).length > 0) {
                                 var err = '';
                                 Object.keys(response.data.errors).forEach(function (e) {
@@ -65,7 +87,8 @@
                                     type: "error"
                                 });
                             }
-                        } else
+                        }
+                        else
                             sweetAlert.error("Lỗi", response.data);
                         return response;
                     }
