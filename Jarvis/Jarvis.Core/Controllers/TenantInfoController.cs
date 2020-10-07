@@ -124,5 +124,18 @@ namespace Jarvis.Core.Controllers
             });
             return Ok();
         }
+
+        [HttpGet("taxCode")]
+        [Authorize]
+        public async Task<IActionResult> GetTaxCodeAsync()
+        {
+            var tenantCode = await _workContext.GetTenantCodeAsync();
+            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var info = await repoTenant.GetInfoByCodeAsync(tenantCode);
+            if (info == null)
+                return NotFound();
+
+            return Ok(info.TaxCode);
+        }
     }
 }
