@@ -7,7 +7,7 @@ using Jarvis.Core.Services;
 
 namespace Jarvis.Core.Permissions
 {
-    public class UserLockAuthorizationPolicy : IAuthorizationPolicy
+    public class UserLockAuthorizationPolicy : BaseAuthorizationPolicy, IAuthorizationPolicy
     {
         public string Name => nameof(CorePolicy.UserPolicy.User_Lock);
 
@@ -24,7 +24,7 @@ namespace Jarvis.Core.Permissions
         }
     }
 
-    public class UserResetPasswordAuthorizationPolicy : IAuthorizationPolicy
+    public class UserResetPasswordAuthorizationPolicy : BaseAuthorizationPolicy, IAuthorizationPolicy
     {
         public string Name => nameof(CorePolicy.UserPolicy.User_Reset_Password);
 

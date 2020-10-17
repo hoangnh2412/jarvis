@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Jarvis.Core.Permissions
 {
-    public class OrganizationUsersAuthorizationPolicy : IAuthorizationPolicy
+    public class OrganizationUsersAuthorizationPolicy : BaseAuthorizationPolicy, IAuthorizationPolicy
     {
         public string Name => nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Users);
 
@@ -22,7 +22,7 @@ namespace Jarvis.Core.Permissions
         }
     }
 
-    public class OrganizationRolesAuthorizationPolicy : IAuthorizationPolicy
+    public class OrganizationRolesAuthorizationPolicy : BaseAuthorizationPolicy, IAuthorizationPolicy
     {
         public string Name => nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Roles);
 
