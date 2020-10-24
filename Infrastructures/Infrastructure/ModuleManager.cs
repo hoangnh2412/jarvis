@@ -187,7 +187,7 @@ namespace Infrastructure
             if (implementations.Count == 0)
             {
                 var assemblies = AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(x => IsCandidateCompilationLibrary(x.FullName) && !_assemblies.Keys.Contains(x.GetName().FullName))
+                    .Where(x => IsCandidateCompilationLibrary(x.FullName) && !_assemblies.Keys.Contains(x.GetName().FullName) && !x.IsDynamic)
                     .ToList();
                 foreach (var assembly in assemblies)
                 {
