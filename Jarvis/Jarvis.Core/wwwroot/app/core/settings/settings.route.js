@@ -24,7 +24,7 @@
                         return $ocLazyLoad.load(componentService.getControllerUrl('uiSettings', '/app/core/settings/settings.controller.js'));
                     }],
                     settingService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/core/settings/setting.service.js');
+                        return $ocLazyLoad.load('/app/jarvis/core/settings/setting.service.js');
                     }],
                 }
             });

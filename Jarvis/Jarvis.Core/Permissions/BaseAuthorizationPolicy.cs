@@ -7,9 +7,9 @@ namespace Jarvis.Core.Permissions
 {
     public abstract class BaseAuthorizationPolicy : IAuthorizationPolicy
     {
-        public string Name => throw new System.NotImplementedException();
+        public abstract string Name { get; }
 
-        public AuthorizationPolicy Build(HttpContext httpContext)
+        public virtual AuthorizationPolicy Build(HttpContext httpContext)
         {
             AuthorizationPolicyBuilder authorizationPolicyBuilder = new AuthorizationPolicyBuilder();
 

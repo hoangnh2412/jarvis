@@ -7,35 +7,11 @@ namespace Jarvis.Core.Permissions
 {
     public class OrganizationUsersAuthorizationPolicy : BaseAuthorizationPolicy, IAuthorizationPolicy
     {
-        public string Name => nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Users);
-
-        public AuthorizationPolicy Build(HttpContext httpContext)
-        {
-            AuthorizationPolicyBuilder authorizationPolicyBuilder = new AuthorizationPolicyBuilder();
-
-            authorizationPolicyBuilder.RequireAssertion(async context =>
-            {
-                return await context.User.HasClaimAsync(httpContext, x => x.Type == Name);
-            });
-
-            return authorizationPolicyBuilder.Build();
-        }
+        public override string Name => nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Users);
     }
 
     public class OrganizationRolesAuthorizationPolicy : BaseAuthorizationPolicy, IAuthorizationPolicy
     {
-        public string Name => nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Roles);
-
-        public AuthorizationPolicy Build(HttpContext httpContext)
-        {
-            AuthorizationPolicyBuilder authorizationPolicyBuilder = new AuthorizationPolicyBuilder();
-
-            authorizationPolicyBuilder.RequireAssertion(async context =>
-            {
-                return await context.User.HasClaimAsync(httpContext, x => x.Type == Name);
-            });
-
-            return authorizationPolicyBuilder.Build();
-        }
+        public override string Name => nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Roles);
     }
 }
