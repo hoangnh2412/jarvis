@@ -23,7 +23,6 @@ namespace Jarvis.Core
 
             app.UseConfigStaticFiles(modules);
 
-            app.UseConfigJarvisUI();
             app.UseRouting();
             app.UseConfigJarvisUI();
 

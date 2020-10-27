@@ -1,7 +1,7 @@
-﻿using Einvoice.Utils.Common.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Jarvis.Core.Attributes;
 
 namespace Jarvis.Core.Models.Identity
 {
