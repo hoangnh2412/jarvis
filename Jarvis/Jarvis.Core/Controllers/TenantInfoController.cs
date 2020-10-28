@@ -131,7 +131,7 @@ namespace Jarvis.Core.Controllers
         {
             var tenantCode = await _workContext.GetTenantCodeAsync();
             var repoTenant = _uow.GetRepository<ITenantRepository>();
-            var listTaxCode = new List<string>();
+            var listTaxCodes = new List<KeyValuePair<string, Guid>>();
 
             if (!includeHierarchy)
             {
@@ -139,16 +139,16 @@ namespace Jarvis.Core.Controllers
                 if (tenant == null)
                     return NotFound();
 
-                listTaxCode.Add(tenant.TaxCode);
+                listTaxCodes.Add(new KeyValuePair<string, Guid>(tenant.TaxCode, tenant.Code));
             }
             else
             {
                 // nếu lấy dữ liệu của chi nhánh
                 var hierarchies = await repoTenant.GetHierarchyByCodeAsync(tenantCode);
-                listTaxCode = hierarchies.Select(x => x.Name).ToList();
+                listTaxCodes = hierarchies.Select(x => new KeyValuePair<string, Guid>(x.Name, x.Code)).ToList();
             }
 
-            return Ok(listTaxCode);
+            return Ok(listTaxCodes.Select(x => new { TaxCode = x.Key, Code = x.Value}));
         }
     }
 }
