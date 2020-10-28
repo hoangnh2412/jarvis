@@ -72,7 +72,8 @@ namespace Jarvis.Core.Controllers
                 Description = model.Description,
                 Code = Guid.NewGuid(),
                 TenantCode = await _workcontext.GetTenantCodeAsync(),
-                FullName = model.Name,
+                Name = model.Name,
+                FullName = model.FullName,
                 CreatedAt = DateTime.Now,
                 CreatedAtUtc = DateTime.UtcNow,
                 CreatedBy = _workcontext.GetUserCode()
@@ -93,7 +94,7 @@ namespace Jarvis.Core.Controllers
                 return NotFound();
 
             organizationUnit.Description = model.Description;
-            organizationUnit.FullName = model.Name;
+            organizationUnit.FullName = model.FullName;
             organizationUnit.UpdatedAt = DateTime.Now;
             organizationUnit.UpdatedAtUtc = DateTime.UtcNow;
             organizationUnit.UpdatedBy = Guid.Empty;

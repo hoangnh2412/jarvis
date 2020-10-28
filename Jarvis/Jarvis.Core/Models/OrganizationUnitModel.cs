@@ -6,8 +6,8 @@ namespace Jarvis.Core.Models
     public class OrganizationUnitModel
     {
         public Guid Code { get; set; }
-        public string Key { get; set; }
         public string Name { get; set; }
+        public string FullName { get; set; }
         public string Description { get; set; }
         public Guid IdParent { get; set; }
 
@@ -17,8 +17,8 @@ namespace Jarvis.Core.Models
             
             var model = new OrganizationUnitModel {
                 Code = entity.Code,
-                Key = entity.Name,
-                Name = entity.FullName,
+                Name = entity.Name,
+                FullName = entity.FullName,
                 Description = entity.Description,
                 IdParent = entity.IdParent
             };
