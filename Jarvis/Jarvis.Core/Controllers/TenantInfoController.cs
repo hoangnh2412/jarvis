@@ -125,17 +125,30 @@ namespace Jarvis.Core.Controllers
             return Ok();
         }
 
-        [HttpGet("taxCode")]
+        [HttpGet("taxCode/{includeHierarchy}")]
         [Authorize]
-        public async Task<IActionResult> GetTaxCodeAsync()
+        public async Task<IActionResult> GetTaxCodeAsync([FromRoute] bool includeHierarchy)
         {
             var tenantCode = await _workContext.GetTenantCodeAsync();
             var repoTenant = _uow.GetRepository<ITenantRepository>();
-            var info = await repoTenant.GetInfoByCodeAsync(tenantCode);
-            if (info == null)
-                return NotFound();
+            var listTaxCode = new List<string>();
 
-            return Ok(info.TaxCode);
+            if (!includeHierarchy)
+            {
+                var tenant = await repoTenant.GetInfoByCodeAsync(tenantCode);
+                if (tenant == null)
+                    return NotFound();
+
+                listTaxCode.Add(tenant.TaxCode);
+            }
+            else
+            {
+                // nếu lấy dữ liệu của chi nhánh
+                var hierarchies = await repoTenant.GetHierarchyByCodeAsync(tenantCode);
+                listTaxCode = hierarchies.Select(x => x.Name).ToList();
+            }
+
+            return Ok(listTaxCode);
         }
     }
 }
