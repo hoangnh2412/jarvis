@@ -78,6 +78,9 @@ namespace Infrastructure.Caching.Redis
             await ConnectAsync();
 
             var data = await _cache.HashGetAsync(key, hashField);
+            if (data.ToString() == null)
+                return default;
+
             return JsonConvert.DeserializeObject<T>(data.ToString());
         }
 
