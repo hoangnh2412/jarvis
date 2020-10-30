@@ -33,6 +33,24 @@ namespace Jarvis.Core.Permissions
                 return queryable.QueryByTenantCode(context.TenantCode);
             }
 
+            queryable = queryable.QueryByTenantCode(context.TenantCode);
+
+            //nếu quyền cty hiện tại hoặc chi nhánh là cá nhân => query theo idUser hiện tại
+            if (context.ClaimOfResource == ClaimOfResource.Owner)
+                queryable = queryable.QueryByCreatedBy(context.IdUser);
+
+            return queryable;
+        }
+
+        public static IQueryable<T> QueryByPermissionOld<T>(this IQueryable<T> queryable, ContextModel context) where T : IPermissionEntity
+        {
+            //nếu là quyền đặc biệt => query theo tenantCode luôn
+            if (context.Session.Claims.ContainsKey(nameof(SpecialPolicy.Special_DoEnything))
+                || context.Session.Claims.ContainsKey(nameof(SpecialPolicy.Special_TenantAdmin)))
+            {
+                return queryable.QueryByTenantCode(context.TenantCode);
+            }
+
             //nếu quyền sử dụng chi nhánh = none (k sử dụng) và đang thao tác query ở chi nhánh => k lấy dữ liệu => query theo guid.empty
             if (context.ClaimOfChildResource == ClaimOfChildResource.None && context.TenantCode != context.Session.TenantInfo.Code)
                 return queryable.QueryByTenantCode(Guid.Empty);
