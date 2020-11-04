@@ -1,0 +1,85 @@
+<section class="content-header">
+    <h1>Quản lý tổ chức</h1>
+    <ol class="breadcrumb">
+        <li><a ui-sref="admin"><i class="fa fa-dashboard"></i> Trang chủ</a></li>
+        <li><a ui-sref="admin.system">Hệ thống</a></li>
+        <li class="active">Quản lý tổ chức</li>
+    </ol>
+</section>
+
+<section class="content container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Đơn vị</h3>
+
+                    <div class="box-tools pull-right">
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div ui-tree="$ctrl.treeOptions">
+                        <ol ui-tree-nodes ng-model="$ctrl.tree">
+                            <li ng-repeat="unit in $ctrl.tree" ui-tree-node data-collapsed="true" ng-include="'nodes_renderer.html'"></li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <uib-tabset active="active" class="nav-tabs-custom">
+                <uib-tab index="0" heading="Thông tin đơn vị">
+                    <form name="frmUnit" ng-submit="$ctrl.save(frmUnit)" ng-validate="$ctrl.validationOptions" class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-md-3 col-sm-4 control-label">Đơn vị cha</label>
+                            <div class="col-md-9 col-sm-8">
+                                <p class="form-control-static">{{$ctrl.unit.parent}}</p>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-3 col-sm-4 control-label">Mã đơn vị</label>
+                            <div class="col-md-9 col-sm-8">
+                                <input name="name" type="text" ng-model="$ctrl.unit.name" jv-autofocus class="form-control" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-3 col-sm-4 control-label">Tên đơn vị</label>
+                            <div class="col-md-9 col-sm-8">
+                                <input name="fullName" type="text" ng-model="$ctrl.unit.fullName" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-3 col-sm-4 control-label">Mô tả</label>
+                            <div class="col-md-9 col-sm-8">
+                                <textarea name="description" ng-model="$ctrl.unit.description" class="form-control"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-2 col-md-10 col-sm-offset-4 col-sm-8">
+                                <button ng-click="$ctrl.clean()" class="btn btn-danger pull-right" style="margin-left: 5px"><i class="fa fa-close"></i> Hủy</button>
+                                <button type="submit" class="btn btn-success pull-right"><i class="fa fa-save"></i> Lưu</button>
+
+                            </div>
+                        </div>
+                    </form>
+                </uib-tab>
+                <uib-tab index="1" heading="Thành viên">
+                    I've got an HTML heading, and a select callback. Pretty cool!
+                </uib-tab>
+            </uib-tabset>
+        </div>
+    </div>
+
+    <script type="text/ng-template" id="nodes_renderer.html">
+        <div ui-tree-handle class="tree-node tree-node-content">
+            <a ng-if="unit.nodes && unit.nodes.length > 0" data-nodrag ng-click="toggle(this)" class="tree-node-toggle"><span class="glyphicon" ng-class="{ 'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed }"></span></a>
+            <span>{{unit.name}} - {{unit.fullName}}</span>
+            <a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="$ctrl.delete(this)"><span class="glyphicon glyphicon-remove"></span></a>
+            <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="$ctrl.addUnit(this)" style="margin-right: 3px;"><span class="glyphicon glyphicon-plus"></span></a>
+            <a class="pull-right btn btn-warning btn-xs" data-nodrag ng-click="$ctrl.editUnit(this)" style="margin-right: 3px;"><span class="glyphicon glyphicon-pencil"></span></a>
+        </div>
+        <ol ui-tree-nodes="" ng-model="unit.nodes" ng-class="{hidden: collapsed}">
+            <li ng-repeat="unit in unit.nodes" ui-tree-node ng-include="'nodes_renderer.html'"></li>
+        </ol>
+    </script>
+</section>

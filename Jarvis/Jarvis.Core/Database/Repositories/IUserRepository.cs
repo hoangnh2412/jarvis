@@ -23,8 +23,8 @@ namespace Jarvis.Core.Database.Repositories
 
         Task<UserInfo> FindUserInfoByIdAsync(Guid code);
 
-        Task<IEnumerable<UserInfo>> FindInfoByIdsAsync(List<Guid> ids);
-        
+        Task<List<UserInfo>> FindUserInfoByIdsAsync(List<Guid> ids);
+
         Task AssignRoleToUserAsync(Guid idUser, Guid idRole);
 
         Task InsertUserAsync(User user);
@@ -36,7 +36,7 @@ namespace Jarvis.Core.Database.Repositories
         void UpdateUserInfoFields(UserInfo user, params KeyValuePair<Expression<Func<UserInfo, object>>, object>[] properties);
 
         void DeleteUserInfo(UserInfo info);
-        
+
         /// <summary>
         /// lấy tk đc tạo đầu tiên
         /// </summary>
@@ -56,7 +56,14 @@ namespace Jarvis.Core.Database.Repositories
         /// </summary>
         /// <param name="ids"></param>
         /// <returns></returns>
-        Task<List<User>> FindByIdsAsync(List<Guid> ids);
+        Task<List<User>> FindUserByIdsAsync(List<Guid> ids);
+
+        /// <summary>
+        /// Lấy id tài khoản theo code
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        Task<List<T>> FindByIdsAsync<T>(List<Guid> ids, Expression<Func<User, T>> fieldSelector = null);
 
         /// <summary>
         /// lấy các tài khoản đc gán quyền theo idRole

@@ -9,7 +9,7 @@ namespace Jarvis.Core.Models
         public string Name { get; set; }
         public string FullName { get; set; }
         public string Description { get; set; }
-        public Guid IdParent { get; set; }
+        public Guid? IdParent { get; set; }
 
         public static implicit operator OrganizationUnitModel(OrganizationUnit entity) {
             if (entity == null)

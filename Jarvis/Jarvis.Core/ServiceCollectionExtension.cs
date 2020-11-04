@@ -63,6 +63,7 @@ namespace Jarvis.Core
             services.AddScoped<IEntityService, EntityService>();
             services.AddScoped<ISettingService, SettingService>();
             services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IOrganizationService, OrganizationService>();
 
             //Repositories
             services.AddScoped<ICityRepository, CityRepository>();
@@ -99,8 +100,6 @@ namespace Jarvis.Core
 
             services.AddSingleton<IAuthorizationPolicy, UserLockAuthorizationPolicy>();
             services.AddSingleton<IAuthorizationPolicy, UserResetPasswordAuthorizationPolicy>();
-            services.AddSingleton<IAuthorizationPolicy, OrganizationUsersAuthorizationPolicy>();
-            services.AddSingleton<IAuthorizationPolicy, OrganizationRolesAuthorizationPolicy>();
 
             if (crudPolicies != null)
             {

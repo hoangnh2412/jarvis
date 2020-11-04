@@ -15,14 +15,14 @@ namespace Jarvis.Core
 {
     public static class ApplicationBuilderExtension
     {
-        public static void UseConfigJarvisDefault(this IApplicationBuilder app, params string[] modules)
+        public static void UseConfigJarvisDefault(this IApplicationBuilder app, string jarvisPath, params string[] modules)
         {
             app.UseHsts();
             app.UseHttpsRedirection();
 
-            app.UseConfigUI(modules);
+            app.UseConfigUI(jarvisPath, modules);
 
-            app.UseConfigJarvisUI();
+            // app.UseConfigJarvisUI();
             app.UseRouting();
 
             app.UseCors(builder =>
@@ -69,7 +69,7 @@ namespace Jarvis.Core
             });
         }
 
-        public static void UseConfigUI(this IApplicationBuilder app, params string[] modules)
+        public static void UseConfigUI(this IApplicationBuilder app, string jarvisPath, params string[] modules)
         {
             var env = app.ApplicationServices.GetService<IWebHostEnvironment>();
 
@@ -98,6 +98,19 @@ namespace Jarvis.Core
                     paths.AddRange(wwwroots.Where(x => x.Path.StartsWith(module)).Select(x => x.FullPath));
                 }
                 paths.AddRange(wwwroots.Where(x => x.Path == Path.Combine(name, "wwwroot")).Select(x => x.FullPath));
+
+                if (!string.IsNullOrWhiteSpace(jarvisPath))
+                {
+                    var jarvisWwwroots = Directory.GetDirectories(jarvisPath, "wwwroot", SearchOption.AllDirectories)
+                        .Where(x => !x.Contains("Release"))
+                        .Select(x => new
+                        {
+                            FullPath = x,
+                            Path = x.Substring(jarvisPath.Length, x.Length - jarvisPath.Length)
+                        })
+                        .ToList();
+                    paths.AddRange(jarvisWwwroots.Where(x => x.Path.Contains("Jarvis.Core")).Select(x => x.FullPath));
+                }
 
                 foreach (var path in paths)
                 {

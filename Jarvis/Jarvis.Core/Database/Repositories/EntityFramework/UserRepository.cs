@@ -50,7 +50,7 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             return info;
         }
 
-        public async Task<IEnumerable<UserInfo>> FindInfoByIdsAsync(List<Guid> ids)
+        public async Task<List<UserInfo>> FindUserInfoByIdsAsync(List<Guid> ids)
         {
             IQueryable<UserInfo> query = StorageContext.Set<UserInfo>();
             var info = await query.Where(x => ids.Contains(x.Id)).ToListAsync();
@@ -153,13 +153,22 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
         }
 
-        public async Task<List<User>> FindByIdsAsync(List<Guid> ids)
+        public async Task<List<User>> FindUserByIdsAsync(List<Guid> ids)
         {
             IQueryable<User> query = StorageContext.Set<User>();
             query = query.Where(x => ids.Contains(x.Id));
             query = query.QueryByDeletedBy();
 
             return await query.ToListAsync();
+        }
+
+        public async Task<List<T>> FindByIdsAsync<T>(List<Guid> ids, Expression<Func<User, T>> fieldSelector)
+        {
+            IQueryable<User> query = StorageContext.Set<User>();
+            query = query.Where(x => ids.Contains(x.Id));
+            query = query.QueryByDeletedBy();
+
+            return (await query.Select(x => x.UserName).AsQueryable().ToListAsync()) as List<T>;
         }
 
         public async Task<List<IdentityUserRole<Guid>>> FindByIdRoleAsync(Guid idRole)

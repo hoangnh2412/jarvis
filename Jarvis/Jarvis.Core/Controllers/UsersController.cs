@@ -60,7 +60,7 @@ namespace Jarvis.Core.Controllers
             var userCodes = paged.Data.Select(x => x.Id).ToList();
 
             var repoUserInfo = _uow.GetRepository<IUserRepository>();
-            var infos = (await repoUserInfo.FindInfoByIdsAsync(userCodes)).ToDictionary(x => x.Id, x => x);
+            var infos = (await repoUserInfo.FindUserInfoByIdsAsync(userCodes)).ToDictionary(x => x.Id, x => x);
 
             var users = new List<UserModel>();
             foreach (var data in paged.Data)

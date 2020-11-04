@@ -268,7 +268,7 @@ namespace Jarvis.Core.Permissions
         [Display(Name = "Quản lý phòng ban")]
         public class OrganizationPolicy : IPolicy
         {
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> OrganizationUnit_Read = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
+            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Organization_Read = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
                 "Danh sách phòng ban",
                 new List<ClaimOfResource> {
                     ClaimOfResource.Tenant,
@@ -280,7 +280,7 @@ namespace Jarvis.Core.Permissions
                     ClaimOfChildResource.Owner
                 });
 
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> OrganizationUnit_Create = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
+            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Organization_Create = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
                 "Tạo phòng ban",
                 new List<ClaimOfResource> {
                     ClaimOfResource.Tenant,
@@ -291,7 +291,7 @@ namespace Jarvis.Core.Permissions
                     ClaimOfChildResource.Tenant
                 });
 
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> OrganizationUnit_Update = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
+            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Organization_Update = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
                 "Sửa phòng ban",
                 new List<ClaimOfResource> {
                     ClaimOfResource.Tenant,
@@ -303,32 +303,8 @@ namespace Jarvis.Core.Permissions
                     ClaimOfChildResource.Owner
                 });
 
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> OrganizationUnit_Delete = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
+            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Organization_Delete = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
                 "Xóa phòng ban",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> OrganizationUnit_Users = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Thành viên phòng ban",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> OrganizationUnit_Roles = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Quyền phòng ban",
                 new List<ClaimOfResource> {
                     ClaimOfResource.Tenant,
                     ClaimOfResource.Owner

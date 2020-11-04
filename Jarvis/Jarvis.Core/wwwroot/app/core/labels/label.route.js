@@ -35,8 +35,8 @@
                 url: '/label',
                 redirectTo: 'core.label.read',
                 resolve: {
-                    labelService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/jarvis/core/labels/label.service.js');
+                    labelService: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
+                        return $ocLazyLoad.load(componentService.replace('/app/core/labels/label.service.js'));
                     }]
                 }
             });

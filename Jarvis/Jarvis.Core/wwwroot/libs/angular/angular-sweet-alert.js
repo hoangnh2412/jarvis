@@ -72,6 +72,21 @@
                             preConfirm: preConfirm
                         }).then(callback);
                     });
+                },
+                pConfirm: function (text, preConfirm) {
+                    return Swal.fire({
+                        title: 'Xác nhận',
+                        text: text,
+                        type: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Có',
+                        cancelButtonText: 'Không',
+                        showLoaderOnConfirm: true,
+                        allowOutsideClick: false,
+                        preConfirm: preConfirm
+                    });
                 }
             };
 
