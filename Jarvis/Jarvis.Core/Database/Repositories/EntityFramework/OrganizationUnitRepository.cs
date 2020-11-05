@@ -16,9 +16,11 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
         {
             var paged = await Query
                 .Query(
-                    filter: (queryable) => {
+                    filter: (queryable) =>
+                    {
                         queryable = queryable.QueryByDeletedBy();
-                        queryable = queryable.QueryByPermission(context);
+                        //queryable = queryable.QueryByPermission(context);
+                        queryable = queryable.QueryByTenantCode(context.TenantCode);
                         return queryable;
                     },
                     order: x => x.OrderByDescending(y => y.CreatedAt),
@@ -30,7 +32,8 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
         public async Task<OrganizationUnit> GetByCodeAsync(ContextModel context, Guid code)
         {
             IQueryable<OrganizationUnit> query = DbSet.Where(x => x.Code == code);
-            query = query.QueryByPermission(context);
+            //query = query.QueryByPermission(context);
+            query = query.QueryByTenantCode(context.TenantCode);
             return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
         }
     }

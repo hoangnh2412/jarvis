@@ -28,7 +28,8 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
         public async Task<User> FindUserByIdAsync(ContextModel contextModel, Guid id)
         {
             IQueryable<User> query = StorageContext.Set<User>().Where(x => x.Id == id);
-            query = query.QueryByPermission(contextModel);
+            //query = query.QueryByPermission(contextModel);
+            query = query.QueryByTenantCode(contextModel.TenantCode);
             query = query.QueryByDeletedBy();
 
             return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
@@ -66,7 +67,8 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             else
                 query = query.Where(x => x.CreatedBy != Guid.Empty && x.Id != contextModel.IdUser && x.NormalizedUserName != "ROOT");
 
-            query = query.QueryByPermission(contextModel);
+            //query = query.QueryByPermission(contextModel);
+            query = query.QueryByTenantCode(contextModel.TenantCode);
             query = query.QueryByDeletedBy();
 
             if (!string.IsNullOrEmpty(paging.Q))
