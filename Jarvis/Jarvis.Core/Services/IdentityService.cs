@@ -191,7 +191,7 @@ namespace Jarvis.Core.Services
                 AccessToken = token.AccessToken,
                 ExpireIn = (token.ExpireAt - DateTime.Now).TotalMinutes,
                 ExpireAt = token.ExpireAt,
-                Timezone = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalHours,
+                //Timezone = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalHours,
                 //RefreshToken = account.SecurityStamp,
             };
         }
