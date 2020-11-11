@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    var organizationsController = function ($state, sweetAlert, organizationService) {
+    var organizationsController = function ($state, sweetAlert, organizationService, $uibModal, $document) {
         var ctrl = this;
         ctrl.loading = false;
         ctrl.labels = [];
@@ -11,154 +11,214 @@
             q: null
         };
 
-        ctrl.validationOptions = {
-            rules: {
-                name: {
-                    required: true
-                },
-                fullName: {
-                    required: true
-                }
-            }
-        };
-
         ctrl.units = [];
-        ctrl.tree = [];
-        ctrl.unit = {
-            code: null,
-            name: null,
-            fullName: null,
-            description: null
-        };
+        ctrl.users = [];
 
         ctrl.treeOptions = {
             beforeDrop: function (e) {
-                if (e.source.index === e.dest.index) {
-                    return false;
-                }
-
-                var promise = sweetAlert.pConfirm('Bạn chắc chắn muốn chuyển đơn vị?', function () {
-                    // return labelService.delete(code);
-                });
-
-                return promise.then(function (result) {
-                    if (result.value) {
-                        return true;
-                    }
-                    return false;
-                });
+                ctrl.moveUnit(e);
             }
         };
 
-        ctrl.paginationUnits = function () {
-            organizationService.pagination(ctrl.paging).then(function (response) {
+        ctrl.$onInit = function () {
+            ctrl.getUnits();
+        };
+
+        ctrl.getUnits = function () {
+            organizationService.getUnits().then(function (response) {
                 if (response.status !== 200) {
                     return;
                 }
-
-                ctrl.tree = [];
-                for (let i = 0; i < response.data.data.length; i++) {
-                    const element = response.data.data[i];
-                    ctrl.tree.push({
-                        code: element.code,
-                        name: element.name,
-                        fullName: element.fullName,
-                        description: element.description,
-                        idParent: element.idParent,
-                        collapsed: false,
-                        nodes: []
-                    });
-                }
+                ctrl.units = response.data;
             });
         };
 
-        ctrl.editUnit = function (scope) {
-            var item = scope.$modelValue;
-            ctrl.unit.code = item.code;
-            ctrl.unit.name = item.name;
-            ctrl.unit.fullName = item.fullName;
-            ctrl.unit.description = item.description;
-
-            if (scope.$parentNodeScope) {
-                ctrl.unit.idParent = item.idParent;
-                var parent = scope.$parentNodeScope.$modelValue;
-                ctrl.unit.parent = parent.name + ' - ' + parent.fullName;
-            }
-        };
-
-        ctrl.addUnit = function (scope) {
-            var node = scope.$modelValue;
-            ctrl.unit.parent = node.name + ' - ' + node.fullName;
-            ctrl.clean();
-            // nodeData.items.push({
-            //     id: nodeData.id * 10 + nodeData.nodes.length,
-            //     title: nodeData.title + '.' + (nodeData.nodes.length + 1),
-            //     nodes: []
-            // });
-        };
-
-        ctrl.updateUnit = function () {
-            organizationService.put(ctrl.unit).then(function (response) {
-                if (response.status === 200) {
-                    var node = ctrl.findNode(ctrl.tree, ctrl.unit.code);
-                    if (node) {
-                        node.name = ctrl.unit.name;
-                        node.fullName = ctrl.unit.fullName;
-                        node.description = ctrl.unit.description;
+        ctrl.openUnitInfo = function (action, scope) {
+            var modalInstance = $uibModal.open({
+                animation: true,
+                ariaLabelledBy: 'modal-title',
+                ariaDescribedBy: 'modal-body',
+                templateUrl: 'organization-unit.html',
+                controller: 'organizationUnitController',
+                controllerAs: '$ctrl',
+                size: 'md',
+                appendTo: angular.element($document[0].querySelector('.box-modal')),
+                resolve: {
+                    action: function () {
+                        return action;
+                    },
+                    nodeScope: function () {
+                        return scope;
                     }
+                }
+            });
+
+            modalInstance.result.then(function (result) {
+                if (result.action === 'update') {
+                    var node = ctrl.find(result.data.code);
+                    if (node) {
+                        node.name = result.data.name;
+                        node.fullName = result.data.fullName;
+                        node.description = result.data.description;
+                    }
+                }
+
+                if (result.action === 'create') {
+                    var unit = angular.copy(result.data);
+                    var node = ctrl.find(result.data.idParent);
+                    if (node) {
+                        node.nodes.push(unit);
+                    } else {
+                        ctrl.units.push(unit);
+                    }
+                }
+            });
+
+            modalInstance.opened.then(function (value) {
+                angular.element('input[name="name"]').focus();
+            });
+        };
+
+        ctrl.deleteUnit = function (scope) {
+            var item = scope.$modelValue;
+
+            sweetAlert.confirm(function () {
+                return organizationService.deleteUnit(item.code);
+            }, function (result) {
+                if (result.value) {
+                    scope.remove();
 
                     sweetAlert.swal({
                         title: "Thành công",
-                        text: "Bạn đã sửa đơn vị thành công!",
+                        text: "Bạn đã xoá đơn vị thành công!",
                         type: "success",
                     });
                 }
             });
         };
 
-        ctrl.createUnit = function () {
-            // organizationService.post(ctrl.unit).then(function (response) {
-            //     console.log(response);
-            // });
-        };
+        ctrl.moveUnit = function (e) {
+            var oldIndex = e.source.index;
+            var newIndex = e.dest.index;
 
-        ctrl.updateParent = function () {
-
-        };
-
-        ctrl.save = function () {
-            if (ctrl.unit.code) {
-                ctrl.updateUnit();
-            } else {
-                // ctrl.createUnit();
-            }
-        };
-
-        ctrl.clean = function () {
-            ctrl.unit = {
-                code: null,
-                name: null,
-                fullName: null,
-                description: null
-            };
-        };
-
-        ctrl.findNode = function (nodes, code) {
-            for (let i = 0; i < nodes.length; i++) {
-                const node = nodes[i];
-                if (node.code === code) {
-                    return node;
+            if ((e.dest.nodesScope.$parent.$modelValue && e.source.nodesScope.$parent.$modelValue) || (!e.dest.nodesScope.$parent.$modelValue && !e.source.nodesScope.$parent.$modelValue)) {
+                //Nếu ko có node cha và vị trí ko đổi
+                if (!e.dest.nodesScope.$parent.$modelValue && !e.source.nodesScope.$parent.$modelValue) {
+                    if (oldIndex === newIndex) {
+                        return false;
+                    }
                 }
 
-                if (node.nodes && node.nodes.length > 0) {
-                    return ctrl.findNode(node.nodes, code);
+                //Nếu có node cha nhưng node cha ko đổi và vị trí ko đổi thì bỏ qua
+                if (e.dest.nodesScope.$parent.$modelValue && e.source.nodesScope.$parent.$modelValue) {
+                    if (e.dest.nodesScope.$parent.$modelValue.code === e.source.nodesScope.$parent.$modelValue.code && oldIndex === newIndex) {
+                        return false;
+                    }
+                }
+            }
+
+            var sourceCode = e.source.nodeScope.$modelValue.code;
+            var parentCode = e.dest.nodesScope.$parent.$modelValue ? e.dest.nodesScope.$parent.$modelValue.code : null;
+
+            var leftCode = null;
+            if (newIndex === 0) {
+                leftCode = null;
+            } else {
+                //Nếu ko thay đổi node cha
+                if (e.dest.nodesScope.$nodeScope && e.dest.nodesScope.$nodeScope.$modelValue.code === e.source.nodeScope.$modelValue.idParent) {
+                    if (oldIndex === newIndex) {
+                        return false;
+                    } else {
+                        //Clone list node con và di chuyển để tìm left node
+                        var items = JSON.parse(JSON.stringify(e.dest.nodesScope.$modelValue));
+                        items.move(oldIndex, newIndex);
+
+                        leftCode = items[newIndex - 1].code;
+                    }
+                } else {
+                    leftCode = e.dest.nodesScope.$modelValue[newIndex - 1].code;
+                }
+            }
+
+
+            var promise = sweetAlert.pConfirm('Bạn chắc chắn muốn chuyển đơn vị?', function () {
+                return organizationService.moveUnit(sourceCode, parentCode, leftCode);
+            });
+
+            return promise.then(function (result) {
+                if (result.value) {
+                    if (result.value.status === 200) {
+                        sweetAlert.swal({
+                            title: "Thành công",
+                            text: "Bạn đã chuyển đơn vị thành công!",
+                            type: "success",
+                        });
+                        return true;
+                    }
+                    return false;
+                }
+                return false;
+            });
+        };
+
+        ctrl.findNode = function (node, code) {
+            if (node.code === code) {
+                return node;
+            }
+
+            if (node.nodes && node.nodes.length > 0) {
+                for (const element of node.nodes) {
+                    const result = ctrl.findNode(element, code);
+                    if (result) {
+                        return result;
+                    }
                 }
             }
             return null;
         };
 
-        ctrl.$onInit = function () {
-            ctrl.paginationUnits();
+        ctrl.find = function (code) {
+            for (let i = 0; i < ctrl.units.length; i++) {
+                const element = ctrl.units[i];
+                var result = ctrl.findNode(element, code);
+                if (result) {
+                    return result;
+                }
+            }
+            return null;
+        };
+
+
+        ctrl.openUsersNotInUnit = function () {
+            var modalInstance = $uibModal.open({
+                animation: true,
+                ariaLabelledBy: 'modal-title',
+                ariaDescribedBy: 'modal-body',
+                templateUrl: 'organization-users.html',
+                controller: 'organizationUserController',
+                controllerAs: '$ctrl',
+                size: 'md',
+                appendTo: angular.element($document[0].querySelector('.box-modal')),
+                resolve: {
+                    // idUser: function () {
+                    //     return user.id;
+                    // }
+                }
+            });
+            modalInstance.result.then(function (value) {
+                // ctrl.getUsers();
+            });
+        };
+
+        ctrl.getUsers = function (scope) {
+            var item = scope.$modelValue;
+
+            organizationService.getUsersInUnit(item.code, ctrl.paging).then(function (response) {
+                if (response.status !== 200) {
+                    return;
+                }
+                ctrl.users = response.data;
+            });
         };
     };
 
@@ -166,5 +226,5 @@
         .module('core')
         .controller('organizationsController', organizationsController);
 
-    organizationsController.$inject = ['$state', 'sweetAlert', 'organizationService'];
+    organizationsController.$inject = ['$state', 'sweetAlert', 'organizationService', '$uibModal', '$document'];
 }());

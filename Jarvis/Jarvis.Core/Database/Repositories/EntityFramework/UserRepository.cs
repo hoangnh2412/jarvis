@@ -80,6 +80,46 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             return await query.ToPaginationAsync(paging);
         }
 
+        public async Task<Paged<User>> PagingAsync(Guid tenantCode, Paging paging)
+        {
+            IQueryable<User> query = StorageContext.Set<User>();
+
+            query = query.QueryByTenantCode(tenantCode);
+            query = query.QueryByDeletedBy();
+
+            if (!string.IsNullOrEmpty(paging.Q))
+            {
+                var q = paging.Q.ToUpper();
+                query = query.Where(x => x.NormalizedUserName.Contains(q)
+                                    || x.NormalizedEmail.Contains(q)
+                                    || x.PhoneNumber.Contains(paging.Q));
+            }
+
+            return await query.ToPaginationAsync(paging);
+        }
+
+        public async Task<Paged<User>> PagingWithoutSomeUsersAsync(Guid tenantCode, Paging paging, List<Guid> codes)
+        {
+            IQueryable<User> query = StorageContext.Set<User>();
+
+            query = query.QueryByTenantCode(tenantCode);
+            query = query.QueryByDeletedBy();
+
+            query = query.Where(x => !codes.Contains(x.Id));
+
+            if (!string.IsNullOrEmpty(paging.Q))
+            {
+                var q = paging.Q.ToUpper();
+                query = query.Where(x =>
+                    x.NormalizedUserName.Contains(q)
+                    || x.NormalizedEmail.Contains(q)
+                    || x.PhoneNumber.Contains(paging.Q)
+                );
+            }
+
+            return await query.ToPaginationAsync(paging);
+        }
+
         public async Task AssignRoleToUserAsync(Guid idUser, Guid idRole)
         {
             var dbset = StorageContext.Set<IdentityUserRole<Guid>>();

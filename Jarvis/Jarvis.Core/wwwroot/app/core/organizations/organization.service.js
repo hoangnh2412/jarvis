@@ -4,24 +4,41 @@
     function organizationService(httpService) {
         var api = '/organizations';
 
-        this.pagination = function (paging) {
-            return httpService.get(api, { params: paging });
+        this.getUnits = function () {
+            return httpService.get(api);
         };
 
-        this.get = function (code) {
+        this.getUnit = function (code) {
             return httpService.get(api + '/' + code);
         };
 
-        this.post = function (organizationUnit) {
+        this.postUnit = function (organizationUnit) {
             return httpService.post(api, organizationUnit);
         };
 
-        this.put = function (organizationUnit) {
+        this.putUnit = function (organizationUnit) {
             return httpService.put(api + '/' + organizationUnit.code, organizationUnit);
         };
 
-        this.delete = function (code) {
+        this.deleteUnit = function (code) {
             return httpService.delete(api + '/' + code);
+        };
+
+        this.moveUnit = function (sourceCode, parentCode, leftCode) {
+            return httpService.put(api + '/' + sourceCode + '/move', {}, {
+                params: {
+                    parentCode: parentCode,
+                    leftCode: leftCode
+                }
+            });
+        };
+
+        this.getUsersInUnit = function (code, paging) {
+            return httpService.get(api + '/' + code + '/users', { params: paging });
+        };
+
+        this.getUsersNotInUnit = function (code, paging) {
+            return httpService.get(api + '/users', { params: paging });
         };
     };
 

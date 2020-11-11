@@ -25,6 +25,7 @@ namespace Jarvis.Core.Database.MySql
             {
                 builder.ToTable("core_file");
                 builder.HasKey(x => x.Id);
+                // builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
 
                 builder.Property(x => x.Name).HasMaxLength(500).IsUnicode(false);
                 builder.Property(x => x.ContentType).HasMaxLength(50).IsUnicode(false);
@@ -38,6 +39,7 @@ namespace Jarvis.Core.Database.MySql
             {
                 builder.ToTable("core_organization_unit");
                 builder.HasKey(x => x.Id);
+                // builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
                 builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
 
                 builder.Property(x => x.Name).IsRequired().HasMaxLength(50);
@@ -59,6 +61,7 @@ namespace Jarvis.Core.Database.MySql
             {
                 builder.ToTable("core_tenant");
                 builder.HasKey(x => x.Id);
+                // builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
                 builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
 
                 builder.Property(x => x.Code).IsRequired();
@@ -77,6 +80,7 @@ namespace Jarvis.Core.Database.MySql
             {
                 builder.ToTable("core_tenant_info");
                 builder.HasKey(x => x.Id);
+                // builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
                 builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
 
                 builder.Property(x => x.Code).IsRequired();
@@ -97,6 +101,7 @@ namespace Jarvis.Core.Database.MySql
             {
                 builder.ToTable("core_tenant_host");
                 builder.HasKey(x => x.Id);
+                // builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
                 builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
 
                 builder.Property(x => x.Code).IsRequired();
@@ -109,6 +114,7 @@ namespace Jarvis.Core.Database.MySql
             {
                 builder.ToTable("core_token_info");
                 builder.HasKey(x => x.Id);
+                // builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
                 builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
 
                 builder.Property(x => x.Source).HasMaxLength(100);
@@ -124,6 +130,7 @@ namespace Jarvis.Core.Database.MySql
             {
                 builder.ToTable("core_setting");
                 builder.HasKey(x => x.Id);
+                // builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
                 builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
 
                 builder.Property(x => x.Key).HasMaxLength(50).IsUnicode(false);
@@ -140,6 +147,7 @@ namespace Jarvis.Core.Database.MySql
             {
                 builder.ToTable("core_label");
                 builder.HasKey(x => x.Id);
+                // builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
                 builder.Property(x => x.Id).IsRequired().UseMySqlIdentityColumn();
 
                 builder.Property(x => x.Name).HasMaxLength(250).IsUnicode(true);

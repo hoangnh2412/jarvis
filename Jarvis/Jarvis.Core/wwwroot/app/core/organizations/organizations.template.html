@@ -15,71 +15,140 @@
                     <h3 class="box-title">Đơn vị</h3>
 
                     <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-success btn-sm" ng-click="$ctrl.openUnitInfo('create')"><i class="fa fa-plus"></i> Thêm</button>
                     </div>
                 </div>
                 <div class="box-body">
                     <div ui-tree="$ctrl.treeOptions">
-                        <ol ui-tree-nodes ng-model="$ctrl.tree">
-                            <li ng-repeat="unit in $ctrl.tree" ui-tree-node data-collapsed="true" ng-include="'nodes_renderer.html'"></li>
+                        <ol ui-tree-nodes ng-model="$ctrl.units">
+                            <li ng-repeat="unit in $ctrl.units" ui-tree-node data-collapsed="true" ng-include="'nodes-renderer.html'"></li>
                         </ol>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <uib-tabset active="active" class="nav-tabs-custom">
-                <uib-tab index="0" heading="Thông tin đơn vị">
-                    <form name="frmUnit" ng-submit="$ctrl.save(frmUnit)" ng-validate="$ctrl.validationOptions" class="form-horizontal">
-                        <div class="form-group">
-                            <label class="col-md-3 col-sm-4 control-label">Đơn vị cha</label>
-                            <div class="col-md-9 col-sm-8">
-                                <p class="form-control-static">{{$ctrl.unit.parent}}</p>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-md-3 col-sm-4 control-label">Mã đơn vị</label>
-                            <div class="col-md-9 col-sm-8">
-                                <input name="name" type="text" ng-model="$ctrl.unit.name" jv-autofocus class="form-control" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-md-3 col-sm-4 control-label">Tên đơn vị</label>
-                            <div class="col-md-9 col-sm-8">
-                                <input name="fullName" type="text" ng-model="$ctrl.unit.fullName" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-md-3 col-sm-4 control-label">Mô tả</label>
-                            <div class="col-md-9 col-sm-8">
-                                <textarea name="description" ng-model="$ctrl.unit.description" class="form-control"></textarea>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-md-offset-2 col-md-10 col-sm-offset-4 col-sm-8">
-                                <button ng-click="$ctrl.clean()" class="btn btn-danger pull-right" style="margin-left: 5px"><i class="fa fa-close"></i> Hủy</button>
-                                <button type="submit" class="btn btn-success pull-right"><i class="fa fa-save"></i> Lưu</button>
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Thành viên</h3>
 
-                            </div>
-                        </div>
-                    </form>
-                </uib-tab>
-                <uib-tab index="1" heading="Thành viên">
-                    I've got an HTML heading, and a select callback. Pretty cool!
-                </uib-tab>
-            </uib-tabset>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-success btn-sm" ng-click="$ctrl.openUsersNotInUnit()"><i class="fa fa-plus"></i> Thêm</button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div class="table-responsive">
+                        <table class="table table-xs no-margin">
+                            <thead>
+                                <tr class="info">
+                                    <th>Tài khoản</th>
+                                    <th>Họ tên</th>
+                                    <th>Ngày</th>
+                                    <th style="width: 50px;" class="text-center"><button type="button" class="btn btn-danger btn-xs hint--left" aria-label="Xoá tất cả"><i class="fa fa-trash"></i></button></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>aaaa</td>
+                                    <td>bbb</td>
+                                    <td>ccc</td>
+                                    <td class="text-center"><button class="btn btn-danger btn-xs"><i class="fa fa-times"></i></button></td>
+                                </tr>
+                                <tr>
+                                    <td>aaaa</td>
+                                    <td>bbb</td>
+                                    <td>ccc</td>
+                                    <td class="text-center"><button class="btn btn-danger btn-xs"><i class="fa fa-times"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <script type="text/ng-template" id="nodes_renderer.html">
-        <div ui-tree-handle class="tree-node tree-node-content">
-            <a ng-if="unit.nodes && unit.nodes.length > 0" data-nodrag ng-click="toggle(this)" class="tree-node-toggle"><span class="glyphicon" ng-class="{ 'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed }"></span></a>
-            <span>{{unit.name}} - {{unit.fullName}}</span>
-            <a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="$ctrl.delete(this)"><span class="glyphicon glyphicon-remove"></span></a>
-            <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="$ctrl.addUnit(this)" style="margin-right: 3px;"><span class="glyphicon glyphicon-plus"></span></a>
-            <a class="pull-right btn btn-warning btn-xs" data-nodrag ng-click="$ctrl.editUnit(this)" style="margin-right: 3px;"><span class="glyphicon glyphicon-pencil"></span></a>
-        </div>
-        <ol ui-tree-nodes="" ng-model="unit.nodes" ng-class="{hidden: collapsed}">
-            <li ng-repeat="unit in unit.nodes" ui-tree-node ng-include="'nodes_renderer.html'"></li>
-        </ol>
-    </script>
 </section>
+
+<script type="text/ng-template" id="nodes-renderer.html">
+    <div ui-tree-handle class="tree-node tree-node-content">
+        <a ng-if="unit.nodes && unit.nodes.length > 0" data-nodrag ng-click="toggle(this)" class="tree-node-toggle"><span class="glyphicon" ng-class="{ 'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed }"></span></a>
+        <span>{{unit.name}} - {{unit.fullName}}</span>
+        <span class="pull-right">
+            <a class="btn bg-purple btn-xs hint--left" aria-label="Thành viên" data-nodrag ng-click="$ctrl.getUsers(this)"><span class="glyphicon glyphicon-user"></span></a>
+            <a class="btn btn-primary btn-xs hint--left" aria-label="Tạo" data-nodrag ng-click="$ctrl.openUnitInfo('create', this)"><span class="glyphicon glyphicon-plus"></span></a>
+            <a class="btn btn-warning btn-xs hint--left" aria-label="Sửa" data-nodrag ng-click="$ctrl.openUnitInfo('update', this)"><span class="glyphicon glyphicon-pencil"></span></a>
+            <a class="btn btn-danger btn-xs hint--left" aria-label="Xoá" data-nodrag ng-click="$ctrl.deleteUnit(this)"><span class="glyphicon glyphicon-remove"></span></a>
+        </span>
+    </div>
+    <ol ui-tree-nodes="" ng-model="unit.nodes" ng-class="{hidden: collapsed}">
+        <li ng-repeat="unit in unit.nodes" ui-tree-node ng-include="'nodes-renderer.html'"></li>
+    </ol>
+</script>
+
+<script type="text/ng-template" id="organization-users.html">
+    <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Chọn thành viên</h3>
+    </div>
+    <div class="modal-body" id="modal-body">
+        <div class="table-responsive">
+            <table class="table table-xs no-margin">
+                <thead>
+                    <tr class="info">
+                        <th><input type="checkbox" ng-model="$ctrl.selectedAll" ng-click="$ctrl.selectAll()"></th>
+                        <th>Tài khoản</th>
+                        <th>Họ tên</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="checkbox" ng-model="invoice.selected" ng-change="$ctrl.selectItem($index)" role="button"></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="$ctrl.ok()">OK</button>
+        <button class="btn btn-warning" type="button" ng-click="$ctrl.cancel()">Cancel</button>
+    </div>
+</script>
+
+<script type="text/ng-template" id="organization-unit.html">
+    <form name="frmUnit" ng-submit="$ctrl.save(frmUnit)" ng-validate="$ctrl.validationOptions" class="form-horizontal">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modal-title">Thông tin đơn vị</h3>
+        </div>
+        <div class="modal-body" id="modal-body">
+            <div class="form-group">
+                <label class="col-md-3 col-sm-4 control-label">Đơn vị cha</label>
+                <div class="col-md-9 col-sm-8">
+                    <p class="form-control-static">{{$ctrl.unit.parent}}</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-3 col-sm-4 control-label">Mã đơn vị</label>
+                <div class="col-md-9 col-sm-8">
+                    <input name="name" type="text" ng-model="$ctrl.unit.name" jv-autofocus class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-3 col-sm-4 control-label">Tên đơn vị</label>
+                <div class="col-md-9 col-sm-8">
+                    <input name="fullName" type="text" ng-model="$ctrl.unit.fullName" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-3 col-sm-4 control-label">Mô tả</label>
+                <div class="col-md-9 col-sm-8">
+                    <textarea name="description" ng-model="$ctrl.unit.description" class="form-control"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" ng-click="$ctrl.cancel()" class="btn btn-danger pull-right" style="margin-left: 5px"><i class="fa fa-close"></i> Hủy</button>
+            <button type="submit" class="btn btn-success pull-right"><i class="fa fa-save"></i> Lưu</button>
+        </div>
+    </form>
+</script>

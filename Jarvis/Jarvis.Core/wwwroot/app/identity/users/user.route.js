@@ -35,8 +35,8 @@
                 url: '/user',
                 redirectTo: 'identity.backend.user.read',
                 resolve: {
-                    userService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/jarvis/identity/users/user.service.js');
+                    userService: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
+                        return $ocLazyLoad.load(componentService.replace('/app/identity/users/user.service.js'));
                     }]
                 }
             });

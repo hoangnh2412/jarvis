@@ -8,14 +8,14 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Jarvis.Core.Database.MySql.Migrations
 {
     [DbContext(typeof(CoreDbContext))]
-    [Migration("20191217193148_InitCore")]
-    partial class InitCore
+    [Migration("20201107080738_AddFieldTreeToTableOrganizationUnit")]
+    partial class AddFieldTreeToTableOrganizationUnit
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.0.0")
+                .HasAnnotation("ProductVersion", "3.1.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("Infrastructure.Database.Entities.Role", b =>
@@ -401,25 +401,6 @@ namespace Jarvis.Core.Database.MySql.Migrations
                     b.ToTable("core_label");
                 });
 
-            modelBuilder.Entity("Jarvis.Core.Database.Poco.OrganizationRole", b =>
-                {
-                    b.Property<Guid>("IdRole")
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid>("OrganizationCode")
-                        .HasColumnType("char(36)");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.HasKey("IdRole", "OrganizationCode");
-
-                    b.HasIndex("IdRole", "OrganizationCode")
-                        .IsUnique();
-
-                    b.ToTable("core_organization_role");
-                });
-
             modelBuilder.Entity("Jarvis.Core.Database.Poco.OrganizationUnit", b =>
                 {
                     b.Property<int>("Id")
@@ -460,13 +441,19 @@ namespace Jarvis.Core.Database.MySql.Migrations
                         .HasColumnType("varchar(250) CHARACTER SET utf8mb4")
                         .HasMaxLength(250);
 
-                    b.Property<Guid>("IdParent")
+                    b.Property<Guid?>("IdParent")
                         .HasColumnType("char(36)");
+
+                    b.Property<int>("Left")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("varchar(50) CHARACTER SET utf8mb4")
                         .HasMaxLength(50);
+
+                    b.Property<int>("Right")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("TenantCode")
                         .HasColumnType("char(36)");
@@ -502,8 +489,8 @@ namespace Jarvis.Core.Database.MySql.Migrations
                     b.Property<int>("Id")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsManager")
-                        .HasColumnType("tinyint(1)");
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
 
                     b.HasKey("IdUser", "OrganizationCode");
 

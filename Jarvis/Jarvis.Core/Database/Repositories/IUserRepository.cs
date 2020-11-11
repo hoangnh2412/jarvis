@@ -15,6 +15,10 @@ namespace Jarvis.Core.Database.Repositories
     {
         Task<Paged<User>> PagingAsync(ContextModel context, Paging paging);
 
+        Task<Paged<User>> PagingAsync(Guid tenantCode, Paging paging);
+
+        Task<Paged<User>> PagingWithoutSomeUsersAsync(Guid tenantCode, Paging paging, List<Guid> codes);
+
         Task<User> FindUserByIdAsync(ContextModel context, Guid id);
 
         Task<User> FindUserByIdAsync(Guid tenantCode, Guid id);
