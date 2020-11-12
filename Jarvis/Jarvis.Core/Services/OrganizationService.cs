@@ -24,18 +24,20 @@ namespace Jarvis.Core.Services
             _uowCore = uowCore;
         }
 
-        public async Task<bool> CreateUserAsync(CreateOrganizationUserRequestModel request)
+        public async Task<bool> CreateUsersAsync(Guid tenantCode, Guid userCode, CreateOrganizationUserRequestModel request)
         {
             var repoOrganizationUser = _uowCore.GetRepository<IOrganizationUserRepository>();
-            if (await repoOrganizationUser.AnyAsync(x => x.OrganizationCode == request.OrganizationUnitCode && x.IdUser == request.OrganizationUserCode))
+            if (await repoOrganizationUser.AnyAsync(x => x.OrganizationCode == request.UnitCode && request.UserCodes.Contains(x.IdUser)))
                 return false;
 
-            await repoOrganizationUser.InsertAsync(new OrganizationUser
+            await repoOrganizationUser.InsertsAsync(request.UserCodes.Select(x => new OrganizationUser
             {
-                IdUser = request.OrganizationUserCode,
-                Level = request.Level,
-                OrganizationCode = request.OrganizationUnitCode
-            });
+                IdUser = x,
+                OrganizationCode = request.UnitCode,
+                CreatedAt = DateTime.Now,
+                CreatedAtUtc = DateTime.UtcNow,
+                CreatedBy = userCode
+            }).ToList());
             await _uowCore.CommitAsync();
             return true;
         }
@@ -104,7 +106,8 @@ namespace Jarvis.Core.Services
                     Avatar = info == null ? null : info.AvatarPath,
                     Code = item.IdUser,
                     FullName = info == null ? null : info.FullName,
-                    UserName = usernames.ContainsKey(item.IdUser) ? usernames[item.IdUser] : null
+                    UserName = usernames.ContainsKey(item.IdUser) ? usernames[item.IdUser] : null,
+                    CreatedAt = item.CreatedAt
                 });
             }
 
@@ -144,8 +147,8 @@ namespace Jarvis.Core.Services
                 {
                     Code = data.Id,
                     UserName = data.UserName,
-                    FullName = info == null ? info.FullName : null,
-                    Avatar = info == null ? info.AvatarPath : null
+                    FullName = info?.FullName,
+                    Avatar = info?.AvatarPath
                 });
             }
 

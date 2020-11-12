@@ -30,7 +30,7 @@
         <div class="col-md-6">
             <div class="box box-primary">
                 <div class="box-header with-border">
-                    <h3 class="box-title">Thành viên</h3>
+                    <h3 class="box-title">Thành viên {{$ctrl.unit.fullName}}</h3>
 
                     <div class="box-tools pull-right">
                         <button type="button" class="btn btn-success btn-sm" ng-click="$ctrl.openUsersNotInUnit()"><i class="fa fa-plus"></i> Thêm</button>
@@ -43,25 +43,29 @@
                                 <tr class="info">
                                     <th>Tài khoản</th>
                                     <th>Họ tên</th>
-                                    <th>Ngày</th>
+                                    <th>Ngày tham gia</th>
                                     <th style="width: 50px;" class="text-center"><button type="button" class="btn btn-danger btn-xs hint--left" aria-label="Xoá tất cả"><i class="fa fa-trash"></i></button></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>aaaa</td>
-                                    <td>bbb</td>
-                                    <td>ccc</td>
-                                    <td class="text-center"><button class="btn btn-danger btn-xs"><i class="fa fa-times"></i></button></td>
-                                </tr>
-                                <tr>
-                                    <td>aaaa</td>
-                                    <td>bbb</td>
-                                    <td>ccc</td>
-                                    <td class="text-center"><button class="btn btn-danger btn-xs"><i class="fa fa-times"></i></button></td>
+                                <tr ng-repeat="user in $ctrl.users track by $index">
+                                    <td>{{user.userName}}</td>
+                                    <td>{{user.fullName}}</td>
+                                    <td>{{user.createdAt | date: 'dd/MM/yyyy'}}</td>
+                                    <td class="text-center"><button type="button" ng-click="$ctrl.deleteUser($index)" class="btn btn-danger btn-xs"><i class="fa fa-times"></i></button></td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+                <div class="box-footer">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <p class="form-control-static">Từ {{($ctrl.paging.page - 1) * $ctrl.paging.size + 1}} đến {{$ctrl.paging.page * $ctrl.paging.size > $ctrl.paging.totalItems ? $ctrl.paging.totalItems : $ctrl.paging.page * $ctrl.paging.size}} của {{$ctrl.paging.totalItems}} kết quả</p>
+                        </div>
+                        <div class="col-sm-8 text-right">
+                            <ul uib-pagination ng-model="$ctrl.paging.page" ng-change="$ctrl.getCalls()" total-items="$ctrl.paging.totalItems" max-size="5" class="pagination no-margin" boundary-links="true" force-ellipses="true" items-per-page="$ctrl.paging.size" next-text="&rsaquo;" last-text="&raquo;" first-text="&laquo;" previous-text="&lsaquo;"></ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -74,7 +78,7 @@
         <a ng-if="unit.nodes && unit.nodes.length > 0" data-nodrag ng-click="toggle(this)" class="tree-node-toggle"><span class="glyphicon" ng-class="{ 'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed }"></span></a>
         <span>{{unit.name}} - {{unit.fullName}}</span>
         <span class="pull-right">
-            <a class="btn bg-purple btn-xs hint--left" aria-label="Thành viên" data-nodrag ng-click="$ctrl.getUsers(this)"><span class="glyphicon glyphicon-user"></span></a>
+            <a class="btn bg-purple btn-xs hint--left" aria-label="Thành viên" data-nodrag ng-click="$ctrl.getMembersUnit(this)"><span class="glyphicon glyphicon-user"></span></a>
             <a class="btn btn-primary btn-xs hint--left" aria-label="Tạo" data-nodrag ng-click="$ctrl.openUnitInfo('create', this)"><span class="glyphicon glyphicon-plus"></span></a>
             <a class="btn btn-warning btn-xs hint--left" aria-label="Sửa" data-nodrag ng-click="$ctrl.openUnitInfo('update', this)"><span class="glyphicon glyphicon-pencil"></span></a>
             <a class="btn btn-danger btn-xs hint--left" aria-label="Xoá" data-nodrag ng-click="$ctrl.deleteUnit(this)"><span class="glyphicon glyphicon-remove"></span></a>
@@ -87,31 +91,33 @@
 
 <script type="text/ng-template" id="organization-users.html">
     <div class="modal-header">
-        <h3 class="modal-title" id="modal-title">Chọn thành viên</h3>
+        <h3 class="modal-title" id="modal-title">Chọn thành viên <span data-toggle="tooltip" title="" class="badge bg-yellow">{{$ctrl.selectedCodes.length | number : 0}}</span></h3>
     </div>
     <div class="modal-body" id="modal-body">
         <div class="table-responsive">
             <table class="table table-xs no-margin">
                 <thead>
                     <tr class="info">
-                        <th><input type="checkbox" ng-model="$ctrl.selectedAll" ng-click="$ctrl.selectAll()"></th>
                         <th>Tài khoản</th>
                         <th>Họ tên</th>
+                        <th style="width: 30px"><input type="checkbox" ng-model="$ctrl.all" ng-click="$ctrl.select(-1)" /></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td><input type="checkbox" ng-model="invoice.selected" ng-change="$ctrl.selectItem($index)" role="button"></td>
-                        <td></td>
-                        <td></td>
+                    <tr ng-repeat="user in $ctrl.users track by $index">
+                        <td>{{user.userName}}</td>
+                        <td>{{user.fullName}}</td>
+                        <td><input type="checkbox" ng-model="user.selected" ng-click="$ctrl.select($index)" /></td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
     <div class="modal-footer">
-        <button class="btn btn-primary" type="button" ng-click="$ctrl.ok()">OK</button>
-        <button class="btn btn-warning" type="button" ng-click="$ctrl.cancel()">Cancel</button>
+        <div class="pull-right">
+            <button type="button" ng-click="$ctrl.ok()" class="btn btn-success"><i class="fa fa-save"></i> Lưu</button>
+            <button type="button" ng-click="$ctrl.cancel()" class="btn btn-danger"><i class="fa fa-close"></i> Hủy</button>
+        </div>
     </div>
 </script>
 
@@ -147,8 +153,10 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button type="button" ng-click="$ctrl.cancel()" class="btn btn-danger pull-right" style="margin-left: 5px"><i class="fa fa-close"></i> Hủy</button>
-            <button type="submit" class="btn btn-success pull-right"><i class="fa fa-save"></i> Lưu</button>
+            <div class="pull-right">
+                <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> Lưu</button>
+                <button type="button" ng-click="$ctrl.cancel()" class="btn btn-danger"><i class="fa fa-close"></i> Hủy</button>
+            </div>
         </div>
     </form>
 </script>

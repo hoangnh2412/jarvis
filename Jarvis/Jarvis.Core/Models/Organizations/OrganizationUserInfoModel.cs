@@ -8,5 +8,6 @@ namespace Jarvis.Core.Models.Organizations
         public string UserName { get; set; }
         public string FullName { get; set; }
         public string Avatar { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

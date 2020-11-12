@@ -24,7 +24,7 @@ namespace Jarvis.Core.Abstractions
 
         Task<Paged<OrganizationUserInfoModel>> GetUsersNotInUnitAsync(Guid tenantcode, Guid code, Paging paging);
 
-        Task<bool> CreateUserAsync(CreateOrganizationUserRequestModel request);
+        Task<bool> CreateUsersAsync(Guid tenantCode, Guid userCode, CreateOrganizationUserRequestModel request);
 
         Task<bool> DeleteUserAsync(DeleteOrganizationUserRequestModel request);
 

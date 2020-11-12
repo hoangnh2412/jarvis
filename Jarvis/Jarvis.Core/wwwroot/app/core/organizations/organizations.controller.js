@@ -8,10 +8,13 @@
         ctrl.paging = {
             page: 1,
             size: 10,
-            q: null
+            q: null,
+            totalItems: 0,
+            totalPages: 0
         };
 
         ctrl.units = [];
+        ctrl.unit = null;
         ctrl.users = [];
 
         ctrl.treeOptions = {
@@ -190,6 +193,14 @@
 
 
         ctrl.openUsersNotInUnit = function () {
+            if (!ctrl.unit) {
+                sweetAlert.swal({
+                    title: "Lỗi",
+                    text: "Chưa chọn đơn vị",
+                    type: "error",
+                });
+            }
+
             var modalInstance = $uibModal.open({
                 animation: true,
                 ariaLabelledBy: 'modal-title',
@@ -200,24 +211,48 @@
                 size: 'md',
                 appendTo: angular.element($document[0].querySelector('.box-modal')),
                 resolve: {
-                    // idUser: function () {
-                    //     return user.id;
-                    // }
+                    unit: function () {
+                        return ctrl.unit;
+                    }
                 }
             });
-            modalInstance.result.then(function (value) {
-                // ctrl.getUsers();
+            modalInstance.closed.then(function () {
+                ctrl.getMembers();
             });
         };
 
-        ctrl.getUsers = function (scope) {
-            var item = scope.$modelValue;
-
-            organizationService.getUsersInUnit(item.code, ctrl.paging).then(function (response) {
+        ctrl.getMembers = function () {
+            organizationService.getUsersInUnit(ctrl.unit.code, ctrl.paging).then(function (response) {
                 if (response.status !== 200) {
                     return;
                 }
-                ctrl.users = response.data;
+
+                ctrl.users = response.data.data;
+                ctrl.paging.totalItems = response.data.totalItems;
+                ctrl.paging.totalPages = response.data.totalPages;
+                ctrl.paging.page = response.data.page;
+                ctrl.paging.size = response.data.size;
+            });
+        };
+
+        ctrl.getMembersUnit = function (scope) {
+            ctrl.unit = scope.$modelValue;
+            ctrl.getMembers();
+        };
+
+        ctrl.deleteUser = function (index) {
+            var user = ctrl.users[index];
+
+            sweetAlert.confirm(function () {
+                return organizationService.deleteUser(ctrl.unit.code, user.code);
+            }, function (result) {
+                if (result.value) {
+                    if (result.value.status !== 200) {
+                        return;
+                    }
+                    ctrl.users.splice(index, 1);
+                    sweetAlert.success('Đã xóa', 'Bạn đã xóa thành viên thành công!');
+                }
             });
         };
     };

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Infrastructure.Database.Models;
 using Jarvis.Core.Abstractions;
@@ -105,7 +106,7 @@ namespace Jarvis.Core.Controllers
             return Ok();
         }
 
-        [HttpGet("users")]
+        [HttpGet("{code}/users")]
         public async Task<IActionResult> GetUsersNotInUnitAsync([FromRoute] Guid code, [FromQuery] Paging paging)
         {
             var tenantCode = await _workContext.GetTenantCodeAsync();
@@ -115,7 +116,7 @@ namespace Jarvis.Core.Controllers
             return Ok(users);
         }
 
-        [HttpGet("{code}/users")]
+        [HttpGet("{code}/members")]
         public async Task<IActionResult> GetUsersInUnitAsync([FromRoute] Guid code, [FromQuery] Paging paging)
         {
             var tenantCode = await _workContext.GetTenantCodeAsync();
@@ -125,14 +126,15 @@ namespace Jarvis.Core.Controllers
             return Ok(users);
         }
 
-        [HttpPost("{code}/users/{userCode}")]
+        [HttpPost("{code}/user/{userCode}")]
         public async Task<IActionResult> PostOrganizationUserAsync([FromRoute] Guid code, [FromRoute] Guid userCode)
         {
-            var result = await _organizationService.CreateUserAsync(new CreateOrganizationUserRequestModel
+            var tenantCode = await _workContext.GetTenantCodeAsync();
+
+            var result = await _organizationService.CreateUsersAsync(tenantCode, _workContext.GetUserCode(), new CreateOrganizationUserRequestModel
             {
-                Level = 0,
-                OrganizationUnitCode = code,
-                OrganizationUserCode = userCode
+                UnitCode = code,
+                UserCodes = new List<Guid> { userCode }
             });
             if (!result)
                 return Conflict();
@@ -140,7 +142,24 @@ namespace Jarvis.Core.Controllers
             return Ok();
         }
 
-        [HttpDelete("{code}/users/{userCode}")]
+        [HttpPost("{code}/users")]
+        public async Task<IActionResult> PostOrganizationUsersAsync([FromRoute] Guid code, [FromBody] List<Guid> userCodes)
+        {
+            var tenantCode = await _workContext.GetTenantCodeAsync();
+            var userCode = _workContext.GetUserCode();
+
+            var result = await _organizationService.CreateUsersAsync(code, userCode, new CreateOrganizationUserRequestModel
+            {
+                UnitCode = code,
+                UserCodes = userCodes
+            });
+            if (!result)
+                return Conflict();
+
+            return Ok();
+        }
+
+        [HttpDelete("{code}/user/{userCode}")]
         public async Task<IActionResult> DeleteOrganizationUserAsync([FromRoute] Guid code, [FromRoute] Guid userCode)
         {
             var result = await _organizationService.DeleteUserAsync(new DeleteOrganizationUserRequestModel

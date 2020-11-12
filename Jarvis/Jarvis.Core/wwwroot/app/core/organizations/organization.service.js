@@ -34,11 +34,23 @@
         };
 
         this.getUsersInUnit = function (code, paging) {
-            return httpService.get(api + '/' + code + '/users', { params: paging });
+            return httpService.get(api + '/' + code + '/members', { params: paging });
         };
 
         this.getUsersNotInUnit = function (code, paging) {
-            return httpService.get(api + '/users', { params: paging });
+            return httpService.get(api + '/' + code + '/users', { params: paging });
+        };
+
+        this.postUser = function (code, userCode) {
+            return httpService.post(api + '/' + code + '/user/' + userCode);
+        };
+
+        this.postUsers = function (code, userCodes) {
+            return httpService.post(api + '/' + code + '/users', userCodes);
+        };
+
+        this.deleteUser = function (code, userCode) {
+            return httpService.delete(api + '/' + code + '/user/' + userCode);
         };
     };
 
