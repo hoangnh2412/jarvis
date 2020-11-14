@@ -137,7 +137,7 @@ namespace Jarvis.Core.Services
                 var userInfo = await GetInfoAsync(user.Id);
 
                 var tokenCode = Guid.NewGuid();
-                var expireIn = TimeSpan.FromMinutes(10);
+                var expireIn = TimeSpan.FromMinutes(_options.ExpireTime);
                 var expireAt = DateTime.Now.Add(expireIn);
                 var expireAtUtc = DateTime.UtcNow.Add(expireIn);
                 var claims = new Dictionary<string, object>();
@@ -190,9 +190,9 @@ namespace Jarvis.Core.Services
             return new TokenModel
             {
                 AccessToken = token.AccessToken,
-                ExpireIn = (token.ExpireAt - DateTime.Now).TotalMinutes,
-                ExpireAt = token.ExpireAt,
-                Timezone = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalHours,
+                ExpireIn = (token.ExpireAtUtc - DateTime.UtcNow).TotalMinutes,
+                ExpireAt = token.ExpireAtUtc,
+                // Timezone = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalHours,
                 RefreshToken = token.RefreshToken
             };
         }
@@ -236,7 +236,7 @@ namespace Jarvis.Core.Services
             if (token == null)
                 return null;
 
-            var expireIn = TimeSpan.FromMinutes(10);
+            var expireIn = TimeSpan.FromMinutes(_options.ExpireTime);
             var expireAtUtc = DateTime.UtcNow.Add(expireIn);
             var metadata = JsonConvert.DeserializeObject<SessionModel>(token.Metadata);
 

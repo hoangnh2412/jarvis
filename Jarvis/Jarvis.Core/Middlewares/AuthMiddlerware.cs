@@ -10,6 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Jarvis.Core.Database;
 using Infrastructure.Caching;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
+using Jarvis.Models.Identity.Models.Identity;
 
 namespace Jarvis.Core.Middlewares
 {
@@ -37,7 +40,7 @@ namespace Jarvis.Core.Middlewares
         /// <param name="configuration"></param>
         /// <param name="uow"></param>
         /// <returns></returns>
-        public async Task Invoke(HttpContext context, IConfiguration configuration, ICoreUnitOfWork uow)
+        public async Task Invoke(HttpContext context, IConfiguration configuration, ICoreUnitOfWork uow, IOptions<IdentityOption> options)
         {
             var auth = context.Request.Headers["Authorization"].ToString();
             if (string.IsNullOrWhiteSpace(auth))
@@ -62,19 +65,48 @@ namespace Jarvis.Core.Middlewares
             //lấy từ DB ra xem có dữ liệu không
             var repoTenant = uow.GetRepository<ITokenInfoRepository>();
             var tokenInfo = await repoTenant.QueryByCodeAsync(Guid.Parse(token.Id));
-            if (tokenInfo != null && tokenInfo.AccessToken == auth)
-            {
-                //lưu vào cache
-                var cacheOption = new DistributedCacheEntryOptions();
-                cacheOption.AbsoluteExpiration = tokenInfo.ExpireAt;
-                await _cache.SetAsync($"TokenInfos:{tokenInfo.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(tokenInfo)), cacheOption);
+            var accessToken = tokenInfo.AccessToken;
 
-                await _next.Invoke(context);
-                return;
+            var validated = ValidateToken(options, accessToken);
+            if (validated)
+            {
+                if (tokenInfo != null && tokenInfo.AccessToken == auth)
+                {
+                    //lưu vào cache
+                    var cacheOption = new DistributedCacheEntryOptions();
+                    cacheOption.AbsoluteExpiration = tokenInfo.ExpireAt;
+                    await _cache.SetAsync($"TokenInfos:{tokenInfo.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(tokenInfo)), cacheOption);
+
+                    await _next.Invoke(context);
+                    return;
+                }
             }
 
             context.Response.StatusCode = 401; //UnAuthorized
             return;
+        }
+
+        private static bool ValidateToken(IOptions<IdentityOption> options, string accessToken)
+        {
+            try
+            {
+                var jwtHandler = new JwtSecurityTokenHandler();
+                var validated = jwtHandler.ValidateToken(accessToken, new TokenValidationParameters
+                {
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    ValidateActor = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.Value.SecretKey))
+                }, out SecurityToken validatedToken);
+                return true;
+            }
+            catch (System.Exception)
+            {
+                return false;
+            }
         }
     }
 }
