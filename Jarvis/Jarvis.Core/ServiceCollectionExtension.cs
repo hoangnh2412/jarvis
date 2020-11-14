@@ -188,6 +188,10 @@ namespace Jarvis.Core
                     {
                         ValidateAudience = false,
                         ValidateIssuer = false,
+                        ValidateActor = false,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ClockSkew = TimeSpan.Zero,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration.GetSection("Identity:SecretKey").Value))
                     };
                 };

@@ -24,7 +24,7 @@ namespace Jarvis.Core.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterAsync([FromBody]RegisterModel model)
+        public async Task<IActionResult> RegisterAsync([FromBody] RegisterModel model)
         {
             var tenantCode = await _workContext.GetTenantCodeAsync();
             await _identityService.RegisterAsync(tenantCode, model);
@@ -32,7 +32,7 @@ namespace Jarvis.Core.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> LoginAsync([FromBody]LoginModel model)
+        public async Task<IActionResult> LoginAsync([FromBody] LoginModel model)
         {
             var tenantCode = await _workContext.GetTenantCodeAsync();
             var token = await _identityService.LoginAsync(tenantCode, model);
@@ -55,9 +55,24 @@ namespace Jarvis.Core.Controllers
             return Ok(session);
         }
 
+        [HttpGet("refresh-token")]
+        public async Task<IActionResult> RefreshTokenAsync([FromQuery] string refreshToken)
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                return Unauthorized();
+            }
+
+            var token = await _identityService.RefreshTokenAsync(refreshToken);
+            if (token == null)
+                return BadRequest("Token không tồn tại");
+
+            return Ok(token);
+        }
+
         [Authorize]
         [HttpGet("has-claims")]
-        public async Task<IActionResult> HasClaimsAsync([FromQuery]List<string> claims)
+        public async Task<IActionResult> HasClaimsAsync([FromQuery] List<string> claims)
         {
             if (await _workContext.HasClaimsAsync(claims))
                 return Ok();
@@ -66,7 +81,7 @@ namespace Jarvis.Core.Controllers
 
         [Authorize]
         [HttpGet("get-claims")]
-        public async Task<IActionResult> GetClaimsAsync([FromQuery]string prefix)
+        public async Task<IActionResult> GetClaimsAsync([FromQuery] string prefix)
         {
             var claims = await _workContext.GetClaimsAsync(prefix);
             return Ok(claims);

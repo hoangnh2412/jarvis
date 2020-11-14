@@ -64,8 +64,8 @@
                     userCreateController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
                         return $ocLazyLoad.load(componentService.getControllerUrl('uiUserCreate', '/app/identity/users/user-create.controller.js'));
                     }],
-                    roleService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/jarvis/identity/roles/role.service.js');
+                    roleService: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
+                        return $ocLazyLoad.load(componentService.replace('/app/identity/roles/role.service.js'));
                     }]
                 }
             });
@@ -80,8 +80,8 @@
                     userUpdateController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
                         return $ocLazyLoad.load(componentService.getControllerUrl('uiUserUpdate', '/app/identity/users/user-update.controller.js'));
                     }],
-                    roleService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/jarvis/identity/roles/role.service.js');
+                    roleService: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
+                        return $ocLazyLoad.load(componentService.replace('/app/identity/roles/role.service.js'));
                     }]
                 }
             });

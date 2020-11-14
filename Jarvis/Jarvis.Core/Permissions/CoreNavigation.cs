@@ -22,7 +22,7 @@ namespace Jarvis.Core.Permissions
 
         public string Code => "tenant-info";
 
-        public string Icon => "icon-profile";
+        public string Icon => "fa fa-info";
 
         public int Order => 2100;
 
@@ -31,29 +31,29 @@ namespace Jarvis.Core.Permissions
         public string[] PermissionRequireds => new string[] {  };
     }
 
-    // public class OrganizationNavigation : INavigation
-    // {
-    //     public string Name => "Tổ chức";
+    public class OrganizationNavigation : INavigation
+    {
+        public string Name => "Quản lý tổ chức";
 
-    //     public string Code => "organization";
+        public string Code => "organizations";
 
-    //     public string Icon => "";
+        public string Icon => "fa fa-users";
 
-    //     public int Order => 9200;
+        public int Order => 2200;
 
-    //     public string Url => null;
+        public string Url => null;
 
-    //     public string[] PermissionRequireds => new string[] { nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Read) };
-    // }
+        public string[] PermissionRequireds => new string[] { nameof(CorePolicy.OrganizationPolicy.Organization_Read) };
+    }
 
     public class Tenantnavigation : INavigation {
         public string Name => "Quản lý chi nhánh";
 
         public string Code => "tenants";
 
-        public string Icon => "icon-office";
+        public string Icon => "fa fa-tree";
 
-        public int Order => 2200;
+        public int Order => 2300;
 
         public string Url => null;
 
@@ -66,9 +66,9 @@ namespace Jarvis.Core.Permissions
 
         public string Code => "users";
 
-        public string Icon => "icon-users";
+        public string Icon => "fa fa-user-secret";
 
-        public int Order => 2300;
+        public int Order => 2400;
 
         public string Url => null;
 
@@ -81,9 +81,9 @@ namespace Jarvis.Core.Permissions
 
         public string Code => "roles";
 
-        public string Icon => "icon-key";
+        public string Icon => "fa fa-key";
 
-        public int Order => 2400;
+        public int Order => 2500;
 
         public string Url => null;
 
@@ -96,9 +96,9 @@ namespace Jarvis.Core.Permissions
 
         public string Code => "labels";
 
-        public string Icon => "";
+        public string Icon => "fa fa-tag";
 
-        public int Order => 2500;
+        public int Order => 2600;
 
         public string Url => null;
 
@@ -111,9 +111,9 @@ namespace Jarvis.Core.Permissions
 
         public string Code => "settings";
 
-        public string Icon => "icon-hammer-wrench";
+        public string Icon => "fa fa-cog";
 
-        public int Order => 2500;
+        public int Order => 2700;
 
         public string Url => null;
 
