@@ -7,6 +7,12 @@ namespace Infrastructure.Caching
 {
     public interface ICacheService : IDistributedCache
     {
+        new Task<byte[]> GetAsync(string key, CancellationToken token = default);
+        
+        new Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default);
+        
+        new Task RemoveAsync(string key, CancellationToken token = default);
+
         /// <summary>
         /// Search cache key by pattern use KEYS command: https://redis.io/commands/keys
         /// </summary>

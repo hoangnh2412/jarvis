@@ -30,6 +30,21 @@ namespace Infrastructure.Caching.Redis
             _options = optionsAccessor.Value;
         }
 
+        public new async Task<byte[]> GetAsync(string key, CancellationToken token = default)
+        {
+            return await base.GetAsync($":{key}", token);
+        }
+
+        public new async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
+        {
+            await base.SetAsync($":{key}", value, options, token);
+        }
+
+        public new async Task RemoveAsync(string key, CancellationToken token = default)
+        {
+            await base.RemoveAsync($":{key}", token);
+        }
+
         public List<string> GetKeys(string pattern)
         {
             if (pattern == null)
