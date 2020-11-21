@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Microsoft.OpenApi.Models;
 
 namespace Jarvis.Core
 {
@@ -127,14 +128,22 @@ namespace Jarvis.Core
             }
         }
 
-        public static void UseConfigSwagger(this IApplicationBuilder app, Dictionary<string, string> endpoints = null)
+        public static void UseConfigSwagger(this IApplicationBuilder app, Dictionary<string, string> endpoints = null, string prefix = null)
         {
-            app.UseSwagger();
+            app.UseSwagger(options =>
+            {
+                options.RouteTemplate = prefix + "/swagger/{documentName}/swagger.json";
+                // options.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+                // {
+                //     swaggerDoc.Servers = new List<OpenApiServer> { new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}{prefix}" } };
+                // });
+            });
             app.UseSwaggerUI(options =>
             {
                 if (endpoints == null)
                 {
                     options.SwaggerEndpoint("/swagger/v0/swagger.json", $"{Assembly.GetEntryAssembly().GetName().Name} API");
+                    // options.RoutePrefix = string.Empty;
                 }
                 else
                 {
@@ -142,6 +151,7 @@ namespace Jarvis.Core
                     {
                         options.SwaggerEndpoint(endpoint.Key, endpoint.Value);
                     }
+                    // options.RoutePrefix = prefix;
                 }
             });
         }
