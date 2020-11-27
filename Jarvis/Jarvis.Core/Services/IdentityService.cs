@@ -68,6 +68,30 @@ namespace Jarvis.Core.Services
         /// <param name="emails"></param>
         /// <returns></returns>
         Task ResetPasswordAsync(Guid id, Guid id1, string emails);
+
+        /// <summary>
+        /// Lấy token theo user
+        /// </summary>
+        /// <param name="userCode"></param>
+        /// <returns></returns>
+        Task<TokenInfo> GetTokenAsync(Guid userCode);
+
+        /// <summary>
+        /// Tạo token theo user
+        /// </summary>
+        /// <param name="tenantCode"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        Task<TokenInfo> GenerateTokenAsync(Guid tenantCode, User user);
+
+        /// <summary>
+        /// Tạo token
+        /// </summary>
+        /// <param name="issuedAt"></param>
+        /// <param name="expiredAt"></param>
+        /// <param name="claims"></param>
+        /// <returns></returns>
+        string GenerateAccessToken(DateTime issuedAt, DateTime expiredAt, Dictionary<string, object> claims);
     }
 
     public class IdentityService : IIdentityService
@@ -81,7 +105,6 @@ namespace Jarvis.Core.Services
         private readonly IEnumerable<IUserInfoService> _userInfoServices;
         private readonly IDistributedCache _cache;
         private readonly IWorkContext _workContext;
-        //private readonly IConnectionMultiplexer _redis;
 
         public IdentityService(
             IOptions<IdentityOption> options,
@@ -92,7 +115,6 @@ namespace Jarvis.Core.Services
             ICoreUnitOfWork uow,
             IEnumerable<IUserInfoService> userInfoServices,
             IDistributedCache cache,
-            //IConnectionMultiplexer redis,
             IWorkContext workContext)
         {
             _options = options.Value;
@@ -104,7 +126,6 @@ namespace Jarvis.Core.Services
             _userInfoServices = userInfoServices;
             _cache = cache;
             _workContext = workContext;
-            //_redis = redis;
         }
 
         public async Task<TokenModel> LoginAsync(Guid tenantCode, LoginModel model)
@@ -124,68 +145,7 @@ namespace Jarvis.Core.Services
             if (!result.Succeeded)
                 throw new Exception("Tài khoản hoặc mật khẩu không đúng");
 
-            //Xóa các Token đã hết hạn
-            await RemoveTokenExpiredAsync(user.Id);
-
-            var token = await GetTokenAsync(user.Id);
-            if (token != null)
-            {
-                var session = JsonConvert.DeserializeObject<SessionModel>(token.Metadata);
-            }
-            else
-            {
-                var userInfo = await GetInfoAsync(user.Id);
-
-                var tokenCode = Guid.NewGuid();
-                var expireIn = TimeSpan.FromMinutes(_options.ExpireTime);
-                var expireAt = DateTime.Now.Add(expireIn);
-                var expireAtUtc = DateTime.UtcNow.Add(expireIn);
-                var claims = new Dictionary<string, object>();
-                claims.Add(JwtRegisteredClaimNames.Jti, tokenCode.ToString());
-                claims.Add(ClaimTypes.Sid, user.Id.ToString());
-                claims.Add(ClaimTypes.GroupSid, tenantCode.ToString());
-                claims.Add(ClaimTypes.Name, userInfo.FullName);
-                claims.Add(ClaimTypes.NameIdentifier, user.UserName);
-
-                var accessToken = GenerateAccessToken(DateTime.UtcNow, expireAtUtc, claims);
-                var refreshToken = GenerateRefreshToken();
-
-                var session = new SessionModel
-                {
-                    IdUser = user.Id,
-                    UserName = user.UserName,
-                    PhoneNumber = user.PhoneNumber,
-                    Email = user.Email,
-                    CreatedAt = user.CreatedAt,
-                    UserInfo = await GetInfoAsync(user.Id),
-                    TenantInfo = await GetTenantInfoAsync(user.TenantCode),
-                    Claims = await GetClaimsAsync(user.Id),
-                    OrganizationInfos = await GetOrganizationInfoAsync(user.Id)
-                };
-
-                token = new TokenInfo
-                {
-                    AccessToken = accessToken,
-                    CreatedAt = DateTime.Now,
-                    CreatedAtUtc = DateTime.UtcNow,
-                    ExpireAt = expireAt,
-                    ExpireAtUtc = expireAtUtc,
-                    Code = tokenCode,
-                    IdUser = user.Id,
-                    LocalIpAddress = NetworkExtension.GetLocalIpAddress(_httpContextAccessor.HttpContext.Request).ToString(),
-                    PublicIpAddress = NetworkExtension.GetRemoteIpAddress(_httpContextAccessor.HttpContext.Request).ToString(),
-                    Metadata = JsonConvert.SerializeObject(session),
-                    RefreshToken = refreshToken,
-                    Source = "Application",
-                    TimeToLife = expireIn.TotalMinutes,
-                    UserAgent = NetworkExtension.GetUserAgent(_httpContextAccessor.HttpContext.Request),
-                    TenantCode = tenantCode,
-                };
-
-                var repoToken = _uow.GetRepository<ITokenRepository>();
-                await repoToken.InsertAsync(token);
-                await _uow.CommitAsync();
-            }
+            var token = await GenerateTokenAsync(tenantCode, user);
 
             return new TokenModel
             {
@@ -195,6 +155,70 @@ namespace Jarvis.Core.Services
                 // Timezone = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalHours,
                 RefreshToken = token.RefreshToken
             };
+        }
+
+        public async Task<TokenInfo> GenerateTokenAsync(Guid tenantCode, User user)
+        {
+            //Xóa các Token đã hết hạn
+            await RemoveTokenExpiredAsync(user.Id);
+
+            var token = await GetTokenAsync(user.Id);
+            if (token != null)
+                return token;
+
+            var userInfo = await GetInfoAsync(user.Id);
+
+            var tokenCode = Guid.NewGuid();
+            var expireIn = TimeSpan.FromMinutes(_options.ExpireTime);
+            var expireAt = DateTime.Now.Add(expireIn);
+            var expireAtUtc = DateTime.UtcNow.Add(expireIn);
+            var claims = new Dictionary<string, object>();
+            claims.Add(JwtRegisteredClaimNames.Jti, tokenCode.ToString());
+            claims.Add(ClaimTypes.Sid, user.Id.ToString());
+            claims.Add(ClaimTypes.GroupSid, tenantCode.ToString());
+            claims.Add(ClaimTypes.Name, userInfo.FullName);
+            claims.Add(ClaimTypes.NameIdentifier, user.UserName);
+
+            var accessToken = GenerateAccessToken(DateTime.UtcNow, expireAtUtc, claims);
+            var refreshToken = GenerateRefreshToken();
+
+            var session = new SessionModel
+            {
+                IdUser = user.Id,
+                UserName = user.UserName,
+                PhoneNumber = user.PhoneNumber,
+                Email = user.Email,
+                CreatedAt = DateTime.Now,
+                UserInfo = await GetInfoAsync(user.Id),
+                TenantInfo = await GetTenantInfoAsync(user.TenantCode),
+                Claims = await GetClaimsAsync(user.Id),
+                OrganizationInfos = await GetOrganizationInfoAsync(user.Id)
+            };
+
+            token = new TokenInfo
+            {
+                AccessToken = accessToken,
+                CreatedAt = DateTime.Now,
+                CreatedAtUtc = DateTime.UtcNow,
+                ExpireAt = expireAt,
+                ExpireAtUtc = expireAtUtc,
+                Code = tokenCode,
+                IdUser = user.Id,
+                LocalIpAddress = NetworkExtension.GetLocalIpAddress(_httpContextAccessor.HttpContext.Request).ToString(),
+                PublicIpAddress = NetworkExtension.GetRemoteIpAddress(_httpContextAccessor.HttpContext.Request).ToString(),
+                Metadata = JsonConvert.SerializeObject(session),
+                RefreshToken = refreshToken,
+                Source = "Application",
+                TimeToLife = expireIn.TotalMinutes,
+                UserAgent = NetworkExtension.GetUserAgent(_httpContextAccessor.HttpContext.Request),
+                TenantCode = tenantCode,
+            };
+
+            var repoToken = _uow.GetRepository<ITokenRepository>();
+            await repoToken.InsertAsync(token);
+            await _uow.CommitAsync();
+
+            return token;
         }
 
         private async Task RemoveTokenExpiredAsync(Guid userCode)
@@ -326,7 +350,7 @@ namespace Jarvis.Core.Services
         }
 
 
-        private async Task<TokenInfo> GetTokenAsync(Guid userCode)
+        public async Task<TokenInfo> GetTokenAsync(Guid userCode)
         {
             var userAgent = NetworkExtension.GetUserAgent(_httpContextAccessor.HttpContext.Request);
             var localIpAddress = NetworkExtension.GetLocalIpAddress(_httpContextAccessor.HttpContext.Request).ToString();
@@ -638,23 +662,8 @@ namespace Jarvis.Core.Services
 
 
 
-        private string GenerateAccessToken(DateTime issuedAt, DateTime expiredAt, Dictionary<string, object> claims)
+        public string GenerateAccessToken(DateTime issuedAt, DateTime expiredAt, Dictionary<string, object> claims)
         {
-            // var expireIn = TimeSpan.FromDays(1);
-            // var tokenCode = Guid.NewGuid();
-            // var expireAt = DateTime.Now.Add(expireIn);
-            // var expireAtUtc = DateTime.UtcNow.Add(expireIn);
-            // var claims = new List<Claim>();
-            // claims.Add(new Claim(JwtRegisteredClaimNames.Jti, tokenCode.ToString()));
-            // claims.Add(new Claim(ClaimTypes.Sid, user.Id.ToString()));
-            // claims.Add(new Claim(ClaimTypes.GroupSid, tenantCode.ToString()));
-
-            // var jwt = new JwtSecurityToken(
-            //     claims: claims,
-            //     expires: expireAt,
-            //     signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_options.SecretKey)), SecurityAlgorithms.HmacSha256));
-
-
             var token = new JwtSecurityToken(
                 issuer: null,
                 audience: null,
@@ -663,15 +672,6 @@ namespace Jarvis.Core.Services
                 expires: expiredAt,
                 signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_options.SecretKey)), SecurityAlgorithms.HmacSha256)
             );
-
-            // JwtSecurityToken token = handler.CreateToken(new SecurityTokenDescriptor
-            // {
-            //     Expires = expiredAt,
-            //     IssuedAt = issuedAt,
-            //     NotBefore = DateTime.UtcNow,
-            //     Claims = claims,
-            //     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_options.SecretKey)), SecurityAlgorithms.HmacSha256)
-            // });
 
             var handler = new JwtSecurityTokenHandler();
             var accessToken = handler.WriteToken(token);

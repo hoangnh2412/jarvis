@@ -24,6 +24,7 @@ namespace Jarvis.Core.Database.Poco
         public string Database { get; set; }
         public string DbConnectionString { get; set; }
         public string Theme { get; set; }
+        public string SecretKey { get; set; }
 
         /// <summary>
         /// có đang sử dụng và có dkph/hóa đơn hay không
