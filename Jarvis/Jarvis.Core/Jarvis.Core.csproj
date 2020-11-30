@@ -16,6 +16,12 @@
     <EmbeddedResource Include="wwwroot\app\core\labels\label-update.template.html" />
     <EmbeddedResource Include="wwwroot\app\core\labels\label.route.js" />
     <EmbeddedResource Include="wwwroot\app\core\labels\label.service.js" />
+    <EmbeddedResource Include="wwwroot\app\core\organizations\organization-unit.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\core\organizations\organization-user.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\core\organizations\organization.route.js" />
+    <EmbeddedResource Include="wwwroot\app\core\organizations\organization.service.js" />
+    <EmbeddedResource Include="wwwroot\app\core\organizations\organizations.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\core\organizations\organizations.template.html" />
     <EmbeddedResource Include="wwwroot\app\core\settings\setting.service.js" />
     <EmbeddedResource Include="wwwroot\app\core\settings\settings.controller.js" />
     <EmbeddedResource Include="wwwroot\app\core\settings\settings.route.js" />

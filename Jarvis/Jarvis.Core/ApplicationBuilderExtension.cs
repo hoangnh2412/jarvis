@@ -9,8 +9,6 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using Microsoft.OpenApi.Models;
 
 namespace Jarvis.Core
 {
@@ -23,7 +21,7 @@ namespace Jarvis.Core
 
             app.UseConfigUI(jarvisPath, modules);
 
-            // app.UseConfigJarvisUI();
+            app.UseConfigJarvisUI();
             app.UseRouting();
 
             app.UseCors(builder =>
