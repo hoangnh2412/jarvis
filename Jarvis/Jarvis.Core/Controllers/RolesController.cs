@@ -294,7 +294,7 @@ namespace Jarvis.Core.Controllers
                 repoTokenInfo.Delete(item);
 
                 //xóa token trong cache
-                await _cache.RemoveAsync($"TokenInfos:{item.Code}");
+                await _cache.RemoveAsync($":TokenInfos:{item.Code}");
             }
         }
     }

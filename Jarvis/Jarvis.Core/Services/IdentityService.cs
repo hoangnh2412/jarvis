@@ -247,7 +247,7 @@ namespace Jarvis.Core.Services
             if (token == null)
                 return;
 
-            await _cache.RemoveAsync($"TokenInfos:{token.Id}");
+            await _cache.RemoveAsync($":TokenInfos:{token.Id}");
 
             repoToken.Delete(token);
             await _uow.CommitAsync();
@@ -280,8 +280,8 @@ namespace Jarvis.Core.Services
             return new TokenModel
             {
                 AccessToken = token.AccessToken,
-                ExpireIn = (token.ExpireAt - DateTime.Now).TotalMinutes,
-                ExpireAt = token.ExpireAt,
+                ExpireIn = (token.ExpireAtUtc - DateTime.UtcNow).TotalMinutes,
+                ExpireAt = token.ExpireAtUtc,
                 Timezone = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalHours,
                 RefreshToken = token.RefreshToken
             };
@@ -358,13 +358,13 @@ namespace Jarvis.Core.Services
 
             TokenInfo token = null;
             //Lấy token từ cache theo IdUser
-            var bytes = await _cache.GetAsync($"Sessions:{userCode}");
+            var bytes = await _cache.GetAsync($":Sessions:{userCode}");
             if (bytes != null)
             {
                 var tokenCodes = JsonConvert.DeserializeObject<List<Guid>>(Encoding.UTF8.GetString(bytes));
                 foreach (var tokenCode in tokenCodes)
                 {
-                    bytes = await _cache.GetAsync($"TokenInfos:{tokenCode}");
+                    bytes = await _cache.GetAsync($":TokenInfos:{tokenCode}");
                     if (bytes != null)
                     {
                         var tokenInfo = JsonConvert.DeserializeObject<TokenInfo>(Encoding.UTF8.GetString(bytes));
@@ -390,11 +390,11 @@ namespace Jarvis.Core.Services
                     return null;
 
                 var idTokens = tokens.Select(x => x.Code).ToList();
-                await _cache.SetAsync($"Sessions:{userCode}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(idTokens)));
+                await _cache.SetAsync($":Sessions:{userCode}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(idTokens)));
 
                 var cacheOption = new DistributedCacheEntryOptions();
-                cacheOption.AbsoluteExpiration = token.ExpireAt;
-                await _cache.SetAsync($"TokenInfos:{token.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
+                cacheOption.AbsoluteExpiration = token.ExpireAtUtc;
+                await _cache.SetAsync($":TokenInfos:{token.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
             }
 
             return token;

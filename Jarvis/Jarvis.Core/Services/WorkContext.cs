@@ -103,7 +103,7 @@ namespace Jarvis.Core.Services
             if (tokenCode == null)
                 return null;
 
-            var bytes = await _cache.GetAsync($"TokenInfos:{tokenCode}");
+            var bytes = await _cache.GetAsync($":TokenInfos:{tokenCode}");
             if (bytes != null)
             {
                 var data = JsonConvert.DeserializeObject<TokenInfo>(Encoding.UTF8.GetString(bytes));
@@ -121,7 +121,7 @@ namespace Jarvis.Core.Services
 
             var cacheOption = new DistributedCacheEntryOptions();
             cacheOption.AbsoluteExpiration = token.ExpireAt;
-            await _cache.SetAsync($"TokenInfos:{tokenCode}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
+            await _cache.SetAsync($":TokenInfos:{tokenCode}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
             return _currentToken;
         }
 

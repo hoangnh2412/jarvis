@@ -35,7 +35,7 @@ namespace Jarvis.Core.Multitenant
                 return null;
 
             Tenant tenant;
-            var cacheKey = $"TenantCode:{tenantCode}";
+            var cacheKey = $":TenantCode:{tenantCode}";
 
             //Lấy dữ liệu từ cache
             var bytes = await _cache.GetAsync(cacheKey);

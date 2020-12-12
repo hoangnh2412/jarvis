@@ -309,7 +309,7 @@ namespace Jarvis.Core.Controllers
                 //xóa cache
                 foreach (var item in deletes)
                 {
-                    _cache.Remove($"TenantHost:{item.HostName}");
+                    await _cache.RemoveAsync($":TenantHost:{item.HostName}");
                 }
 
                 //xóa token của các tk trong chi nhánh này
@@ -363,7 +363,7 @@ namespace Jarvis.Core.Controllers
                     tenantHost.Set(x => x.DeletedVersion, tenantHost.Id));
 
                 //xóa cache
-                _cache.Remove($"TenantHost:{tenantHost.HostName}");
+                await _cache.RemoveAsync($":TenantHost:{tenantHost.HostName}");
             }
 
             //xóa token của các tk trong chi nhánh này
@@ -389,7 +389,7 @@ namespace Jarvis.Core.Controllers
                 repoTokenInfo.Delete(token);
 
                 //xóa token trong cache
-                await _cache.RemoveAsync($"TokenInfos:{token.Code}");
+                await _cache.RemoveAsync($":TokenInfos:{token.Code}");
             }
         }
 
