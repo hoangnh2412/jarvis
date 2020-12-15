@@ -401,9 +401,13 @@ namespace Jarvis.Core.Services
                 var idTokens = tokens.Select(x => x.Code).ToList();
                 await _cache.SetAsync($":Sessions:{userCode}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(idTokens)));
 
-                var cacheOption = new DistributedCacheEntryOptions();
-                cacheOption.AbsoluteExpirationRelativeToNow = token.ExpireAtUtc - DateTime.UtcNow;
-                await _cache.SetAsync($":TokenInfos:{token.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
+                if (token.ExpireAtUtc > DateTime.UtcNow)
+                {
+                    var cacheOption = new DistributedCacheEntryOptions();
+                    cacheOption.AbsoluteExpirationRelativeToNow = token.ExpireAtUtc - DateTime.UtcNow;
+                    await _cache.SetAsync($":TokenInfos:{token.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
+                }
+
             }
 
             return token;
