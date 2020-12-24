@@ -29,6 +29,7 @@
                 if (response.status === 200) {
                     ctrl.user = response.data;
                     ctrl.getRoles();
+                    ctrl.getClaims();
                 }
             });
         };
@@ -53,6 +54,24 @@
             });
         };
 
+        ctrl.getClaims = function () {
+            userService.getClaims().then(function (response) {
+                if (response.status === 200) {
+                    ctrl.claims = response.data;
+
+                    if (ctrl.user.id) {
+                        for (let i = 0; i < ctrl.claims.length; i++) {
+                            var element = ctrl.claims[i];
+                            var claim = ctrl.user.claims.find(function(x) { return x === element.key; });
+                            if (claim) {
+                                element.select = true;
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
         ctrl.save = function (form) {
             if (!form.validate()) {
                 return;
@@ -64,6 +83,13 @@
                 if (roles[i].select) {
                     ctrl.user.idRoles.push(roles[i].id);
                 }
+            }
+
+            ctrl.user.claims = [];
+            var claims = ctrl.claims.filter(function (claim) { return claim.select === true; });
+            for (let i = 0; i < claims.length; i++) {
+                const element = claims[i];
+                ctrl.user.claims.push(element.key);
             }
 
             ctrl.loading = true;

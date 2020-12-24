@@ -20,6 +20,8 @@ using Jarvis.Core.Database;
 using Jarvis.Core.Abstractions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Jarvis.Core.Models.Identity;
+using System.Reflection;
 
 namespace Jarvis.Core.Controllers
 {
@@ -50,7 +52,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpGet]
         [Authorize(nameof(CorePolicy.UserPolicy.User_Read))]
-        public async Task<IActionResult> GetAsync([FromQuery]Paging paging)
+        public async Task<IActionResult> GetAsync([FromQuery] Paging paging)
         {
             var context = await _workcontext.GetContextAsync(nameof(CorePolicy.UserPolicy.User_Read));
 
@@ -85,7 +87,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpGet("{id}")]
         [Authorize(nameof(CorePolicy.UserPolicy.User_Read))]
-        public async Task<IActionResult> GetAsync([FromRoute]Guid id)
+        public async Task<IActionResult> GetAsync([FromRoute] Guid id)
         {
             var context = await _workcontext.GetContextAsync(nameof(CorePolicy.UserPolicy.User_Read));
             var repoUser = _uow.GetRepository<IUserRepository>();
@@ -102,6 +104,9 @@ namespace Jarvis.Core.Controllers
             var repoPermission = _uow.GetRepository<IPermissionRepository>();
             user.IdRoles = (await repoPermission.FindRolesByUserAsync(user.Id)).Select(x => x.RoleId).ToList();
 
+            var claims = await repoUser.GetUserClaimsAsync(user.Id);
+            user.Claims = claims.Select(x => x.ClaimType).ToList();
+
             var metadatas = new List<JObject>();
             foreach (var item in _userInfoServices)
             {
@@ -117,9 +122,23 @@ namespace Jarvis.Core.Controllers
             return Ok(user);
         }
 
+        [HttpGet("{id}/claims")]
+        [Authorize(nameof(CorePolicy.UserPolicy.User_Read))]
+        public async Task<IActionResult> GetUserClaimsAsync([FromRoute] Guid id)
+        {
+            var tenantCode = await _workcontext.GetTenantCodeAsync();
+            var repoUser = _uow.GetRepository<IUserRepository>();
+            var claims = await repoUser.GetUserClaimsAsync(id);
+            return Ok(claims.Select(x => new PermissionModel
+            {
+                Key = x.ClaimType,
+                Value = x.ClaimValue
+            }));
+        }
+
         [HttpPost]
         [Authorize(nameof(CorePolicy.UserPolicy.User_Create))]
-        public async Task<IActionResult> PostAsync([FromBody]UserModel model)
+        public async Task<IActionResult> PostAsync([FromBody] UserModel model)
         {
             var tenantCode = await _workcontext.GetTenantCodeAsync();
 
@@ -127,6 +146,7 @@ namespace Jarvis.Core.Controllers
             if (string.IsNullOrEmpty(model.Password))
                 model.Password = RandomExtension.Random(10);
 
+            //Tạo tài khoản
             var idUser = await _identityService.CreateAsync(tenantCode, new CreateUserModel
             {
                 Username = model.UserName,
@@ -137,11 +157,16 @@ namespace Jarvis.Core.Controllers
                 Metadata = model.Metadata
             });
 
+            //Gán quyền chức năng
             var repoUser = _uow.GetRepository<IUserRepository>();
             foreach (var idRole in model.IdRoles)
             {
                 await repoUser.AssignRoleToUserAsync(idUser, idRole);
             }
+            await _uow.CommitAsync();
+
+            //Gán quyền dữ liệu
+            await repoUser.AssignClaimToUserAsync(idUser, model.Claims);
             await _uow.CommitAsync();
 
             //Tạo job send mail
@@ -151,7 +176,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpPut("{id}")]
         [Authorize(nameof(CorePolicy.UserPolicy.User_Update))]
-        public async Task<IActionResult> PutAsync([FromRoute]Guid id, [FromBody]UserModel model)
+        public async Task<IActionResult> PutAsync([FromRoute] Guid id, [FromBody] UserModel model)
         {
             var context = await _workcontext.GetContextAsync(nameof(CorePolicy.UserPolicy.User_Update));
             var repoUser = _uow.GetRepository<IUserRepository>();
@@ -176,19 +201,14 @@ namespace Jarvis.Core.Controllers
             var repoUserRole = _uow.GetRepository<IPermissionRepository>();
             var roles = await repoUserRole.FindRolesByUserAsync(user.Id);
             var idRoles = roles.Select(x => x.RoleId);
+            repoUserRole.DeleteUserRoles(roles.Where(x => idRoles.Except(model.IdRoles).Contains(x.RoleId)).ToList());
+            await repoUserRole.InsertUserRolesAsync(model.IdRoles.Except(idRoles).Select(x => new IdentityUserRole<Guid> { RoleId = x, UserId = user.Id }).ToList());
 
-            var deleteUserRoles = roles.Where(x => idRoles.Except(model.IdRoles).Contains(x.RoleId)).ToList();
-
-            repoUserRole.DeleteUserRoles(deleteUserRoles);
-
-            await repoUserRole.InsertUserRolesAsync(model.IdRoles
-                .Except(idRoles)
-                .Select(x => new IdentityUserRole<Guid>
-                {
-                    RoleId = x,
-                    UserId = user.Id
-                })
-                .ToList());
+            //Update claims
+            var claims = await repoUser.GetUserClaimsAsync(user.Id);
+            var claimTypes = claims.Select(x => x.ClaimType).ToList();
+            repoUser.DeleteUserClaim(claims.Where(x => claimTypes.Except(model.Claims).Contains(x.ClaimType)).ToList());
+            await repoUser.AssignClaimToUserAsync(user.Id, model.Claims.Except(claimTypes).ToList());
 
             //xóa token của tk nếu sửa quyền
             if (idRoles.Except(model.IdRoles).Any() || model.IdRoles.Except(idRoles).Any())
@@ -209,7 +229,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(nameof(CorePolicy.UserPolicy.User_Delete))]
-        public async Task<IActionResult> DeleteAsync([FromRoute]Guid id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] Guid id)
         {
             var context = await _workcontext.GetContextAsync(nameof(CorePolicy.UserPolicy.User_Delete));
             var repoUser = _uow.GetRepository<IUserRepository>();
@@ -240,7 +260,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpPatch("{id}/lock/{time?}")]
         [Authorize(nameof(CorePolicy.UserPolicy.User_Lock))]
-        public async Task<IActionResult> LockAsync([FromRoute]Guid id, [FromRoute]string time)
+        public async Task<IActionResult> LockAsync([FromRoute] Guid id, [FromRoute] string time)
         {
             await _identityService.LockAsync(id, time);
             return Ok();
@@ -248,7 +268,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpPatch("{id}/unlock/{time?}")]
         [Authorize(nameof(CorePolicy.UserPolicy.User_Lock))]
-        public async Task<IActionResult> UnlockAsync([FromRoute]Guid id, [FromRoute]string time)
+        public async Task<IActionResult> UnlockAsync([FromRoute] Guid id, [FromRoute] string time)
         {
             await _identityService.UnlockAsync(id, time);
             return Ok();
@@ -334,7 +354,7 @@ namespace Jarvis.Core.Controllers
         /// <returns></returns>
         [HttpGet("roles")]
         [Authorize(nameof(CorePolicy.UserPolicy.User_Read))]
-        public async Task<IActionResult> GetRolesAsync([FromQuery]Paging paging)
+        public async Task<IActionResult> GetRolesAsync([FromQuery] Paging paging)
         {
             var tenantCode = await _workcontext.GetTenantCodeAsync();
 
@@ -351,6 +371,26 @@ namespace Jarvis.Core.Controllers
                 TotalPages = paged.TotalPages
             };
             return Ok(result);
+        }
+
+        /// <summary>
+        /// lấy danh sách quyền
+        /// </summary>
+        /// <param name="paging"></param>
+        /// <returns></returns>
+        [HttpGet("claims")]
+        [Authorize(nameof(CorePolicy.UserPolicy.User_Read))]
+        public IActionResult GetClaims()
+        {
+            var type = typeof(SpecialPolicy);
+            FieldInfo[] fieldInfos = type.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+            var fields = fieldInfos.Where(fi => fi.IsLiteral && !fi.IsInitOnly).ToList();
+
+            return Ok(fields.Select(x => new PermissionModel
+            {
+                Key = x.Name,
+                Value = x.GetRawConstantValue().ToString(),
+            }));
         }
     }
 }

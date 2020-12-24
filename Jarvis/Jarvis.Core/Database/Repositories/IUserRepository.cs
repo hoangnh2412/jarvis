@@ -29,7 +29,13 @@ namespace Jarvis.Core.Database.Repositories
 
         Task<List<UserInfo>> FindUserInfoByIdsAsync(List<Guid> ids);
 
+        Task<List<IdentityUserClaim<Guid>>> GetUserClaimsAsync(Guid id);
+
+        Task<bool> UserHasClaimAsync(Guid id, string claim, bool notracking = false);
+
         Task AssignRoleToUserAsync(Guid idUser, Guid idRole);
+
+        Task AssignClaimToUserAsync(Guid idUser, List<string> claims);
 
         Task InsertUserAsync(User user);
 
@@ -40,6 +46,8 @@ namespace Jarvis.Core.Database.Repositories
         void UpdateUserInfoFields(UserInfo user, params KeyValuePair<Expression<Func<UserInfo, object>>, object>[] properties);
 
         void DeleteUserInfo(UserInfo info);
+
+        void DeleteUserClaim(List<IdentityUserClaim<Guid>> claims);
 
         /// <summary>
         /// lấy tk đc tạo đầu tiên

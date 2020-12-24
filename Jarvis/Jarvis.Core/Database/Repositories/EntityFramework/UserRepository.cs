@@ -218,5 +218,38 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
 
             return user;
         }
+
+        public async Task<List<IdentityUserClaim<Guid>>> GetUserClaimsAsync(Guid id)
+        {
+            var dbset = StorageContext.Set<IdentityUserClaim<Guid>>();
+            return await dbset.Where(x => x.UserId == id).ToListAsync();
+        }
+
+        public async Task<bool> UserHasClaimAsync(Guid id, string claim, bool notracking = false)
+        {
+            var dbset = StorageContext.Set<IdentityUserClaim<Guid>>();
+            IQueryable<IdentityUserClaim<Guid>> queryable = dbset;
+            if (notracking)
+                queryable = dbset.AsNoTracking();
+
+            return await queryable.AnyAsync(x => x.UserId == id && x.ClaimType == claim);
+        }
+
+        public async Task AssignClaimToUserAsync(Guid idUser, List<string> claims)
+        {
+            var dbset = StorageContext.Set<IdentityUserClaim<Guid>>();
+            await dbset.AddRangeAsync(claims.Select(x => new IdentityUserClaim<Guid>
+            {
+                UserId = idUser,
+                ClaimType = x,
+                ClaimValue = "Tenant|Tenant"
+            }));
+        }
+
+        public void DeleteUserClaim(List<IdentityUserClaim<Guid>> claims)
+        {
+            var dbset = StorageContext.Set<IdentityUserClaim<Guid>>();
+            dbset.RemoveRange(claims);
+        }
     }
 }
