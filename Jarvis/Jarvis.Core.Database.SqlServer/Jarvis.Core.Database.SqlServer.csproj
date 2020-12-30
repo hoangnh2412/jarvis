@@ -12,10 +12,14 @@
     <Compile Remove="Migrations\20201229095402_UpdateDbCore.Designer.cs" />
     <Compile Remove="Migrations\20201229102904_AddSecretKey.cs" />
     <Compile Remove="Migrations\20201229102904_AddSecretKey.Designer.cs" />
+    <Compile Remove="Migrations\20201229103138_AddSecretKey.cs" />
+    <Compile Remove="Migrations\20201229103138_AddSecretKey.Designer.cs" />
     <Compile Remove="Migrations\20201229105002_UpdateSecretKey.cs" />
     <Compile Remove="Migrations\20201229105002_UpdateSecretKey.Designer.cs" />
     <Compile Remove="Migrations\20201230020613_UpdateSecretKey.cs" />
     <Compile Remove="Migrations\20201230020613_UpdateSecretKey.Designer.cs" />
+    <Compile Remove="Migrations\20201230064809_RemoveSecretKey.cs" />
+    <Compile Remove="Migrations\20201230064809_RemoveSecretKey.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

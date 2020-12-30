@@ -54,10 +54,7 @@
                 confirmPassword: {
                     required: true,
                     equalTo: '#password'
-                },
-                secretKey: {
-                    whiteSpace: true,
-                },
+                }
             },
             messages: {
                 newPassword: {

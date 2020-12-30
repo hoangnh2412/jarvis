@@ -110,7 +110,6 @@ namespace Jarvis.Core.Controllers
                     FullNameEn = info.FullNameEn,
                     Phones = info.Phones,
                     TaxCode = info.TaxCode,
-                    SecretKey = info.SecretKey
                 };
                 data.Add(model);
             }
@@ -174,7 +173,6 @@ namespace Jarvis.Core.Controllers
                     TaxCode = info.TaxCode,
                     FullNameVi = info.FullNameVi,
                     Address = info.Address,
-                    SecretKey = info.SecretKey
                 }
             };
 
@@ -318,7 +316,6 @@ namespace Jarvis.Core.Controllers
             repoTenant.UpdateInfoFields(info,
                 info.Set(x => x.TaxCode, model.Info.TaxCode),
                 info.Set(x => x.FullNameVi, model.Info.FullNameVi),
-                info.Set(x => x.SecretKey, model.Info.SecretKey),
                 info.Set(x => x.Address, model.Info.Address));
 
             await _uow.CommitAsync();
@@ -647,7 +644,6 @@ namespace Jarvis.Core.Controllers
                 City = "#",
                 Country = "#",
                 District = "#",
-                SecretKey = model.Info.SecretKey
                 // FullNameEn = model.FullNameEn,
                 // LegalName = model.LegalName,
                 // Fax = model.Fax,

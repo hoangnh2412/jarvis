@@ -796,9 +796,6 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
                     b.Property<string>("Phones")
                         .HasColumnType("nvarchar(500)")
                         .HasMaxLength(500);
-                    
-                    b.Property<string>("SecretKey")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TaxCode")
                         .IsRequired()
