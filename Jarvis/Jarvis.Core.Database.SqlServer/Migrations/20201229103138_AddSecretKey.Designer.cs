@@ -4,14 +4,16 @@ using Jarvis.Core.Database.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Jarvis.Core.Database.SqlServer.Migrations
 {
     [DbContext(typeof(CoreDbContext))]
-    partial class CoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201229103138_AddSecretKey")]
+    partial class AddSecretKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -796,7 +798,7 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
                     b.Property<string>("Phones")
                         .HasColumnType("nvarchar(500)")
                         .HasMaxLength(500);
-                    
+
                     b.Property<string>("SecretKey")
                         .HasColumnType("nvarchar(max)");
 

@@ -19,6 +19,7 @@ namespace Jarvis.Core.Models.Tenant
         public string BusinessType { get; set; }
         public string Emails { get; set; }
         public string Phones { get; set; }
+        public string SecretKey { get; set; }
         public List<MetadataModel> Metadata { get; set; }
     }
 }

@@ -21,5 +21,6 @@ namespace Jarvis.Core.Database.Poco
         public string Emails { get; set; }
         public string Phones { get; set; }
         public string Metadata { get; set; }
+        public string SecretKey { get; set; }
     }
 }

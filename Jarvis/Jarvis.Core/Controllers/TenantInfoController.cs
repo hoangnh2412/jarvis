@@ -61,6 +61,7 @@ namespace Jarvis.Core.Controllers
                 FullNameEn = info.FullNameEn,
                 LegalName = info.LegalName,
                 BusinessType = info.BusinessType,
+                SecretKey = info.SecretKey
             };
 
             //Nếu setting ko có metadata thì trả về kết quả luôn
@@ -108,6 +109,7 @@ namespace Jarvis.Core.Controllers
             info.Fax = command.Fax;
             info.Emails = command.Emails;
             info.BusinessType = command.BusinessType;
+            info.SecretKey = command.SecretKey;
 
             if (command.Metadata != null && command.Metadata.Count != 0)
                 info.Metadata = JsonConvert.SerializeObject(command.Metadata);
