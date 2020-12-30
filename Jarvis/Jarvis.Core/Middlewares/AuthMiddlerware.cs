@@ -13,6 +13,11 @@ using Infrastructure.Caching;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
 using Jarvis.Models.Identity.Models.Identity;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Jarvis.Core.Middlewares
 {
@@ -42,6 +47,17 @@ namespace Jarvis.Core.Middlewares
         /// <returns></returns>
         public async Task Invoke(HttpContext context, IConfiguration configuration, ICoreUnitOfWork uow, IOptions<IdentityOption> options)
         {
+            var endpoint = context.GetEndpoint();
+            var controllerActionDescriptor = endpoint?.Metadata.GetMetadata<ControllerActionDescriptor>();
+            var authAttribute = controllerActionDescriptor?.EndpointMetadata.FirstOrDefault(x => x.GetType() == typeof(AuthorizeAttribute));
+            // var controllerName = controllerActionDescriptor.ControllerName;
+            // var actionName = controllerActionDescriptor.ActionName;
+            if (authAttribute == null)
+            {
+                await _next.Invoke(context);
+                return;
+            }
+
             var auth = context.Request.Headers["Authorization"].ToString();
             if (string.IsNullOrWhiteSpace(auth))
             {
@@ -50,8 +66,22 @@ namespace Jarvis.Core.Middlewares
             }
 
             auth = auth.Replace("Bearer ", "");
-            var jwtHandler = new JwtSecurityTokenHandler();
-            var token = jwtHandler.ReadToken(auth);
+            SecurityToken token = null;
+            try
+            {
+                var jwtHandler = new JwtSecurityTokenHandler();
+                token = jwtHandler.ReadToken(auth);
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError(ex.Message, ex);
+            }
+
+            if (token == null)
+            {
+                context.Response.StatusCode = 401; //UnAuthorized
+                return;
+            }
 
             //lấy token từ cache
             var bytes = await _cache.GetAsync($"TokenInfos:{token.Id}");
@@ -65,9 +95,13 @@ namespace Jarvis.Core.Middlewares
             //lấy từ DB ra xem có dữ liệu không
             var repoTenant = uow.GetRepository<ITokenInfoRepository>();
             var tokenInfo = await repoTenant.QueryByCodeAsync(Guid.Parse(token.Id));
-            var accessToken = tokenInfo.AccessToken;
+            if (tokenInfo == null)
+            {
+                context.Response.StatusCode = 401; //UnAuthorized
+                return;
+            }
 
-            var validated = ValidateToken(options, accessToken);
+            var validated = ValidateToken(options, tokenInfo.AccessToken);
             if (validated)
             {
                 if (tokenInfo != null && tokenInfo.AccessToken == auth)
