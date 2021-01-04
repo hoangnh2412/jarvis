@@ -90,20 +90,20 @@ namespace Jarvis.Core.Permissions
         public string[] PermissionRequireds => new string[] { nameof(CorePolicy.RolePolicy.Role_Read) };
     }
 
-    public class LabelNavigation : INavigation
-    {
-        public string Name => "Quản lý nhãn";
+    //public class LabelNavigation : INavigation
+    //{
+    //    public string Name => "Quản lý nhãn";
 
-        public string Code => "labels";
+    //    public string Code => "labels";
 
-        public string Icon => "";
+    //    public string Icon => "";
 
-        public int Order => 2500;
+    //    public int Order => 2500;
 
-        public string Url => null;
+    //    public string Url => null;
 
-        public string[] PermissionRequireds => new string[] { nameof(CorePolicy.LabelPolicy.Label_Read) };
-    }
+    //    public string[] PermissionRequireds => new string[] { nameof(CorePolicy.LabelPolicy.Label_Read) };
+    //}
 
     public class SettingNavigation : INavigation
     {
