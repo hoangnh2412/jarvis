@@ -59,7 +59,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpGet]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Read))]
-        public async Task<IActionResult> GetAsync([FromQuery]Paging paging)
+        public async Task<IActionResult> GetAsync([FromQuery] Paging paging)
         {
             var idTenant = await _workContext.GetTenantCodeAsync();
             var repoTenant = _uow.GetRepository<ITenantRepository>();
@@ -146,7 +146,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpGet("{code}")]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Read))]
-        public async Task<IActionResult> GetAsync([FromRoute]Guid code)
+        public async Task<IActionResult> GetAsync([FromRoute] Guid code)
         {
             var repoTenant = _uow.GetRepository<ITenantRepository>();
             var tenant = await repoTenant.GetByCodeAsync(code);
@@ -178,7 +178,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpPost]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Create))]
-        public async Task<IActionResult> PostAsync([FromBody]CreateTenantCommand model)
+        public async Task<IActionResult> PostAsync([FromBody] CreateTenantCommand model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -258,7 +258,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpPut("{code}")]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Update))]
-        public async Task<IActionResult> PutAsync([FromRoute]Guid code, [FromBody]UpdateTenantCommand model)
+        public async Task<IActionResult> PutAsync([FromRoute] Guid code, [FromBody] UpdateTenantCommand model)
         {
             var userCode = _workContext.GetUserCode();
             var repoTenant = _uow.GetRepository<ITenantRepository>();
@@ -336,7 +336,7 @@ namespace Jarvis.Core.Controllers
 
         [HttpDelete("{code}")]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Delete))]
-        public async Task<IActionResult> DeleteAsync([FromRoute]Guid code)
+        public async Task<IActionResult> DeleteAsync([FromRoute] Guid code)
         {
             var userCode = _workContext.GetUserCode();
             var repoTenant = _uow.GetRepository<ITenantRepository>();
@@ -446,16 +446,16 @@ namespace Jarvis.Core.Controllers
             await repoRole.InsertAsync(accountantRole);
 
             //thêm roleclaim
-            var repoRoleClaim = _uow.GetRepository<IPermissionRepository>();
+            var repoPermission = _uow.GetRepository<IPermissionRepository>();
 
-            await repoRoleClaim.InsertRoleClaimsAsync(adminPermission.Select(x => new IdentityRoleClaim<Guid>
+            await repoPermission.InsertRoleClaimsAsync(adminPermission.Select(x => new IdentityRoleClaim<Guid>
             {
                 ClaimType = x.Key,
                 ClaimValue = x.Value,
                 RoleId = adminRole.Id
             }).ToList());
 
-            await repoRoleClaim.InsertRoleClaimsAsync(accountantPermission.Select(x => new IdentityRoleClaim<Guid>
+            await repoPermission.InsertRoleClaimsAsync(accountantPermission.Select(x => new IdentityRoleClaim<Guid>
             {
                 ClaimType = x.Key,
                 ClaimValue = x.Value,
@@ -537,14 +537,22 @@ namespace Jarvis.Core.Controllers
 
             //gán tk admin đc tạo có quyền admin
             var repoPermission = _uow.GetRepository<IPermissionRepository>();
-            await repoPermission.InsertUserRolesAsync(
-              new List<IdentityUserRole<Guid>> {
-                    new IdentityUserRole<Guid>
-                    {
-                        UserId = user.Id,
-                        RoleId = idRole
-                    }
-              });
+            await repoPermission.InsertUserRolesAsync(new List<IdentityUserRole<Guid>> {
+                new IdentityUserRole<Guid>
+                {
+                    UserId = user.Id,
+                    RoleId = idRole
+                }
+            });
+
+            //Thêm UserClaim
+            await repoPermission.InsertUserClaimsAsync(new List<IdentityUserClaim<Guid>>{
+                new IdentityUserClaim<Guid>{
+                    ClaimType = SpecialPolicy.Special_OrganizationAdmin,
+                    ClaimValue = "Tenant|Tenant",
+                    UserId = user.Id
+                }
+            });
 
             return user;
         }

@@ -50,6 +50,14 @@
                 ctrl.paging.totalPages = response.data.totalPages;
                 ctrl.paging.page = response.data.page;
                 ctrl.paging.size = response.data.size;
+
+                for (let i = 0; i < ctrl.users.length; i++) {
+                    const element = ctrl.users[i];
+                    var index = ctrl.find(element.code);
+                    if (index > -1) {
+                        element.selected = true;
+                    }
+                }
             });
         };
 
