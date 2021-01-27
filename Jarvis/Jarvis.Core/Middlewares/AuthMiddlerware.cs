@@ -59,14 +59,17 @@ namespace Jarvis.Core.Middlewares
                 return;
             }
 
+
             //lấy từ DB ra xem có dữ liệu không
             var repoTenant = uow.GetRepository<ITokenInfoRepository>();
             var tokenInfo = await repoTenant.QueryByCodeAsync(Guid.Parse(token.Id));
-            if (tokenInfo != null && tokenInfo.AccessToken == auth)
+
+            var now = DateTime.UtcNow;
+            if (tokenInfo != null && tokenInfo.AccessToken == auth && tokenInfo.ExpireAtUtc.AddMilliseconds(-100) > now)
             {
                 //lưu vào cache
                 var cacheOption = new DistributedCacheEntryOptions();
-                cacheOption.AbsoluteExpiration = tokenInfo.ExpireAt;
+                cacheOption.AbsoluteExpirationRelativeToNow = tokenInfo.ExpireAtUtc.AddMilliseconds(-100) - now;
                 await _cache.SetAsync($":TokenInfos:{tokenInfo.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(tokenInfo)), cacheOption);
 
                 await _next.Invoke(context);

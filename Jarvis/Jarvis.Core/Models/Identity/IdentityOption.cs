@@ -3,5 +3,6 @@
     public class IdentityOption
     {
         public string SecretKey { get; set; }
+        public int ExpireTime { get; set; }
     }
 }
