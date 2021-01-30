@@ -15,10 +15,14 @@ namespace Infrastructure.Attributes
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
+            if (value == null)
+                return ValidationResult.Success;
+
             var file = value as IFormFile;
-            var extension = Path.GetExtension(file.FileName);
             if (!(file == null))
             {
+                var extension = Path.GetExtension(file.FileName);
+
                 if (!_extensions.Contains(extension.ToLower()))
                 {
                     return new ValidationResult($"This photo extension is not allowed!");
