@@ -10,7 +10,7 @@
             if (APP_CONFIG.BASE_PATH)
                 url = APP_CONFIG.BASE_PATH + url;
 
-            url = url.replace('/app/', APP_CONFIG.BASE_PATH_JARVIS);
+            url = url.replace('/app/', APP_CONFIG.BASE_UI_PATH);
             return url;
         };
 
@@ -22,7 +22,7 @@
             if (APP_CONFIG.BASE_PATH)
                 url = APP_CONFIG.BASE_PATH + url;
 
-            url = url.replace('/app/', APP_CONFIG.BASE_PATH_JARVIS);
+            url = url.replace('/app/', APP_CONFIG.BASE_UI_PATH);
             return url;
         };
 

@@ -69,15 +69,15 @@
                     {
                         name: 'moduleValidate',
                         serie: true,
-                        files: ['libs/jquery/jquery-validate.js', 'libs/angular/angular-validate.js', 'app/jarvis/shared/configs/validate.config.js']
+                        files: ['libs/jquery/jquery-validate.js', 'libs/angular/angular-validate.js', 'app/shared/configs/validate.config.js']
                     },
                     {
                         name: 'moduleAutofocus',
-                        files: ['app/jarvis/shared/directives/autofocus.directive.js']
+                        files: ['app/shared/directives/autofocus.directive.js']
                     },
                     {
                         name: 'moduleTooltip',
-                        files: ['app/jarvis/shared/directives/tooltip.directive.js']
+                        files: ['app/shared/directives/tooltip.directive.js']
                     },
                     {
                         name: 'moduleUiBootstrap',
