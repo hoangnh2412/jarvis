@@ -49,38 +49,11 @@ namespace Jarvis.Core
 
         public static void UseConfigMiddlewares(this IApplicationBuilder app)
         {
-            // app.UseWhen(httpContext => !httpContext.Request.Path.ToString().StartsWith("/swagger"), appBuilder =>
-            // {
-            //     appBuilder.UseMiddleware<AuthMiddlerware>();
-            // });
-
-            // app.UseWhen(httpContext =>
-            // {
-            //     if (httpContext.Request.Path.ToString().StartsWith("/swagger"))
-            //         return false;
-
-            //     if (httpContext.Request.Headers.ContainsKey("Envelope"))
-            //     {
-            //         var data = httpContext.Request.Headers["Envelope"].ToString();
-            //         return true;
-            //     }
-
-            //     return false;
-            // }, appBuilder =>
-            // {
-            //     appBuilder.UseMiddleware<ResponseMiddleware>();
-            // });
-
-            // app.UseWhen(httpContext => !httpContext.Request.Path.ToString().StartsWith("/swagger"), appBuilder =>
-            // {
-            //     appBuilder.UseMiddleware<LoggingMiddleware>();
-            // });
-
             app.UseWhen(httpContext => !httpContext.Request.Path.ToString().StartsWith("/swagger"), appBuilder =>
             {
+                appBuilder.UseMiddleware<AuthMiddlerware>();
                 appBuilder.UseMiddleware<ResponseMiddleware>();
                 appBuilder.UseMiddleware<LoggingMiddleware>();
-                appBuilder.UseMiddleware<AuthMiddlerware>();
             });
         }
 
@@ -146,6 +119,64 @@ namespace Jarvis.Core
                     }
                 }
             });
+        }
+
+        public static void UseConfigUI(this IApplicationBuilder app, string jarvisPath, params string[] modules)
+        {
+            var env = app.ApplicationServices.GetService<IWebHostEnvironment>();
+
+            //Môi trường DEV: Scan toàn bộ project, load tất cả folder wwwroot để chạy FE
+            //Môi trường PROD: chạy FE trong folder wwwroot
+            if (env.IsDevelopment())
+            {
+                app.UseDefaultFiles();
+
+                var index = env.ContentRootPath.LastIndexOf(env.ApplicationName);
+                var solutionPath = env.ContentRootPath.Substring(0, index - 1);
+                var wwwroots = Directory.GetDirectories(solutionPath, "wwwroot", SearchOption.AllDirectories)
+                    .Where(x => !x.Contains("Release"))
+                    .Select(x => new
+                    {
+                        FullPath = x,
+                        Path = x.Substring(index, x.Length - index)
+                    })
+                    .ToList();
+
+                var name = Assembly.GetEntryAssembly().GetName().Name;
+                var paths = new List<string>();
+                paths.AddRange(wwwroots.Where(x => x.Path.Contains("Jarvis.Core")).Select(x => x.FullPath));
+                foreach (var module in modules)
+                {
+                    paths.AddRange(wwwroots.Where(x => x.Path.StartsWith(module)).Select(x => x.FullPath));
+                }
+                paths.AddRange(wwwroots.Where(x => x.Path == Path.Combine(name, "wwwroot")).Select(x => x.FullPath));
+
+                if (!string.IsNullOrWhiteSpace(jarvisPath))
+                {
+                    var jarvisWwwroots = Directory.GetDirectories(jarvisPath, "wwwroot", SearchOption.AllDirectories)
+                        .Where(x => !x.Contains("Release"))
+                        .Select(x => new
+                        {
+                            FullPath = x,
+                            Path = x.Substring(jarvisPath.Length, x.Length - jarvisPath.Length)
+                        })
+                        .ToList();
+                    paths.AddRange(jarvisWwwroots.Where(x => x.Path.Contains("Jarvis.Core")).Select(x => x.FullPath));
+                }
+
+                foreach (var path in paths)
+                {
+                    app.UseStaticFiles(new StaticFileOptions
+                    {
+                        FileProvider = new PhysicalFileProvider(path),
+                    });
+                }
+            }
+            else
+            {
+                app.UseDefaultFiles();
+                app.UseStaticFiles();
+            }
         }
 
         public static void UseConfigJarvisUI(this IApplicationBuilder app)
