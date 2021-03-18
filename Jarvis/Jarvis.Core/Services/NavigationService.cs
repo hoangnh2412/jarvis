@@ -1,33 +1,26 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using Infrastructure;
 using Infrastructure.Abstractions;
 using Jarvis.Core.Constants;
 using Jarvis.Core.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jarvis.Core.Permissions
 {
     public interface INavigationService
     {
-        List<NavigationItem> GetNavigation(SessionModel session);
+        List<NavigationItem> GetNavigation(IServiceProvider serviceProvider, SessionModel session);
     }
 
     public class NavigationService : INavigationService
     {
-        private readonly IModuleManager _moduleManager;
-
-        public NavigationService(IModuleManager moduleManager)
+        public List<NavigationItem> GetNavigation(IServiceProvider serviceProvider, SessionModel session)
         {
-            _moduleManager = moduleManager;
-        }
-
-        public List<NavigationItem> GetNavigation(SessionModel session)
-        {
-            var _items = new List<NavigationItem>();
-            var instances = _moduleManager.GetInstances<INavigation>();
+            var moduleManager = serviceProvider.GetService<IModuleManager>();
+            var items = new List<NavigationItem>();
+            var instances = moduleManager.GetInstances<INavigation>();
             foreach (var item in instances)
             {
                 var hasPermission = false;
@@ -56,7 +49,7 @@ namespace Jarvis.Core.Permissions
 
                 if (hasPermission)
                 {
-                    _items.Add(new NavigationItem
+                    items.Add(new NavigationItem
                     {
                         Code = item.Code,
                         Icon = item.Icon,
@@ -67,8 +60,8 @@ namespace Jarvis.Core.Permissions
                 }
             }
 
-            _items = _items.OrderBy(x => x.Order).ToList();
-            return _items;
+            items = items.OrderBy(x => x.Order).ToList();
+            return items;
         }
     }
 }
