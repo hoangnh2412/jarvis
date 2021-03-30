@@ -62,6 +62,8 @@ namespace Jarvis.Core.Services
         Task<ContextModel> GetContextAsync(string policy);
 
         Task<T> GetOrAddCachePerRequestAsync<T>(string key, Func<Task<T>> builder);
+
+        string GetConnectionId();
     }
 
 
@@ -258,10 +260,18 @@ namespace Jarvis.Core.Services
         {
             if (_httpContext.Items.TryGetValue(key, out object data))
                 return (T)data;
-                
+
             data = await builder();
             SetCachePerRequest(key, data);
             return (T)data;
+        }
+
+        public string GetConnectionId()
+        {
+            var connectionId = _httpContext.Request.Headers["Connection-Id"];
+            if (!string.IsNullOrWhiteSpace(connectionId))
+                return connectionId.ToString();
+            return null;
         }
     }
 }

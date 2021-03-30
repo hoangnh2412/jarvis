@@ -141,6 +141,10 @@
 
                     config.headers.Authorization = 'Bearer ' + token.accessToken;
 
+                    var context = cacheService.get('context');
+                    if (context && context.connectionId)
+                        config.headers['Connection-Id'] = context.connectionId;
+
                     return config;
                 }
             };
