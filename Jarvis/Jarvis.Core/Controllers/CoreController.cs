@@ -8,6 +8,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jarvis.Core.Database;
 using Jarvis.Core.Database.Repositories;
+using Infrastructure;
+using Infrastructure.Abstractions;
+using System;
 
 namespace Jarvis.Core.Controllers
 {
@@ -17,17 +20,21 @@ namespace Jarvis.Core.Controllers
     public class CoreController : ControllerBase
     {
         private readonly IWorkContext _workContext;
-        private readonly INavigationService _navigationService;
+        //private readonly INavigationService _navigationService;
         private readonly ICoreUnitOfWork _uow;
+        private readonly IModuleManager _moduleManager;
+        private readonly IServiceProvider _serviceProvider;
 
         public CoreController(
-            IWorkContext workContext,
-            INavigationService navigationService,
-            ICoreUnitOfWork uow)
+            IWorkContext workContext, 
+            ICoreUnitOfWork uow,
+            IModuleManager moduleManager,
+            IServiceProvider serviceProvider)
         {
             _workContext = workContext;
-            _navigationService = navigationService;
             _uow = uow;
+            _moduleManager = moduleManager;
+            _serviceProvider = serviceProvider;
         }
 
         /// <summary>
@@ -42,7 +49,15 @@ namespace Jarvis.Core.Controllers
             if (session == null)
                 return Unauthorized();
 
-            var navigation = _navigationService.GetNavigation(session);
+            var instanceDefaultDatas = _moduleManager.GetInstances<INavigationService>();
+            var navigation = new List<NavigationItem>();
+            foreach (var item in instanceDefaultDatas)
+            {
+                navigation.AddRange(item.GetNavigation(_serviceProvider, session));
+            }
+
+            navigation = navigation.OrderBy(x => x.Order).ToList();
+
             return Ok(navigation);
         }
 
