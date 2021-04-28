@@ -37,5 +37,12 @@ namespace Infrastructure.Extensions
             }
             return xml;
         }
+
+        public static XmlElement ToXmlElement(this string input)
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(input);
+            return doc.DocumentElement;
+        }
     }
 }
