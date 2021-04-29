@@ -35,8 +35,8 @@
                 url: '/role',
                 redirectTo: 'identity.backend.role.read',
                 resolve: {
-                    roleService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/jarvis/identity/roles/role.service.js');
+                    roleService: ['$ocLazyLoad', 'APP_CONFIG', function ($ocLazyLoad, APP_CONFIG) {
+                        return $ocLazyLoad.load(APP_CONFIG.BASE_PATH ? APP_CONFIG.BASE_PATH + '/app/jarvis/identity/roles/role.service.js' : '/app/jarvis/identity/roles/role.service.js');
                     }]
                 }
             });

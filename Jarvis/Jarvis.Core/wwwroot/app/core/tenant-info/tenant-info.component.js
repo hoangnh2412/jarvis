@@ -23,8 +23,8 @@
                     tenantInfoController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
                         return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiTenantInfo', '/app/core/tenant-info/tenant-info.controller.js'));
                     }],
-                    tenantInfoService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/jarvis/core/tenant-info/tenant-info.service.js');
+                    tenantInfoService: ['$ocLazyLoad', 'APP_CONFIG', function ($ocLazyLoad, APP_CONFIG) {
+                        return $ocLazyLoad.load(APP_CONFIG.BASE_PATH ? APP_CONFIG.BASE_PATH + '/app/jarvis/core/tenant-info/tenant-info.service.js' : '/app/jarvis/core/tenant-info/tenant-info.service.js');
                     }]
                 }
             });

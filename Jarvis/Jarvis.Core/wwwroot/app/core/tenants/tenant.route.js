@@ -35,8 +35,8 @@
                 url: '/tenant',
                 redirectTo: 'core.tenant.read',
                 resolve: {
-                    tenantService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/jarvis/core/tenants/tenant.service.js');
+                    tenantService: ['$ocLazyLoad', 'APP_CONFIG', function ($ocLazyLoad, APP_CONFIG) {
+                        return $ocLazyLoad.load(APP_CONFIG.BASE_PATH ? APP_CONFIG.BASE_PATH + '/app/jarvis/core/tenants/tenant.service.js' : '/app/jarvis/core/tenants/tenant.service.js');
                     }]
                 }
             });

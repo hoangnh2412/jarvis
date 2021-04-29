@@ -23,8 +23,8 @@
                     settingsController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
                         return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiSettings', '/app/core/settings/settings.controller.js'));
                     }],
-                    settingService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/core/settings/setting.service.js');
+                    settingService: ['$ocLazyLoad', 'APP_CONFIG', function ($ocLazyLoad, APP_CONFIG) {
+                        return $ocLazyLoad.load(APP_CONFIG.BASE_PATH ? APP_CONFIG.BASE_PATH + '/app/core/settings/setting.service.js' : '/app/core/settings/setting.service.js');
                     }],
                 }
             });

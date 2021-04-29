@@ -35,8 +35,8 @@
                 url: '/user',
                 redirectTo: 'identity.backend.user.read',
                 resolve: {
-                    userService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/jarvis/identity/users/user.service.js');
+                    userService: ['$ocLazyLoad', 'APP_CONFIG', function ($ocLazyLoad, APP_CONFIG) {
+                        return $ocLazyLoad.load(APP_CONFIG.BASE_PATH ? APP_CONFIG.BASE_PATH + '/app/jarvis/identity/users/user.service.js' : '/app/jarvis/identity/users/user.service.js');
                     }]
                 }
             });

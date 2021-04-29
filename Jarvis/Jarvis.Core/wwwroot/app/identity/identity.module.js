@@ -197,6 +197,22 @@
             //Custom request (ex: Authentication, ContentType)
             $httpProvider.interceptors.push('httpInterceptor');
         }])
+        .component('uiIdentityBackend', {
+            templateUrl: ['componentService', function (componentService) {
+                return componentService.getTemplateUrl('uiIdentityBackend', '/app/identity/identity.backend.template.html');
+            }],
+            bindings: {
+                context: '='
+            }
+        })
+        .component('uiIdentityFrontend', {
+            templateUrl: ['componentService', function (componentService) {
+                return componentService.getTemplateUrl('uiIdentityFrontend', '/app/identity/identity.frontend.template.html');
+            }],
+            bindings: {
+                context: '='
+            }
+        })
         .config(['$stateProvider', function ($stateProvider) {
             $stateProvider.state('identity', {
                 abstract: true,
@@ -219,12 +235,14 @@
 
             $stateProvider.state('identity.backend', {
                 abstract: true,
-                templateUrl: '/app/identity/identity.backend.template.html'
+                //templateUrl: '/system/app/identity/identity.backend.template.html'
+                component: 'uiIdentityBackend'
             });
 
             $stateProvider.state('identity.frontend', {
                 abstract: true,
-                templateUrl: '/app/identity/identity.frontend.template.html'
+                //templateUrl: '/system/app/identity/identity.frontend.template.html'
+                component: 'uiIdentityFrontend'
             });
         }])
         .config(['$ocLazyLoadProvider', function ($ocLazyLoadProvider) {
