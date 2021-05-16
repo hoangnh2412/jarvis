@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20210515031319_InitCore.cs" />
+    <Compile Remove="Migrations\20210515031319_InitCore.Designer.cs" />
+    <Compile Remove="Migrations\20210515031725_InitCore.cs" />
+    <Compile Remove="Migrations\20210515031725_InitCore.Designer.cs" />
+    <Compile Remove="Migrations\20210515032646_InitCore.cs" />
+    <Compile Remove="Migrations\20210515032646_InitCore.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.0.0" />
+    <PackageReference Include="Oracle.EntityFrameworkCore" Version="3.19.110" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jarvis.Core.Database\Jarvis.Core.Database.csproj" />
+  </ItemGroup>
+
+</Project>
