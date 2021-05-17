@@ -27,7 +27,7 @@
                 userName: {
                     required: true,
                     maxlength: 256,
-                    regex: /^[a-zA-Z0-9][\w-\/]{0,}[a-zA-Z0-9]$|^[a-zA-Z0-9]$/
+                    regex: /^[a-zA-Z0-9][\w-\/.\@]{0,}[a-zA-Z0-9]$|^[a-zA-Z0-9]$/
                 },
                 password: {
                     required: true,
@@ -38,7 +38,7 @@
             },
             messages: {
                 userName: {
-                    regex: "Tài khoản đăng nhập viết không dấu, được phép chứa các ký tự đặc biệt -, _, / và không đặt ở đầu hoặc cuối"
+                    regex: "Mã khách hàng viết không dấu, được phép chứa các ký tự đặc biệt ., -, _, /, @ và không đặt ở đầu hoặc cuối mã."
                 },
                 password: {
                     regex: "Mật khẩu không chứa ký tự tab và không bắt đầu hoặc kết thúc bằng khoảng trắng"
