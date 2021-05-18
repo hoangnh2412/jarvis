@@ -3,7 +3,7 @@ using System;
 using System.Data;
 using System.Threading.Tasks;
 
-namespace Einvoice.Adapters.Oracle.Common.Extensions
+namespace Infrastructure.Database.Dapper
 {
     public static class DapperOracleExtension
     {
