@@ -16,13 +16,13 @@ namespace Infrastructure.Extensions
             }
         }
 
-        public static string XmlSerialize<T>(this T obj, bool omitXmlDeclaration = false)
+        public static string XmlSerialize<T>(this T obj, bool omitXmlDeclaration = false, bool indent = false)
         {
             var emptyNamepsaces = new XmlSerializerNamespaces(new[] { XmlQualifiedName.Empty });
             var serializer = new XmlSerializer(obj.GetType());
             var setting = new XmlWriterSettings
             {
-                Indent = true,
+                Indent = indent,
                 OmitXmlDeclaration = omitXmlDeclaration
             };
 
@@ -43,6 +43,13 @@ namespace Infrastructure.Extensions
             var doc = new XmlDocument();
             doc.LoadXml(input);
             return doc.DocumentElement;
+        }
+
+        public static XmlDocument ToXmlDocument(this string input)
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(input);
+            return doc;
         }
     }
 }
