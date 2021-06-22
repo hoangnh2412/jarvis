@@ -10,34 +10,34 @@ using Oracle.EntityFrameworkCore.Metadata;
 namespace Jarvis.Core.Database.Oracle.Migrations
 {
     [DbContext(typeof(CoreDbContext))]
-    [Migration("20210515033604_InitCore")]
+    [Migration("20210622085609_InitCore")]
     partial class InitCore
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasDefaultSchema("VCBINVOICE")
+                .HasDefaultSchema("INEINVOICE")
                 .HasAnnotation("Oracle:ValueGenerationStrategy", OracleValueGenerationStrategy.IdentityColumn)
                 .HasAnnotation("ProductVersion", "3.1.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_City", "'SEQ_City', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_Country", "'SEQ_Country', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_Disctrict", "'SEQ_Disctrict', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_File", "'SEQ_File', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_Label", "'SEQ_Label', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_OrganizationRole", "'SEQ_OrganizationRole', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_OrganizationUnit", "'SEQ_OrganizationUnit', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_OrganizationUser", "'SEQ_OrganizationUser', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_Role", "'SEQ_Role', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_Setting", "'SEQ_Setting', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_Tenant", "'SEQ_Tenant', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_TenantHost", "'SEQ_TenantHost', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_TenantInfo", "'SEQ_TenantInfo', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_TokenInfo", "'SEQ_TokenInfo', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_User", "'SEQ_User', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_UserInfo", "'SEQ_UserInfo', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'")
-                .HasAnnotation("Relational:Sequence:VCBINVOICE.SEQ_Ward", "'SEQ_Ward', 'VCBINVOICE', '1', '1', '', '', 'Int32', 'False'");
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_City", "'SEQ_City', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_Country", "'SEQ_Country', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_Disctrict", "'SEQ_Disctrict', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_File", "'SEQ_File', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_Label", "'SEQ_Label', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_OrganizationRole", "'SEQ_OrganizationRole', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_OrganizationUnit", "'SEQ_OrganizationUnit', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_OrganizationUser", "'SEQ_OrganizationUser', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_Role", "'SEQ_Role', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_Setting", "'SEQ_Setting', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_Tenant", "'SEQ_Tenant', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_TenantHost", "'SEQ_TenantHost', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_TenantInfo", "'SEQ_TenantInfo', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_TokenInfo", "'SEQ_TokenInfo', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_User", "'SEQ_User', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_UserInfo", "'SEQ_UserInfo', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'")
+                .HasAnnotation("Relational:Sequence:INEINVOICE.SEQ_Ward", "'SEQ_Ward', 'INEINVOICE', '1', '1', '', '', 'Int32', 'False'");
 
             modelBuilder.Entity("Infrastructure.Database.Entities.Role", b =>
                 {

@@ -11,6 +11,8 @@
     <Compile Remove="Migrations\20210515031725_InitCore.Designer.cs" />
     <Compile Remove="Migrations\20210515032646_InitCore.cs" />
     <Compile Remove="Migrations\20210515032646_InitCore.Designer.cs" />
+    <Compile Remove="Migrations\20210515033604_InitCore.cs" />
+    <Compile Remove="Migrations\20210515033604_InitCore.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

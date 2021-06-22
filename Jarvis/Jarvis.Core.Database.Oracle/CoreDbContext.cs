@@ -17,8 +17,8 @@ namespace Jarvis.Core.Database.Oracle
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.HasDefaultSchema("VCBINVOICE");
-            modelBuilder.HasSequence<int>("SEQ_File", schema: "VCBINVOICE")
+            modelBuilder.HasDefaultSchema("INEINVOICE");
+            modelBuilder.HasSequence<int>("SEQ_File", schema: "INEINVOICE")
                         .StartsAt(1)
                         .IncrementsBy(1);
             modelBuilder.Entity<File>(builder =>
@@ -33,7 +33,7 @@ namespace Jarvis.Core.Database.Oracle
                 builder.HasIndex(x => x.Name).IsUnique().HasName("IX_Core_File_1");
                 builder.HasIndex(x => x.TenantCode).HasName("IX_Core_File_2");
             });
-            modelBuilder.HasSequence<int>("SEQ_OrganizationUnit", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_OrganizationUnit", schema: "INEINVOICE")
                         .StartsAt(1)
                         .IncrementsBy(1);
             modelBuilder.Entity<OrganizationUnit>(builder =>
@@ -49,7 +49,7 @@ namespace Jarvis.Core.Database.Oracle
                 builder.HasIndex(x => x.Code).IsUnique().HasName("IX_Core_OrganizationUnit_1");
                 builder.HasIndex(x => new { x.Name, x.TenantCode, x.DeletedVersion }).IsUnique().HasName("IX_Core_OrganizationUnit_2");
             });
-            modelBuilder.HasSequence<int>("SEQ_OrganizationUser", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_OrganizationUser", schema: "INEINVOICE")
                         .StartsAt(1)
                         .IncrementsBy(1);
             modelBuilder.Entity<OrganizationUser>(builder =>
@@ -57,7 +57,7 @@ namespace Jarvis.Core.Database.Oracle
                 builder.ToTable("Core_OrganizationUser");
                 builder.HasKey(x => new { x.IdUser, x.OrganizationCode });
             });
-            modelBuilder.HasSequence<int>("SEQ_OrganizationRole", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_OrganizationRole", schema: "INEINVOICE")
                         .StartsAt(1)
                         .IncrementsBy(1);
             modelBuilder.Entity<OrganizationRole>(builder =>
@@ -65,7 +65,7 @@ namespace Jarvis.Core.Database.Oracle
                 builder.ToTable("Core_OrganizationRole");
                 builder.HasKey(x => new { x.IdRole, x.OrganizationCode });
             });
-            modelBuilder.HasSequence<int>("SEQ_Tenant", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_Tenant", schema: "INEINVOICE")
                         .StartsAt(1)
                         .IncrementsBy(1);
             modelBuilder.Entity<Tenant>(builder =>
@@ -85,7 +85,7 @@ namespace Jarvis.Core.Database.Oracle
                 builder.HasIndex(x => x.Code).IsUnique().HasName("IX_Core_Tenant_1");
                 builder.HasIndex(x => new { x.Name, x.DeletedVersion }).IsUnique().HasName("IX_Core_Tenant_2");
             });
-            modelBuilder.HasSequence<int>("SEQ_TenantInfo", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_TenantInfo", schema: "INEINVOICE")
                         .StartsAt(1)
                         .IncrementsBy(1);
             modelBuilder.Entity<TenantInfo>(builder =>
@@ -107,7 +107,7 @@ namespace Jarvis.Core.Database.Oracle
                 builder.Property(x => x.Phones).HasMaxLength(500);
                 builder.Property(x => x.Emails).HasMaxLength(500);
             });
-            modelBuilder.HasSequence<int>("SEQ_TenantHost", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_TenantHost", schema: "INEINVOICE")
                         .StartsAt(1)
                         .IncrementsBy(1);
             modelBuilder.Entity<TenantHost>(builder =>
@@ -121,7 +121,7 @@ namespace Jarvis.Core.Database.Oracle
 
                 builder.HasIndex(x => new { x.HostName, x.DeletedVersion }).IsUnique().HasName("IX_Core_TenantHost_1");
             });
-            modelBuilder.HasSequence<int>("SEQ_TokenInfo", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_TokenInfo", schema: "INEINVOICE")
                         .StartsAt(1)
                         .IncrementsBy(1);
             modelBuilder.Entity<TokenInfo>(builder =>
@@ -138,7 +138,7 @@ namespace Jarvis.Core.Database.Oracle
                 builder.Property(x => x.Code).IsRequired();
                 builder.HasIndex(x => x.Code).IsUnique().HasName("IX_Core_TokenInfo_1");
             });
-            modelBuilder.HasSequence<int>("SEQ_Setting", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_Setting", schema: "INEINVOICE")
                         .StartsAt(1)
                         .IncrementsBy(1);
             modelBuilder.Entity<Setting>(builder =>
@@ -156,7 +156,7 @@ namespace Jarvis.Core.Database.Oracle
                 builder.HasIndex(x => x.Code).IsUnique().HasName("IX_Core_Setting_1");
                 builder.HasIndex(x => new { x.Key, x.TenantCode, x.DeletedVersion }).IsUnique().HasName("IX_Core_Setting_2");
             });
-            modelBuilder.HasSequence<int>("SEQ_Label", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_Label", schema: "INEINVOICE")
                         .StartsAt(1)
                         .IncrementsBy(1);
             modelBuilder.Entity<Label>(builder =>
@@ -174,7 +174,7 @@ namespace Jarvis.Core.Database.Oracle
                 builder.Property(x => x.Code).IsRequired();
                 builder.HasIndex(x => x.Code).IsUnique().HasName("IX_Core_Label_2");
             });
-            modelBuilder.HasSequence<int>("SEQ_User", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_User", schema: "INEINVOICE")
                        .StartsAt(1)
                        .IncrementsBy(1);
             modelBuilder.Entity<User>(builder =>
@@ -193,7 +193,7 @@ namespace Jarvis.Core.Database.Oracle
                     x.DeletedVersion
                 }).IsUnique().HasName("IX_Core_User_4");
             });
-            modelBuilder.HasSequence<int>("SEQ_UserInfo", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_UserInfo", schema: "INEINVOICE")
                        .StartsAt(1)
                        .IncrementsBy(1);
             modelBuilder.Entity<UserInfo>(builder =>
@@ -202,7 +202,7 @@ namespace Jarvis.Core.Database.Oracle
                 builder.HasKey(x => x.Id);
                 builder.Property(x => x.Id).IsRequired();
             });
-            modelBuilder.HasSequence<int>("SEQ_Role", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_Role", schema: "INEINVOICE")
                        .StartsAt(1)
                        .IncrementsBy(1);
             modelBuilder.Entity<Role>(builder =>
@@ -219,7 +219,7 @@ namespace Jarvis.Core.Database.Oracle
                     x.DeletedVersion
                 }).IsUnique().HasName("IX_Core_Role_2");
             });
-            
+
             modelBuilder.Entity<IdentityUserClaim<Guid>>(builder =>
             {
                 builder.ToTable("Core_UserClaim");
@@ -244,7 +244,7 @@ namespace Jarvis.Core.Database.Oracle
             {
                 builder.ToTable("Core_UserToken");
             });
-            modelBuilder.HasSequence<int>("SEQ_Country", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_Country", schema: "INEINVOICE")
                        .StartsAt(1)
                        .IncrementsBy(1);
             modelBuilder.Entity<Country>(builder =>
@@ -255,7 +255,7 @@ namespace Jarvis.Core.Database.Oracle
                 builder.Property(x => x.Code).IsRequired().HasMaxLength(50);
                 builder.Property(x => x.Name).IsRequired().HasMaxLength(250);
             });
-            modelBuilder.HasSequence<int>("SEQ_City", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_City", schema: "INEINVOICE")
                        .StartsAt(1)
                        .IncrementsBy(1);
             modelBuilder.Entity<City>(builder =>
@@ -266,7 +266,7 @@ namespace Jarvis.Core.Database.Oracle
                 builder.Property(x => x.Code).IsRequired().HasMaxLength(50);
                 builder.Property(x => x.Name).IsRequired().HasMaxLength(250);
             });
-            modelBuilder.HasSequence<int>("SEQ_Disctrict", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_Disctrict", schema: "INEINVOICE")
                        .StartsAt(1)
                        .IncrementsBy(1);
             modelBuilder.Entity<Disctrict>(builder =>
@@ -277,7 +277,7 @@ namespace Jarvis.Core.Database.Oracle
                 builder.Property(x => x.Code).IsRequired().HasMaxLength(50);
                 builder.Property(x => x.Name).IsRequired().HasMaxLength(250);
             });
-            modelBuilder.HasSequence<int>("SEQ_Ward", schema: "VCBINVOICE")
+            modelBuilder.HasSequence<int>("SEQ_Ward", schema: "INEINVOICE")
                        .StartsAt(1)
                        .IncrementsBy(1);
             modelBuilder.Entity<Ward>(builder =>

@@ -9,79 +9,79 @@ namespace Jarvis.Core.Database.Oracle.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.EnsureSchema(
-                name: "VCBINVOICE");
+                name: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_City",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_Country",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_Disctrict",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_File",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_Label",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_OrganizationRole",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_OrganizationUnit",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_OrganizationUser",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_Role",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_Setting",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_Tenant",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_TenantHost",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_TenantInfo",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_TokenInfo",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_User",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_UserInfo",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateSequence<int>(
                 name: "SEQ_Ward",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.CreateTable(
                 name: "Core_Country",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -98,7 +98,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_File",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -118,7 +118,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_Label",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -147,7 +147,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_OrganizationRole",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     IdRole = table.Column<Guid>(nullable: false),
@@ -161,7 +161,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_OrganizationUnit",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -190,7 +190,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_OrganizationUser",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     IdUser = table.Column<Guid>(nullable: false),
@@ -205,7 +205,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_Role",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -231,7 +231,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_Setting",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -264,7 +264,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_Tenant",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -297,7 +297,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_TenantHost",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -313,7 +313,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_TenantInfo",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -341,7 +341,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_TokenInfo",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -369,7 +369,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_User",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -406,7 +406,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_UserInfo",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -420,7 +420,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_City",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -436,9 +436,9 @@ namespace Jarvis.Core.Database.Oracle.Migrations
                 {
                     table.PrimaryKey("PK_Core_City", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Core_City_CountryId",
+                        name: "FK_City_CountryId",
                         column: x => x.CountryId,
-                        principalSchema: "VCBINVOICE",
+                        principalSchema: "INEINVOICE",
                         principalTable: "Core_Country",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -446,7 +446,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_RoleClaim",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -459,9 +459,9 @@ namespace Jarvis.Core.Database.Oracle.Migrations
                 {
                     table.PrimaryKey("PK_Core_RoleClaim", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Core_RoleClaim_RoleId",
+                        name: "FK_RoleClaim_RoleId",
                         column: x => x.RoleId,
-                        principalSchema: "VCBINVOICE",
+                        principalSchema: "INEINVOICE",
                         principalTable: "Core_Role",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -469,7 +469,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_UserClaim",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -482,9 +482,9 @@ namespace Jarvis.Core.Database.Oracle.Migrations
                 {
                     table.PrimaryKey("PK_Core_UserClaim", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Core_UserClaim_UserId",
+                        name: "FK_UserClaim_UserId",
                         column: x => x.UserId,
-                        principalSchema: "VCBINVOICE",
+                        principalSchema: "INEINVOICE",
                         principalTable: "Core_User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -492,7 +492,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_UserLogin",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     LoginProvider = table.Column<string>(nullable: false),
@@ -504,9 +504,9 @@ namespace Jarvis.Core.Database.Oracle.Migrations
                 {
                     table.PrimaryKey("PK_Core_UserLogin", x => new { x.LoginProvider, x.ProviderKey });
                     table.ForeignKey(
-                        name: "FK_Core_UserLogin_UserId",
+                        name: "FK_UserLogin_UserId",
                         column: x => x.UserId,
-                        principalSchema: "VCBINVOICE",
+                        principalSchema: "INEINVOICE",
                         principalTable: "Core_User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -514,7 +514,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_UserRole",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     UserId = table.Column<Guid>(nullable: false),
@@ -524,16 +524,16 @@ namespace Jarvis.Core.Database.Oracle.Migrations
                 {
                     table.PrimaryKey("PK_Core_UserRole", x => new { x.UserId, x.RoleId });
                     table.ForeignKey(
-                        name: "FK_Core_UserRole_RoleId",
+                        name: "FK_UserRole_RoleId",
                         column: x => x.RoleId,
-                        principalSchema: "VCBINVOICE",
+                        principalSchema: "INEINVOICE",
                         principalTable: "Core_Role",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Core_UserRole_UserId",
+                        name: "FK_UserRole_UserId",
                         column: x => x.UserId,
-                        principalSchema: "VCBINVOICE",
+                        principalSchema: "INEINVOICE",
                         principalTable: "Core_User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -541,7 +541,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_UserToken",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     UserId = table.Column<Guid>(nullable: false),
@@ -553,9 +553,9 @@ namespace Jarvis.Core.Database.Oracle.Migrations
                 {
                     table.PrimaryKey("PK_Core_UserToken", x => new { x.UserId, x.LoginProvider, x.Name });
                     table.ForeignKey(
-                        name: "FK_Core_UserToken_UserId",
+                        name: "FK_UserToken_UserId",
                         column: x => x.UserId,
-                        principalSchema: "VCBINVOICE",
+                        principalSchema: "INEINVOICE",
                         principalTable: "Core_User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -563,7 +563,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_District",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -579,9 +579,9 @@ namespace Jarvis.Core.Database.Oracle.Migrations
                 {
                     table.PrimaryKey("PK_Core_District", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Core_District_CityId",
+                        name: "FK_District_CityId",
                         column: x => x.CityId,
-                        principalSchema: "VCBINVOICE",
+                        principalSchema: "INEINVOICE",
                         principalTable: "Core_City",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -589,7 +589,7 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Core_Ward",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -605,9 +605,9 @@ namespace Jarvis.Core.Database.Oracle.Migrations
                 {
                     table.PrimaryKey("PK_Core_Ward", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Core_Ward_DisctrictId",
+                        name: "FK_Ward_DisctrictId",
                         column: x => x.DisctrictId,
-                        principalSchema: "VCBINVOICE",
+                        principalSchema: "INEINVOICE",
                         principalTable: "Core_District",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -615,170 +615,170 @@ namespace Jarvis.Core.Database.Oracle.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_City_CountryId",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_City",
                 column: "CountryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_District_CityId",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_District",
                 column: "CityId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_File_1",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_File",
                 column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_File_2",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_File",
                 column: "TenantCode");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_Label_2",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_Label",
                 column: "Code",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_Label_1",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_Label",
                 columns: new[] { "Name", "TenantCode", "DeletedVersion" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_OrganizationUnit_1",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_OrganizationUnit",
                 column: "Code",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_OrganizationUnit_2",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_OrganizationUnit",
                 columns: new[] { "Name", "TenantCode", "DeletedVersion" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_Role_1",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_Role",
                 column: "NormalizedName");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_Role_2",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_Role",
                 columns: new[] { "NormalizedName", "TenantCode", "DeletedVersion" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_RoleClaim_RoleId",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_RoleClaim",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_Setting_1",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_Setting",
                 column: "Code",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_Setting_2",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_Setting",
                 columns: new[] { "Key", "TenantCode", "DeletedVersion" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_Tenant_1",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_Tenant",
                 column: "Code",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_Tenant_2",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_Tenant",
                 columns: new[] { "Name", "DeletedVersion" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_TenantHost_1",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_TenantHost",
                 columns: new[] { "HostName", "DeletedVersion" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_TokenInfo_1",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_TokenInfo",
                 column: "Code",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_User_3",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_User",
                 column: "Email");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_User",
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_User_1",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_User",
                 column: "NormalizedUserName");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_User_2",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_User",
                 column: "UserName");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_User_4",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_User",
                 columns: new[] { "NormalizedUserName", "TenantCode", "DeletedVersion" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_UserClaim_UserId",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_UserClaim",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_UserLogin_UserId",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_UserLogin",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_UserRole_RoleId",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_UserRole",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Core_Ward_DisctrictId",
-                schema: "VCBINVOICE",
+                schema: "INEINVOICE",
                 table: "Core_Ward",
                 column: "DisctrictId");
         }
@@ -787,159 +787,159 @@ namespace Jarvis.Core.Database.Oracle.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Core_File",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_Label",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_OrganizationRole",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_OrganizationUnit",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_OrganizationUser",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_RoleClaim",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_Setting",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_Tenant",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_TenantHost",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_TenantInfo",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_TokenInfo",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_UserClaim",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_UserInfo",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_UserLogin",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_UserRole",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_UserToken",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_Ward",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_Role",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_User",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_District",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_City",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropTable(
                 name: "Core_Country",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_City",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_Country",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_Disctrict",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_File",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_Label",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_OrganizationRole",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_OrganizationUnit",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_OrganizationUser",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_Role",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_Setting",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_Tenant",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_TenantHost",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_TenantInfo",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_TokenInfo",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_User",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_UserInfo",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
 
             migrationBuilder.DropSequence(
                 name: "SEQ_Ward",
-                schema: "VCBINVOICE");
+                schema: "INEINVOICE");
         }
     }
 }
