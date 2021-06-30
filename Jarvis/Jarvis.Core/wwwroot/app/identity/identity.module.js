@@ -78,7 +78,7 @@
                                 var err = '';
                                 Object.keys(response.data.errors).forEach(function (e) {
                                     for (var i = 0; i < response.data.errors[e].length; i++) {
-                                        err += response.data.errors[e][i] + '</br>';
+                                        err += response.data.errors[e][i] + ' </br>';
                                     };
                                 });
                                 swal.fire({
