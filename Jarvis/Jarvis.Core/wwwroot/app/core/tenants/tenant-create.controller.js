@@ -85,7 +85,7 @@
                         text: "Bạn đã tạo CHI NHÁNH thành công",
                         type: "success",
                     });
-                    tenantService.setDefault(response.data.tenantCode);
+                    tenantService.setDefault(response.data.data.tenantCode);
                     $state.go('core.tenant.read');
                 }
             });

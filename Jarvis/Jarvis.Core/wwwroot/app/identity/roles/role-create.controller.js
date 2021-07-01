@@ -25,7 +25,7 @@
             roleService.getById(id).then(function (response) {
                 ctrl.loading = false;
                 if (response.status === 200) {
-                    ctrl.role = response.data;
+                    ctrl.role = response.data.data;
                 }
             });
         };

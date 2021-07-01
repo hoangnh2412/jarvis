@@ -21,7 +21,7 @@
             ctrl.loading = true;
             settingService.get().then(function (response) {
                 if (response.status === 200) {
-                    ctrl.groupSettings = response.data;
+                    ctrl.groupSettings = response.data.data;
                 }
                 ctrl.loading = false;
             });
@@ -65,7 +65,7 @@
             httpService.get('/config').then(function (response) {
                 if (response.status === 200) {
                     var currentTenant = cacheService.get('currentTenant');
-                    cacheService.set('config-' + currentTenant.code, response.data);
+                    cacheService.set('config-' + currentTenant.code, response.data.data);
                 }
                 ctrl.loading = false;
             })

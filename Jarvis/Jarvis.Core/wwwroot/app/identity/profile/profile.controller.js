@@ -79,7 +79,7 @@
             profileService.getProfile().then(function (response) {
                 ctrl.loading = false;
                 if (response.status === 200) {
-                    ctrl.user = response.data;
+                    ctrl.user = response.data.data;
                 }
             });
         };

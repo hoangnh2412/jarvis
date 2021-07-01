@@ -29,8 +29,8 @@
             userService.get(ctrl.paging).then(function (response) {
                 ctrl.loading = false;
                 if (response.status === 200) {
-                    ctrl.users = response.data.data;
-                    ctrl.totalItems = response.data.totalItems;
+                    ctrl.users = response.data.data.data;
+                    ctrl.totalItems = response.data.data.totalItems;
                 }
             });
         };

@@ -51,7 +51,7 @@
             userService.getById(id).then(function (response) {
                 ctrl.loading = false;
                 if (response.status === 200) {
-                    ctrl.user = response.data;
+                    ctrl.user = response.data.data;
                     ctrl.getRoles();
                 }
             });
@@ -62,7 +62,7 @@
             userService.getRoles({ page: 1, size: 99999 }).then(function (response) {
                 ctrl.loading = false;
                 if (response.status === 200) {
-                    ctrl.roles = response.data.data;
+                    ctrl.roles = response.data.data.data;
 
                     if (ctrl.user.id) {
                         for (var i = 0; i < ctrl.roles.length; i++) {

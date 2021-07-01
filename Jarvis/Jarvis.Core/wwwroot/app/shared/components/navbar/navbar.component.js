@@ -91,7 +91,7 @@
             ctrl.getTenants = function () {
                 httpService.get('/core/tenants', { cache: true }).then(function (response) {
                     if (response.status === 200) {
-                        ctrl.tenants = response.data;
+                        ctrl.tenants = response.data.data;
                         ctrl.tenants.forEach(tenant => {
                             if (tenant.code === currentTenant.code) {
                                 tenant.selected = true;

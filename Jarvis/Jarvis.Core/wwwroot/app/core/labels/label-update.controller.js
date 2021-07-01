@@ -28,7 +28,7 @@
         ctrl.getLabel = function (id) {
             labelService.getById(id).then(function (response) {
                 if (response.status === 200) {
-                    ctrl.label = response.data;
+                    ctrl.label = response.data.data;
                 }
             });
         };

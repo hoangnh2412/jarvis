@@ -14,8 +14,8 @@
         ctrl.getLabels = function () {
             labelService.get(ctrl.paging).then(function (response) {
                 if (response.status === 200) {
-                    ctrl.labels = response.data.data;
-                    ctrl.totalItems = response.data.totalItems;
+                    ctrl.labels = response.data.data.data;
+                    ctrl.totalItems = response.data.data.totalItems;
                 }
             });
         };

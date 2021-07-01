@@ -35,7 +35,7 @@
 
             httpService.post('/identity/login', ctrl.identity).then(function (response) {
                 if (response.status === 200) {
-                    ctrl.getContext(response.data);
+                    ctrl.getContext(response.data.data);
                 }
             });
         };
@@ -47,7 +47,7 @@
                 }
             }).then(function (response) {
                 if (response.status === 200) {
-                    ctrl.context = response.data;
+                    ctrl.context = response.data.data;
                     ctrl.context.cache = {};
                     ctrl.context.theme = APP_CONFIG.THEME;
                     cacheService.set('token', token);

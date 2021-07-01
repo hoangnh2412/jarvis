@@ -20,8 +20,8 @@
             tenantService.paging(ctrl.paging).then(function (response) {
                 ctrl.loading = false;
                 if (response.status === 200) {
-                    ctrl.items = response.data.data;
-                    ctrl.totalItems = response.data.totalItems;
+                    ctrl.items = response.data.data.data;
+                    ctrl.totalItems = response.data.data.totalItems;
                 }
             });
         };

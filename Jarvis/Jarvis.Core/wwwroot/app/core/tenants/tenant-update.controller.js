@@ -44,7 +44,7 @@
             tenantService.get($stateParams.code).then(function (response) {
                 ctrl.loading = false;
                 if (response.status === 200) {
-                    ctrl.model = response.data;
+                    ctrl.model = response.data.data;
                 }
             });
         };

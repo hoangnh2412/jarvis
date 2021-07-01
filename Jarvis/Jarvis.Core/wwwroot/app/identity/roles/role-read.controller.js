@@ -25,8 +25,8 @@
             roleService.get(ctrl.paging).then(function (response) {
                 ctrl.loading = false;
                 if (response.status === 200) {
-                    ctrl.roles = response.data.data;
-                    ctrl.totalItems = response.data.totalItems;
+                    ctrl.roles = response.data.data.data;
+                    ctrl.totalItems = response.data.data.totalItems;
                 }
             });
         };
