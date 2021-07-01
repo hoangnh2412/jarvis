@@ -6,8 +6,6 @@ namespace Jarvis.Core.Errors
 {
     public class SecurityError : IError
     {
-        public static ErrorInfo KhongCoQuyen = new ErrorInfo(2, "Không có quyền");
-
         public static ErrorInfo TaiKhoanKhongTonTai = new ErrorInfo(2001, "Tài khoản không tồn tại");
         public static ErrorInfo TaiKhoanHoacMatKhauKhongDung = new ErrorInfo(2002, "Tài khoản hoặc mật khẩu không đúng");
         public static ErrorInfo TaiKhoanBiKhoa = new ErrorInfo(2003, "Tài khoản đã bị khóa vui lòng thử lại sau 30 phút");
