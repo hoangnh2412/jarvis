@@ -2,6 +2,7 @@
 using Jarvis.Core.Constants;
 using Jarvis.Core.Database;
 using Jarvis.Core.Database.Repositories;
+using Jarvis.Core.Errors;
 using Jarvis.Core.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -38,7 +39,7 @@ namespace Jarvis.Core.Services
             var repoFile = _uowCore.GetRepository<IFileRepository>();
             var file = await repoFile.GetByIdAsync(id);
             if (file == null)
-                throw new Exception("Không tìm thấy file");
+                throw new Exception(FileError.KhongTimThayFile.Code.ToString());
 
             //lấy tên thư mục lưu file
             var folderPath = await GetFilePath(isDefault, file.CreatedAt);
@@ -46,7 +47,7 @@ namespace Jarvis.Core.Services
             var filePath = Path.Combine(folderPath, file.Name);
 
             if (!System.IO.File.Exists(filePath))
-                throw new Exception("Không tìm thấy file vật lý");
+                throw new Exception(FileError.KhongTimThayFileVatLy.Code.ToString());
 
             var bytes = System.IO.File.ReadAllBytes(filePath);
             return bytes;

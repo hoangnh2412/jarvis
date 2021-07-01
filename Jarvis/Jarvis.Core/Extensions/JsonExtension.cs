@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace Jarvis.Core.Extensions
 {
@@ -45,6 +47,38 @@ namespace Jarvis.Core.Extensions
                 }
             }
             return json;
+        }
+
+        public static string JsonSerialize(this object datas, bool? useCamelCase = null, bool? ignoreNull = null)
+        {
+            var setting = new JsonSerializerSettings();
+            if (useCamelCase.HasValue && useCamelCase.Value)
+            {
+                setting.ContractResolver = new DefaultContractResolver()
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                };
+            }
+
+            if (ignoreNull.HasValue)
+            {
+                if (ignoreNull.Value)
+                    setting.NullValueHandling = NullValueHandling.Ignore;
+                else
+                    setting.NullValueHandling = NullValueHandling.Include;
+            }
+            return JsonConvert.SerializeObject(datas, setting);
+        }
+
+        public static T JsonDeserialize<T>(this string str)
+        {
+            return JsonConvert.DeserializeObject<T>(str);
+        }
+
+        public static T Copy<T>(this T source)
+        {
+            var serialized = JsonConvert.SerializeObject(source);
+            return JsonConvert.DeserializeObject<T>(serialized);
         }
     }
 }

@@ -22,6 +22,7 @@ using Infrastructure;
 using Infrastructure.Abstractions.Events;
 using Jarvis.Core.Models.Events.Tenants;
 using Jarvis.Core.Events.Tenants;
+using Jarvis.Core.Errors;
 
 namespace Jarvis.Core.Controllers
 {
@@ -191,16 +192,16 @@ namespace Jarvis.Core.Controllers
 
             var repoTenant = _uow.GetRepository<ITenantRepository>();
             if (await repoTenant.AnyByNameAsync(model.Info.TaxCode))
-                throw new Exception("Mã số thuế đã bị trùng");
+                throw new Exception(TenantError.MaSoThueDaBiTrung.Code.ToString());
 
             if (await repoTenant.AnyByHostNameAsync(model.HostName))
-                throw new Exception("Tên miền đã bị trùng");
+                throw new Exception(TenantError.TenMienDaBiTrung.Code.ToString());
 
             //check tên tk có bị trùng với tk root của chi nhánh không 
             //(tk này đặc biệt không được gán nhóm quyền nào mà chỉ có quyền là adminTenant)
             var userRootTenant = "root";
             if (model.User.UserName.ToUpper() == userRootTenant.ToUpper())
-                throw new Exception("Tên đăng nhập không hợp lệ. Vui lòng nhập tên đăng nhập không phải là admin!");
+                throw new Exception(TenantError.TenDangNhapKhongHopLe.Code.ToString());
 
             //Nếu ko nhập pasword sẽ tự động random
             var isRandomPassword = false;
@@ -255,14 +256,14 @@ namespace Jarvis.Core.Controllers
                 return NotFound();
 
             if (tenant.IsEnable)
-                throw new Exception("Chi nhánh đã tạo đăng ký phát hành không thể sửa!");
+                throw new Exception(TenantError.KhongSuaChiNhanhDaHoatDong.Code.ToString());
 
             var info = await repoTenant.GetInfoByCodeAsync(code);
             if (info == null)
                 return NotFound();
 
             if ((await repoTenant.QueryHostByHostNameAsync(model.HostName)).Any(x => x.Code != code))
-                throw new Exception("Tên miền đã bị trùng");
+                throw new Exception(TenantError.TenMienDaBiTrung.Code.ToString());
 
             var hosts = await repoTenant.GetHostByCodeAsync(code);
             if (hosts.Count == 0)
@@ -341,7 +342,7 @@ namespace Jarvis.Core.Controllers
                 return NotFound();
 
             if (tenant.IsEnable)
-                throw new Exception("Chi nhánh đã tạo đăng ký phát hành không thể xóa!");
+                throw new Exception(TenantError.KhongXoaChiNhanhDaHoatDong.Code.ToString());
 
             var tenantHosts = await repoTenant.GetHostByCodeAsync(code);
             if (!tenantHosts.Any())

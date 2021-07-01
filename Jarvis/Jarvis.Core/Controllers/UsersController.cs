@@ -25,6 +25,7 @@ using Infrastructure.Abstractions.Events;
 using Jarvis.Core.Events.Users;
 using Jarvis.Core.Models.Events.Users;
 using Jarvis.Core.Models.Identity;
+using Jarvis.Core.Errors;
 
 namespace Jarvis.Core.Controllers
 {
@@ -137,7 +138,7 @@ namespace Jarvis.Core.Controllers
             if (string.IsNullOrEmpty(command.Password))
             {
                 if (string.IsNullOrEmpty(command.Email))
-                    throw new Exception("Email tài khoản không được để trống khi chọn password tự động");
+                    throw new Exception(Errors.IdentityError.EmailKhongDuocDeTrongKhiPasswordTuDong.Code.ToString());
 
                 isRandomPassword = true;
                 command.Password = RandomExtension.Random(10);

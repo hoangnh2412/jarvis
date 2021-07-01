@@ -9,8 +9,8 @@ using Jarvis.Core.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
-//using iTextSharp.LGPLv2.Core;
 using Jarvis.Core.Constants;
+using Jarvis.Core.Errors;
 
 namespace Jarvis.Core.Controllers
 {
@@ -36,8 +36,6 @@ namespace Jarvis.Core.Controllers
         [HttpGet("{code}")]
         public async Task<IActionResult> GetAsync([FromRoute]Guid code)
         {
-            var idTenant = await _workContext.GetTenantCodeAsync();
-
             var repo = _uow.GetRepository<IFileRepository>();
             var file = await repo.GetByIdAsync(code);
             return Ok(file);
@@ -50,7 +48,7 @@ namespace Jarvis.Core.Controllers
             var repoFile = _uow.GetRepository<IFileRepository>();
             var file = await repoFile.GetByIdAsync(id);
             if (file == null)
-                throw new Exception("Không tìm thấy file");
+                throw new Exception(FileError.KhongTimThayFile.Code.ToString());
 
             var bytes = await _fileService.DownloadAsync(isInvoice, id);
 
@@ -76,10 +74,10 @@ namespace Jarvis.Core.Controllers
             {
                 var file = await repoFile.GetByIdAsync(id);
                 if (file == null)
-                    throw new Exception("Không tìm thấy file");
+                    throw new Exception(FileError.KhongTimThayFile.Code.ToString());
 
                 if (file.ContentType != ContentType.Pdf)
-                    throw new Exception("Không phải file pdf");
+                    throw new Exception(FileError.KhongTimPhaiFilePdf.Code.ToString());
 
                 bytes.Add(await _fileService.DownloadAsync(isInvoice, id));
             }
@@ -92,7 +90,7 @@ namespace Jarvis.Core.Controllers
         public async Task<IActionResult> UploadAsync(IFormFile formFile, [FromRoute] bool isInvoice)
         {
             if (formFile.Length <= 0)
-                throw new Exception("File không có dữ liệu");
+                throw new Exception(FileError.FileKhongCoDuLieu.Code.ToString());
 
             var tenantCode = await _workContext.GetTenantCodeAsync();
             var repoTenantInfo = _uow.GetRepository<ITenantRepository>();

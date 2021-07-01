@@ -80,6 +80,7 @@ namespace Jarvis.Core
             {
                 appBuilder.UseMiddleware<ResponseMiddleware>();
                 appBuilder.UseMiddleware<LoggingMiddleware>();
+                appBuilder.UseMiddleware<WrapResponseMiddleware>();
                 appBuilder.UseMiddleware<AuthMiddlerware>();
             });
         }

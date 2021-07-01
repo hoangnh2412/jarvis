@@ -109,15 +109,15 @@ namespace Jarvis.Core.Services
             var repoUser = _uow.GetRepository<IUserRepository>();
             var user = await repoUser.FindUserByUsernameAsync(tenantCode, model.UserName);
             if (user == null)
-                throw new Exception("Tài khoản hoặc mật khẩu không đúng");
+                throw new Exception(Errors.IdentityError.TaiKhoanMatKhauKhongDung.Code.ToString());
 
             var account = await _userManager.FindByIdAsync(user.Id.ToString());
             var result = await _signInManager.CheckPasswordSignInAsync(account, model.Password, true);
             if (result.IsLockedOut)
-                throw new Exception("Tài khoản bị khóa");
+                throw new Exception(Errors.IdentityError.TaiKhoanBiKhoa.Code.ToString());
 
             if (!result.Succeeded)
-                throw new Exception("Tài khoản hoặc mật khẩu không đúng");
+                throw new Exception(Errors.IdentityError.TaiKhoanMatKhauKhongDung.Code.ToString());
 
             //TODO: Xóa các Token đã hết hạn => Đưa vào BackgroundJob
             //var expired = tokenInfos.Where(x => x.ExpireAtUtc <= DateTime.UtcNow);
@@ -164,22 +164,22 @@ namespace Jarvis.Core.Services
             var tenantHost = await repoTenant.GetHostByHostNameAsync(model.HostName);
 
             if (tenantHost == null)
-                throw new Exception("Không tìm thấy công ty");
+                throw new Exception(Errors.IdentityError.KhongTimThayCongTy.Code.ToString());
 
             // tìm tài khoản
             var repoUser = _uow.GetRepository<IUserRepository>();
             var user = await repoUser.FindUserByUsernameAsync(tenantHost.Code, model.UserName);
             if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
+                throw new Exception(Errors.IdentityError.TaiKhoanKhongTonTai.Code.ToString());
 
             //kiểm tra có đúng là mail của tài khoản hay không
             if (string.IsNullOrEmpty(user.Email))
-                throw new Exception("Tài khoản không có email. Vui lòng liên hệ công ty/chi nhánh để cấp lại mật khẩu");
+                throw new Exception(Errors.IdentityError.TaiKhoanKhongCoEmail.Code.ToString());
 
             //kiểm tra có đúng là mail của tài khoản hay không
             var userEmails = user.Email.Split(";");
             if (!userEmails.Contains(model.Email))
-                throw new Exception("Email không trùng với email của tài khoản. Vui lòng nhập đúng email của tài khoản");
+                throw new Exception(Errors.IdentityError.EmailKhongTrungVoiEmailTaiKhoan.Code.ToString());
 
             return user.Id;
         }
@@ -190,10 +190,10 @@ namespace Jarvis.Core.Services
             var repoUser = _uow.GetRepository<IUserRepository>();
             var user = await repoUser.FindByIdAsync(model.Id);
             if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
+                throw new Exception(Errors.IdentityError.TaiKhoanKhongTonTai.Code.ToString());
 
             if (model.SecurityStamp != user.SecurityStamp)
-                throw new Exception("Tài khoản đã được đổi mật khẩu. Thời gian đổi mật khẩu đã hết hạn");
+                throw new Exception(Errors.IdentityError.TaiKhoanDaBiDoiMatKhau.Code.ToString());
 
             var passwordHasher = _passwordHasher.HashPassword(user, model.NewPassword);
 
@@ -311,7 +311,7 @@ namespace Jarvis.Core.Services
             var repoUser = _uow.GetRepository<IUserRepository>();
             //kiểm tra xem đã bị trùng username chưa
             if (await repoUser.AnyAsync(x => x.UserName == model.Username && x.TenantCode == idTenant))
-                throw new Exception("Tài khoản đã tồn tại");
+                throw new Exception(Errors.IdentityError.TaiKhoanDaTonTai.Code.ToString());
 
             var idUser = Guid.NewGuid();
             var user = new User
@@ -345,7 +345,7 @@ namespace Jarvis.Core.Services
 
             //kiểm tra xem đã bị trùng username chưa
             if (await repoUser.AnyAsync(x => x.UserName == model.UserName && x.TenantCode == idTenant))
-                throw new Exception("Tài khoản đã tồn tại");
+                throw new Exception(Errors.IdentityError.TaiKhoanDaTonTai.Code.ToString());
 
             var idUser = Guid.NewGuid();
             var user = new User
@@ -392,7 +392,7 @@ namespace Jarvis.Core.Services
             //Xóa tài khoản
             var user = await _userManager.FindByIdAsync(idUser.ToString());
             if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
+                throw new Exception(Errors.IdentityError.TaiKhoanKhongTonTai.Code.ToString());
 
             var result = await _userManager.DeleteAsync(user);
             if (!result.Succeeded)
@@ -428,11 +428,11 @@ namespace Jarvis.Core.Services
             var repoUser = _uow.GetRepository<IUserRepository>();
             var user = await repoUser.FindByIdAsync(idUser);
             if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
+                throw new Exception(Errors.IdentityError.TaiKhoanKhongTonTai.Code.ToString());
 
             var isOldPassword = await _userManager.CheckPasswordAsync(user, model.OldPassword);
             if (!isOldPassword)
-                throw new Exception("Mật khẩu cũ không đúng");
+                throw new Exception(Errors.IdentityError.MatKhauCuKhongDung.Code.ToString());
 
             user.PasswordHash = _passwordHasher.HashPassword(user, model.NewPassword);
 
@@ -450,11 +450,11 @@ namespace Jarvis.Core.Services
             var repo = _uow.GetRepository<IUserRepository>();
             var user = await repo.FindUserByIdAsync(tenantCode, idUser);
             if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
+                throw new Exception(Errors.IdentityError.TaiKhoanKhongTonTai.Code.ToString());
 
             user = await _userManager.FindByIdAsync(idUser.ToString());
             if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
+                throw new Exception(Errors.IdentityError.TaiKhoanKhongTonTai.Code.ToString());
 
             IdentityResult result;
             if (string.IsNullOrEmpty(time))
@@ -479,11 +479,11 @@ namespace Jarvis.Core.Services
             var repo = _uow.GetRepository<IUserRepository>();
             var user = await repo.FindUserByIdAsync(tenantCode, idUser);
             if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
+                throw new Exception(Errors.IdentityError.TaiKhoanKhongTonTai.Code.ToString());
 
             user = await _userManager.FindByIdAsync(idUser.ToString());
             if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
+                throw new Exception(Errors.IdentityError.TaiKhoanKhongTonTai.Code.ToString());
 
             IdentityResult result;
             if (string.IsNullOrEmpty(time))
@@ -509,7 +509,7 @@ namespace Jarvis.Core.Services
             var user = await repoUser.FindByIdAsync(idUser);
 
             if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
+                throw new Exception(Errors.IdentityError.TaiKhoanKhongTonTai.Code.ToString());
 
             user.PasswordHash = _passwordHasher.HashPassword(user, password);
 
