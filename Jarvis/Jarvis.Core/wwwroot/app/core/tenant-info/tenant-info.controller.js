@@ -16,7 +16,7 @@
                     return;
                 }
 
-                ctrl.tenant = response.data;
+                ctrl.tenant = response.data.data;
 
                 console.log(ctrl.tenant);
             });

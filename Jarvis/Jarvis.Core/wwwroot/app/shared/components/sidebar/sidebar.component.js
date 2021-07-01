@@ -31,7 +31,7 @@
                         return;
                     }
 
-                    var items = response.data;
+                    var items = response.data.data;
 
                     var parents = [];
                     for (var i = 0; i < items.length; i++) {

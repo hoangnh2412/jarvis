@@ -49,7 +49,7 @@
 
                     if (response.status === 500 || response.status === 400) {
                         if (response.config.responseType && response.config.responseType === 'arraybuffer') {
-                            var stringError = new TextDecoder().decode(response.data);
+                            var stringError = new TextDecoder().decode(response.data.data);
                             try {
                                 var responseParse = JSON.parse(stringError);
                                 if (responseParse.errors && Object.keys(responseParse.errors).length > 0) {
@@ -73,12 +73,12 @@
                                     sweetAlert.error("Lỗi", stringError);
                             }
                         }
-                        else if (response.data.errors) {
-                            if (Object.keys(response.data.errors).length > 0) {
+                        else if (response.data.data.errors) {
+                            if (Object.keys(response.data.data.errors).length > 0) {
                                 var err = '';
-                                Object.keys(response.data.errors).forEach(function (e) {
-                                    for (var i = 0; i < response.data.errors[e].length; i++) {
-                                        err += response.data.errors[e][i] + '</br>';
+                                Object.keys(response.data.data.errors).forEach(function (e) {
+                                    for (var i = 0; i < response.data.data.errors[e].length; i++) {
+                                        err += response.data.data.errors[e][i] + '</br>';
                                     };
                                 });
                                 swal.fire({
@@ -89,8 +89,8 @@
                             }
                         }
                         else
-                            sweetAlert.error("Lỗi", response.data);
-                        return response;
+                            sweetAlert.error("Lỗi", response.data.data);
+                        return response.data;
                     }
 
 

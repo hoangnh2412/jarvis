@@ -9,6 +9,6 @@
         public static ErrorInfo KhongTimThayServer = new ErrorInfo(19, "Không tìm thấy Server");
         public static ErrorInfo DinhDangDuLieu = new ErrorInfo(20, "Định dạng dữ liệu không đúng");
 
-        public static ErrorInfo BanChuaDangNhap = new ErrorInfo(1006, "Bạn chưa đăng nhập, vui lòng đăng nhập lại!");
+        public static ErrorInfo BanChuaDangNhap = new ErrorInfo(21, "Bạn chưa đăng nhập, vui lòng đăng nhập lại!");
     }
 }

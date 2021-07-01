@@ -60,8 +60,8 @@
                     return;
                 }
                 var modules = [];
-                for (var i = 0; i < response.data.length; i++) {
-                    var module = response.data[i];
+                for (var i = 0; i < response.data.data.length; i++) {
+                    var module = response.data.data[i];
                     var element = modules.find(function (x) { return x.code === module.moduleCode; });
                     if (element) {
                         element.groups.push(module);
