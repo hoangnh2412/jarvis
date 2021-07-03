@@ -49,19 +49,23 @@
 
                     if (response.status === 500 || response.status === 400) {
                         if (response.config.responseType && response.config.responseType === 'arraybuffer') {
-                            var stringError = new TextDecoder().decode(response.data.data);
+                            var stringError = new TextDecoder().decode(response.data);
                             try {
                                 var responseParse = JSON.parse(stringError);
-                                if (responseParse.errors && Object.keys(responseParse.errors).length > 0) {
+                                if (Object.keys(responseParse.errors).length > 0) {
                                     var err = '';
                                     Object.keys(responseParse.errors).forEach(function (e) {
-                                        for (var i = 0; i < responseParse.errors[e].length; i++) {
-                                            err += responseParse.errors[e][i] + '</br>';
-                                        };
+                                        err += responseParse.errors[e].description + '</br>';
                                     });
                                     swal.fire({
                                         title: "Lỗi",
                                         html: err,
+                                        type: "error"
+                                    });
+                                } else {
+                                    swal.fire({
+                                        title: "Lỗi",
+                                        html: responseParse.message,
                                         type: "error"
                                     });
                                     stringError = undefined;
@@ -73,13 +77,11 @@
                                     sweetAlert.error("Lỗi", stringError);
                             }
                         }
-                        else if (response.data.data.errors) {
-                            if (Object.keys(response.data.data.errors).length > 0) {
+                        else if (response.data) {
+                            if (Object.keys(response.data.errors).length > 0) {
                                 var err = '';
-                                Object.keys(response.data.data.errors).forEach(function (e) {
-                                    for (var i = 0; i < response.data.data.errors[e].length; i++) {
-                                        err += response.data.data.errors[e][i] + '</br>';
-                                    };
+                                Object.keys(response.data.errors).forEach(function (e) {
+                                    err += response.data.errors[e].description + '</br>';
                                 });
                                 swal.fire({
                                     title: "Lỗi",
@@ -89,7 +91,7 @@
                             }
                         }
                         else
-                            sweetAlert.error("Lỗi", response.data.data);
+                            sweetAlert.error("Lỗi", response.data.message);
                         return response.data;
                     }
 
