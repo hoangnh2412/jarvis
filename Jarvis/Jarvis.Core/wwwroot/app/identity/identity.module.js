@@ -52,7 +52,7 @@
                             var stringError = new TextDecoder().decode(response.data);
                             try {
                                 var responseParse = JSON.parse(stringError);
-                                if (Object.keys(responseParse.errors).length > 0) {
+                                if (responseParse.errors && Object.keys(responseParse.errors).length > 0) {
                                     var err = '';
                                     Object.keys(responseParse.errors).forEach(function (e) {
                                         err += responseParse.errors[e].description + '</br>';
