@@ -5,6 +5,8 @@ using Jarvis.Core.Extensions;
 using Jarvis.Core.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -83,7 +85,8 @@ namespace Jarvis.Core.Middlewares
                         response.Succeeded = false;
                         response.Code = ErrorDefaults.DinhDangDuLieu.Code;
                         response.Message = ErrorDefaults.DinhDangDuLieu.Message;
-                        var errors = responseBody.JsonDeserialize<Dictionary<string, List<string>>>();
+                        var dataErrors = JObject.Parse(responseBody);
+                        var errors = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>((JsonConvert.SerializeObject(dataErrors["errors"])));
                         response.Errors = errors.Select(x => new ErrorModel { Field = x.Key, Description = string.Join(";", x.Value) }).ToArray();
                         break;
                     case StatusCodes.Status403Forbidden:
