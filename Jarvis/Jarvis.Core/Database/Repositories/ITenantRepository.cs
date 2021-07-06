@@ -18,6 +18,14 @@ namespace Jarvis.Core.Database.Repositories
 
         Task<Paged<Tenant>> PagingAsync(Guid tenantCode, Paging paging);
 
+        /// <summary>
+        /// lấy danh sách tenant chỉ query theo mã số thuế hoặc tên công ty, dùng cho search ngoài form login
+        /// </summary>
+        /// <param name="tenantCode"></param>
+        /// <param name="paging"></param>
+        /// <returns></returns>
+        Task<Paged<Tenant>> GetTenantAsync(Guid tenantCode, Paging paging);
+
         Task<List<TenantInfo>> GetInfoByCodesAsync(List<Guid> tenantCodes);
 
         Task<List<TenantHost>> GetHostByCodesAsync(List<Guid> tenantCodes);

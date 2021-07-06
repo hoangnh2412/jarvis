@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    function httpService($http, $location, APP_CONFIG, cacheService) {
+    function httpService($http, $location, APP_CONFIG, cacheService, VNIS_CONFIG) {
         //Build API endpoint
         //Nếu có cấu hình API_URL (debug mode) => Sử dụng luôn API_URL
         //Nếu ko cấu hình API_URL (live mode) => Lấy theo domain
@@ -22,10 +22,14 @@
         var getCurrentTenantCode = function () {
             var tenantCode = null;
             var currentTenant = cacheService.get('currentTenant');
+
             var context = cacheService.get('context');
             if (!context) {
                 return tenantCode;
             }
+
+            if (VNIS_CONFIG.DOMAIN_SEARCH_TENANT && VNIS_CONFIG.DOMAIN_SEARCH_TENANT.includes($location.host()))
+                return currentTenant.code;
 
             if (context.tenantInfo.code !== currentTenant.code) {
                 tenantCode = currentTenant.code;
@@ -112,5 +116,5 @@
     angular
         .module('jarvis')
         .service('httpService', httpService);
-    httpService.$inject = ['$http', '$location', 'APP_CONFIG', 'cacheService'];
+    httpService.$inject = ['$http', '$location', 'APP_CONFIG', 'cacheService', 'VNIS_CONFIG'];
 }());

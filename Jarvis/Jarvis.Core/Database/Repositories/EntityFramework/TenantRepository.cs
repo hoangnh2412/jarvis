@@ -103,6 +103,48 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             }
         }
 
+        public async Task<Paged<Tenant>> GetTenantAsync(Guid idTenant, Paging paging)
+        {
+            var codeTenants = await Query
+                .Query(
+                    filter: queryable =>
+                    {
+                        queryable = queryable.QueryByDeletedBy();
+
+                        queryable = queryable.Where(x => x.Path != null && x.Path.Contains(idTenant.ToString()));
+
+                        return queryable;
+                    },
+                    order: null,
+                    include: null)
+                .Select(x => x.Code)
+                .AsQueryable()
+                .ToListAsync();
+
+            //query các thông tin khác
+            if (!string.IsNullOrEmpty(paging.Q))
+            {
+                IQueryable<TenantInfo> queryTenantInfo = StorageContext.Set<TenantInfo>().Where(x => codeTenants.Contains(x.Code));
+                codeTenants = await queryTenantInfo.Where(x => x.TaxCode.Contains(paging.Q)
+                                                          || x.FullNameVi.Contains(paging.Q))
+                                                   .Select(x => x.Code).AsQueryable().ToListAsync();
+            }
+
+            var paged = await Query
+               .Query(
+                   filter: queryable =>
+                   {
+                       queryable = queryable.Where(x => codeTenants.Contains(x.Code));
+
+                       return queryable;
+                   },
+                   order: items => items.OrderByDescending(x => x.ExpireDate),
+                   include: null)
+               .ToPaginationAsync(paging);
+
+            return paged;
+        }
+
         public async Task<List<TenantInfo>> GetInfoByCodesAsync(List<Guid> tenantCodes)
         {
             IQueryable<TenantInfo> query = StorageContext.Set<TenantInfo>();

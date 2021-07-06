@@ -11,10 +11,12 @@ using Jarvis.Core.Database.Repositories;
 using Infrastructure;
 using Infrastructure.Abstractions;
 using System;
+using Infrastructure.Database.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace Jarvis.Core.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("core")]
     [ApiController]
     public class CoreController : ControllerBase
@@ -24,17 +26,20 @@ namespace Jarvis.Core.Controllers
         private readonly ICoreUnitOfWork _uow;
         private readonly IModuleManager _moduleManager;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IConfiguration _configuration;
 
         public CoreController(
             IWorkContext workContext, 
             ICoreUnitOfWork uow,
             IModuleManager moduleManager,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider,
+            IConfiguration configuration)
         {
             _workContext = workContext;
             _uow = uow;
             _moduleManager = moduleManager;
             _serviceProvider = serviceProvider;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -219,6 +224,56 @@ namespace Jarvis.Core.Controllers
                 FullName = x.FullName,
                 HierarchyName = x.HierarchyName
             }).ToList();
+            return Ok(result);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("search-tenants")]
+        public async Task<IActionResult> SearchTenantAsync([FromQuery] string secretKey, [FromQuery] Paging paging)
+        {
+            var secretKeyOption = _configuration.GetSection("Identity:SecretKey").Value.ToString();
+            if (secretKey != secretKeyOption)
+                return BadRequest("Secretkey sai");
+
+            var idTenant = await _workContext.GetTenantCodeAsync();
+            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var paged = await repoTenant.GetTenantAsync(idTenant, paging);
+            var tenantCodes = paged.Data.Select(x => x.Code).ToList();
+            var infos = (await repoTenant.GetInfoByCodesAsync(tenantCodes)).ToDictionary(x => x.Code, x => x);
+
+            var data = new List<HierarchyTenantModel>();
+            foreach (var item in paged.Data)
+            {
+                var model = new HierarchyTenantModel();
+                model.Id = item.Id;
+                model.Code = item.Code;
+                model.Name = item.Name;
+
+                if (!infos.ContainsKey(item.Code))
+                {
+                    data.Add(model);
+                    continue;
+                }
+
+                var info = infos[item.Code];
+                model.FullName = info.FullNameVi;
+
+                data.Add(model);
+            }
+
+            var result = new Paged<object>
+            {
+                Page = paged.Page,
+                Q = paged.Q,
+                Size = paged.Size,
+                TotalItems = paged.TotalItems,
+                TotalPages = paged.TotalPages,
+                Data = data.Select(x => new {
+                    Code = x.Code,
+                    Name = x.Name,
+                    FullName = x.FullName
+                })
+            };
             return Ok(result);
         }
     }
