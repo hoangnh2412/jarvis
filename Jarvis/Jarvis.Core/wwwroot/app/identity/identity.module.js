@@ -77,7 +77,7 @@
                                     sweetAlert.error("Lỗi", stringError);
                             }
                         }
-                        else if (response.data) {
+                        else if (response.data.errors) {
                             if (Object.keys(response.data.errors).length > 0) {
                                 var err = '';
                                 Object.keys(response.data.errors).forEach(function (e) {
