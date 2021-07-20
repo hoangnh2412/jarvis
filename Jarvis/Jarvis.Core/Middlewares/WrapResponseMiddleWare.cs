@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace Jarvis.Core.Middlewares
 {
@@ -20,7 +21,7 @@ namespace Jarvis.Core.Middlewares
     {
         private readonly ILogger<WrapResponseMiddleware> _logger;
         private readonly RequestDelegate _next;
-        private readonly List<string> _fileContentTypes = new List<string> { ContentType.Pdf, ContentType.Xml, ContentType.Zip, ContentType.Stream };
+        private readonly List<string> _fileContentTypes = new List<string> { ContentType.Pdf, ContentType.Xml, ContentType.Zip, ContentType.Stream, ContentType.Files };
 
         public WrapResponseMiddleware(
             ILogger<WrapResponseMiddleware> logger,
@@ -38,20 +39,13 @@ namespace Jarvis.Core.Middlewares
             if (ignorePath.Any(path => context.Request.Path.StartsWithSegments(path, StringComparison.CurrentCultureIgnoreCase) || path == context.Request.Path)
                 //|| ignoreEndPaths.Any(path => context.Request.Path.Value.EndsWith(path))
                 || context.Request.Path.Value.Contains("."))
+                //|| context.Request.Path.Value.Contains("import"))
+                //|| context.Request.Path.Value.Contains("/unofficial"))
+            //|| (context.Request.ContentType != null && context.Request.ContentType.Contains(ContentType.Files)))
             {
                 await _next.Invoke(context);
                 return;
             }
-
-            //if (context.Request.Path.Value.EndsWith(".css") || context.Request.Path.Value.EndsWith(".ico")
-            //    || context.Request.Path.Value.EndsWith(".js") || context.Request.Path.Value.EndsWith(".html")
-            //    || context.Request.Path.Value.EndsWith("/") || context.Request.Path.Value.EndsWith("map")
-            //    || context.Request.Path.Value.EndsWith("font") || context.Request.Path.Value.EndsWith(".ttf")
-            //    || context.Request.Path.Value.EndsWith(".png") || context.Request.Path.Value.EndsWith("woff2"))
-            //{
-            //    await _next.Invoke(context);
-            //    return;
-            //}
 
             Stream originalBody = context.Response.Body;
             try
@@ -65,6 +59,13 @@ namespace Jarvis.Core.Middlewares
                     await _next.Invoke(context);
 
                     context.Response.Body.Seek(0, SeekOrigin.Begin);
+
+                    if (context.Response.ContentType != null && _fileContentTypes.Any(path => context.Response.ContentType.StartsWith(path)))
+                    {
+                        await stream.CopyToAsync(originalBody);
+                        return;
+                    }
+
                     using (var streamReader = new StreamReader(context.Response.Body))
                     {
                         responseBody = streamReader.ReadToEnd();
@@ -179,6 +180,15 @@ namespace Jarvis.Core.Middlewares
             {
                 context.Response.Body = originalBody;
             }
+        }
+
+        private static async Task<string> GetResponseBodyAsync(HttpResponse response)
+        {
+            response.Body.Seek(0, SeekOrigin.Begin);
+            var text = await new StreamReader(response.Body).ReadToEndAsync();
+            response.Body.Seek(0, SeekOrigin.Begin);
+
+            return text;
         }
 
         //private static ResultModel<object> TryParseJson(string responseBody)
