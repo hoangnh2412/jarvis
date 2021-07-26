@@ -57,6 +57,9 @@
                     resolve: {
                         currentTenant: function () {
                             return ctrl.currentTenant;
+                        },
+                        context: function () {
+                            return ctrl.context;
                         }
                     }
                 });
@@ -80,10 +83,10 @@
                 });
             };
         }])
-        .controller('changeTenantController', ['$scope', '$uibModalInstance', 'httpService', 'currentTenant', function ($scope, $uibModalInstance, httpService, currentTenant) {
+        .controller('changeTenantController', ['$scope', '$uibModalInstance', 'httpService', 'currentTenant', 'context', function ($scope, $uibModalInstance, httpService, currentTenant, context) {
             var ctrl = $scope.$ctrl;
             ctrl.tenants = [];
-
+            ctrl.context = angular.copy(context);
             ctrl.$onInit = function () {
                 ctrl.getTenants();
             };
