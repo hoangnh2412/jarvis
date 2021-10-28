@@ -16,6 +16,9 @@
                 domain = domain + ':' + port;
             }
             domain = protocol + '://' + domain;
+
+            if (APP_CONFIG.BASE_PATH)
+                domain = domain + APP_CONFIG.BASE_PATH;
         }
 
         //Chuyển tenant
