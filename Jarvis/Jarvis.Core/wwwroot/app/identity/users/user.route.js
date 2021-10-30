@@ -35,8 +35,8 @@
                 url: '/user',
                 redirectTo: 'identity.backend.user.read',
                 resolve: {
-                    userService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/jarvis/identity/users/user.service.js');
+                    userService: ['$ocLazyLoad', 'APP_CONFIG', function ($ocLazyLoad, APP_CONFIG) {
+                        return $ocLazyLoad.load((APP_CONFIG.BASE_PATH ? APP_CONFIG.BASE_PATH : '') + '/app/jarvis/identity/users/user.service.js');
                     }]
                 }
             });
@@ -64,8 +64,8 @@
                     userCreateController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
                         return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiUserCreate', '/app/identity/users/user-create.controller.js'));
                     }],
-                    roleService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/jarvis/identity/roles/role.service.js');
+                    roleService: ['$ocLazyLoad', 'APP_CONFIG', function ($ocLazyLoad, APP_CONFIG) {
+                        return $ocLazyLoad.load((APP_CONFIG.BASE_PATH ? APP_CONFIG.BASE_PATH : '') + '/app/jarvis/identity/roles/role.service.js');
                     }]
                 }
             });
@@ -80,8 +80,8 @@
                     userUpdateController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
                         return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiUserUpdate', '/app/identity/users/user-update.controller.js'));
                     }],
-                    roleService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/jarvis/identity/roles/role.service.js');
+                    roleService: ['$ocLazyLoad', 'APP_CONFIG', function ($ocLazyLoad, APP_CONFIG) {
+                        return $ocLazyLoad.load((APP_CONFIG.BASE_PATH ? APP_CONFIG.BASE_PATH : '') + '/app/jarvis/identity/roles/role.service.js');
                     }]
                 }
             });
