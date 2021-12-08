@@ -64,6 +64,8 @@ namespace Jarvis.Core.Services
         Task<T> GetOrAddCachePerRequestAsync<T>(string key, Func<Task<T>> builder);
 
         string GetConnectionId();
+
+        string GetIpAddress();
     }
 
 
@@ -272,6 +274,13 @@ namespace Jarvis.Core.Services
             if (!string.IsNullOrWhiteSpace(connectionId))
                 return connectionId.ToString();
             return null;
+        }
+
+        public string GetIpAddress()
+        {
+            var remoteIpAddress = _httpContext.Connection.RemoteIpAddress;
+
+            return remoteIpAddress?.MapToIPv4().ToString();
         }
     }
 }
