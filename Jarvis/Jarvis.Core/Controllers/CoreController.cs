@@ -276,5 +276,20 @@ namespace Jarvis.Core.Controllers
             };
             return Ok(result);
         }
+
+        [AllowAnonymous]
+        [HttpGet("get-user-by-username")]
+        public async Task<IActionResult> GetUserByUserNameAsync([FromQuery] string secretKey, [FromQuery] string userName)
+        {
+            var secretKeyOption = _configuration.GetSection("Identity:SecretKey").Value.ToString();
+            if (secretKey != secretKeyOption)
+                return BadRequest("Secretkey sai");
+
+            var repoUser = _uow.GetRepository<IUserRepository>();
+            var user = await repoUser.FindUserByUsernameAsync(userName);
+            if (user == null) throw new Exception("Không tìm thấy thông tin user");
+
+            return Ok(user);
+        }
     }
 }

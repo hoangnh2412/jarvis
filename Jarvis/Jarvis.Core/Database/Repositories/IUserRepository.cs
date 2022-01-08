@@ -21,6 +21,8 @@ namespace Jarvis.Core.Database.Repositories
 
         Task<User> FindUserByUsernameAsync(Guid tenantCode, string username);
 
+        Task<User> FindUserByUsernameAsync(string username);
+
         Task<UserInfo> FindUserInfoByIdAsync(Guid code);
 
         Task<IEnumerable<UserInfo>> FindInfoByIdsAsync(List<Guid> ids);
