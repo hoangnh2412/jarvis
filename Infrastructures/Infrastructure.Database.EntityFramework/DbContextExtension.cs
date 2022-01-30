@@ -32,7 +32,7 @@ namespace Infrastructure.Database.EntityFramework
             }
         }
 
-        public static async Task<List<T>> RawSqlQuery<T>(this DbContext dbContext, string query)
+        public static async Task<List<T>> RawSqlQueryAsync<T>(this DbContext dbContext, string query)
         {
             List<T> items = new List<T>();
             using (var command = dbContext.Database.GetDbConnection().CreateCommand())
