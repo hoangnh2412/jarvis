@@ -11,7 +11,7 @@
   "dependencies": {},
   "devDependencies": {
     "gulp": "^4.0.2",
-    "browser-sync": "^2.27.10",
+    "browser-sync": "^2.27.11",
     "gulp-inject": "^5.0.2",
     "run-sequence": "^2.2.1"
   }
