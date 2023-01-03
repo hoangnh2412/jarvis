@@ -32,29 +32,7 @@ namespace JarvisPresentation
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors();
             services.AddControllers();
-
-            // services.Configure<MvcJsonOptions>(options =>
-            // {
-            //     options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-            //     options.SerializerSettings.ContractResolver = new DefaultContractResolver()
-            //     {
-            //         NamingStrategy = new CamelCaseNamingStrategy()
-            //     };
-            // });
-
-            services.Configure<FileUploadOption>(Configuration.GetSection("FileUploadOption"));
-
-            services.AddScoped<IStorageContext>(provider => provider.GetService<CoreDbContext>());
-            services.AddDbContextPool<CoreDbContext>(options =>
-            {
-                options.UseSqlServer(Configuration.GetConnectionString("Core"), sqlOptions =>
-                {
-                    sqlOptions.MigrationsHistoryTable("__CoreMigrationHistory");
-                });
-            });
-            services.AddScoped<ICoreUnitOfWork, CoreUnitOfWork>();
 
             services.AddConfigJarvisDefault<CoreDbContext>();
             services.AddConfigAuthentication();
@@ -62,8 +40,10 @@ namespace JarvisPresentation
 
             services.AddRedisCache(options =>
             {
-                options.Configuration = "localhost";
                 options.InstanceName = "Jarvis";
+                options.ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions {
+                    
+                }
             });
 
             services.AddScoped<IStorageContext>((serviceProvider) =>

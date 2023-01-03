@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 using System;
 
 namespace Infrastructure.Caching.Redis
@@ -11,24 +12,35 @@ namespace Infrastructure.Caching.Redis
         /// Add Redis to DI
         /// </summary>
         /// <param name="services"></param>
-        /// <param name="redisOptions"></param>
+        /// <param name="redisOption"></param>
         /// <param name="cacheOptions">Default cache in 15 minutes</param>
-        public static void AddRedisCache(this IServiceCollection services, Action<RedisCacheOptions> redisOptions, Action<DistributedCacheEntryOptions> cacheOptions = null)
+        public static void AddRedisCache(this IServiceCollection services, RedisOption redisOption, Action<DistributedCacheEntryOptions> cacheOptions = null)
         {
-            services.AddStackExchangeRedisCache(redisOptions);
-            services.AddSingleton<ICacheService, RedisCacheService>();
+            var config = new ConfigurationOptions
+            {
+                Password = redisOption.Password,
+                ConnectRetry = redisOption.ConnectRetry,
+                AbortOnConnectFail = redisOption.AbortOnConnectFail,
+                ConnectTimeout = redisOption.ConnectTimeout,
+                SyncTimeout = redisOption.SyncTimeout,
+                DefaultDatabase = redisOption.DefaultDatabase
+            };
 
-            if (cacheOptions == null)
+            foreach (var item in redisOption.EndPoints)
             {
-                services.Configure<DistributedCacheEntryOptions>(options =>
-                {
-                    options.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15);
-                });
+                config.EndPoints.Add(item);
             }
-            else
+
+            services.AddStackExchangeRedisCache(options =>
             {
-                services.Configure(cacheOptions);
-            }
+                options.InstanceName = redisOption.InstanceName;
+                options.ConfigurationOptions = config;
+            });
+            services.AddSingleton<ICacheService, RedisCacheService>();
+            services.Configure<DistributedCacheEntryOptions>(options =>
+            {
+                options.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
+            });
         }
     }
 }
