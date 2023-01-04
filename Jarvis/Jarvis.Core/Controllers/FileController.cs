@@ -9,7 +9,6 @@ using Jarvis.Core.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
-//using iTextSharp.LGPLv2.Core;
 using Jarvis.Core.Constants;
 
 namespace Jarvis.Core.Controllers
@@ -84,7 +83,6 @@ namespace Jarvis.Core.Controllers
                 bytes.Add(await _fileService.DownloadAsync(isInvoice, id));
             }
             return null;
-            //return File(ItextSharpCore.MergeFiles(bytes), ContentType.Pdf);
         }
 
         [Authorize]
