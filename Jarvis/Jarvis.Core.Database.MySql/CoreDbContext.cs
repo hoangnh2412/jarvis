@@ -13,8 +13,6 @@ namespace Jarvis.Core.Database.MySql
     {
         public CoreDbContext(DbContextOptions<CoreDbContext> options) : base(options)
         {
-            Counter.CurrentCoreContext++;
-            // Console.WriteLine($"CurrentCoreContext: {Counter.CurrentCoreContext}");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

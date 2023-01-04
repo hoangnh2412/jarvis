@@ -9,6 +9,7 @@
             infos: {}
         };
         ctrl.roles = [];
+        ctrl.claims = [];
 
         ctrl.validationOptions = {
             rules: {
@@ -64,6 +65,14 @@
             });
         };
 
+        ctrl.getClaims = function () {
+            userService.getClaims().then(function (response) {
+                if (response.status === 200) {
+                    ctrl.claims = response.data;
+                }
+            });
+        };
+
         ctrl.save = function (form) {
             if (!form.validate()) {
                 return;
@@ -75,6 +84,13 @@
                 if (roles[i].select) {
                     ctrl.user.idRoles.push(roles[i].id);
                 }
+            }
+
+            ctrl.user.claims = [];
+            var claims = ctrl.claims.filter(function (claim) { return claim.select === true; });
+            for (let i = 0; i < claims.length; i++) {
+                const element = claims[i];
+                ctrl.user.claims.push(element.key);
             }
 
             ctrl.loading = true;
@@ -93,6 +109,7 @@
 
         ctrl.$onInit = function () {
             ctrl.getRoles();
+            ctrl.getClaims();
         };
     };
 

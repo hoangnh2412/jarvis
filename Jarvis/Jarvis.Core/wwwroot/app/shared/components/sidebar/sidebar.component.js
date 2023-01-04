@@ -17,15 +17,18 @@
             ctrl.navigations = [];
 
             ctrl.$onInit = function () {
-                var navigation = cacheService.get('menu');
-                if (navigation) {
-                    ctrl.navigations = navigation;
-                } else {
-                    ctrl.getNavigation();
+                ctrl.navigations = cacheService.get('menu');
+                if (!ctrl.navigations) {
+                    var token = cacheService.get('token');
+                    if (token) {
+                        ctrl.getNavigationAsync();
+                    } else {
+                        ctrl.getNavigation();
+                    }
                 }
             };
 
-            ctrl.getNavigation = function () {
+            ctrl.getNavigationAsync = function () {
                 httpService.get('/core/navigation').then(function (response) {
                     if (response.status !== 200) {
                         return;
@@ -44,6 +47,7 @@
                     for (var i = 0; i < parents.length; i++) {
                         var item = parents[i];
                         item.state = APP_CONFIG.NAVIGATION_CODE_MAPPING_TO_STATE[item.code];
+                        item.url = null;
                         item.items = [];
                         for (var j = 0; j < items.length; j++) {
                             var index = Math.floor(items[j].order / 1000) * 1000;
@@ -54,6 +58,7 @@
                                     icon: items[j].icon,
                                     name: items[j].name,
                                     order: items[j].order,
+                                    url: null,
                                     state: APP_CONFIG.NAVIGATION_CODE_MAPPING_TO_STATE[items[j].code]
                                 });
                             }
@@ -64,6 +69,11 @@
                     ctrl.navigations = menu;
                     cacheService.set('menu', ctrl.navigations);
                 });
+            };
+
+            ctrl.getNavigation = function () {
+                ctrl.navigations = APP_CONFIG.NAVIGATION;
+                // cacheService.set('menu', ctrl.navigations);
             };
         }]);
 }());

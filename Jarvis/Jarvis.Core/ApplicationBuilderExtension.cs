@@ -9,7 +9,6 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Jarvis.Core
 {
@@ -75,53 +74,63 @@ namespace Jarvis.Core
 
             //Môi trường DEV: Scan toàn bộ project, load tất cả folder wwwroot để chạy FE
             //Môi trường PROD: chạy FE trong folder wwwroot
-            if (env.IsDevelopment())
+            app.UseDefaultFiles();
+            if (!env.IsDevelopment())
             {
-                app.UseDefaultFiles();
-
-                var index = env.ContentRootPath.LastIndexOf(env.ApplicationName);
-                var solutionPath = env.ContentRootPath.Substring(0, index - 1);
-                var wwwroots = Directory.GetDirectories(solutionPath, "wwwroot", SearchOption.AllDirectories)
-                    .Where(x => !x.Contains("Release"))
-                    .Select(x => new
-                    {
-                        FullPath = x,
-                        Path = x.Substring(index, x.Length - index)
-                    })
-                    .ToList();
-
-                var name = Assembly.GetEntryAssembly().GetName().Name;
-                var paths = new List<string>();
-                paths.AddRange(wwwroots.Where(x => x.Path.Contains("Jarvis.Core")).Select(x => x.FullPath));
-                foreach (var module in modules)
-                {
-                    paths.AddRange(wwwroots.Where(x => x.Path.StartsWith(module)).Select(x => x.FullPath));
-                }
-                paths.AddRange(wwwroots.Where(x => x.Path == Path.Combine(name, "wwwroot")).Select(x => x.FullPath));
-
-                foreach (var path in paths)
-                {
-                    app.UseStaticFiles(new StaticFileOptions
-                    {
-                        FileProvider = new PhysicalFileProvider(path),
-                    });
-                }
-            }
-            else
-            {
-                app.UseDefaultFiles();
                 app.UseStaticFiles();
+                return;
             }
+
+            DirectoryInfo solution = null;
+            var times = 0;
+            while (times < 5)
+            {
+                var parent = Directory.GetParent(env.ContentRootPath);
+                var sln = parent.GetFiles("*.sln");
+                if (sln == null)
+                {
+                    times++;
+                    continue;
+                }
+
+                solution = parent.Parent;
+                break;
+            }
+
+            var paths = Directory.GetDirectories(solution.FullName, "wwwroot", SearchOption.AllDirectories).Where(x => !x.Contains("Release")).ToList();
+            foreach (var module in modules)
+            {
+                if (module == null)
+                    continue;
+
+                var path = paths.FirstOrDefault(x => x.Contains(Path.Combine(module, "wwwroot")));
+                if (path == null)
+                    continue;
+
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new PhysicalFileProvider(path),
+                });
+            }
+
         }
 
-        public static void UseConfigSwagger(this IApplicationBuilder app, Dictionary<string, string> endpoints = null)
+        public static void UseConfigSwagger(this IApplicationBuilder app, Dictionary<string, string> endpoints = null, string prefix = null)
         {
-            app.UseSwagger();
+            app.UseSwagger(options =>
+            {
+                options.RouteTemplate = prefix + "/swagger/{documentName}/swagger.json";
+                // options.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+                // {
+                //     swaggerDoc.Servers = new List<OpenApiServer> { new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}{prefix}" } };
+                // });
+            });
             app.UseSwaggerUI(options =>
             {
                 if (endpoints == null)
                 {
                     options.SwaggerEndpoint("/swagger/v0/swagger.json", $"{Assembly.GetEntryAssembly().GetName().Name} API");
+                    // options.RoutePrefix = string.Empty;
                 }
                 else
                 {
@@ -129,6 +138,7 @@ namespace Jarvis.Core
                     {
                         options.SwaggerEndpoint(endpoint.Key, endpoint.Value);
                     }
+                    // options.RoutePrefix = prefix;
                 }
             });
         }
@@ -177,16 +187,16 @@ namespace Jarvis.Core
                 {
                     builder.Run(async context =>
                     {
-                        await context.Response.WriteAsync(file.Value);
+                        if (path.Contains(".woff"))
+                            context.Response.ContentType = "application/font-woff";
 
                         if (path.Contains(".woff2"))
                             context.Response.ContentType = "application/font-woff2";
 
-                        if (path.Contains(".woff"))
-                            context.Response.ContentType = "application/font-woff";
-
                         if (path.Contains(".ttf"))
                             context.Response.ContentType = "application/font-ttf";
+
+                        await context.Response.WriteAsync(file.Value);
                     });
                 });
             }

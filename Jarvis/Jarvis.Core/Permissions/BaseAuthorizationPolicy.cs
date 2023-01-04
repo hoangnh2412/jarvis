@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Jarvis.Core.Permissions
 {
-    public class BaseAuthorizationPolicy : IAuthorizationPolicy
+    public abstract class BaseAuthorizationPolicy : IAuthorizationPolicy
     {
         public string Name => throw new System.NotImplementedException();
 

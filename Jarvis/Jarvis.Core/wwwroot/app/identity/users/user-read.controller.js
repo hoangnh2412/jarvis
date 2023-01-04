@@ -94,7 +94,7 @@
                 return;
             }
 
-            var email = { emails: ctrl.emails };
+            var email = { emails: ctrl.emails, password: ctrl.password };
 
             ctrl.loading = true;
             userService.resetPassword(ctrl.idSelect, email).then(function (response) {

@@ -14,8 +14,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jarvis.Core.Database;
 using Jarvis.Models.Identity.Models.Identity;
-using Microsoft.Extensions.Caching.Distributed;
 using Infrastructure.Extensions;
+using Infrastructure.Abstractions.Events;
+using Jarvis.Core.Models.Events.Roles;
+using Jarvis.Core.Events.Roles;
+using Infrastructure.Caching;
 
 namespace Jarvis.Core.Controllers
 {
@@ -24,32 +27,17 @@ namespace Jarvis.Core.Controllers
     [ApiController]
     public class RolesController : ControllerBase
     {
-        private readonly IWorkContext _workContext;
-        private readonly IPoliciesStorage _policiesStorage;
-        private readonly ICoreUnitOfWork _uow;
-        private readonly IDistributedCache _cache;
-
-        public RolesController(
-            IWorkContext workContext,
-            IPoliciesStorage policiesStorage,
-            ICoreUnitOfWork uow,
-            IDistributedCache cache)
-        {
-            _workContext = workContext;
-            _policiesStorage = policiesStorage;
-            _uow = uow;
-            _cache = cache;
-        }
-
         [HttpGet]
         [Authorize(nameof(CorePolicy.RolePolicy.Role_Read))]
-        public async Task<IActionResult> GetAsync([FromQuery]Paging paging)
+        public async Task<IActionResult> GetAsync(
+            [FromQuery] Paging paging,
+            [FromServices] IWorkContext workContext,
+            [FromServices] ICoreUnitOfWork uow)
         {
-            var context = await _workContext.GetContextAsync(nameof(CorePolicy.RolePolicy.Role_Read));
+            var context = await workContext.GetContextAsync(nameof(CorePolicy.RolePolicy.Role_Read));
 
-            var repoRole = _uow.GetRepository<IRoleRepository>();
+            var repoRole = uow.GetRepository<IRoleRepository>();
             var paged = await repoRole.PagingAsync(context, paging);
-
 
             var result = new Paged<RoleModel>
             {
@@ -65,11 +53,14 @@ namespace Jarvis.Core.Controllers
 
         [HttpGet("{id}")]
         [Authorize(nameof(CorePolicy.RolePolicy.Role_Read))]
-        public async Task<IActionResult> GetAsync([FromRoute]Guid id)
+        public async Task<IActionResult> GetAsync(
+            [FromRoute] Guid id,
+            [FromServices] IWorkContext workContext,
+            [FromServices] ICoreUnitOfWork uow)
         {
-            var context = await _workContext.GetContextAsync(nameof(CorePolicy.RolePolicy.Role_Read));
+            var context = await workContext.GetContextAsync(nameof(CorePolicy.RolePolicy.Role_Read));
 
-            var repoRole = _uow.GetRepository<IRoleRepository>();
+            var repoRole = uow.GetRepository<IRoleRepository>();
             var role = await repoRole.GetRoleByIdAsync(context, id);
             if (role == null)
                 return NotFound();
@@ -79,9 +70,14 @@ namespace Jarvis.Core.Controllers
 
         [HttpPost]
         [Authorize(nameof(CorePolicy.RolePolicy.Role_Create))]
-        public async Task<IActionResult> PostAsync([FromBody]RoleModel model)
+        public async Task<IActionResult> PostAsync(
+            [FromBody] RoleModel model,
+            [FromServices] IWorkContext workContext,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IEventFactory eventFactory)
         {
-            var repoRole = _uow.GetRepository<IRoleRepository>();
+            var tenantCode = await workContext.GetTenantCodeAsync();
+            var repoRole = uow.GetRepository<IRoleRepository>();
 
             //Create role
             var idRole = Guid.NewGuid();
@@ -89,14 +85,14 @@ namespace Jarvis.Core.Controllers
             {
                 CreatedAt = DateTime.Now,
                 CreatedAtUtc = DateTime.UtcNow,
-                CreatedBy = _workContext.GetUserCode(),
+                CreatedBy = workContext.GetUserCode(),
                 Id = idRole,
-                TenantCode = await _workContext.GetTenantCodeAsync(),
+                TenantCode = tenantCode,
                 Name = model.Name,
             });
 
             //Create claim
-            var repoRoleClaim = _uow.GetRepository<IPermissionRepository>();
+            var repoRoleClaim = uow.GetRepository<IPermissionRepository>();
             await repoRoleClaim.InsertRoleClaimsAsync(model.Claims.Select(x => new IdentityRoleClaim<Guid>
             {
                 RoleId = idRole,
@@ -104,19 +100,34 @@ namespace Jarvis.Core.Controllers
                 ClaimValue = x.Value
             }).ToList());
 
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
 
+            //Notification
+            eventFactory.GetOrAddEvent<IEvent<RoleCreatedEventModel>, IRoleCreatedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new RoleCreatedEventModel
+                {
+                    TenantCode = tenantCode,
+                    Name = model.Name
+                });
+            });
             return Ok();
         }
 
         [HttpPut("{id}")]
         [Authorize(nameof(CorePolicy.RolePolicy.Role_Update))]
-        public async Task<IActionResult> PutAsync([FromRoute]Guid id, [FromBody]RoleModel model)
+        public async Task<IActionResult> PutAsync(
+            [FromRoute] Guid id,
+            [FromBody] RoleModel model,
+            [FromServices] IWorkContext workContext,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IEventFactory eventFactory,
+            [FromServices] ICacheService cacheService)
         {
-            var context = await _workContext.GetContextAsync(nameof(CorePolicy.RolePolicy.Role_Update));
+            var tenantCode = await workContext.GetTenantCodeAsync();
 
-            var repoRole = _uow.GetRepository<IRoleRepository>();
-            var role = await repoRole.GetRoleByIdAsync(context, id);
+            var repoRole = uow.GetRepository<IRoleRepository>();
+            var role = await repoRole.GetRoleByIdAsync(tenantCode, id);
             if (role == null)
                 return NotFound();
 
@@ -124,12 +135,12 @@ namespace Jarvis.Core.Controllers
             role.Name = model.Name;
             role.UpdatedAt = DateTime.Now;
             role.UpdatedAtUtc = DateTime.UtcNow;
-            role.UpdatedBy = _workContext.GetUserCode();
+            role.UpdatedBy = workContext.GetUserCode();
 
             repoRole.Update(role);
 
             //Update claim
-            var repoUserRole = _uow.GetRepository<IPermissionRepository>();
+            var repoUserRole = uow.GetRepository<IPermissionRepository>();
             var roleClaims = await repoUserRole.FindRoleClaimByRoleAsync(id);
             var clientClaims = model.Claims.Keys.ToList();
             var serverClaims = roleClaims.Select(x => x.ClaimType);
@@ -166,40 +177,65 @@ namespace Jarvis.Core.Controllers
             //xóa token của các tk dùng quyền này
             if (removes.Any() || updates.Any())
             {
-                await DeleteTokenAsync(id);
+                await DeleteTokenAsync(uow, cacheService, id);
             }
 
-            await _uow.CommitAsync();
-         
+            await uow.CommitAsync();
+
+            //Notification
+            eventFactory.GetOrAddEvent<IEvent<RoleUpdatedEventModel>, IRoleUpdatedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new RoleUpdatedEventModel
+                {
+                    TenantCode = tenantCode,
+                    IdRole = id,
+                    Name = model.Name
+                });
+            });
             return Ok();
         }
 
         [HttpDelete("{id}")]
         [Authorize(nameof(CorePolicy.RolePolicy.Role_Delete))]
-        public async Task<IActionResult> DeleteAsync([FromRoute]Guid id)
+        public async Task<IActionResult> DeleteAsync(
+            [FromRoute] Guid id,
+            [FromServices] IWorkContext workContext,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IEventFactory eventFactory,
+            [FromServices] ICacheService cacheService)
         {
-            var context = await _workContext.GetContextAsync(nameof(CorePolicy.RolePolicy.Role_Delete));
-
-            var repoRole = _uow.GetRepository<IRoleRepository>();
-            var role = await repoRole.GetRoleByIdAsync(context, id);
+            var tenantCode = await workContext.GetTenantCodeAsync();
+            var repoRole = uow.GetRepository<IRoleRepository>();
+            var role = await repoRole.GetRoleByIdAsync(tenantCode, id);
             if (role == null)
                 return NotFound("Dữ liệu không tồn tại");
 
             repoRole.Delete(role);
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
 
             //xóa token của các tk dùng quyền này
-            await DeleteTokenAsync(id);
+            await DeleteTokenAsync(uow, cacheService, id);
 
+            eventFactory.GetOrAddEvent<IEvent<RoleDeletedEventModel>, IRoleDeletedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new RoleDeletedEventModel
+                {
+                    TenantCode = tenantCode,
+                    IdRole = id
+                });
+            });
             return Ok();
         }
 
 
         [HttpGet("claims/{id?}")]
         [Authorize(nameof(CorePolicy.RolePolicy.Role_Read))]
-        public async Task<IActionResult> GetClaimsAsync([FromRoute]Guid id)
+        public async Task<IActionResult> GetClaimsAsync(
+            [FromRoute] Guid id,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IPoliciesStorage policiesStorage)
         {
-            var policies = _policiesStorage.GetPolicies();
+            var policies = policiesStorage.GetPolicies();
             if (id == Guid.Empty)
             {
                 return Ok(policies.Select(x => new ClaimModel
@@ -211,13 +247,13 @@ namespace Jarvis.Core.Controllers
                     ModuleCode = x.ModuleCode,
                     ModuleName = x.ModuleName,
                     Resource = ClaimOfResource.Tenant.ToString(),
-                    Resources = x.ClaimOfResource.ToDictionary(y => y.ToString(), y => y.ToDisplayName()),
+                    Resources = x.ClaimOfResource.ToDictionary(y => y.ToString(), y => y.GetName()),
                     ChildResource = ClaimOfChildResource.None.ToString(),
-                    ChildResources = x.ClaimOfChildResources.ToDictionary(y => y.ToString(), y => y.ToDisplayName())
+                    ChildResources = x.ClaimOfChildResources.ToDictionary(y => y.ToString(), y => y.GetName())
                 }).ToList());
             }
 
-            var repoUserRole = _uow.GetRepository<IPermissionRepository>();
+            var repoUserRole = uow.GetRepository<IPermissionRepository>();
             var roleClaims = (await repoUserRole
                 .FindRoleClaimByRoleAsync(id))
                 .ToDictionary(x => x.ClaimType, x => x.ClaimValue);
@@ -237,8 +273,8 @@ namespace Jarvis.Core.Controllers
                 claim.ModuleCode = policy.ModuleCode;
                 claim.ModuleName = policy.ModuleName;
 
-                claim.Resources = policy.ClaimOfResource.ToDictionary(x => x.ToString(), x => x.ToDisplayName());
-                claim.ChildResources = policy.ClaimOfChildResources.ToDictionary(x => x.ToString(), x => x.ToDisplayName());
+                claim.Resources = policy.ClaimOfResource.ToDictionary(x => x.ToString(), x => x.GetName());
+                claim.ChildResources = policy.ClaimOfChildResources.ToDictionary(x => x.ToString(), x => x.GetName());
 
                 if (roleClaims.ContainsKey(policy.Code))
                 {
@@ -269,15 +305,10 @@ namespace Jarvis.Core.Controllers
             return Ok(claims);
         }
 
-
-        /// <summary>
-        /// xóa các token của các tài khoản đc dùng quyền này
-        /// </summary>
-        /// <param name="idRole"></param>
-        private async Task DeleteTokenAsync(Guid idRole)
+        private async Task DeleteTokenAsync(ICoreUnitOfWork uow, ICacheService cacheService, Guid idRole)
         {
             //lấy các tài khoản dùng quyền này
-            var repoUserRole = _uow.GetRepository<IUserRepository>();
+            var repoUserRole = uow.GetRepository<IUserRepository>();
             var identityUserRoles = await repoUserRole.FindByIdRoleAsync(idRole);
 
             if (!identityUserRoles.Any())
@@ -286,7 +317,7 @@ namespace Jarvis.Core.Controllers
             var idUsers = identityUserRoles.Select(x => x.UserId).ToList();
 
             //lấy các token của các tài khoản
-            var repoTokenInfo = _uow.GetRepository<ITokenInfoRepository>();
+            var repoTokenInfo = uow.GetRepository<ITokenInfoRepository>();
             var tokens = await repoTokenInfo.QueryByUserAsync(idUsers);
 
             foreach (var item in tokens)
@@ -294,7 +325,7 @@ namespace Jarvis.Core.Controllers
                 repoTokenInfo.Delete(item);
 
                 //xóa token trong cache
-                await _cache.RemoveAsync($"TokenInfos:{item.Code}");
+                await cacheService.RemoveAsync($":TokenInfos:{item.Code}");
             }
         }
     }

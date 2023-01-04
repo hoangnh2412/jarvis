@@ -6,10 +6,10 @@
         .constant('APP_CONFIG', {
             THEME: 'skin-green',
             VISUALIZER: false,
+            THEME: 'skin-blue',
             APP_NAME: 'JARVIS',
-            BASE_UI_PATH: '/app/jarvis/',
+            BASE_UI_PATH: '/app/',
             NAMESPACE_STORAGE: 'jarvis-dev',
-            BASE_URL_DESIGN: 'https://localhost:44313',
             DEFAULT_URL: '/login',
             DASHBOARD_URL: '/dashboard',
             LOGIN_URL: '/login',

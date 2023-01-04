@@ -16,7 +16,15 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
         public async Task<Role> GetRoleByIdAsync(ContextModel context, Guid id)
         {
             IQueryable<Role> query = DbSet.Where(x => x.Id == id);
-            query = query.QueryByPermission(context);
+            //query = query.QueryByPermission(context);
+            query = query.QueryByTenantCode(context.TenantCode);
+            return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
+        }
+
+        public async Task<Role> GetRoleByIdAsync(Guid tenantCode, Guid id)
+        {
+            IQueryable<Role> query = DbSet.Where(x => x.Id == id);
+            query = query.QueryByTenantCode(tenantCode);
             return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
         }
 
@@ -26,7 +34,8 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
                 .Query(
                     filter: (items) =>
                     {
-                        items = items.QueryByPermission(context);
+                        //items = items.QueryByPermission(context);
+                        items = items.QueryByTenantCode(context.TenantCode);
                         items = items.QueryByDeletedBy();
 
                         if (!string.IsNullOrEmpty(paging.Q))

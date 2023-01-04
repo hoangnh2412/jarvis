@@ -16,16 +16,16 @@
 </section>
 
 <script type="text/ng-template" id="group-setting.tpl">
-    <div class="panel-heading" role="tab" id="heading-{{groupSetting.group.key}}">
+    <div class="panel-heading" role="tab" id="heading-{{groupSetting.key}}">
         <h4 class="panel-title">
-            <a class="collapsed" role="button" data-toggle="collapse" data-parent=".accordion" data-target="#collapse-{{groupSetting.group.key}}" aria-expanded="false" aria-controls="collapse-{{groupSetting.group.key}}">
-                {{groupSetting.group.value}}
+            <a class="collapsed" role="button" data-toggle="collapse" data-parent=".accordion" data-target="#collapse-{{groupSetting.key}}" aria-expanded="false" aria-controls="collapse-{{groupSetting.key}}">
+                {{groupSetting.name}}
             </a>
         </h4>
     </div>
-    <div id="collapse-{{groupSetting.group.key}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{groupSetting.group.key}}">
+    <div id="collapse-{{groupSetting.key}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{groupSetting.key}}">
         <div class="panel-body">
-            <form name="frmSetting" ng-submit="$ctrl.save(frmSetting, groupSetting.group.key)" ng-validate="$ctrl.validationOptions">
+            <form name="frmSetting" ng-submit="$ctrl.save(frmSetting, groupSetting.key)" ng-validate="$ctrl.validationOptions">
                 <table class="table">
                     <tbody>
                         <tr ng-repeat="setting in groupSetting.settings">

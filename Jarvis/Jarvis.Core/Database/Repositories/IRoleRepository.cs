@@ -13,6 +13,8 @@ namespace Jarvis.Core.Database.Repositories
 
         Task<Role> GetRoleByIdAsync(ContextModel context, Guid id);
 
+        Task<Role> GetRoleByIdAsync(Guid tenantCode, Guid id);
+
         Task<Paged<Role>> PagingAsync(Guid tenantCode, Paging paging);
     }
 }

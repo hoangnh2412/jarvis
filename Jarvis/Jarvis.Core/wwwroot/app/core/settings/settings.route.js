@@ -16,15 +16,15 @@
             $stateProvider.state('core.settings', {
                 url: '/settings',
                 component: 'uiSettings',
-                data: {
-                    authorize: ['Setting_Read']
-                },
+                // data: {
+                //     authorize: ['Setting_Read']
+                // },
                 resolve: {
                     settingsController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
                         return $ocLazyLoad.load(componentService.getControllerUrl('uiSettings', '/app/core/settings/settings.controller.js'));
                     }],
-                    settingService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/core/settings/setting.service.js');
+                    settingService: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
+                        return $ocLazyLoad.load(componentService.replace('/app/core/settings/setting.service.js'));
                     }],
                 }
             });

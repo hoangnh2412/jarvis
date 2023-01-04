@@ -15,7 +15,7 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.0.0")
+                .HasAnnotation("ProductVersion", "3.1.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -47,7 +47,7 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
                     b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("DeleteIndex")
+                    b.Property<Guid?>("DeletedVersion")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
@@ -75,9 +75,9 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
                     b.HasIndex("NormalizedName")
                         .HasName("RoleNameIndex");
 
-                    b.HasIndex("NormalizedName", "TenantCode", "DeleteIndex")
+                    b.HasIndex("NormalizedName", "TenantCode", "DeletedVersion")
                         .IsUnique()
-                        .HasFilter("[NormalizedName] IS NOT NULL");
+                        .HasFilter("[NormalizedName] IS NOT NULL AND [DeletedVersion] IS NOT NULL");
 
                     b.ToTable("Core_Role");
                 });
@@ -113,7 +113,7 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
                     b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("DeleteIndex")
+                    b.Property<Guid?>("DeletedVersion")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
@@ -180,9 +180,9 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
 
                     b.HasIndex("UserName");
 
-                    b.HasIndex("NormalizedUserName", "TenantCode", "DeleteIndex")
+                    b.HasIndex("NormalizedUserName", "TenantCode", "DeletedVersion")
                         .IsUnique()
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+                        .HasFilter("[NormalizedUserName] IS NOT NULL AND [DeletedVersion] IS NOT NULL");
 
                     b.ToTable("Core_User");
                 });
@@ -369,7 +369,7 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
                     b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("DeleteIndex")
+                    b.Property<int?>("DeletedVersion")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -404,9 +404,9 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.HasIndex("Name", "TenantCode", "DeleteIndex")
+                    b.HasIndex("Name", "TenantCode", "DeletedVersion")
                         .IsUnique()
-                        .HasFilter("[Name] IS NOT NULL");
+                        .HasFilter("[Name] IS NOT NULL AND [DeletedVersion] IS NOT NULL");
 
                     b.ToTable("Core_Label");
                 });
@@ -460,7 +460,7 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
                     b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("DeleteIndex")
+                    b.Property<int?>("DeletedVersion")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -497,8 +497,9 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.HasIndex("Name", "TenantCode", "DeleteIndex")
-                        .IsUnique();
+                    b.HasIndex("Name", "TenantCode", "DeletedVersion")
+                        .IsUnique()
+                        .HasFilter("[DeletedVersion] IS NOT NULL");
 
                     b.ToTable("Core_OrganizationUnit");
                 });
@@ -555,7 +556,7 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
                     b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("DeleteIndex")
+                    b.Property<int?>("DeletedVersion")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -605,9 +606,9 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.HasIndex("Key", "TenantCode", "DeleteIndex")
+                    b.HasIndex("Key", "TenantCode", "DeletedVersion")
                         .IsUnique()
-                        .HasFilter("[Key] IS NOT NULL");
+                        .HasFilter("[Key] IS NOT NULL AND [DeletedVersion] IS NOT NULL");
 
                     b.ToTable("Core_Setting");
                 });
@@ -650,7 +651,7 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
                     b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("DeleteIndex")
+                    b.Property<int?>("DeletedVersion")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("ExpireDate")
@@ -694,8 +695,9 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.HasIndex("Name", "DeleteIndex")
-                        .IsUnique();
+                    b.HasIndex("Name", "DeletedVersion")
+                        .IsUnique()
+                        .HasFilter("[DeletedVersion] IS NOT NULL");
 
                     b.ToTable("Core_Tenant");
                 });
@@ -712,7 +714,7 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
                     b.Property<Guid>("Code")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("DeleteIndex")
+                    b.Property<int?>("DeletedVersion")
                         .HasColumnType("int");
 
                     b.Property<string>("HostName")
@@ -722,8 +724,9 @@ namespace Jarvis.Core.Database.SqlServer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HostName", "DeleteIndex")
-                        .IsUnique();
+                    b.HasIndex("HostName", "DeletedVersion")
+                        .IsUnique()
+                        .HasFilter("[DeletedVersion] IS NOT NULL");
 
                     b.ToTable("Core_TenantHost");
                 });

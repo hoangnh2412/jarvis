@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    function tenantReadController($state, permissionService, sweetAlert, tenantService) {
+    function tenantReadController($state, $uibModal, permissionService, sweetAlert, tenantService) {
         var ctrl = this;
         ctrl.permissionService = permissionService;
         ctrl.paging = {
@@ -52,11 +52,29 @@
                 }
             });
         };
+
+        ctrl.logo = function (code) {
+            var modalInstance = $uibModal.open({
+                animation: true,
+                ariaLabelledBy: 'modal-title',
+                ariaDescribedBy: 'modal-body',
+                templateUrl: '/app/core/tenants/tenant-logo.template.html',
+                controller: 'tenantLogoController',
+                controllerAs: '$ctrl',
+                // size: size,
+                appendTo: undefined,
+                resolve: {
+                    code: function () {
+                        return code;
+                    }
+                }
+            });
+        };
     };
 
     angular
         .module('core')
         .controller('tenantReadController', tenantReadController);
 
-    tenantReadController.$inject = ['$state', 'permissionService', 'sweetAlert', 'tenantService'];
+    tenantReadController.$inject = ['$state', '$uibModal', 'permissionService', 'sweetAlert', 'tenantService'];
 }());

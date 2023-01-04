@@ -17,8 +17,6 @@
                 }
 
                 ctrl.tenant = response.data;
-
-                console.log(ctrl.tenant);
             });
         };
 

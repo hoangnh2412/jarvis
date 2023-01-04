@@ -49,6 +49,10 @@
         this.getRoles = function (paging) {
             return httpService.get(api + '/roles', { params: paging });
         };
+
+        this.getClaims = function () {
+            return httpService.get(api + '/claims');
+        };
     };
 
     angular

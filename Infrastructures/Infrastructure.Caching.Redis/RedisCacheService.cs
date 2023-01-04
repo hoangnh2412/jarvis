@@ -20,7 +20,8 @@ namespace Infrastructure.Caching.Redis
 
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
-        public RedisCacheService(IOptions<RedisCacheOptions> optionsAccessor) : base(optionsAccessor)
+        public RedisCacheService(
+            IOptions<RedisCacheOptions> optionsAccessor) : base(optionsAccessor)
         {
             if (optionsAccessor == null)
             {
@@ -30,27 +31,78 @@ namespace Infrastructure.Caching.Redis
             _options = optionsAccessor.Value;
         }
 
-        public List<string> GetKeys(string pattern)
+        public async Task<List<string>> GetKeysAsync(string pattern, CancellationToken token = default)
         {
             if (pattern == null)
                 throw new ArgumentNullException(nameof(pattern));
 
-            Connect();
+            token.ThrowIfCancellationRequested();
+            await ConnectAsync();
 
             var keys = new List<string>();
-            var servers = GetServers(_options.Configuration);
-            foreach (var item in servers)
+            foreach (var item in _options.ConfigurationOptions.EndPoints)
             {
-                var server = _connection.GetServer(item.Key, item.Value);
+                var server = _connection.GetServer(item);
                 var data = server.Keys(pattern: $"{_options.InstanceName}{pattern}").Select(x => x.ToString());
-                keys.AddRange(data);
+
+                foreach (var element in data)
+                {
+                    var key = element;
+                    if (element.StartsWith(_options.InstanceName))
+                        key = element.Substring(_options.InstanceName.Length, element.Length - _options.InstanceName.Length);
+
+                    keys.Add(key);
+                }
             }
             return keys;
         }
 
-        public List<string> ScanKeys(string pattern)
+        public async Task KeyExistAsync(string pattern, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            if (pattern == null)
+                throw new ArgumentNullException(nameof(pattern));
+
+            token.ThrowIfCancellationRequested();
+
+            // if (!key.StartsWith(_options.InstanceName))
+            //     key = $"{_options.InstanceName}{key}";
+
+            await ConnectAsync();
+        }
+
+        public async Task<Dictionary<string, string>> HashGetAsync(string key, CancellationToken token = default)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            token.ThrowIfCancellationRequested();
+
+            if (!key.StartsWith(_options.InstanceName))
+                key = $"{_options.InstanceName}{key}";
+
+            await ConnectAsync();
+
+            var data = await _cache.HashGetAllAsync(key);
+            return data.ToDictionary(x => x.Name.ToString(), x => x.Value.ToString());
+        }
+
+        public async Task<string> HashGetAsync(string key, string hashField, CancellationToken token = default)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            token.ThrowIfCancellationRequested();
+
+            if (!key.StartsWith(_options.InstanceName))
+                key = $"{_options.InstanceName}{key}";
+
+            await ConnectAsync();
+
+            var data = await _cache.HashGetAsync(key, hashField);
+            if (data.ToString() == null)
+                return default;
+
+            return data.ToString();
         }
 
         public async Task<List<T>> HashGetAsync<T>(string key, CancellationToken token = default)
@@ -60,11 +112,59 @@ namespace Infrastructure.Caching.Redis
 
             token.ThrowIfCancellationRequested();
 
-            key = $"{_options.InstanceName}:{key}";
+            if (!key.StartsWith(_options.InstanceName))
+                key = $"{_options.InstanceName}{key}";
+
             await ConnectAsync();
 
             var data = await _cache.HashGetAllAsync(key);
             return data.Select(x => JsonConvert.DeserializeObject<T>(x.Value.ToString())).ToList();
+        }
+
+        public async Task<List<T>> HashGetAsync<T>(string key, List<string> hashFields, CancellationToken token = default)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            token.ThrowIfCancellationRequested();
+
+            if (!key.StartsWith(_options.InstanceName))
+                key = $"{_options.InstanceName}{key}";
+
+            await ConnectAsync();
+
+            var data = await _cache.HashGetAsync(key, hashFields.Select(x => RedisValue.Unbox(x)).ToArray());
+            var items = new List<T>();
+            foreach (var item in data)
+            {
+                var element = item.ToString();
+                if (element != null)
+                    items.Add(JsonConvert.DeserializeObject<T>(element));
+            }
+            return items;
+        }
+
+        public async Task<List<string>> HashGetAsync(string key, List<string> hashFields, CancellationToken token = default)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            token.ThrowIfCancellationRequested();
+
+            if (!key.StartsWith(_options.InstanceName))
+                key = $"{_options.InstanceName}{key}";
+
+            await ConnectAsync();
+
+            var data = await _cache.HashGetAsync(key, hashFields.Select(x => RedisValue.Unbox(x)).ToArray());
+            var items = new List<string>();
+            foreach (var item in data)
+            {
+                var element = item.ToString();
+                if (element != null)
+                    items.Add(element);
+            }
+            return items;
         }
 
         public async Task<T> HashGetAsync<T>(string key, string hashField, CancellationToken token = default)
@@ -74,21 +174,46 @@ namespace Infrastructure.Caching.Redis
 
             token.ThrowIfCancellationRequested();
 
-            key = $"{_options.InstanceName}:{key}";
+            if (!key.StartsWith(_options.InstanceName))
+                key = $"{_options.InstanceName}{key}";
+
             await ConnectAsync();
 
             var data = await _cache.HashGetAsync(key, hashField);
+            if (data.ToString() == null)
+                return default;
+
             return JsonConvert.DeserializeObject<T>(data.ToString());
         }
 
-        public async Task HashSetAsync(string key, Dictionary<string, string> data, DistributedCacheEntryOptions options, CancellationToken token = default)
+        public async Task HashSetAsync<T>(string key, Dictionary<string, T> data, DistributedCacheEntryOptions options = null, CancellationToken token = default)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
             token.ThrowIfCancellationRequested();
 
-            key = $"{_options.InstanceName}:{key}";
+            if (!key.StartsWith(_options.InstanceName))
+                key = $"{_options.InstanceName}{key}";
+
+            await ConnectAsync();
+
+            await _cache.HashSetAsync(key, data.Select(x => new HashEntry(x.Key, JsonConvert.SerializeObject(x.Value))).ToArray());
+
+            if (options != null && options.AbsoluteExpirationRelativeToNow.HasValue)
+                await _cache.KeyExpireAsync(key, options.AbsoluteExpirationRelativeToNow.Value);
+        }
+
+        public async Task HashSetAsync(string key, Dictionary<string, string> data, DistributedCacheEntryOptions options = null, CancellationToken token = default)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            token.ThrowIfCancellationRequested();
+
+            if (!key.StartsWith(_options.InstanceName))
+                key = $"{_options.InstanceName}{key}";
+
             await ConnectAsync();
 
             await _cache.HashSetAsync(key, data.Select(x => new HashEntry(x.Key, x.Value)).ToArray());
@@ -97,17 +222,22 @@ namespace Infrastructure.Caching.Redis
                 await _cache.KeyExpireAsync(key, options.AbsoluteExpirationRelativeToNow.Value);
         }
 
-        public async Task HashSetAsync(string key, string hashField, string data, CancellationToken token = default)
+        public async Task HashSetAsync(string key, string hashField, string data, DistributedCacheEntryOptions options = null, CancellationToken token = default)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
             token.ThrowIfCancellationRequested();
 
-            key = $"{_options.InstanceName}:{key}";
+            if (!key.StartsWith(_options.InstanceName))
+                key = $"{_options.InstanceName}{key}";
+
             await ConnectAsync();
 
             await _cache.HashSetAsync(key, hashField, data);
+
+            if (options != null && options.AbsoluteExpirationRelativeToNow.HasValue)
+                await _cache.KeyExpireAsync(key, options.AbsoluteExpirationRelativeToNow.Value);
         }
 
         public async Task HashDeleteAsync(string key, string hashField, CancellationToken token = default)
@@ -117,13 +247,92 @@ namespace Infrastructure.Caching.Redis
 
             token.ThrowIfCancellationRequested();
 
-            key = $"{_options.InstanceName}:{key}";
+            if (!key.StartsWith(_options.InstanceName))
+                key = $"{_options.InstanceName}{key}";
+
             await ConnectAsync();
 
             await _cache.HashDeleteAsync(key, hashField);
         }
 
+        public async Task HashDeleteAsync(string key, string[] hashFields, CancellationToken token = default)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
+            token.ThrowIfCancellationRequested();
+
+            if (!key.StartsWith(_options.InstanceName))
+                key = $"{_options.InstanceName}{key}";
+
+            await ConnectAsync();
+
+            await _cache.HashDeleteAsync(key, hashFields.Select(x => RedisValue.Unbox(x)).ToArray());
+        }
+
+        public async Task<long> PushAsync(string key, string value, CancellationToken token = default)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            token.ThrowIfCancellationRequested();
+
+            if (!key.StartsWith(_options.InstanceName))
+                key = $"{_options.InstanceName}{key}";
+
+            await ConnectAsync();
+
+            return await _cache.ListRightPushAsync(key, value);
+        }
+
+        public async Task<long> PushAsync(string key, string[] values, CancellationToken token = default)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            token.ThrowIfCancellationRequested();
+
+            if (!key.StartsWith(_options.InstanceName))
+                key = $"{_options.InstanceName}{key}";
+
+            await ConnectAsync();
+
+            return await _cache.ListRightPushAsync(key, values.Select(x => RedisValue.Unbox(x)).ToArray());
+        }
+
+        public async Task<string> PopAsync(string key, CancellationToken token = default)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            token.ThrowIfCancellationRequested();
+
+            if (!key.StartsWith(_options.InstanceName))
+                key = $"{_options.InstanceName}{key}";
+
+            await ConnectAsync();
+
+            return await _cache.ListLeftPopAsync(key);
+        }
+
+        public async Task ExecuteCommandAsync(string key)
+        {
+            await ConnectAsync();
+            // var result = _cache.HashScan(
+            //     key: "Test",
+            //     pattern: "*001*",
+            //     pageSize: 1,
+            //     pageOffset: 0,
+            //     cursor: 5).ToList();
+
+            await _cache.HashSetAsync("Test", "20211013002", "bbbb");
+            // var result = _cache.HashScan("Test", "*001*", 1).ToList();
+            // foreach (var item in _options.ConfigurationOptions.EndPoints)
+            // {
+            //     var server = _connection.GetServer(item);
+            //     var data = server.Keys(pattern: $"*001").ToList();
+            // }
+        }
 
         private async Task ConnectAsync(CancellationToken token = default(CancellationToken))
         {
@@ -156,51 +365,5 @@ namespace Infrastructure.Caching.Redis
                 _connectionLock.Release();
             }
         }
-
-        private void Connect()
-        {
-            if (_cache != null)
-            {
-                return;
-            }
-
-            _connectionLock.Wait();
-            try
-            {
-                if (_cache == null)
-                {
-                    if (_options.ConfigurationOptions != null)
-                    {
-                        _connection = ConnectionMultiplexer.Connect(_options.ConfigurationOptions);
-                    }
-                    else
-                    {
-                        _connection = ConnectionMultiplexer.Connect(_options.Configuration);
-                    }
-
-                    _cache = _connection.GetDatabase();
-                }
-            }
-            finally
-            {
-                _connectionLock.Release();
-            }
-        }
-
-        private List<KeyValuePair<string, int>> GetServers(string configuration)
-        {
-            var servers = new List<KeyValuePair<string, int>>();
-            var hosts = configuration.Split(',');
-            foreach (var item in hosts)
-            {
-                var splited2 = item.Split(':');
-                if (splited2.Length == 1)
-                    servers.Add(new KeyValuePair<string, int>(splited2[0], 6379));
-                else
-                    servers.Add(new KeyValuePair<string, int>(splited2[0], int.Parse(splited2[1])));
-            }
-            return servers;
-        }
-
     }
 }

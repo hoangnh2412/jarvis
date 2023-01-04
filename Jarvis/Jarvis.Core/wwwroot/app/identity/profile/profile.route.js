@@ -24,8 +24,8 @@
                 //    $body.addClass('hold-transition skin-blue sidebar-mini sidebar-collapse');
                 //},
                 resolve: {
-                    profileService: ['$ocLazyLoad', function ($ocLazyLoad) {
-                        return $ocLazyLoad.load('/app/jarvis/identity/profile/profile.service.js');
+                    profileService: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
+                        return $ocLazyLoad.load(componentService.replace('/app/identity/profile/profile.service.js'));
                     }],
                     profileController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
                         return $ocLazyLoad.load(componentService.getControllerUrl('uiProfile', '/app/identity/profile/profile.controller.js'));

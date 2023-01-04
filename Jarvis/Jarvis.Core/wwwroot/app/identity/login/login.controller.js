@@ -1,7 +1,7 @@
 ﻿(function () {
     'use strict';
 
-    function loginController($state, $timeout, $location, APP_CONFIG, httpService, cacheService, sweetAlert) {
+    function loginController($state, $timeout, APP_CONFIG, httpService, cacheService, sweetAlert) {
         var ctrl = this;
         ctrl.loading = false;
         ctrl.validationOptions = {
@@ -25,7 +25,6 @@
         };
 
         ctrl.$onInit = function () {
-            
         };
 
         ctrl.login = function (form) {
@@ -59,10 +58,14 @@
                     });
 
                     $timeout(function () {
-                        if (Object.keys(ctrl.context.claims).length === 0)
-                            $state.go('portals.portal');
-                        else {
-                            $state.go(getStateNameByUrl(APP_CONFIG.DASHBOARD_URL));
+                        var dashboardState = getStateNameByUrl(APP_CONFIG.DASHBOARD_URL);
+                        var fromState = ctrl.transition.from();
+                        var fromParams = ctrl.transition.params('from');
+
+                        if (fromState.name === '') {
+                            $state.go(dashboardState);
+                        } else {
+                            $state.go(fromState, fromParams);
                         }
                     });
                 }
@@ -81,7 +84,7 @@
             var states = $state.get();
             for (var i = 0; i < states.length; i++) {
                 var element = states[i];
-                if (element.url === url) {
+                if (element.url && element.url.startsWith(url)) {
                     return element.name;
                 }
             }
@@ -124,5 +127,5 @@
         .module('identity')
         .controller('loginController', loginController);
 
-    loginController.$inject = ['$state', '$timeout', '$location', 'APP_CONFIG', 'httpService', 'cacheService', 'sweetAlert'];
+    loginController.$inject = ['$state', '$timeout', 'APP_CONFIG', 'httpService', 'cacheService', 'sweetAlert'];
 }());

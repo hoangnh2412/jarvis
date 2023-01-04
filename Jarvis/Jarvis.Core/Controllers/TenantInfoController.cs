@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 using Jarvis.Core.Models.Tenant;
 using System;
 using Jarvis.Core.Permissions;
+using Infrastructure.Abstractions.Events;
+using Jarvis.Core.Models.Events.Tenants;
+using Jarvis.Core.Events.Tenants;
 
 namespace Jarvis.Core.Controllers
 {
@@ -20,22 +23,14 @@ namespace Jarvis.Core.Controllers
     [ApiController]
     public class TenantInfoController : ControllerBase
     {
-        private readonly ICoreUnitOfWork _uow;
-        private readonly IWorkContext _workContext;
-
-        public TenantInfoController(
-            ICoreUnitOfWork uow,
-            IWorkContext workContext)
-        {
-            _uow = uow;
-            _workContext = workContext;
-        }
-
         [HttpGet]
-        public async Task<IActionResult> GetAsync()
+        public async Task<IActionResult> GetAsync(
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workContext
+        )
         {
-            var tenantCode = await _workContext.GetTenantCodeAsync();
-            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var tenantCode = await workContext.GetTenantCodeAsync();
+            var repoTenant = uow.GetRepository<ITenantRepository>();
             var info = await repoTenant.GetInfoByCodeAsync(tenantCode);
             if (info == null)
                 return NotFound();
@@ -58,7 +53,7 @@ namespace Jarvis.Core.Controllers
             };
 
             //Nếu setting ko có metadata thì trả về kết quả luôn
-            var repoSetting = _uow.GetRepository<ISettingRepository>();
+            var repoSetting = uow.GetRepository<ISettingRepository>();
             var setting = await repoSetting.GetByKeyAsync(Guid.Empty, SettingKey.ThongTinDoanhNghiep_Khac.ToString());
 
             if (setting == null)
@@ -77,7 +72,8 @@ namespace Jarvis.Core.Controllers
                 var metadata = metadatas.FirstOrDefault(x => x.Key == key);
 
                 //Nếu DB ko lưu value thì trả về null
-                model.Metadata.Add(new MetadataModel {
+                model.Metadata.Add(new MetadataModel
+                {
                     Key = key,
                     Name = name,
                     Value = metadata == null ? null : metadata.Value
@@ -89,12 +85,16 @@ namespace Jarvis.Core.Controllers
 
         [HttpPut]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Update))]
-        public async Task<IActionResult> PutAsync([FromBody]TenantInfoModel command)
+        public async Task<IActionResult> PutAsync(
+            [FromBody] TenantInfoModel command,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workContext,
+            [FromServices] IEventFactory eventFactory)
         {
-            var idTenant = await _workContext.GetTenantCodeAsync();
+            var tenantCode = await workContext.GetTenantCodeAsync();
 
-            var repoTenant = _uow.GetRepository<ITenantRepository>();
-            var info = await repoTenant.GetInfoByCodeAsync(idTenant);
+            var repoTenant = uow.GetRepository<ITenantRepository>();
+            var info = await repoTenant.GetInfoByCodeAsync(tenantCode);
             info.City = command.City;
             info.District = command.District;
             info.LegalName = command.LegalName;
@@ -106,8 +106,45 @@ namespace Jarvis.Core.Controllers
                 info.Metadata = JsonConvert.SerializeObject(command.Metadata);
 
             repoTenant.UpdateInfo(info);
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
+
+            eventFactory.GetOrAddEvent<IEvent<TenantInfoUpdatedEventModel>, ITenantInfoUpdatedEvent>().ForEach((e) =>
+            {
+                e.PublishAsync(new TenantInfoUpdatedEventModel
+                {
+                    TenantCode = tenantCode
+                });
+            });
             return Ok();
+        }
+
+        [HttpGet("taxCode/{includeHierarchy}")]
+        [Authorize]
+        public async Task<IActionResult> GetTaxCodeAsync(
+            [FromRoute] bool includeHierarchy,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workContext)
+        {
+            var tenantCode = await workContext.GetTenantCodeAsync();
+            var repoTenant = uow.GetRepository<ITenantRepository>();
+            var listTaxCodes = new List<KeyValuePair<string, Guid>>();
+
+            if (!includeHierarchy)
+            {
+                var tenant = await repoTenant.GetInfoByCodeAsync(tenantCode);
+                if (tenant == null)
+                    return NotFound();
+
+                listTaxCodes.Add(new KeyValuePair<string, Guid>(tenant.TaxCode, tenant.Code));
+            }
+            else
+            {
+                // nếu lấy dữ liệu của chi nhánh
+                var hierarchies = await repoTenant.GetHierarchyByCodeAsync(tenantCode);
+                listTaxCodes = hierarchies.Select(x => new KeyValuePair<string, Guid>(x.Name, x.Code)).ToList();
+            }
+
+            return Ok(listTaxCodes.Select(x => new { TaxCode = x.Key, Code = x.Value }));
         }
     }
 }

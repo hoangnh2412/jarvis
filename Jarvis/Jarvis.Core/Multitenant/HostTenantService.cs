@@ -31,7 +31,7 @@ namespace Jarvis.Core.Multitenant
             var host = context.Request.Host.Value;
 
             Tenant tenant;
-            var cacheKey = $"TenantHost:{host}";
+            var cacheKey = $":TenantHost:{host}";
 
             //Lấy dữ liệu từ cache
             var bytes = await _cache.GetAsync(cacheKey);

@@ -32,7 +32,7 @@ namespace Jarvis.Core.Services
         }
 
 
-        public async Task<byte[]> DownloadAsync(bool isDefault, Guid id)
+        public async Task<byte[]> DownloadAsync(Guid id, bool isDefault = false)
         {
             ////lấy tên file từ db
             var repoFile = _uowCore.GetRepository<IFileRepository>();
@@ -41,7 +41,7 @@ namespace Jarvis.Core.Services
                 throw new Exception("Không tìm thấy file");
 
             //lấy tên thư mục lưu file
-            var folderPath = await GetFilePath(isDefault, file.CreatedAt);
+            var folderPath = await GetFilePath(file.CreatedAt, isDefault);
 
             var filePath = Path.Combine(folderPath, file.Name);
 
@@ -53,9 +53,9 @@ namespace Jarvis.Core.Services
         }
 
 
-        public async Task<string> UploadAsync(bool isInvoice, IFormFile formFile, string fileNamePhys)
+        public async Task<string> UploadAsync(IFormFile formFile, string fileNamePhys, bool isInvoice = false)
         {
-            var folderPath = await GetFilePath(isInvoice, DateTime.UtcNow);
+            var folderPath = await GetFilePath(DateTime.UtcNow, isInvoice);
             var filePath = Path.Combine(folderPath, fileNamePhys);
 
             //Nếu đã có file trùng tên thì đổi tên file hiện tại
@@ -97,9 +97,9 @@ namespace Jarvis.Core.Services
             return fileNamePhys;
         }
 
-        public async Task<string> UploadAsync(bool isInvoice, byte[] bytes, string fileNamePhys, string fileName)
+        public async Task<string> UploadAsync(byte[] bytes, string fileNamePhys, string fileName, bool isInvoice = false)
         {
-            var folderPath = await GetFilePath(isInvoice, DateTime.UtcNow);
+            var folderPath = await GetFilePath(DateTime.UtcNow, isInvoice);
             var filePath = Path.Combine(folderPath, fileNamePhys);
 
             //Nếu đã có file trùng tên thì đổi tên file hiện tại
@@ -140,7 +140,7 @@ namespace Jarvis.Core.Services
         /// <param name="isDefault"></param>
         /// <param name="CreatedAt"></param>
         /// <returns></returns>
-        public async Task<string> GetFilePath(bool isInvoice, DateTime CreatedAt)
+        public async Task<string> GetFilePath(DateTime CreatedAt, bool isInvoice = false)
         {
             var folderName = _options.Default; //thư mục mặc định
 
@@ -162,9 +162,9 @@ namespace Jarvis.Core.Services
             return path;
         }
 
-        public async Task<Guid> SaveFileXmlAsync(Guid CreatedBy, Guid tenantCode, string xml, bool isDefault, string sellerTaxCode, string templateNo, string serialNo, int number)
+        public async Task<Guid> SaveFileXmlAsync(Guid CreatedBy, Guid tenantCode, string xml, string sellerTaxCode, string templateNo, string serialNo, int number, bool isDefault = false)
         {
-            var folderPath = await GetFilePath(isDefault, DateTime.UtcNow);
+            var folderPath = await GetFilePath(DateTime.UtcNow, isDefault);
             var fileNamePhys = $"{sellerTaxCode}_{templateNo}_{serialNo}_{number}_{DateTime.Now.Ticks}.xml".Replace("/", "-");
             var filePath = Path.Combine(folderPath, fileNamePhys);
 

@@ -12,71 +12,93 @@ namespace Jarvis.Core.Controllers
     [ApiController]
     public class IdentityController : ControllerBase
     {
-        private readonly IWorkContext _workContext;
-        private readonly IIdentityService _identityService;
-
-        public IdentityController(
-            IWorkContext workContext,
-            IIdentityService identityService)
-        {
-            _workContext = workContext;
-            _identityService = identityService;
-        }
-
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterAsync([FromBody]RegisterModel model)
+        public async Task<IActionResult> RegisterAsync(
+            [FromBody] RegisterModel model,
+            [FromServices] IWorkContext workContext,
+            [FromServices] IIdentityService identityService)
         {
-            var tenantCode = await _workContext.GetTenantCodeAsync();
-            await _identityService.RegisterAsync(tenantCode, model);
+            var tenantCode = await workContext.GetTenantCodeAsync();
+            await identityService.RegisterAsync(tenantCode, model);
             return Ok();
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> LoginAsync([FromBody]LoginModel model)
+        public async Task<IActionResult> LoginAsync(
+            [FromBody] LoginModel model,
+            [FromServices] IWorkContext workContext,
+            [FromServices] IIdentityService identityService)
         {
-            var tenantCode = await _workContext.GetTenantCodeAsync();
-            var token = await _identityService.LoginAsync(tenantCode, model);
+            var tenantCode = await workContext.GetTenantCodeAsync();
+            var token = await identityService.LoginAsync(tenantCode, model);
             return Ok(token);
         }
 
         [Authorize]
         [HttpPost("logout")]
-        public async Task<IActionResult> LogoutAsync()
+        public async Task<IActionResult> LogoutAsync(
+            [FromServices] IIdentityService identityService
+        )
         {
-            await _identityService.LogoutAsync();
+            await identityService.LogoutAsync();
             return Ok();
         }
 
         [Authorize]
         [HttpGet("session")]
-        public async Task<IActionResult> GetSessionAsync()
+        public async Task<IActionResult> GetSessionAsync(
+            [FromServices] IWorkContext workContext
+        )
         {
-            var session = await _workContext.GetSessionAsync();
+            var session = await workContext.GetSessionAsync();
             return Ok(session);
+        }
+
+        [HttpGet("refresh-token")]
+        public async Task<IActionResult> RefreshTokenAsync(
+            [FromQuery] string refreshToken,
+            [FromServices] IIdentityService identityService)
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                return Unauthorized();
+            }
+
+            var token = await identityService.RefreshTokenAsync(refreshToken);
+            if (token == null)
+                return BadRequest("Token không tồn tại");
+
+            return Ok(token);
         }
 
         [Authorize]
         [HttpGet("has-claims")]
-        public async Task<IActionResult> HasClaimsAsync([FromQuery]List<string> claims)
+        public async Task<IActionResult> HasClaimsAsync(
+            [FromQuery] List<string> claims,
+            [FromServices] IWorkContext workContext)
         {
-            if (await _workContext.HasClaimsAsync(claims))
+            if (await workContext.HasClaimsAsync(claims))
                 return Ok();
             return Forbid();
         }
 
         [Authorize]
         [HttpGet("get-claims")]
-        public async Task<IActionResult> GetClaimsAsync([FromQuery]string prefix)
+        public async Task<IActionResult> GetClaimsAsync(
+            [FromQuery] string prefix,
+            [FromServices] IWorkContext workContext)
         {
-            var claims = await _workContext.GetClaimsAsync(prefix);
+            var claims = await workContext.GetClaimsAsync(prefix);
             return Ok(claims);
         }
 
         [Authorize]
         [HttpGet("is-authorize")]
-        public async Task<IActionResult> IsAuthorizeAsync()
+        public async Task<IActionResult> IsAuthorizeAsync(
+            [FromServices] IWorkContext workContext
+        )
         {
-            var session = await _workContext.GetSessionAsync();
+            var session = await workContext.GetSessionAsync();
             if (session == null)
                 return Unauthorized();
             return Ok();
@@ -85,18 +107,22 @@ namespace Jarvis.Core.Controllers
 
         [AllowAnonymous]
         [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
+        public async Task<IActionResult> ForgotPassword(
+            [FromBody] ForgotPasswordModel model,
+            [FromServices] IIdentityService identityService)
         {
-            await _identityService.ForgotPasswordAsync(model);
+            await identityService.ForgotPasswordAsync(model);
             return Ok();
         }
 
 
         [AllowAnonymous]
         [HttpPost("reset-forgot-password")]
-        public async Task<IActionResult> RestForgotPassword([FromBody] ResetForgotPasswordModel model)
+        public async Task<IActionResult> RestForgotPassword(
+            [FromBody] ResetForgotPasswordModel model,
+            [FromServices] IIdentityService identityService)
         {
-            await _identityService.ResetForgotPasswordAsync(model);
+            await identityService.ResetForgotPasswordAsync(model);
             return Ok();
         }
     }

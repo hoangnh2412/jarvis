@@ -15,7 +15,7 @@ namespace Jarvis.Core.Models
         public Dictionary<string, KeyValuePair<ClaimOfResource, ClaimOfChildResource>> Claims { get; set; }
         public SessionInfoModel UserInfo { get; set; }
         public SessionTenantModel TenantInfo { get; set; }
-        public SessionOrganizationModel OrganizationInfo { get; set; }
+        public List<SessionOrganizationModel> OrganizationInfos { get; set; }
     }
 
     public class SessionInfoModel
@@ -31,6 +31,8 @@ namespace Jarvis.Core.Models
         public string TaxCode { get; set; }
         public string FullNameVi { get; set; }
         public string FullNameEn { get; set; }
+        public string ShortName { get; set; }
+        public string BranchName { get; set; }
     }
 
     public class SessionOrganizationModel
@@ -38,5 +40,6 @@ namespace Jarvis.Core.Models
         public Guid Code { get; set; }
         public string Name { get; set; }
         public string FullName { get; set; }
+        public int Level { get; set; }
     }
 }

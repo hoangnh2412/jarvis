@@ -37,7 +37,7 @@
                 var states = $state.get();
                 for (var i = 0; i < states.length; i++) {
                     var element = states[i];
-                    if (element.url === url) {
+                    if (element.url && element.url.startsWith(url)) {
                         return element.name;
                     }
                 }
@@ -69,7 +69,7 @@
                     if (currentTenant.code !== tenant.code) {
                         cacheService.set('currentTenant', tenant);
                         ctrl.currentTenant = currentTenant;
-                        // reset cache luu tìm ki?m trang danh sách hóa don trong context
+                        // reset cache luu tï¿½m ki?m trang danh sï¿½ch hï¿½a don trong context
                         if (Object.keys(ctrl.context.cache).length !== 0) {
                             ctrl.context.cache = {};
                             cacheService.set('context', ctrl.context);

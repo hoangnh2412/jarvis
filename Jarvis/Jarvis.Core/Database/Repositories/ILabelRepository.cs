@@ -13,5 +13,7 @@ namespace Jarvis.Core.Database.Repositories
         Task<Paged<Label>> PagingAsync(ContextModel context, Paging paging);
 
         Task<Label> GetByCodeAsync(ContextModel context, Guid code);
+
+        Task<Label> GetByCodeAsync(Guid tenantCode, Guid code);
     }
 }

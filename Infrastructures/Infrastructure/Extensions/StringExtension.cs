@@ -4,10 +4,11 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Infrastructure.Extensions
 {
-    public class StringExtension
+    public static partial class StringExtension
     {
         #region Random
 
@@ -205,7 +206,7 @@ namespace Infrastructure.Extensions
 
         #endregion
 
-        #region Base 64
+        #region Base64
 
         public static bool IsBase64(string value)
         {
@@ -226,6 +227,49 @@ namespace Infrastructure.Extensions
             }
         }
 
+        #endregion
+
+        #region Email
+        /// <summary>
+        /// Validate 1 email
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static bool IsEmail(this string source)
+        {
+            //Regex regex = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
+            //return regex.IsMatch(source);
+            //Regex regex = new Regex(@"^(([A-Za-z0-9._%+-!#$%&'*+-/=?^`{|}~]+)@([A-Za-z0-9.-]+))$");
+            //return regex.IsMatch(source);
+
+            source = source.Trim();
+
+            return Regex.IsMatch(source,
+                @"^(?("")("".+?(?<!\\)""@)|(([0-9A-Za-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9A-Za-z])@))" +
+                @"(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9A-Za-z][-0-9A-Za-z]*[0-9A-Za-z]*\.)+[a-zA-Z0-9][\-a-zA-Z0-9]{0,22}[a-zA-Z0-9]))$",
+                RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
+        }
+
+        /// <summary>
+        /// Validate nhiều email
+        /// </summary>
+        /// <param name="source">Danh sách email dc ngăn cách bởi delimiter</param>
+        /// <param name="delimiter">Dấu ngăn cách giữa các email</param>
+        /// <returns></returns>
+        public static bool IsEmails(this string source, char delimiter)
+        {
+            var splited = source.Split(delimiter);
+
+            foreach (var item in splited)
+            {
+                if (!IsEmail(item))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
         #endregion
     }
 }

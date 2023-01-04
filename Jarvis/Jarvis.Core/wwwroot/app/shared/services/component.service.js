@@ -2,6 +2,10 @@
     'use strict';
 
     function componentService(APP_CONFIG) {
+        this.replace = function (url) {
+            return url.replace('/app/', APP_CONFIG.BASE_UI_PATH);
+        };
+
         this.getTemplateUrl = function (component, defaultUrl) {
             var url = APP_CONFIG.TEMPLATE_URLS[component];
             if (!url || url === '')

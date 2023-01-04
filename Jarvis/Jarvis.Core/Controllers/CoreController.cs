@@ -8,6 +8,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jarvis.Core.Database;
 using Jarvis.Core.Database.Repositories;
+using Infrastructure.Abstractions;
+using System;
 
 namespace Jarvis.Core.Controllers
 {
@@ -16,37 +18,35 @@ namespace Jarvis.Core.Controllers
     [ApiController]
     public class CoreController : ControllerBase
     {
-        private readonly IWorkContext _workContext;
-        private readonly INavigationService _navigationService;
-        private readonly ICoreUnitOfWork _uow;
-
-        public CoreController(
-            IWorkContext workContext,
-            INavigationService navigationService,
-            ICoreUnitOfWork uow)
-        {
-            _workContext = workContext;
-            _navigationService = navigationService;
-            _uow = uow;
-        }
-
-        /// <summary>
-        /// Lấy navigation
-        /// </summary>
-        /// <returns></returns>
         [Authorize]
         [HttpGet("navigation")]
-        public async Task<IActionResult> GetNavigationAsync()
+        public async Task<IActionResult> GetNavigationAsync(
+            [FromServices] IEnumerable<INavigationService> navigationServices,
+            [FromServices] IWorkContext workContext,
+            [FromServices] IServiceProvider serviceProvider
+        )
         {
-            var session = await _workContext.GetSessionAsync();
+            var session = await workContext.GetSessionAsync();
+            if (session == null)
+                return Unauthorized();
 
-            var navigation = _navigationService.GetNavigation(session);
+            var navigation = new List<NavigationItem>();
+            foreach (var item in navigationServices)
+            {
+                navigation.AddRange(item.GetNavigation(serviceProvider, session));
+            }
+
+            navigation = navigation.OrderBy(x => x.Order).ToList();
+
             return Ok(navigation);
         }
 
         [Authorize]
         [HttpGet("tenants")]
-        public async Task<IActionResult> GetTenantAsync()
+        public async Task<IActionResult> GetTenantAsync(
+            [FromServices] IWorkContext workContext,
+            [FromServices] ICoreUnitOfWork uow
+        )
         {
             //Cây phân cấp
             //         A
@@ -73,9 +73,11 @@ namespace Jarvis.Core.Controllers
             //_._.G
             //_._.H
 
-            var tenants = new List<HierarchyTenantModel>();
-            var session = await _workContext.GetSessionAsync();
-            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var session = await workContext.GetSessionAsync();
+            if (session == null)
+                return Unauthorized();
+
+            var repoTenant = uow.GetRepository<ITenantRepository>();
             var hierarchy = (await repoTenant.GetHierarchyByCodeAsync(session.TenantInfo.Code)).Select(x => new HierarchyTenantModel
             {
                 Id = x.Id,
@@ -88,6 +90,7 @@ namespace Jarvis.Core.Controllers
                 CreatedAt = x.CreatedAt
             }).ToList();
 
+            var tenants = new List<HierarchyTenantModel>();
             if (hierarchy.Count == 0)
                 return Ok(tenants);
 
