@@ -5,7 +5,7 @@
         .module('jarvis')
         .component('uiFooter', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getJarvisTemplateUrl('uiFooter', '/app/shared/components/footer/footer.template.html');
+                return componentService.getTemplateUrl('uiFooter', '/app/shared/components/footer/footer.template.html');
             }],
             controller: 'footerController',
             bindings: {

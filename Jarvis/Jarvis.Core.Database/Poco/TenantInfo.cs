@@ -15,11 +15,14 @@ namespace Jarvis.Core.Database.Poco
         public string District { get; set; }
         public string FullNameVi { get; set; }
         public string FullNameEn { get; set; }
+        public string ShortName { get; set; }
+        public string Logo { get; set; }
         public string LegalName { get; set; }
         public string Fax { get; set; }
         public string BusinessType { get; set; }
         public string Emails { get; set; }
         public string Phones { get; set; }
+        public string BranchName { get; set; }
         public string Metadata { get; set; }
     }
 }

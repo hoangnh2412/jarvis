@@ -6,10 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="wwwroot\app\identity\identity.backend.template.html" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="wwwroot\app\core\core.module.js" />
     <EmbeddedResource Include="wwwroot\app\core\core.template.html" />
     <EmbeddedResource Include="wwwroot\app\core\labels\label-create.controller.js" />
@@ -20,6 +16,12 @@
     <EmbeddedResource Include="wwwroot\app\core\labels\label-update.template.html" />
     <EmbeddedResource Include="wwwroot\app\core\labels\label.route.js" />
     <EmbeddedResource Include="wwwroot\app\core\labels\label.service.js" />
+    <EmbeddedResource Include="wwwroot\app\core\organizations\organization-unit.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\core\organizations\organization-user.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\core\organizations\organization.route.js" />
+    <EmbeddedResource Include="wwwroot\app\core\organizations\organization.service.js" />
+    <EmbeddedResource Include="wwwroot\app\core\organizations\organizations.controller.js" />
+    <EmbeddedResource Include="wwwroot\app\core\organizations\organizations.template.html" />
     <EmbeddedResource Include="wwwroot\app\core\settings\setting.service.js" />
     <EmbeddedResource Include="wwwroot\app\core\settings\settings.controller.js" />
     <EmbeddedResource Include="wwwroot\app\core\settings\settings.route.js" />
@@ -42,9 +44,8 @@
     <EmbeddedResource Include="wwwroot\app\identity\forgot-password\forgot-password.controller.js" />
     <EmbeddedResource Include="wwwroot\app\identity\forgot-password\forgot-password.route.js" />
     <EmbeddedResource Include="wwwroot\app\identity\forgot-password\forgot-password.template.html" />
-    <EmbeddedResource Include="wwwroot\app\identity\identity.backend.template.html" />
     <EmbeddedResource Include="wwwroot\app\identity\identity.module.js" />
-    <EmbeddedResource Include="wwwroot\app\identity\identity.frontend.template.html" />
+    <EmbeddedResource Include="wwwroot\app\identity\identity.template.html" />
     <EmbeddedResource Include="wwwroot\app\identity\login\login.controller.js" />
     <EmbeddedResource Include="wwwroot\app\identity\login\login.route.js" />
     <EmbeddedResource Include="wwwroot\app\identity\login\login.template.html" />
@@ -87,6 +88,7 @@
     <EmbeddedResource Include="wwwroot\app\shared\configs\chart.config.js" />
     <EmbeddedResource Include="wwwroot\app\shared\configs\validate.config.js" />
     <EmbeddedResource Include="wwwroot\app\shared\directives\autofocus.directive.js" />
+    <EmbeddedResource Include="wwwroot\app\shared\directives\ngFileModel.directive.js" />
     <EmbeddedResource Include="wwwroot\app\shared\directives\convertToNumber.directive.js" />
     <EmbeddedResource Include="wwwroot\app\shared\directives\tooltip.directive.js" />
     <EmbeddedResource Include="wwwroot\app\shared\filters\new-line.filter.js" />

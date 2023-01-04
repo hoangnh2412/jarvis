@@ -8,7 +8,7 @@
                 var states = $state.get();
                 for (var i = 0; i < states.length; i++) {
                     var element = states[i];
-                    if (element.url === url) {
+                    if (element.url && element.url.startsWith(url)) {
                         return element.name;
                     }
                 }
@@ -47,48 +47,25 @@
                         return response;
                     }
 
-                    if (response.status === 500 || response.status === 400) {
+                    if (response.status === 400) {
+                        for (const key in response.data.errors) {
+                            if (response.data.errors.hasOwnProperty(key)) {
+                                const element = response.data.errors[key];
+
+                                var errors = '';
+                                for (let i = 0; i < element.length; i++) {
+                                    errors += key + ': ' + element[i] + '</br>';
+                                }
+                                sweetAlert.error("Lỗi", errors);
+                            }
+                        }
+                    }
+
+                    if (response.status === 500) {
                         if (response.config.responseType && response.config.responseType === 'arraybuffer') {
                             var stringError = new TextDecoder().decode(response.data);
-                            try {
-                                var responseParse = JSON.parse(stringError);
-                                if (responseParse.errors && Object.keys(responseParse.errors).length > 0) {
-                                    var err = '';
-                                    Object.keys(responseParse.errors).forEach(function (e) {
-                                        for (var i = 0; i < responseParse.errors[e].length; i++) {
-                                            err += responseParse.errors[e][i] + '</br>';
-                                        };
-                                    });
-                                    swal.fire({
-                                        title: "Lỗi",
-                                        html: err,
-                                        type: "error"
-                                    });
-                                    stringError = undefined;
-                                }
-                            }
-                            catch (e) { }
-                            finally {
-                                if (stringError)
-                                    sweetAlert.error("Lỗi", stringError);
-                            }
-                        }
-                        else if (response.data.errors) {
-                            if (Object.keys(response.data.errors).length > 0) {
-                                var err = '';
-                                Object.keys(response.data.errors).forEach(function (e) {
-                                    for (var i = 0; i < response.data.errors[e].length; i++) {
-                                        err += response.data.errors[e][i] + '</br>';
-                                    };
-                                });
-                                swal.fire({
-                                    title: "Lỗi",
-                                    html: err,
-                                    type: "error"
-                                });
-                            }
-                        }
-                        else
+                            sweetAlert.error("Lỗi", stringError);
+                        } else
                             sweetAlert.error("Lỗi", response.data);
                         return response;
                     }
@@ -215,12 +192,15 @@
 
             $stateProvider.state('identity.backend', {
                 abstract: true,
-                templateUrl: '/app/identity/identity.backend.template.html'
+                templateProvider: ['$templateRequest', 'componentService', function ($templateRequest, componentService) {
+                    var tplName = componentService.getTemplateUrl('uiIdentity', '/app/identity/identity.template.html');
+                    return $templateRequest(tplName);
+                }],
             });
 
             $stateProvider.state('identity.frontend', {
                 abstract: true,
-                templateUrl: '/app/identity/identity.frontend.template.html'
+                template: '<ui-view context="$ctrl.context"></ui-view>'
             });
         }])
         .config(['$ocLazyLoadProvider', function ($ocLazyLoadProvider) {
@@ -244,7 +224,7 @@
                 var states = $state.get();
                 for (var i = 0; i < states.length; i++) {
                     var element = states[i];
-                    if (element.url === url) {
+                    if (element.url && element.url.startsWith(url)) {
                         return element.name;
                     }
                 }
@@ -272,6 +252,9 @@
                     }
 
                     //Reuire authentication but token has expired
+
+                    console.log('expireAt', new Date(token.expireAt));
+                    console.log('now', new Date());
                     if (new Date(token.expireAt) < new Date()) {
                         cacheService.remove('token');
                         return true;
@@ -303,6 +286,8 @@
                 }
 
                 //Token expired => not authenticate
+                console.log('expireAt', new Date(token.expireAt));
+                console.log('now', new Date());
                 if (new Date(token.expireAt) < new Date()) {
                     cacheService.remove('token');
                     return;

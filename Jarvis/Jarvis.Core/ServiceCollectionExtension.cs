@@ -31,7 +31,6 @@ using Jarvis.Core.Abstractions;
 using Jarvis.Core.Services;
 using Jarvis.Core.Permissions;
 using Infrastructure.Abstractions.Validations;
-using Infrastructure.Abstractions.Events;
 
 namespace Jarvis.Core
 {
@@ -48,7 +47,6 @@ namespace Jarvis.Core
             services.AddHttpContextAccessor();
 
             services.AddScoped<IValidatorFactory, ValidatorFactory>();
-            services.AddScoped<IEventFactory, EventFactory>();
             services.AddScoped<IValidationContext, ValidationContext>();
         }
 
@@ -56,8 +54,6 @@ namespace Jarvis.Core
         {
             //Base service
             services.AddSingleton<IModuleManager, ModuleManager>();
-            services.AddSingleton<IPoliciesStorage, PoliciesStorage>();
-            services.AddSingleton<INavigationService, NavigationService>();
             services.AddScoped<IWorkContext, WorkContext>();
 
             //Bussiness Services
@@ -65,6 +61,7 @@ namespace Jarvis.Core
             services.AddScoped<IEntityService, EntityService>();
             services.AddScoped<ISettingService, SettingService>();
             services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IOrganizationService, OrganizationService>();
 
             //Repositories
             services.AddScoped<ICityRepository, CityRepository>();
@@ -90,6 +87,27 @@ namespace Jarvis.Core
             //services.AddScoped<ICrudTenantService, CrudTenantService>();
         }
 
+        public static void AddConfigPolicy(this IServiceCollection services, List<Type> policies = null)
+        {
+            services.AddSingleton<IPoliciesStorage, PoliciesStorage>();
+            services.AddSingleton<INavigationService, NavigationService>();
+
+            services.AddSingleton<IPolicy, CorePolicy.LabelPolicy>();
+            services.AddSingleton<IPolicy, CorePolicy.OrganizationPolicy>();
+            services.AddSingleton<IPolicy, CorePolicy.RolePolicy>();
+            services.AddSingleton<IPolicy, CorePolicy.SettingPolicy>();
+            services.AddSingleton<IPolicy, CorePolicy.TenantPolicy>();
+            services.AddSingleton<IPolicy, CorePolicy.UserPolicy>();
+
+            if (policies != null)
+            {
+                foreach (var policy in policies)
+                {
+                    services.AddSingleton(typeof(IPolicy), policy);
+                }
+            }
+        }
+
         public static void AddConfigAuthorization(this IServiceCollection services, List<Type> crudPolicies = null, List<Type> otherPolicies = null)
         {
             services.AddSingleton<IAuthorizationCrudPolicy, TenantAuthorizationCrudPolicy>();
@@ -101,8 +119,6 @@ namespace Jarvis.Core
 
             services.AddSingleton<IAuthorizationPolicy, UserLockAuthorizationPolicy>();
             services.AddSingleton<IAuthorizationPolicy, UserResetPasswordAuthorizationPolicy>();
-            services.AddSingleton<IAuthorizationPolicy, OrganizationUsersAuthorizationPolicy>();
-            services.AddSingleton<IAuthorizationPolicy, OrganizationRolesAuthorizationPolicy>();
 
             if (crudPolicies != null)
             {
@@ -191,6 +207,10 @@ namespace Jarvis.Core
                     {
                         ValidateAudience = false,
                         ValidateIssuer = false,
+                        ValidateActor = false,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ClockSkew = TimeSpan.Zero,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(configuration.GetSection("Identity:SecretKey").Value))
                     };
                 };
@@ -291,11 +311,7 @@ namespace Jarvis.Core
                 //Comment mô tả API
                 string rootPath;
                 if (env.IsDevelopment())
-                {
-                    // rootPath = Path.Combine(env.ContentRootPath, "bin", "Debug", configuration.GetSection("ApplicationInfo:TargetFramework").Value);
-                    // rootPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
                     rootPath = AppContext.BaseDirectory;
-                }
                 else
                     rootPath = env.ContentRootPath;
 
@@ -330,16 +346,18 @@ namespace Jarvis.Core
         {
             public void Apply(OpenApiOperation operation, OperationFilterContext context)
             {
-                if (operation.Parameters == null)
-                    operation.Parameters = new List<OpenApiParameter>();
+                // if (operation.Parameters == null)
+                //     operation.Parameters = new List<IParameter>();
 
-                operation.Parameters.Add(new OpenApiParameter
-                {
-                    Name = "Envelope",
-                    In = ParameterLocation.Header,
-                    Required = false,
-                    Description = "1 = Wrap, 0 = No wrap"
-                });
+                // operation.Parameters.Add(new NonBodyParameter
+                // {
+                //     Name = "Envelope",
+                //     In = "header",
+                //     Type = "string",
+                //     Required = false,
+                //     Default = null,
+                //     Description = "1 = Wrap, 0 = No wrap"
+                // });
 
                 // operation.Parameters.Add(new NonBodyParameter
                 // {

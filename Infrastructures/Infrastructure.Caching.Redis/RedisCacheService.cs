@@ -20,7 +20,8 @@ namespace Infrastructure.Caching.Redis
 
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
-        public RedisCacheService(IOptions<RedisCacheOptions> optionsAccessor) : base(optionsAccessor)
+        public RedisCacheService(
+            IOptions<RedisCacheOptions> optionsAccessor) : base(optionsAccessor)
         {
             if (optionsAccessor == null)
             {

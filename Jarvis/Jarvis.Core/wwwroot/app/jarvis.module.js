@@ -47,6 +47,12 @@
                     autofocus: ['$ocLazyLoad', function ($ocLazyLoad) {
                         return $ocLazyLoad.load('moduleAutofocus');
                     }],
+                    ngFileModel: ['$ocLazyLoad', function ($ocLazyLoad) {
+                        return $ocLazyLoad.load('moduleNgFileModel');
+                    }],
+                    abs: ['$ocLazyLoad', function ($ocLazyLoad) {
+                        return $ocLazyLoad.load('moduleAbs');
+                    }],
                     tooltip: ['$ocLazyLoad', function ($ocLazyLoad) {
                         return $ocLazyLoad.load('moduleTooltip');
                     }],
@@ -61,7 +67,10 @@
                 template: '<ui-view context="$ctrl.context"></ui-view>',
             });
         }])
-        .config(['$ocLazyLoadProvider', function ($ocLazyLoadProvider) {
+        .config(['$ocLazyLoadProvider', 'APP_CONFIG', function ($ocLazyLoadProvider, APP_CONFIG) {
+            var replaceUrl = function (url) {
+                return url.replace('/app/', APP_CONFIG.BASE_UI_PATH);
+            };
             $ocLazyLoadProvider.config({
                 // debug: true,
                 // events: true,
@@ -69,20 +78,33 @@
                     {
                         name: 'moduleValidate',
                         serie: true,
-                        files: ['libs/jquery/jquery-validate.js', 'libs/angular/angular-validate.js', 'app/shared/configs/validate.config.js']
+                        files: ['/libs/jquery/jquery-validate.js', '/libs/angular/angular-validate.js', replaceUrl('/app/shared/configs/validate.config.js')]
                     },
                     {
                         name: 'moduleAutofocus',
-                        files: ['app/shared/directives/autofocus.directive.js']
+                        files: [replaceUrl('/app/shared/directives/autofocus.directive.js')]
+                    },
+                    {
+                        name: 'moduleNgFileModel',
+                        files: [replaceUrl('/app/shared/directives/ngFileModel.directive.js')]
+                    },
+                    {
+                        name: 'moduleAbs',
+                        files: [replaceUrl('/app/shared/filters/abs.filter.js')]
                     },
                     {
                         name: 'moduleTooltip',
-                        files: ['app/shared/directives/tooltip.directive.js']
+                        files: [replaceUrl('/app/shared/directives/tooltip.directive.js')]
                     },
                     {
                         name: 'moduleUiBootstrap',
                         serie: true,
-                        files: ['libs/jquery/moment.js', 'libs/jquery/moment-with-locales.js', 'libs/angular/ui-bootstrap-tpls-2-5-0.js']
+                        files: ['/libs/jquery/moment.js', '/libs/jquery/moment-with-locales.js', '/libs/angular/ui-bootstrap-tpls-2-5-0.js']
+                    },
+                    {
+                        name: 'moduleTree',
+                        serie: true,
+                        files: ['/libs/angular/angular-tree/angular-ui-tree.min.js', '/libs/angular/angular-tree/angular-ui-tree.min.css', '/libs/angular/angular-tree/jarvis-tree.css']
                     }
                 ]
             });

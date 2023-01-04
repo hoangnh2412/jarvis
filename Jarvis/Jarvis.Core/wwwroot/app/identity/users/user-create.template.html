@@ -21,7 +21,7 @@
                 <div class="form-group">
                     <label class="col-md-2 col-sm-4 control-label">Email</label>
                     <div class="col-md-10 col-sm-8">
-                        <input name="email" type="text" ng-model="$ctrl.user.email" ng-required="$ctrl.user.isAutoPassword" class="form-control" />
+                        <input name="email" type="text" ng-model="$ctrl.user.email" class="form-control" />
                     </div>
                 </div>
                 <div class="form-group">
@@ -54,6 +54,12 @@
                     <label class="col-md-2 col-sm-4 control-label">Quyền</label>
                     <div class="col-md-10 col-sm-8">
                         <div class="checkbox" ng-repeat="role in $ctrl.roles track by $index"><label><input type="checkbox" ng-model="role.select" value="{{role.id}}"> {{role.name}}</label></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 col-sm-4 control-label">Quyền dữ liệu</label>
+                    <div class="col-md-10 col-sm-8">
+                        <div class="checkbox" ng-repeat="claim in $ctrl.claims track by $index"><label><input type="checkbox" ng-model="claim.select" value="{{claim.key}}"> {{claim.value}}</label></div>
                     </div>
                 </div>
             </div>

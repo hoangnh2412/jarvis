@@ -18,32 +18,17 @@ namespace Jarvis.Core.Controllers
     [ApiController]
     public class InstallController : ControllerBase
     {
-        private readonly ICoreUnitOfWork _uow;
-        private readonly UserManager<User> _userManager;
-        private readonly RoleManager<Role> _roleManager;
-        private readonly ISettingService _settingService;
-
-        public InstallController(
-            ICoreUnitOfWork uow,
-            UserManager<User> userManager,
-            RoleManager<Role> roleManager,
-            ISettingService settingService)
-        {
-            _uow = uow;
-            _userManager = userManager;
-            _roleManager = roleManager;
-            _settingService = settingService;
-        }
-
         /// <summary>
         /// Step 1: Tạo doanh nghiệp tổng
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost("tenant")]
-        public async Task<IActionResult> TenantAsync([FromBody]InstallTenantModel model)
+        public async Task<IActionResult> TenantAsync(
+            [FromBody] InstallTenantModel model,
+            [FromServices] ICoreUnitOfWork uow)
         {
-            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var repoTenant = uow.GetRepository<ITenantRepository>();
             if (await repoTenant.AnyAsync())
                 return BadRequest("Hệ thống đã được cài đặt, không thể cài lại");
 
@@ -84,7 +69,7 @@ namespace Jarvis.Core.Controllers
                 });
             }
 
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
             return Ok(tenantCode);
         }
 
@@ -94,7 +79,10 @@ namespace Jarvis.Core.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost("user")]
-        public async Task<IActionResult> UserAsync([FromBody]InstallUserModel model)
+        public async Task<IActionResult> UserAsync(
+            [FromBody] InstallUserModel model,
+            [FromServices] UserManager<User> userManager,
+            [FromServices] ICoreUnitOfWork uow)
         {
             //Tạo tài khoản ROOT
             var idUser = Guid.NewGuid();
@@ -107,21 +95,21 @@ namespace Jarvis.Core.Controllers
                 TenantCode = model.TenantCode,
                 Id = idUser
             };
-            var identityResult = await _userManager.CreateAsync(user, model.Password);
+            var identityResult = await userManager.CreateAsync(user, model.Password);
             if (!identityResult.Succeeded)
                 return BadRequest(string.Join(";", identityResult.Errors.Select(x => x.Description)));
 
-            var repoUserInfo = _uow.GetRepository<IUserRepository>();
+            var repoUserInfo = uow.GetRepository<IUserRepository>();
             await repoUserInfo.InsertUserInfoAsync(new UserInfo
             {
                 AvatarPath = null,
                 FullName = model.FullName,
                 Id = idUser
             });
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
 
             //Phân quyền tài khoản root
-            identityResult = await _userManager.AddClaimAsync(user, new System.Security.Claims.Claim(nameof(SpecialPolicy.Special_DoEnything), $"{default(ClaimOfResource)}|{default(ClaimOfChildResource)}"));
+            identityResult = await userManager.AddClaimAsync(user, new System.Security.Claims.Claim(nameof(SpecialPolicy.Special_DoEnything), $"{default(ClaimOfResource)}|{default(ClaimOfChildResource)}"));
             if (!identityResult.Succeeded)
                 return BadRequest(string.Join(";", identityResult.Errors.Select(x => x.Description)));
             return Ok();
@@ -132,18 +120,21 @@ namespace Jarvis.Core.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost("setting")]
-        public async Task<IActionResult> SettingAsync()
+        public async Task<IActionResult> SettingAsync(
+            [FromServices] ISettingService settingService,
+            [FromServices] ICoreUnitOfWork uow
+        )
         {
             //kiểm tra db có setting nào chưa. có rồi thì không cho thêm nữa
-            var repoSetting = _uow.GetRepository<ISettingRepository>();
+            var repoSetting = uow.GetRepository<ISettingRepository>();
             if (await repoSetting.AnyAsync())
                 return BadRequest("Hệ thống đã được cài đặt setting mặc định, không thể cài lại");
 
             //thêm vào database các setting có tenantCode = Guid.Empty()
-            var defaultDatas = _settingService.GetDefaultSettings();
+            var defaultDatas = settingService.GetDefaultSettings();
             var defaultGroups = defaultDatas.GroupBy(x => x.Group);
 
-            var groupSettingKeys = _settingService.GetGroupSettings();
+            var groupSettingKeys = settingService.GetGroupSettings();
 
             //lấy dữ liệu mặc định và insert vào db
             foreach (var item in defaultDatas)
@@ -165,38 +156,9 @@ namespace Jarvis.Core.Controllers
                 });
             }
 
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
 
             return Ok("Thêm setting mặc định thành công");
         }
-
-
-
-        //[HttpPost("setting")]
-        //public async Task<IActionResult> SettingAsync([FromBody]InstallSettingModel model)
-        //{
-        //    var settings = new List<Setting>();
-        //    foreach (var item in DefaultData.GeneralSettings)
-        //    {
-        //        settings.Add(new Setting
-        //        {
-        //            Code = Guid.NewGuid(),
-        //            TenantCode = model.TenantCode,
-        //            CreatedAt = DateTime.Now,
-        //            CreatedAtUtc = DateTime.UtcNow,
-        //            CreatedBy = model.IdUser,
-        //            Group = item.Group,
-        //            Key = item.Key,
-        //            Name = item.Name,
-        //            Value = item.Value,
-        //            Options = item.Options,
-        //            Type = item.Type
-        //        });
-        //    }
-        //    var repoSetting = _uow.GetRepository<ISettingRepository>();
-        //    await repoSetting.InsertsAsync(settings);
-        //    await _uow.CommitAsync();
-        //    return Ok();
-        //}
     }
 }

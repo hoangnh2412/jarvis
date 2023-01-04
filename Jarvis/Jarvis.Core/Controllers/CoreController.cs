@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jarvis.Core.Database;
 using Jarvis.Core.Database.Repositories;
-using Infrastructure;
 using Infrastructure.Abstractions;
 using System;
 
@@ -19,40 +18,22 @@ namespace Jarvis.Core.Controllers
     [ApiController]
     public class CoreController : ControllerBase
     {
-        private readonly IWorkContext _workContext;
-        private readonly ICoreUnitOfWork _uow;
-        private readonly IModuleManager _moduleManager;
-        private readonly IServiceProvider _serviceProvider;
-
-        public CoreController(
-            IWorkContext workContext,
-            ICoreUnitOfWork uow,
-            IModuleManager moduleManager,
-            IServiceProvider serviceProvider)
-        {
-            _workContext = workContext;
-            _uow = uow;
-            _moduleManager = moduleManager;
-            _serviceProvider = serviceProvider;
-        }
-
-        /// <summary>
-        /// Lấy navigation
-        /// </summary>
-        /// <returns></returns>
         [Authorize]
         [HttpGet("navigation")]
-        public async Task<IActionResult> GetNavigationAsync()
+        public async Task<IActionResult> GetNavigationAsync(
+            [FromServices] IEnumerable<INavigationService> navigationServices,
+            [FromServices] IWorkContext workContext,
+            [FromServices] IServiceProvider serviceProvider
+        )
         {
-            var session = await _workContext.GetSessionAsync();
+            var session = await workContext.GetSessionAsync();
             if (session == null)
                 return Unauthorized();
 
-            var instanceDefaultDatas = _moduleManager.GetInstances<INavigationService>();
             var navigation = new List<NavigationItem>();
-            foreach (var item in instanceDefaultDatas)
+            foreach (var item in navigationServices)
             {
-                navigation.AddRange(item.GetNavigation(_serviceProvider, session));
+                navigation.AddRange(item.GetNavigation(serviceProvider, session));
             }
 
             navigation = navigation.OrderBy(x => x.Order).ToList();
@@ -62,7 +43,10 @@ namespace Jarvis.Core.Controllers
 
         [Authorize]
         [HttpGet("tenants")]
-        public async Task<IActionResult> GetTenantAsync()
+        public async Task<IActionResult> GetTenantAsync(
+            [FromServices] IWorkContext workContext,
+            [FromServices] ICoreUnitOfWork uow
+        )
         {
             //Cây phân cấp
             //         A
@@ -89,11 +73,11 @@ namespace Jarvis.Core.Controllers
             //_._.G
             //_._.H
 
-            var session = await _workContext.GetSessionAsync();
+            var session = await workContext.GetSessionAsync();
             if (session == null)
                 return Unauthorized();
 
-            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var repoTenant = uow.GetRepository<ITenantRepository>();
             var hierarchy = (await repoTenant.GetHierarchyByCodeAsync(session.TenantInfo.Code)).Select(x => new HierarchyTenantModel
             {
                 Id = x.Id,

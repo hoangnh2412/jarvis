@@ -9,15 +9,10 @@
             rules: {
                 fullName: {
                     required: true,
-                    whiteSpace: true,
-                    maxlength: 250
-                },
-                phoneNumber: {
-                    maxlength: 50
+                    whiteSpace: true
                 },
                 email: {
-                    multipleEmails: true,
-                    maxlength: 256
+                    multipleEmails: true
                 }
             }
         };

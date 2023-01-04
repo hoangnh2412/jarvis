@@ -5,7 +5,7 @@
         .module('identity')
         .component('uiChangePassword', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getJarvisTemplateUrl('uiChangePassword', '/app/identity/change-password/change-password.template.html');
+                return componentService.getTemplateUrl('uiChangePassword', '/app/identity/change-password/change-password.template.html');
             }],
             controller: 'changePasswordController',
             bindings: {
@@ -13,7 +13,7 @@
             }
         })
         .config(function ($stateProvider) {
-            $stateProvider.state('identity.backend.change-password', {
+            $stateProvider.state('identity.frontend.change-password', {
                 url: '/change-password',
                 component: 'uiChangePassword',
                 data: {
@@ -29,7 +29,7 @@
                 },
                 resolve: {
                     changePasswordController: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
-                        return $ocLazyLoad.load(componentService.getJarvisControllerUrl('uiChangePassword', '/app/identity/change-password/change-password.controller.js'));
+                        return $ocLazyLoad.load(componentService.getControllerUrl('uiChangePassword', '/app/identity/change-password/change-password.controller.js'));
                     }]
                 }
             });

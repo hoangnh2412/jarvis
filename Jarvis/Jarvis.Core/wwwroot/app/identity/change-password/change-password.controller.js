@@ -12,7 +12,6 @@
                 newPassword: {
                     required: true,
                     minlength: 6,
-                    maxlength: 100,
                     regex: /^\S[^\t\n\r]+[\S]$/
                 },
                 confirmPassword: {

@@ -5,7 +5,7 @@
         .module('jarvis')
         .component('uiNavbar', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getJarvisTemplateUrl('uiNavbar', '/app/shared/components/navbar/navbar.template.html');
+                return componentService.getTemplateUrl('uiNavbar', '/app/shared/components/navbar/navbar.template.html');
             }],
             controller: 'navbarController',
             bindings: {
@@ -37,7 +37,7 @@
                 var states = $state.get();
                 for (var i = 0; i < states.length; i++) {
                     var element = states[i];
-                    if (element.url === url) {
+                    if (element.url && element.url.startsWith(url)) {
                         return element.name;
                     }
                 }
@@ -53,7 +53,6 @@
                     controllerAs: '$ctrl',
                     appendTo: angular.element('.box-modal'),
                     backdrop: false,
-                    size: 'lg',
                     resolve: {
                         currentTenant: function () {
                             return ctrl.currentTenant;
@@ -70,7 +69,7 @@
                     if (currentTenant.code !== tenant.code) {
                         cacheService.set('currentTenant', tenant);
                         ctrl.currentTenant = currentTenant;
-                        // reset cache luu tìm ki?m trang danh sách hóa don trong context
+                        // reset cache luu tï¿½m ki?m trang danh sï¿½ch hï¿½a don trong context
                         if (Object.keys(ctrl.context.cache).length !== 0) {
                             ctrl.context.cache = {};
                             cacheService.set('context', ctrl.context);

@@ -15,6 +15,10 @@ namespace Jarvis.Core.Database.Repositories
     {
         Task<Paged<User>> PagingAsync(ContextModel context, Paging paging);
 
+        Task<Paged<User>> PagingAsync(Guid tenantCode, Paging paging);
+
+        Task<Paged<User>> PagingWithoutSomeUsersAsync(Guid tenantCode, Paging paging, List<Guid> codes);
+
         Task<User> FindUserByIdAsync(ContextModel context, Guid id);
 
         Task<User> FindUserByIdAsync(Guid tenantCode, Guid id);
@@ -23,9 +27,15 @@ namespace Jarvis.Core.Database.Repositories
 
         Task<UserInfo> FindUserInfoByIdAsync(Guid code);
 
-        Task<IEnumerable<UserInfo>> FindInfoByIdsAsync(List<Guid> ids);
-        
+        Task<List<UserInfo>> FindUserInfoByIdsAsync(List<Guid> ids);
+
+        Task<List<IdentityUserClaim<Guid>>> GetUserClaimsAsync(Guid id);
+
+        Task<bool> UserHasClaimAsync(Guid id, string claim, bool notracking = false);
+
         Task AssignRoleToUserAsync(Guid idUser, Guid idRole);
+
+        Task AssignClaimToUserAsync(Guid idUser, List<string> claims);
 
         Task InsertUserAsync(User user);
 
@@ -36,7 +46,9 @@ namespace Jarvis.Core.Database.Repositories
         void UpdateUserInfoFields(UserInfo user, params KeyValuePair<Expression<Func<UserInfo, object>>, object>[] properties);
 
         void DeleteUserInfo(UserInfo info);
-        
+
+        void DeleteUserClaim(List<IdentityUserClaim<Guid>> claims);
+
         /// <summary>
         /// lấy tk đc tạo đầu tiên
         /// </summary>
@@ -50,6 +62,20 @@ namespace Jarvis.Core.Database.Repositories
         /// <param name="id"></param>
         /// <returns></returns>
         Task<User> FindByIdAsync(Guid id);
+
+        /// <summary>
+        /// lấy tài khoản theo code
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        Task<List<User>> FindUserByIdsAsync(List<Guid> ids);
+
+        /// <summary>
+        /// Lấy id tài khoản theo code
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        Task<List<T>> FindByIdsAsync<T>(List<Guid> ids, Expression<Func<User, T>> fieldSelector = null);
 
         /// <summary>
         /// lấy các tài khoản đc gán quyền theo idRole
