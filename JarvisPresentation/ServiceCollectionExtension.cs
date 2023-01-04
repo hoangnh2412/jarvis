@@ -1,27 +1,39 @@
-using System;
-using Infrastructure.Caching;
 using Infrastructure.Caching.Redis;
-using Infrastructure.Database;
 using Infrastructure.Database.Abstractions;
 using Infrastructure.Database.EntityFramework;
 using Jarvis.Core.Database;
 using Jarvis.Core.Database.SqlServer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using StackExchange.Redis;
 
 namespace JarvisPresentation
 {
     public static class ServiceCollectionExtension
     {
-        public static void AddRedis(this IServiceCollection services)
+        public static void AddRedis(this IServiceCollection services, IConfigurationSection configSection)
         {
-            // var redisOption = new RedisOption();
-            // Configuration.GetSection("Redis").Bind(redisOption);
-            // services.AddRedis(redisOption);
+            services.AddRedisCache(options =>
+            {
+                var redisOption = new RedisOption();
+                configSection.Bind(redisOption);
+
+                options.InstanceName = redisOption.InstanceName;
+                options.ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions
+                {
+                    Password = redisOption.Password,
+                    ConnectRetry = redisOption.ConnectRetry,
+                    AbortOnConnectFail = redisOption.AbortOnConnectFail,
+                    ConnectTimeout = redisOption.ConnectTimeout,
+                    SyncTimeout = redisOption.SyncTimeout,
+                    DefaultDatabase = redisOption.DefaultDatabase,
+                };
+
+                foreach (var item in redisOption.EndPoints)
+                {
+                    options.ConfigurationOptions.EndPoints.Add(item);
+                }
+            });
         }
 
         public static void AddCoreDbContext(this IServiceCollection services, string connectionString)
