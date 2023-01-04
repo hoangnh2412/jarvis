@@ -15,19 +15,11 @@ namespace Jarvis.Core.Middlewares
 {
     public class AuthMiddlerware
     {
-        private readonly ILogger<AuthMiddlerware> _logger;
         private readonly RequestDelegate _next;
-        private readonly ICacheService _cache;
 
-        public AuthMiddlerware(
-            ILogger<AuthMiddlerware> logger,
-            RequestDelegate next,
-            ICacheService cache)
+        public AuthMiddlerware(RequestDelegate next)
         {
-            _logger = logger;
             _next = next;
-            _cache = cache;
-
         }
 
         /// <summary>
@@ -37,7 +29,7 @@ namespace Jarvis.Core.Middlewares
         /// <param name="configuration"></param>
         /// <param name="uow"></param>
         /// <returns></returns>
-        public async Task Invoke(HttpContext context, IConfiguration configuration, ICoreUnitOfWork uow)
+        public async Task Invoke(HttpContext context, IConfiguration configuration, ICoreUnitOfWork uow, ICacheService cacheService)
         {
             var auth = context.Request.Headers["Authorization"].ToString();
             if (string.IsNullOrWhiteSpace(auth))
@@ -51,14 +43,12 @@ namespace Jarvis.Core.Middlewares
             var token = jwtHandler.ReadToken(auth);
 
             //lấy token từ cache
-            var bytes = await _cache.GetAsync($":TokenInfos:{token.Id}");
-
+            var bytes = await cacheService.GetAsync($":TokenInfos:{token.Id}");
             if (bytes != null)
             {
                 await _next.Invoke(context);
                 return;
             }
-
 
             //lấy từ DB ra xem có dữ liệu không
             var repoTenant = uow.GetRepository<ITokenInfoRepository>();
@@ -70,7 +60,7 @@ namespace Jarvis.Core.Middlewares
                 //lưu vào cache
                 var cacheOption = new DistributedCacheEntryOptions();
                 cacheOption.AbsoluteExpirationRelativeToNow = tokenInfo.ExpireAtUtc.AddMilliseconds(-100) - now;
-                await _cache.SetAsync($":TokenInfos:{tokenInfo.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(tokenInfo)), cacheOption);
+                await cacheService.SetAsync($":TokenInfos:{tokenInfo.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(tokenInfo)), cacheOption);
 
                 await _next.Invoke(context);
                 return;

@@ -23,6 +23,7 @@ using Jarvis.Core.Models.Identity;
 using Infrastructure.Extensions;
 using Jarvis.Core.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Infrastructure.Caching;
 
 namespace Jarvis.Core.Services
 {
@@ -77,7 +78,7 @@ namespace Jarvis.Core.Services
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly ICoreUnitOfWork _uow;
         private readonly IEnumerable<IUserInfoService> _userInfoServices;
-        private readonly IDistributedCache _cache;
+        private readonly ICacheService _cacheService;
         private readonly IWorkContext _workContext;
 
         public IdentityService(
@@ -88,7 +89,7 @@ namespace Jarvis.Core.Services
             IPasswordHasher<User> passwordHasher,
             ICoreUnitOfWork uow,
             IEnumerable<IUserInfoService> userInfoServices,
-            IDistributedCache cache,
+            ICacheService cacheService,
             IWorkContext workContext)
         {
             _options = options.Value;
@@ -98,7 +99,7 @@ namespace Jarvis.Core.Services
             _passwordHasher = passwordHasher;
             _uow = uow;
             _userInfoServices = userInfoServices;
-            _cache = cache;
+            _cacheService = cacheService;
             _workContext = workContext;
         }
 
@@ -119,13 +120,6 @@ namespace Jarvis.Core.Services
             if (!result.Succeeded)
                 throw new Exception("Tài khoản hoặc mật khẩu không đúng");
 
-            //TODO: Xóa các Token đã hết hạn => Đưa vào BackgroundJob
-            //var expired = tokenInfos.Where(x => x.ExpireAtUtc <= DateTime.UtcNow);
-            //if (expired.Any())
-            //{
-            //    repoToken.DeleteRange(expired);
-            //    _uowCore.SaveChanges();
-            //}
             TokenInfo token = await GenerateTokenAsync(tenantCode, user);
 
             return new TokenModel
@@ -150,7 +144,7 @@ namespace Jarvis.Core.Services
             //Xóa toàn bộ cache
             foreach (var token in tokens)
             {
-                await _cache.RemoveAsync($":TokenInfos:{token.Code}");
+                await _cacheService.RemoveAsync($":TokenInfos:{token.Code}");
             }
 
             repoToken.Deletes(tokens);
@@ -217,13 +211,13 @@ namespace Jarvis.Core.Services
 
             TokenInfo token = null;
             //Lấy token từ cache theo IdUser
-            var bytes = await _cache.GetAsync($":Sessions:{userCode}");
+            var bytes = await _cacheService.GetAsync($":Sessions:{userCode}");
             if (bytes != null)
             {
                 var tokenCodes = JsonConvert.DeserializeObject<List<Guid>>(Encoding.UTF8.GetString(bytes));
                 foreach (var tokenCode in tokenCodes)
                 {
-                    bytes = await _cache.GetAsync($":TokenInfos:{tokenCode}");
+                    bytes = await _cacheService.GetAsync($":TokenInfos:{tokenCode}");
                     if (bytes != null)
                     {
                         var tokenInfo = JsonConvert.DeserializeObject<TokenInfo>(Encoding.UTF8.GetString(bytes));
@@ -249,14 +243,14 @@ namespace Jarvis.Core.Services
                     return null;
 
                 var idTokens = tokens.Select(x => x.Code).ToList();
-                await _cache.SetAsync($":Sessions:{userCode}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(idTokens)));
+                await _cacheService.SetAsync($":Sessions:{userCode}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(idTokens)));
 
                 var now = DateTime.UtcNow;
                 if (token.ExpireAtUtc.AddMilliseconds(-100) > now)
                 {
                     var cacheOption = new DistributedCacheEntryOptions();
                     cacheOption.AbsoluteExpirationRelativeToNow = token.ExpireAtUtc.AddMilliseconds(-100) - now;
-                    await _cache.SetAsync($":TokenInfos:{token.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
+                    await _cacheService.SetAsync($":TokenInfos:{token.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
                 }
             }
 
@@ -580,9 +574,6 @@ namespace Jarvis.Core.Services
 
         private async Task<TokenInfo> GenerateTokenAsync(Guid tenantCode, User user)
         {
-            //TODO: Xóa các Token đã hết hạn => Đưa vào BackgroundJob
-            await RemoveTokenExpiredAsync(user.Id);
-
             var token = await GetTokenAsync(user.Id);
             if (token != null)
                 return token;
