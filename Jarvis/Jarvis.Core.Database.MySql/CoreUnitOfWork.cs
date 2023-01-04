@@ -8,10 +8,8 @@ namespace Jarvis.Core.Database.MySql
 {
     public class CoreUnitOfWork : EntityUnitOfWork<CoreDbContext>, ICoreUnitOfWork
     {
-        public CoreUnitOfWork(IServiceProvider services, IEnumerable<IStorageContext> storageContexts) : base(services, storageContexts)
+        public CoreUnitOfWork(IServiceProvider services, Func<string, IStorageContext> config) : base(services, config)
         {
-            Counter.CurrentCoreUoW++;
-            // Console.WriteLine($"CurrentCoreUoW: {Counter.CurrentCoreUoW}");
         }
     }
 }

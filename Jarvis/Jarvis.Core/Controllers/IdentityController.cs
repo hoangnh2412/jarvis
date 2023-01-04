@@ -5,10 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jarvis.Models.Identity.Models.Identity;
 using Jarvis.Core.Models.Identity;
-using Infrastructure.Abstractions.Events;
-using Jarvis.Core.Models.Events.Identity;
-using Jarvis.Core.Events.Identity;
-using System;
 
 namespace Jarvis.Core.Controllers
 {
@@ -20,68 +16,31 @@ namespace Jarvis.Core.Controllers
         public async Task<IActionResult> RegisterAsync(
             [FromBody] RegisterModel model,
             [FromServices] IWorkContext workContext,
-            [FromServices] IIdentityService identityService,
-            [FromServices] IEventFactory eventFactory)
+            [FromServices] IIdentityService identityService)
         {
             var tenantCode = await workContext.GetTenantCodeAsync();
             await identityService.RegisterAsync(tenantCode, model);
-
-            eventFactory.GetOrAddEvent<IEvent<IdentityRegistedEventModel>, IIdentityRegistedEvent>().ForEach(async (e) =>
-            {
-                await e.PublishAsync(new IdentityRegistedEventModel
-                {
-                    UserName = model.Username,
-                    Password = model.Password,
-                    FullName = model.FullName
-                });
-            });
             return Ok();
         }
 
-        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync(
             [FromBody] LoginModel model,
             [FromServices] IWorkContext workContext,
-            [FromServices] IIdentityService identityService,
-            [FromServices] IEventFactory eventFactory)
+            [FromServices] IIdentityService identityService)
         {
             var tenantCode = await workContext.GetTenantCodeAsync();
             var token = await identityService.LoginAsync(tenantCode, model);
-
-            eventFactory.GetOrAddEvent<IEvent<IdentityLoginedEventModel>, IIdentityLoginedEvent>().ForEach(async (e) =>
-            {
-                await e.PublishAsync(new IdentityLoginedEventModel
-                {
-                    TenantCode = tenantCode,
-                    UserName = model.UserName,
-                    Password = model.Password
-                });
-            });
             return Ok(token);
         }
 
         [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> LogoutAsync(
-            [FromServices] IWorkContext workContext,
-            [FromServices] IIdentityService identityService,
-            [FromServices] IEventFactory eventFactory
+            [FromServices] IIdentityService identityService
         )
         {
-            var idUser = workContext.GetUserCode();
-            if (idUser == Guid.Empty)
-                return Ok();
-
-            await identityService.LogoutAsync(idUser);
-
-            eventFactory.GetOrAddEvent<IEvent<IdentityLogoutedEventModel>, IIdentityLogoutedEvent>().ForEach(async (e) =>
-            {
-                await e.PublishAsync(new IdentityLogoutedEventModel
-                {
-                    IdUser = idUser
-                });
-            });
+            await identityService.LogoutAsync();
             return Ok();
         }
 
@@ -92,10 +51,24 @@ namespace Jarvis.Core.Controllers
         )
         {
             var session = await workContext.GetSessionAsync();
-            if (session == null)
-                return Unauthorized();
-
             return Ok(session);
+        }
+
+        [HttpGet("refresh-token")]
+        public async Task<IActionResult> RefreshTokenAsync(
+            [FromQuery] string refreshToken,
+            [FromServices] IIdentityService identityService)
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                return Unauthorized();
+            }
+
+            var token = await identityService.RefreshTokenAsync(refreshToken);
+            if (token == null)
+                return BadRequest("Token không tồn tại");
+
+            return Ok(token);
         }
 
         [Authorize]
@@ -136,46 +109,20 @@ namespace Jarvis.Core.Controllers
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(
             [FromBody] ForgotPasswordModel model,
-            [FromServices] IWorkContext workContext,
-            [FromServices] IIdentityService identityService,
-            [FromServices] IEventFactory eventFactory)
+            [FromServices] IIdentityService identityService)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
-            var idUser = await identityService.ForgotPasswordAsync(model);
-
-            eventFactory.GetOrAddEvent<IEvent<IdentityPasswordForgotedEventModel>, IIdentityPasswordForgotedEvent>().ForEach(async (e) =>
-            {
-                await e.PublishAsync(new IdentityPasswordForgotedEventModel
-                {
-                    Email = model.Email,
-                    TenantCode = tenantCode,
-                    UserName = model.UserName,
-                    IdUser = idUser,
-                    HostName = model.HostName
-                });
-            });
-
+            await identityService.ForgotPasswordAsync(model);
             return Ok();
         }
 
 
         [AllowAnonymous]
         [HttpPost("reset-forgot-password")]
-        public async Task<IActionResult> ResetForgotPassword(
+        public async Task<IActionResult> RestForgotPassword(
             [FromBody] ResetForgotPasswordModel model,
-            [FromServices] IIdentityService identityService,
-            [FromServices] IEventFactory eventFactory)
+            [FromServices] IIdentityService identityService)
         {
             await identityService.ResetForgotPasswordAsync(model);
-
-            eventFactory.GetOrAddEvent<IEvent<IdentityPasswordResetedEventModel>, IIdentityPasswordResetedEvent>().ForEach(async (e) =>
-            {
-                await e.PublishAsync(new IdentityPasswordResetedEventModel
-                {
-                    IdUser = model.Id,
-                    Password = model.NewPassword
-                });
-            });
             return Ok();
         }
     }

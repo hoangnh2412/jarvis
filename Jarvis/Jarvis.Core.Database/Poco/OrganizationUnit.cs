@@ -11,7 +11,9 @@ namespace Jarvis.Core.Database.Poco
         public string Name { get; set; }
         public string FullName { get; set; }
         public string Description { get; set; }
-        public Guid IdParent { get; set; }
+        public Guid? IdParent { get; set; }
+        public int Left { get; set; }
+        public int Right { get; set; }
         
         public Guid TenantCode { get; set; }
         public DateTime CreatedAt { get; set; }

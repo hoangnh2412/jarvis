@@ -17,6 +17,7 @@ namespace Jarvis.Models.Identity.Models.Identity
         public UserInfoModel Infos { get; set; }
         public string Metadata { get; set; }
         public List<Guid> IdRoles { get; set; }
+        public List<string> Claims { get; set; }
 
         public static implicit operator UserModel(User entity)
         {

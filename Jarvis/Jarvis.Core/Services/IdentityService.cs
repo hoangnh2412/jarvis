@@ -22,8 +22,8 @@ using Jarvis.Models.Identity.Models.Identity;
 using Jarvis.Core.Models.Identity;
 using Infrastructure.Extensions;
 using Jarvis.Core.Abstractions;
+using Infrastructure.Database.Abstractions;
 using Microsoft.EntityFrameworkCore;
-using Infrastructure.Caching;
 
 namespace Jarvis.Core.Services
 {
@@ -31,7 +31,9 @@ namespace Jarvis.Core.Services
     {
         Task<TokenModel> LoginAsync(Guid tenantCode, LoginModel model);
 
-        Task LogoutAsync(Guid userCode);
+        Task LogoutAsync();
+
+        Task<TokenModel> RefreshTokenAsync(string refreshToken);
 
         Task RegisterAsync(Guid tenantCode, RegisterModel model);
 
@@ -41,16 +43,16 @@ namespace Jarvis.Core.Services
 
         Task ChangePasswordAsync(Guid idUser, ChangePasswordModel model);
 
-        Task LockAsync(Guid tenantCode, Guid idUser, string time);
+        Task LockAsync(Guid idUser, string time);
 
-        Task UnlockAsync(Guid tenantCode, Guid idUser, string time);
+        Task UnlockAsync(Guid idUser, string time);
 
         /// <summary>
         /// đổi mật khẩu
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        Task<Guid> ForgotPasswordAsync(ForgotPasswordModel model);
+        Task ForgotPasswordAsync(ForgotPasswordModel model);
 
         /// <summary>
         /// đổi mật khâu khi chọn quên mật khẩu
@@ -60,25 +62,49 @@ namespace Jarvis.Core.Services
         Task ResetForgotPasswordAsync(ResetForgotPasswordModel model);
 
         /// <summary>
-        /// tk admin đổi mk cho các tk dưới
+        /// Đặt lại mật khẩu tự động
         /// </summary>
         /// <param name="tenantCode"></param>
-        /// <param name="idUser"></param>
+        /// <param name="userCode"></param>
         /// <param name="emails"></param>
         /// <returns></returns>
-        Task ResetPasswordAsync(Guid tenantCode, Guid idUser, string emails, string emails1);
+        Task ResetPasswordAsync(Guid tenantCode, Guid userCode, string password, string emails);
+
+        /// <summary>
+        /// Lấy token theo user
+        /// </summary>
+        /// <param name="userCode"></param>
+        /// <returns></returns>
+        Task<TokenInfo> GetTokenAsync(Guid userCode);
+
+        /// <summary>
+        /// Tạo token theo user
+        /// </summary>
+        /// <param name="tenantCode"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        Task<TokenInfo> GenerateTokenAsync(Guid tenantCode, User user);
+
+        /// <summary>
+        /// Tạo token
+        /// </summary>
+        /// <param name="issuedAt"></param>
+        /// <param name="expiredAt"></param>
+        /// <param name="claims"></param>
+        /// <returns></returns>
+        string GenerateAccessToken(DateTime issuedAt, DateTime expiredAt, Dictionary<string, object> claims);
     }
 
     public class IdentityService : IIdentityService
     {
-        private readonly IdentityOption _options;
+        private IdentityOption _options;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly ICoreUnitOfWork _uow;
         private readonly IEnumerable<IUserInfoService> _userInfoServices;
-        private readonly ICacheService _cacheService;
+        private readonly IDistributedCache _cache;
         private readonly IWorkContext _workContext;
 
         public IdentityService(
@@ -89,7 +115,7 @@ namespace Jarvis.Core.Services
             IPasswordHasher<User> passwordHasher,
             ICoreUnitOfWork uow,
             IEnumerable<IUserInfoService> userInfoServices,
-            ICacheService cacheService,
+            IDistributedCache cache,
             IWorkContext workContext)
         {
             _options = options.Value;
@@ -99,7 +125,7 @@ namespace Jarvis.Core.Services
             _passwordHasher = passwordHasher;
             _uow = uow;
             _userInfoServices = userInfoServices;
-            _cacheService = cacheService;
+            _cache = cache;
             _workContext = workContext;
         }
 
@@ -120,38 +146,158 @@ namespace Jarvis.Core.Services
             if (!result.Succeeded)
                 throw new Exception("Tài khoản hoặc mật khẩu không đúng");
 
-            TokenInfo token = await GenerateTokenAsync(tenantCode, user);
+            var token = await GenerateTokenAsync(tenantCode, user);
 
             return new TokenModel
             {
                 AccessToken = token.AccessToken,
-                ExpireIn = (token.ExpireAt - DateTime.Now).TotalMinutes,
-                ExpireAt = token.ExpireAt,
-                ExpireAtUtc = token.ExpireAtUtc,
-                //Timezone = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).TotalHours,
-                //RefreshToken = account.SecurityStamp,
+                // ExpireIn = (token.ExpireAtUtc - DateTime.UtcNow).TotalMinutes,
+                ExpireAt = token.ExpireAtUtc,
+                Timezone = TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).TotalHours,
+                RefreshToken = token.RefreshToken
             };
         }
 
-        public async Task LogoutAsync(Guid userCode)
+        public async Task<TokenInfo> GenerateTokenAsync(Guid tenantCode, User user)
         {
-            //Lấy toàn bộ token theo User
+            //Xóa các Token đã hết hạn
+            await RemoveTokenExpiredAsync(user.Id);
+
+            var token = await GetTokenAsync(user.Id);
+            if (token != null)
+                return token;
+
+            var userInfo = await GetInfoAsync(user.Id);
+
+            var tokenCode = Guid.NewGuid();
+            var expireIn = TimeSpan.FromMinutes(_options.ExpireTime);
+            var createAt = DateTime.Now;
+            var createAtUtc = DateTime.UtcNow;
+            var expireAt = createAt.Add(expireIn);
+            var expireAtUtc = createAtUtc.Add(expireIn);
+            var claims = new Dictionary<string, object>();
+            claims.Add(JwtRegisteredClaimNames.Jti, tokenCode.ToString());
+            claims.Add(ClaimTypes.Sid, user.Id.ToString());
+            claims.Add(ClaimTypes.GroupSid, tenantCode.ToString());
+            claims.Add(ClaimTypes.Name, userInfo.FullName);
+            claims.Add(ClaimTypes.NameIdentifier, user.UserName);
+
+            var accessToken = GenerateAccessToken(createAtUtc, expireAtUtc, claims);
+            var refreshToken = GenerateRefreshToken();
+
+            var session = new SessionModel
+            {
+                IdUser = user.Id,
+                UserName = user.UserName,
+                PhoneNumber = user.PhoneNumber,
+                Email = user.Email,
+                CreatedAt = createAt,
+                UserInfo = await GetInfoAsync(user.Id),
+                TenantInfo = await GetTenantInfoAsync(user.TenantCode),
+                Claims = await GetClaimsAsync(user.Id),
+                OrganizationInfos = await GetOrganizationInfoAsync(user.Id)
+            };
+
+            token = new TokenInfo
+            {
+                AccessToken = accessToken,
+                CreatedAt = createAt,
+                CreatedAtUtc = createAtUtc,
+                ExpireAt = expireAt,
+                ExpireAtUtc = expireAtUtc,
+                Code = tokenCode,
+                IdUser = user.Id,
+                LocalIpAddress = NetworkExtension.GetLocalIpAddress(_httpContextAccessor.HttpContext.Request).ToString(),
+                PublicIpAddress = NetworkExtension.GetRemoteIpAddress(_httpContextAccessor.HttpContext.Request).ToString(),
+                Metadata = JsonConvert.SerializeObject(session),
+                RefreshToken = refreshToken,
+                Source = "Application",
+                TimeToLife = expireIn.TotalMinutes,
+                UserAgent = NetworkExtension.GetUserAgent(_httpContextAccessor.HttpContext.Request),
+                TenantCode = tenantCode,
+            };
+
             var repoToken = _uow.GetRepository<ITokenRepository>();
-            var tokens = await repoToken.GetByUserAsync(userCode);
-            if (tokens.Count == 0)
+            await repoToken.InsertAsync(token);
+            await _uow.CommitAsync();
+
+            return token;
+        }
+
+        private async Task RemoveTokenExpiredAsync(Guid userCode)
+        {
+            var repoToken = _uow.GetRepository<ITokenRepository>();
+            var tokens = await repoToken.GetQuery().Where(x => x.IdUser == userCode && x.ExpireAtUtc <= DateTime.UtcNow).ToListAsync();
+            if (tokens.Count > 0)
+            {
+                repoToken.Deletes(tokens);
+                await _uow.CommitAsync();
+            }
+        }
+
+        public async Task LogoutAsync()
+        {
+            var userCode = _workContext.GetUserCode();
+            if (userCode == Guid.Empty)
                 return;
 
-            //Xóa toàn bộ cache
-            foreach (var token in tokens)
-            {
-                await _cacheService.RemoveAsync($":TokenInfos:{token.Code}");
-            }
+            var userAgent = NetworkExtension.GetUserAgent(_httpContextAccessor.HttpContext.Request);
+            var localIpAddress = NetworkExtension.GetLocalIpAddress(_httpContextAccessor.HttpContext.Request).ToString();
+            var remoteIpAddress = NetworkExtension.GetRemoteIpAddress(_httpContextAccessor.HttpContext.Request).ToString();
 
-            repoToken.Deletes(tokens);
+            var repoToken = _uow.GetRepository<ITokenRepository>();
+            var token = await repoToken.GetByUserAsync(userCode, userAgent, localIpAddress, remoteIpAddress);
+            if (token == null)
+                return;
+
+            await _cache.RemoveAsync($":TokenInfos:{token.Id}");
+
+            repoToken.Delete(token);
             await _uow.CommitAsync();
         }
 
-        public async Task<Guid> ForgotPasswordAsync(ForgotPasswordModel model)
+        public async Task<TokenModel> RefreshTokenAsync(string refreshToken)
+        {
+            var repoToken = _uow.GetRepository<ITokenRepository>();
+            var token = await repoToken.GetQuery().FirstOrDefaultAsync(x => x.RefreshToken == refreshToken);
+            if (token == null)
+                return null;
+
+            var expireIn = TimeSpan.FromMinutes(_options.ExpireTime);
+            var createAt = DateTime.Now;
+            var createAtUtc = DateTime.UtcNow;
+            var expireAt = createAt.Add(expireIn);
+            var expireAtUtc = createAtUtc.Add(expireIn);
+            var metadata = JsonConvert.DeserializeObject<SessionModel>(token.Metadata);
+
+            var claims = new Dictionary<string, object>();
+            claims.Add(JwtRegisteredClaimNames.Jti, token.Code);
+            claims.Add(ClaimTypes.Sid, token.IdUser.ToString());
+            claims.Add(ClaimTypes.GroupSid, token.TenantCode.ToString());
+            claims.Add(ClaimTypes.Name, metadata.UserInfo.FullName);
+            claims.Add(ClaimTypes.NameIdentifier, metadata.UserName);
+
+            repoToken.UpdateFields(token,
+                token.Set(x => x.CreatedAt, createAt),
+                token.Set(x => x.CreatedAtUtc, createAtUtc),
+                token.Set(x => x.ExpireAt, expireAt),
+                token.Set(x => x.ExpireAtUtc, expireAtUtc),
+                token.Set(x => x.AccessToken, GenerateAccessToken(createAtUtc, expireAtUtc, claims)),
+                token.Set(x => x.RefreshToken, GenerateRefreshToken())
+            );
+            await _uow.CommitAsync();
+
+            return new TokenModel
+            {
+                AccessToken = token.AccessToken,
+                // ExpireIn = (token.ExpireAtUtc - DateTime.UtcNow).TotalMinutes,
+                ExpireAt = token.ExpireAtUtc,
+                Timezone = TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).TotalHours,
+                RefreshToken = token.RefreshToken
+            };
+        }
+
+        public async Task ForgotPasswordAsync(ForgotPasswordModel model)
         {
             //lấy ra link hiện tại 
             var repoTenant = _uow.GetRepository<ITenantRepository>();
@@ -164,7 +310,7 @@ namespace Jarvis.Core.Services
             var repoUser = _uow.GetRepository<IUserRepository>();
             var user = await repoUser.FindUserByUsernameAsync(tenantHost.Code, model.UserName);
             if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
+                throw new Exception("Không tìm thấy thông tin tài khoản");
 
             //kiểm tra có đúng là mail của tài khoản hay không
             if (string.IsNullOrEmpty(user.Email))
@@ -175,7 +321,18 @@ namespace Jarvis.Core.Services
             if (!userEmails.Contains(model.Email))
                 throw new Exception("Email không trùng với email của tài khoản. Vui lòng nhập đúng email của tài khoản");
 
-            return user.Id;
+            //var db = _redis.GetDatabase();
+            //await db.ListLeftPushAsync(KeyQueueBackground.SendMail, JsonConvert.SerializeObject(new
+            //{
+            //    Action = "SendForgotPassword",
+            //    Datas = JsonConvert.SerializeObject(new
+            //    {
+            //        HostName = model.HostName,
+            //        IdUser = user.Id,
+            //        Email = model.Email,
+            //        TenantCode = tenantHost.Code
+            //    })
+            //}));
         }
 
         public async Task ResetForgotPasswordAsync(ResetForgotPasswordModel model)
@@ -184,7 +341,7 @@ namespace Jarvis.Core.Services
             var repoUser = _uow.GetRepository<IUserRepository>();
             var user = await repoUser.FindByIdAsync(model.Id);
             if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
+                throw new Exception("Không tìm thấy thông tin tài khoản");
 
             if (model.SecurityStamp != user.SecurityStamp)
                 throw new Exception("Tài khoản đã được đổi mật khẩu. Thời gian đổi mật khẩu đã hết hạn");
@@ -203,7 +360,7 @@ namespace Jarvis.Core.Services
         }
 
 
-        private async Task<TokenInfo> GetTokenAsync(Guid userCode)
+        public async Task<TokenInfo> GetTokenAsync(Guid userCode)
         {
             var userAgent = NetworkExtension.GetUserAgent(_httpContextAccessor.HttpContext.Request);
             var localIpAddress = NetworkExtension.GetLocalIpAddress(_httpContextAccessor.HttpContext.Request).ToString();
@@ -211,13 +368,13 @@ namespace Jarvis.Core.Services
 
             TokenInfo token = null;
             //Lấy token từ cache theo IdUser
-            var bytes = await _cacheService.GetAsync($":Sessions:{userCode}");
+            var bytes = await _cache.GetAsync($":Sessions:{userCode}");
             if (bytes != null)
             {
                 var tokenCodes = JsonConvert.DeserializeObject<List<Guid>>(Encoding.UTF8.GetString(bytes));
                 foreach (var tokenCode in tokenCodes)
                 {
-                    bytes = await _cacheService.GetAsync($":TokenInfos:{tokenCode}");
+                    bytes = await _cache.GetAsync($":TokenInfos:{tokenCode}");
                     if (bytes != null)
                     {
                         var tokenInfo = JsonConvert.DeserializeObject<TokenInfo>(Encoding.UTF8.GetString(bytes));
@@ -243,15 +400,15 @@ namespace Jarvis.Core.Services
                     return null;
 
                 var idTokens = tokens.Select(x => x.Code).ToList();
-                await _cacheService.SetAsync($":Sessions:{userCode}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(idTokens)));
+                await _cache.SetAsync($":Sessions:{userCode}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(idTokens)));
 
-                var now = DateTime.UtcNow;
-                if (token.ExpireAtUtc.AddMilliseconds(-100) > now)
+                if (token.ExpireAtUtc > DateTime.UtcNow)
                 {
                     var cacheOption = new DistributedCacheEntryOptions();
-                    cacheOption.AbsoluteExpirationRelativeToNow = token.ExpireAtUtc.AddMilliseconds(-100) - now;
-                    await _cacheService.SetAsync($":TokenInfos:{token.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
+                    cacheOption.AbsoluteExpirationRelativeToNow = token.ExpireAtUtc - DateTime.UtcNow;
+                    await _cache.SetAsync($":TokenInfos:{token.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
                 }
+
             }
 
             return token;
@@ -279,7 +436,9 @@ namespace Jarvis.Core.Services
                 // Theme = tenant.
                 TaxCode = tenant.TaxCode,
                 FullNameVi = tenant.FullNameVi,
-                FullNameEn = tenant.FullNameEn
+                FullNameEn = tenant.FullNameEn,
+                ShortName = tenant.ShortName,
+                BranchName = tenant.BranchName
             };
         }
 
@@ -300,12 +459,43 @@ namespace Jarvis.Core.Services
             return permissions;
         }
 
+        private async Task<List<SessionOrganizationModel>> GetOrganizationInfoAsync(Guid idUser)
+        {
+            var repoOrganizationUser = _uow.GetRepository<IRepository<OrganizationUser>>();
+            var organizationUsers = await repoOrganizationUser.GetQuery()
+                .Where(x => x.IdUser == idUser)
+                .ToListAsync();
+
+            var codes = organizationUsers.Select(x => x.OrganizationCode).ToList();
+            var repoOrganizationUnit = _uow.GetRepository<IRepository<OrganizationUnit>>();
+            var organizations = await repoOrganizationUnit.GetQuery()
+                .Where(x => codes.Contains(x.Code))
+                .Select(x => new SessionOrganizationModel
+                {
+                    Code = x.Code,
+                    FullName = x.FullName,
+                    Name = x.Name
+                })
+                .ToListAsync();
+
+            foreach (var item in organizations)
+            {
+                var organizationUser = organizationUsers.FirstOrDefault(x => x.OrganizationCode == item.Code);
+                if (organizationUser != null)
+                {
+                    item.Level = organizationUser.Level;
+                }
+            }
+
+            return organizations;
+        }
+
         public async Task RegisterAsync(Guid idTenant, RegisterModel model)
         {
             var repoUser = _uow.GetRepository<IUserRepository>();
             //kiểm tra xem đã bị trùng username chưa
             if (await repoUser.AnyAsync(x => x.UserName == model.Username && x.TenantCode == idTenant))
-                throw new Exception("Tài khoản đã tồn tại");
+                throw new Exception("Tài khoản đã bị trùng");
 
             var idUser = Guid.NewGuid();
             var user = new User
@@ -339,7 +529,7 @@ namespace Jarvis.Core.Services
 
             //kiểm tra xem đã bị trùng username chưa
             if (await repoUser.AnyAsync(x => x.UserName == model.UserName && x.TenantCode == idTenant))
-                throw new Exception("Tài khoản đã tồn tại");
+                throw new Exception("Tài khoản đã bị trùng");
 
             var idUser = Guid.NewGuid();
             var user = new User
@@ -368,7 +558,7 @@ namespace Jarvis.Core.Services
             {
                 Id = idUser,
                 AvatarPath = null,
-                FullName = model.Infos.FullName
+                FullName = model.FullName
             });
             await _uow.CommitAsync();
 
@@ -385,9 +575,6 @@ namespace Jarvis.Core.Services
         {
             //Xóa tài khoản
             var user = await _userManager.FindByIdAsync(idUser.ToString());
-            if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
-
             var result = await _userManager.DeleteAsync(user);
             if (!result.Succeeded)
                 throw new Exception(string.Join(';', result.Errors.Select(x => x.Description).ToList()));
@@ -405,50 +592,20 @@ namespace Jarvis.Core.Services
             await DeleteTokenAsync(user);
         }
 
-        //public async Task ChangePasswordAsync(Guid idUser, ChangePasswordModel model)
-        //{
-        //    var user = await _userManager.FindByIdAsync(idUser.ToString());
-        //    var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-        //    if (!result.Succeeded)
-        //        throw new Exception(string.Join(';', result.Errors.Select(x => x.Description).ToList()));
-
-        //    //Xóa toàn bộ token
-        //    await DeleteTokenAsync(user);
-        //}
-
-
         public async Task ChangePasswordAsync(Guid idUser, ChangePasswordModel model)
         {
-            var repoUser = _uow.GetRepository<IUserRepository>();
-            var user = await repoUser.FindByIdAsync(idUser);
-            if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
-
-            var isOldPassword = await _userManager.CheckPasswordAsync(user, model.OldPassword);
-            if (!isOldPassword)
-                throw new Exception("Mật khẩu cũ không đúng");
-
-            user.PasswordHash = _passwordHasher.HashPassword(user, model.NewPassword);
-
-            repoUser.UpdateFields(user,
-                                  user.Set(x => x.PasswordHash, user.PasswordHash));
-
-            await _uow.CommitAsync();
+            var user = await _userManager.FindByIdAsync(idUser.ToString());
+            var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+            if (!result.Succeeded)
+                throw new Exception(string.Join(';', result.Errors.Select(x => x.Description).ToList()));
 
             //Xóa toàn bộ token
             await DeleteTokenAsync(user);
         }
 
-        public async Task LockAsync(Guid tenantCode, Guid idUser, string time)
+        public async Task LockAsync(Guid idUser, string time)
         {
-            var repo = _uow.GetRepository<IUserRepository>();
-            var user = await repo.FindUserByIdAsync(tenantCode, idUser);
-            if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
-
-            user = await _userManager.FindByIdAsync(idUser.ToString());
-            if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
+            var user = await _userManager.FindByIdAsync(idUser.ToString());
 
             IdentityResult result;
             if (string.IsNullOrEmpty(time))
@@ -468,16 +625,9 @@ namespace Jarvis.Core.Services
             await DeleteTokenAsync(user);
         }
 
-        public async Task UnlockAsync(Guid tenantCode, Guid idUser, string time)
+        public async Task UnlockAsync(Guid idUser, string time)
         {
-            var repo = _uow.GetRepository<IUserRepository>();
-            var user = await repo.FindUserByIdAsync(tenantCode, idUser);
-            if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
-
-            user = await _userManager.FindByIdAsync(idUser.ToString());
-            if (user == null)
-                throw new Exception("Tài khoản không tồn tại");
+            var user = await _userManager.FindByIdAsync(idUser.ToString());
 
             IdentityResult result;
             if (string.IsNullOrEmpty(time))
@@ -499,20 +649,56 @@ namespace Jarvis.Core.Services
 
         public async Task ResetPasswordAsync(Guid tenantCode, Guid idUser, string password, string emails)
         {
-            var repoUser = _uow.GetRepository<IUserRepository>();
-            var user = await repoUser.FindByIdAsync(idUser);
+            var user = await _userManager.FindByIdAsync(idUser.ToString());
 
             if (user == null)
                 throw new Exception("Tài khoản không tồn tại");
 
-            user.PasswordHash = _passwordHasher.HashPassword(user, password);
+            if (string.IsNullOrEmpty(password))
+                password = RandomExtension.Random(10);
 
-            repoUser.Update(user);
-            await _uow.CommitAsync();
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, password);
+            if (!result.Succeeded)
+                throw new Exception(string.Join(",", result.Errors.Select(x => x.Description)));
+
+            ////gửi mail
+            //var db = _redis.GetDatabase();
+            //await db.ListLeftPushAsync(KeyQueueBackground.SendMail, JsonConvert.SerializeObject(new
+            //{
+            //    Action = "ResetPassword",
+            //    Datas = JsonConvert.SerializeObject(new
+            //    {
+            //        Emails = emails,
+            //        Password = password,
+            //        TenantCode = tenantCode,
+            //        IdUser = user.Id
+            //    })
+            //}));
         }
 
 
 
+        public string GenerateAccessToken(DateTime issuedAt, DateTime expiredAt, Dictionary<string, object> claims)
+        {
+            var token = new JwtSecurityToken(
+                issuer: null,
+                audience: null,
+                claims: claims.Select(x => new Claim(x.Key, x.Value.ToString())),
+                notBefore: issuedAt,
+                expires: expiredAt,
+                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_options.SecretKey)), SecurityAlgorithms.HmacSha256)
+            );
+
+            var handler = new JwtSecurityTokenHandler();
+            var accessToken = handler.WriteToken(token);
+            return accessToken;
+        }
+
+        private static string GenerateRefreshToken()
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()));
+        }
 
         private static TimeSpan ParseTimeSpan(string time)
         {
@@ -570,78 +756,5 @@ namespace Jarvis.Core.Services
                     permissions[item.Key] = new KeyValuePair<ClaimOfResource, ClaimOfChildResource>(permissions[item.Key].Key, claimOfChildResource);
             }
         }
-
-
-        private async Task<TokenInfo> GenerateTokenAsync(Guid tenantCode, User user)
-        {
-            var token = await GetTokenAsync(user.Id);
-            if (token != null)
-                return token;
-
-            var expireIn = TimeSpan.FromMinutes(_options.ExpireTime);
-            var tokenCode = Guid.NewGuid();
-            var expireAt = DateTime.Now.Add(expireIn);
-            var expireAtUtc = DateTime.UtcNow.Add(expireIn);
-            var claims = new List<Claim>();
-            claims.Add(new Claim(JwtRegisteredClaimNames.Jti, tokenCode.ToString()));
-            claims.Add(new Claim(ClaimTypes.Sid, user.Id.ToString()));
-            claims.Add(new Claim(ClaimTypes.GroupSid, tenantCode.ToString()));
-
-            var jwt = new JwtSecurityToken(
-                claims: claims,
-                expires: expireAt,
-                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_options.SecretKey)), SecurityAlgorithms.HmacSha256));
-
-            var accessToken = new JwtSecurityTokenHandler().WriteToken(jwt);
-
-            var session = new SessionModel
-            {
-                IdUser = user.Id,
-                UserName = user.UserName,
-                PhoneNumber = user.PhoneNumber,
-                Email = user.Email,
-                CreatedAt = user.CreatedAt,
-                UserInfo = await GetInfoAsync(user.Id),
-                TenantInfo = await GetTenantInfoAsync(user.TenantCode),
-                Claims = await GetClaimsAsync(user.Id)
-            };
-
-            token = new TokenInfo
-            {
-                AccessToken = accessToken,
-                CreatedAt = DateTime.Now,
-                CreatedAtUtc = DateTime.UtcNow,
-                ExpireAt = expireAt,
-                ExpireAtUtc = expireAtUtc,
-                Code = tokenCode,
-                IdUser = user.Id,
-                LocalIpAddress = NetworkExtension.GetLocalIpAddress(_httpContextAccessor.HttpContext.Request).ToString(),
-                PublicIpAddress = NetworkExtension.GetRemoteIpAddress(_httpContextAccessor.HttpContext.Request).ToString(),
-                Metadata = JsonConvert.SerializeObject(session),
-                RefreshToken = null,
-                Source = "Application",
-                TimeToLife = expireIn.TotalMinutes,
-                UserAgent = NetworkExtension.GetUserAgent(_httpContextAccessor.HttpContext.Request),
-                TenantCode = tenantCode
-            };
-
-            var repoToken = _uow.GetRepository<ITokenRepository>();
-            await repoToken.InsertAsync(token);
-            await _uow.CommitAsync();
-
-            return token;
-        }
-
-        private async Task RemoveTokenExpiredAsync(Guid userCode)
-        {
-            var repoToken = _uow.GetRepository<ITokenRepository>();
-            var tokens = await repoToken.GetQuery().Where(x => x.IdUser == userCode && x.ExpireAtUtc <= DateTime.UtcNow).ToListAsync();
-            if (tokens.Count > 0)
-            {
-                repoToken.Deletes(tokens);
-                await _uow.CommitAsync();
-            }
-        }
-
     }
 }

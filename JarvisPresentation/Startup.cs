@@ -1,21 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using Infrastructure.Abstractions.Events;
-using Infrastructure.Caching.Redis;
-using Infrastructure.Database;
-using Infrastructure.Database.Abstractions;
-using Infrastructure.File.Abstractions;
-using Infrastructure.File.Minio;
-using Jarvis.Core;
+﻿using Jarvis.Core;
 using Jarvis.Core.Database.SqlServer;
-using JarvisPresentation.Domains;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace JarvisPresentation
 {
@@ -48,7 +37,22 @@ namespace JarvisPresentation
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseConfigJarvisDefault();
+            app.UseHttpsRedirection();
+
+            app.UseConfigUI("Jarvis.Core", "JarvisPresentation");
+
+            app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseConfigSwagger();
+            app.UseConfigMiddleware();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

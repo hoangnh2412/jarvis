@@ -8,9 +8,8 @@ namespace Jarvis.Models.Identity.Models.Identity
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
         public DateTime ExpireAt { get; set; }
-        public DateTime ExpireAtUtc { get; set; }
-        public double ExpireIn { get; set; }
-        //public double Timezone { get; set; }
+        // public double ExpireIn { get; set; }
+        public double Timezone { get; set; }
         public List<string> Roles { get; set; }
     }
 }
