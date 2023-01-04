@@ -18,24 +18,16 @@ namespace Jarvis.Core.Controllers
     [ApiController]
     public class OrganizationUnitsController : ControllerBase
     {
-        private readonly ICoreUnitOfWork _uow;
-        private readonly IWorkContext _workcontext;
-
-        public OrganizationUnitsController(
-            ICoreUnitOfWork uow,
-            IWorkContext workcontext)
-        {
-            _uow = uow;
-            _workcontext = workcontext;
-        }
-
         [HttpGet]
         [Authorize(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Read))]
-        public async Task<IActionResult> GetAsync([FromQuery]Paging paging)
+        public async Task<IActionResult> GetAsync(
+            [FromQuery] Paging paging,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workcontext)
         {
-            var permission = await _workcontext.GetContextAsync(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Read));
+            var permission = await workcontext.GetContextAsync(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Read));
 
-            var repo = _uow.GetRepository<IOrganizationUnitRepository>();
+            var repo = uow.GetRepository<IOrganizationUnitRepository>();
             var paged = await repo.PagingAsync(permission, paging);
             var result = new Paged<OrganizationUnitModel>
             {
@@ -51,43 +43,53 @@ namespace Jarvis.Core.Controllers
 
         [HttpGet("{code}")]
         [Authorize(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Read))]
-        public async Task<IActionResult> GetAsync(Guid code)
+        public async Task<IActionResult> GetAsync(
+            [FromRoute] Guid code,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workcontext)
         {
-            var context = await _workcontext.GetContextAsync(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Read));
+            var context = await workcontext.GetContextAsync(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Read));
 
-            var repo = _uow.GetRepository<IOrganizationUnitRepository>();
+            var repo = uow.GetRepository<IOrganizationUnitRepository>();
             var label = await repo.GetByCodeAsync(context, code);
             return Ok((OrganizationUnitModel)label);
         }
 
         [HttpPost]
         [Authorize(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Create))]
-        public async Task<IActionResult> PostAsync([FromBody] OrganizationUnitModel model)
+        public async Task<IActionResult> PostAsync(
+            [FromBody] OrganizationUnitModel model,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workcontext)
         {
-            var context = await _workcontext.GetContextAsync(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Create));
+            var context = await workcontext.GetContextAsync(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Create));
 
-            var repo = _uow.GetRepository<IOrganizationUnitRepository>();
+            var repo = uow.GetRepository<IOrganizationUnitRepository>();
             await repo.InsertAsync(new OrganizationUnit
             {
                 Description = model.Description,
                 Code = Guid.NewGuid(),
-                TenantCode = await _workcontext.GetTenantCodeAsync(),
+                TenantCode = await workcontext.GetTenantCodeAsync(),
                 FullName = model.Name,
                 CreatedAt = DateTime.Now,
                 CreatedAtUtc = DateTime.UtcNow,
-                CreatedBy = _workcontext.GetUserCode()
+                CreatedBy = workcontext.GetUserCode()
             });
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
 
             return Ok();
         }
 
         [HttpPut("{code}")]
         [Authorize(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Update))]
-        public async Task<IActionResult> PutAsync([FromRoute]Guid code, [FromBody]OrganizationUnitModel model)
+        public async Task<IActionResult> PutAsync(
+            [FromRoute] Guid code,
+            [FromBody] OrganizationUnitModel model,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workcontext)
         {
-            var permission = await _workcontext.GetContextAsync(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Update));
-            var repo = _uow.GetRepository<IOrganizationUnitRepository>();
+            var permission = await workcontext.GetContextAsync(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Update));
+            var repo = uow.GetRepository<IOrganizationUnitRepository>();
             var organizationUnit = await repo.GetByCodeAsync(permission, code);
             if (organizationUnit == null)
                 return NotFound();
@@ -98,24 +100,27 @@ namespace Jarvis.Core.Controllers
             organizationUnit.UpdatedAtUtc = DateTime.UtcNow;
             organizationUnit.UpdatedBy = Guid.Empty;
             repo.Update(organizationUnit);
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
 
             return Ok();
         }
 
         [HttpDelete("{id}")]
         [Authorize(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Delete))]
-        public async Task<IActionResult> DeleteAsync([FromRoute]Guid code)
+        public async Task<IActionResult> DeleteAsync(
+            [FromRoute] Guid code,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workcontext)
         {
-            var context = await _workcontext.GetContextAsync(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Delete));
+            var context = await workcontext.GetContextAsync(nameof(CorePolicy.OrganizationPolicy.OrganizationUnit_Delete));
 
-            var repo = _uow.GetRepository<IOrganizationUnitRepository>();
+            var repo = uow.GetRepository<IOrganizationUnitRepository>();
             var organizationUnit = await repo.GetByCodeAsync(context, code);
             if (organizationUnit == null)
                 return NotFound();
 
             repo.Delete(organizationUnit);
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
 
             return Ok();
         }

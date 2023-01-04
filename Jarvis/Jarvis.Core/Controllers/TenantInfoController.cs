@@ -23,25 +23,14 @@ namespace Jarvis.Core.Controllers
     [ApiController]
     public class TenantInfoController : ControllerBase
     {
-        private readonly ICoreUnitOfWork _uow;
-        private readonly IWorkContext _workContext;
-        private readonly IEventFactory _eventFactory;
-
-        public TenantInfoController(
-            ICoreUnitOfWork uow,
-            IWorkContext workContext,
-            IEventFactory eventFactory)
-        {
-            _uow = uow;
-            _workContext = workContext;
-            _eventFactory = eventFactory;
-        }
-
         [HttpGet]
-        public async Task<IActionResult> GetAsync()
+        public async Task<IActionResult> GetAsync(
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workContext
+        )
         {
-            var tenantCode = await _workContext.GetTenantCodeAsync();
-            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var tenantCode = await workContext.GetTenantCodeAsync();
+            var repoTenant = uow.GetRepository<ITenantRepository>();
             var info = await repoTenant.GetInfoByCodeAsync(tenantCode);
             if (info == null)
                 return NotFound();
@@ -64,7 +53,7 @@ namespace Jarvis.Core.Controllers
             };
 
             //Nếu setting ko có metadata thì trả về kết quả luôn
-            var repoSetting = _uow.GetRepository<ISettingRepository>();
+            var repoSetting = uow.GetRepository<ISettingRepository>();
             var setting = await repoSetting.GetByKeyAsync(Guid.Empty, SettingKey.ThongTinDoanhNghiep_Khac.ToString());
 
             if (setting == null)
@@ -96,11 +85,15 @@ namespace Jarvis.Core.Controllers
 
         [HttpPut]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Update))]
-        public async Task<IActionResult> PutAsync([FromBody] TenantInfoModel command)
+        public async Task<IActionResult> PutAsync(
+            [FromBody] TenantInfoModel command,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workContext,
+            [FromServices] IEventFactory eventFactory)
         {
-            var tenantCode = await _workContext.GetTenantCodeAsync();
+            var tenantCode = await workContext.GetTenantCodeAsync();
 
-            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var repoTenant = uow.GetRepository<ITenantRepository>();
             var info = await repoTenant.GetInfoByCodeAsync(tenantCode);
             info.City = command.City;
             info.District = command.District;
@@ -113,9 +106,9 @@ namespace Jarvis.Core.Controllers
                 info.Metadata = JsonConvert.SerializeObject(command.Metadata);
 
             repoTenant.UpdateInfo(info);
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
 
-            _eventFactory.GetOrAddEvent<IEvent<TenantInfoUpdatedEventModel>, ITenantInfoUpdatedEvent>().ForEach((e) =>
+            eventFactory.GetOrAddEvent<IEvent<TenantInfoUpdatedEventModel>, ITenantInfoUpdatedEvent>().ForEach((e) =>
             {
                 e.PublishAsync(new TenantInfoUpdatedEventModel
                 {
@@ -127,10 +120,13 @@ namespace Jarvis.Core.Controllers
 
         [HttpGet("taxCode/{includeHierarchy}")]
         [Authorize]
-        public async Task<IActionResult> GetTaxCodeAsync([FromRoute] bool includeHierarchy)
+        public async Task<IActionResult> GetTaxCodeAsync(
+            [FromRoute] bool includeHierarchy,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workContext)
         {
-            var tenantCode = await _workContext.GetTenantCodeAsync();
-            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var tenantCode = await workContext.GetTenantCodeAsync();
+            var repoTenant = uow.GetRepository<ITenantRepository>();
             var listTaxCodes = new List<KeyValuePair<string, Guid>>();
 
             if (!includeHierarchy)
@@ -148,7 +144,7 @@ namespace Jarvis.Core.Controllers
                 listTaxCodes = hierarchies.Select(x => new KeyValuePair<string, Guid>(x.Name, x.Code)).ToList();
             }
 
-            return Ok(listTaxCodes.Select(x => new { TaxCode = x.Key, Code = x.Value}));
+            return Ok(listTaxCodes.Select(x => new { TaxCode = x.Key, Code = x.Value }));
         }
     }
 }

@@ -16,27 +16,17 @@ namespace Jarvis.Core.Controllers
     [ApiController]
     public class IdentityController : ControllerBase
     {
-        private readonly IWorkContext _workContext;
-        private readonly IEventFactory _eventFactory;
-        private readonly IIdentityService _identityService;
-
-        public IdentityController(
-            IWorkContext workContext,
-            IEventFactory eventFactory,
-            IIdentityService identityService)
-        {
-            _workContext = workContext;
-            _identityService = identityService;
-            _eventFactory = eventFactory;
-        }
-
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterAsync([FromBody] RegisterModel model)
+        public async Task<IActionResult> RegisterAsync(
+            [FromBody] RegisterModel model,
+            [FromServices] IWorkContext workContext,
+            [FromServices] IIdentityService identityService,
+            [FromServices] IEventFactory eventFactory)
         {
-            var tenantCode = await _workContext.GetTenantCodeAsync();
-            await _identityService.RegisterAsync(tenantCode, model);
+            var tenantCode = await workContext.GetTenantCodeAsync();
+            await identityService.RegisterAsync(tenantCode, model);
 
-            _eventFactory.GetOrAddEvent<IEvent<IdentityRegistedEventModel>, IIdentityRegistedEvent>().ForEach(async (e) =>
+            eventFactory.GetOrAddEvent<IEvent<IdentityRegistedEventModel>, IIdentityRegistedEvent>().ForEach(async (e) =>
             {
                 await e.PublishAsync(new IdentityRegistedEventModel
                 {
@@ -50,12 +40,16 @@ namespace Jarvis.Core.Controllers
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> LoginAsync([FromBody] LoginModel model)
+        public async Task<IActionResult> LoginAsync(
+            [FromBody] LoginModel model,
+            [FromServices] IWorkContext workContext,
+            [FromServices] IIdentityService identityService,
+            [FromServices] IEventFactory eventFactory)
         {
-            var tenantCode = await _workContext.GetTenantCodeAsync();
-            var token = await _identityService.LoginAsync(tenantCode, model);
+            var tenantCode = await workContext.GetTenantCodeAsync();
+            var token = await identityService.LoginAsync(tenantCode, model);
 
-            _eventFactory.GetOrAddEvent<IEvent<IdentityLoginedEventModel>, IIdentityLoginedEvent>().ForEach(async (e) =>
+            eventFactory.GetOrAddEvent<IEvent<IdentityLoginedEventModel>, IIdentityLoginedEvent>().ForEach(async (e) =>
             {
                 await e.PublishAsync(new IdentityLoginedEventModel
                 {
@@ -69,15 +63,19 @@ namespace Jarvis.Core.Controllers
 
         [Authorize]
         [HttpPost("logout")]
-        public async Task<IActionResult> LogoutAsync()
+        public async Task<IActionResult> LogoutAsync(
+            [FromServices] IWorkContext workContext,
+            [FromServices] IIdentityService identityService,
+            [FromServices] IEventFactory eventFactory
+        )
         {
-            var idUser = _workContext.GetUserCode();
+            var idUser = workContext.GetUserCode();
             if (idUser == Guid.Empty)
                 return Ok();
 
-            await _identityService.LogoutAsync(idUser);
+            await identityService.LogoutAsync(idUser);
 
-            _eventFactory.GetOrAddEvent<IEvent<IdentityLogoutedEventModel>, IIdentityLogoutedEvent>().ForEach(async (e) =>
+            eventFactory.GetOrAddEvent<IEvent<IdentityLogoutedEventModel>, IIdentityLogoutedEvent>().ForEach(async (e) =>
             {
                 await e.PublishAsync(new IdentityLogoutedEventModel
                 {
@@ -89,9 +87,11 @@ namespace Jarvis.Core.Controllers
 
         [Authorize]
         [HttpGet("session")]
-        public async Task<IActionResult> GetSessionAsync()
+        public async Task<IActionResult> GetSessionAsync(
+            [FromServices] IWorkContext workContext
+        )
         {
-            var session = await _workContext.GetSessionAsync();
+            var session = await workContext.GetSessionAsync();
             if (session == null)
                 return Unauthorized();
 
@@ -100,26 +100,32 @@ namespace Jarvis.Core.Controllers
 
         [Authorize]
         [HttpGet("has-claims")]
-        public async Task<IActionResult> HasClaimsAsync([FromQuery] List<string> claims)
+        public async Task<IActionResult> HasClaimsAsync(
+            [FromQuery] List<string> claims,
+            [FromServices] IWorkContext workContext)
         {
-            if (await _workContext.HasClaimsAsync(claims))
+            if (await workContext.HasClaimsAsync(claims))
                 return Ok();
             return Forbid();
         }
 
         [Authorize]
         [HttpGet("get-claims")]
-        public async Task<IActionResult> GetClaimsAsync([FromQuery] string prefix)
+        public async Task<IActionResult> GetClaimsAsync(
+            [FromQuery] string prefix,
+            [FromServices] IWorkContext workContext)
         {
-            var claims = await _workContext.GetClaimsAsync(prefix);
+            var claims = await workContext.GetClaimsAsync(prefix);
             return Ok(claims);
         }
 
         [Authorize]
         [HttpGet("is-authorize")]
-        public async Task<IActionResult> IsAuthorizeAsync()
+        public async Task<IActionResult> IsAuthorizeAsync(
+            [FromServices] IWorkContext workContext
+        )
         {
-            var session = await _workContext.GetSessionAsync();
+            var session = await workContext.GetSessionAsync();
             if (session == null)
                 return Unauthorized();
             return Ok();
@@ -128,12 +134,16 @@ namespace Jarvis.Core.Controllers
 
         [AllowAnonymous]
         [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
+        public async Task<IActionResult> ForgotPassword(
+            [FromBody] ForgotPasswordModel model,
+            [FromServices] IWorkContext workContext,
+            [FromServices] IIdentityService identityService,
+            [FromServices] IEventFactory eventFactory)
         {
-            var tenantCode = await _workContext.GetTenantCodeAsync();
-            var idUser = await _identityService.ForgotPasswordAsync(model);
+            var tenantCode = await workContext.GetTenantCodeAsync();
+            var idUser = await identityService.ForgotPasswordAsync(model);
 
-            _eventFactory.GetOrAddEvent<IEvent<IdentityPasswordForgotedEventModel>, IIdentityPasswordForgotedEvent>().ForEach(async (e) =>
+            eventFactory.GetOrAddEvent<IEvent<IdentityPasswordForgotedEventModel>, IIdentityPasswordForgotedEvent>().ForEach(async (e) =>
             {
                 await e.PublishAsync(new IdentityPasswordForgotedEventModel
                 {
@@ -151,11 +161,14 @@ namespace Jarvis.Core.Controllers
 
         [AllowAnonymous]
         [HttpPost("reset-forgot-password")]
-        public async Task<IActionResult> ResetForgotPassword([FromBody] ResetForgotPasswordModel model)
+        public async Task<IActionResult> ResetForgotPassword(
+            [FromBody] ResetForgotPasswordModel model,
+            [FromServices] IIdentityService identityService,
+            [FromServices] IEventFactory eventFactory)
         {
-            await _identityService.ResetForgotPasswordAsync(model);
+            await identityService.ResetForgotPasswordAsync(model);
 
-            _eventFactory.GetOrAddEvent<IEvent<IdentityPasswordResetedEventModel>, IIdentityPasswordResetedEvent>().ForEach(async (e) =>
+            eventFactory.GetOrAddEvent<IEvent<IdentityPasswordResetedEventModel>, IIdentityPasswordResetedEvent>().ForEach(async (e) =>
             {
                 await e.PublishAsync(new IdentityPasswordResetedEventModel
                 {

@@ -38,6 +38,7 @@ namespace JarvisPresentation
 
             services.AddRedis(Configuration.GetSection("Redis"));
             services.AddCoreDbContext(Configuration.GetConnectionString("Core"));
+            services.AddORM();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

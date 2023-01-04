@@ -12,7 +12,7 @@ namespace Jarvis.Core.Abstractions
         /// <param name="isInvoice"></param>
         /// <param name="code"></param>
         /// <returns></returns>
-        Task<byte[]> DownloadAsync(bool isInvoice, Guid code);
+        Task<byte[]> DownloadAsync(Guid code, bool isInvoice = false);
 
         /// <summary>
         /// download file
@@ -21,7 +21,7 @@ namespace Jarvis.Core.Abstractions
         /// <param name="formFile"></param>
         /// <param name="fileNamePhys"></param>
         /// <returns></returns>
-        Task<string> UploadAsync(bool isInvoice, IFormFile formFile, string fileNamePhys);
+        Task<string> UploadAsync(IFormFile formFile, string fileNamePhys, bool isInvoice = false);
 
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace Jarvis.Core.Abstractions
         /// <param name="fileNamePhys"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        Task<string> UploadAsync(bool isInvoice, byte[] bytes, string fileNamePhys, string fileName);
+        Task<string> UploadAsync(byte[] bytes, string fileNamePhys, string fileName, bool isInvoice = false);
 
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Jarvis.Core.Abstractions
         /// <param name="isDefault"></param>
         /// <param name="CreatedAt"></param>
         /// <returns></returns>
-        Task<string> GetFilePath(bool isDefault, DateTime CreatedAt);
+        Task<string> GetFilePath(DateTime CreatedAt, bool isDefault = false);
 
         /// <summary>
         /// lưu file xml hóa đơn đã ký
@@ -55,8 +55,6 @@ namespace Jarvis.Core.Abstractions
         /// <param name="serialNo"></param>
         /// <param name="number"></param>
         /// <returns></returns>
-        Task<Guid> SaveFileXmlAsync(Guid CreatedBy, Guid tenantCode, string xml, bool isDefault, string sellerTaxCode, string templateNo, string serialNo, int number);
-
-
+        Task<Guid> SaveFileXmlAsync(Guid CreatedBy, Guid tenantCode, string xml, string sellerTaxCode, string templateNo, string serialNo, int number, bool isDefault = false);
     }
 }

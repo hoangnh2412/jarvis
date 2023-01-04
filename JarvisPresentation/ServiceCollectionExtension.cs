@@ -31,22 +31,26 @@ namespace JarvisPresentation
                     DefaultDatabase = redisOption.DefaultDatabase,
                 };
 
-                foreach (var item in redisOption.EndPoints)
+                if (redisOption.EndPoints != null)
                 {
-                    options.ConfigurationOptions.EndPoints.Add(item);
+                    foreach (var item in redisOption.EndPoints)
+                    {
+                        options.ConfigurationOptions.EndPoints.Add(item);
+                    }
                 }
             });
         }
 
         public static void AddORM(this IServiceCollection services)
         {
-            services.AddSingleton<Func<string, IStorageContext>>(sp => name => (IStorageContext)sp.GetService(InstanceNames.DbContexts[name]));
+            services.AddScoped<Func<string, IStorageContext>>(sp => name => (IStorageContext)sp.GetService(InstanceNames.DbContexts[name]));
             services.AddScoped(typeof(IRepository<>), typeof(EntityRepository<>));
         }
 
         public static void AddCoreDbContext(this IServiceCollection services, string connectionString)
         {
             InstanceNames.DbContexts.Add(typeof(CoreDbContext).AssemblyQualifiedName, typeof(CoreDbContext));
+            services.AddScoped<CoreDbContext>();
             services.AddDbContextPool<CoreDbContext>(options =>
             {
                 options.UseSqlServer(connectionString, sqlOptions =>

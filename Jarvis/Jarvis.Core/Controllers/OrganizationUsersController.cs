@@ -2,7 +2,6 @@ using Infrastructure.Database.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using Jarvis.Core.Services;
 using Jarvis.Core.Database.Poco;
 using System.Collections.Generic;
 using Jarvis.Core.Database;
@@ -17,29 +16,24 @@ namespace Jarvis.Core.Controllers
     [ApiController]
     public class OrganizationUsersController : ControllerBase
     {
-        private readonly ICoreUnitOfWork _uow;
-        private readonly IWorkContext _workcontext;
-
-        public OrganizationUsersController(
-            ICoreUnitOfWork uow,
-            IWorkContext workcontext)
-        {
-            _uow = uow;
-            _workcontext = workcontext;
-        }
-
         [HttpGet]
-        public IActionResult Get([FromRoute]Guid code, [FromQuery]Paging paging)
+        public IActionResult Get(
+            [FromRoute] Guid code,
+            [FromQuery] Paging paging,
+            [FromServices] ICoreUnitOfWork uow)
         {
-            var repo = _uow.GetRepository<IOrganizationUserRepository>();
+            var repo = uow.GetRepository<IOrganizationUserRepository>();
             var users = repo.GetUsersByOrganizationAsync(code);
             return Ok(users);
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostAsync([FromRoute]Guid code, [FromBody]List<Guid> idUsers)
+        public async Task<IActionResult> PostAsync(
+            [FromRoute] Guid code,
+            [FromBody] List<Guid> idUsers,
+            [FromServices] ICoreUnitOfWork uow)
         {
-            var repo = _uow.GetRepository<IOrganizationUserRepository>();
+            var repo = uow.GetRepository<IOrganizationUserRepository>();
             var items = new List<OrganizationUser>();
             foreach (var idUser in idUsers)
             {
@@ -51,14 +45,17 @@ namespace Jarvis.Core.Controllers
             }
 
             await repo.InsertsAsync(items);
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
             return Ok();
         }
 
         [HttpDelete]
-        public async Task<IActionResult> DeleteAsync([FromRoute]Guid code, [FromBody]List<Guid> idUsers)
+        public async Task<IActionResult> DeleteAsync(
+            [FromRoute] Guid code,
+            [FromBody] List<Guid> idUsers,
+            [FromServices] ICoreUnitOfWork uow)
         {
-            var repo = _uow.GetRepository<IOrganizationUserRepository>();
+            var repo = uow.GetRepository<IOrganizationUserRepository>();
             var items = new List<OrganizationUser>();
             foreach (var idUser in idUsers)
             {
@@ -70,7 +67,7 @@ namespace Jarvis.Core.Controllers
             }
 
             repo.Deletes(items);
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
             return Ok();
         }
     }

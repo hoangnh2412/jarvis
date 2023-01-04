@@ -22,6 +22,7 @@ using Infrastructure;
 using Infrastructure.Abstractions.Events;
 using Jarvis.Core.Models.Events.Tenants;
 using Jarvis.Core.Events.Tenants;
+using Infrastructure.Caching;
 
 namespace Jarvis.Core.Controllers
 {
@@ -31,41 +32,15 @@ namespace Jarvis.Core.Controllers
     [ApiController]
     public class TenantsController : ControllerBase
     {
-        private readonly ICoreUnitOfWork _uow;
-        private readonly IWorkContext _workContext;
-        private readonly UserManager<User> _userManager;
-        private readonly IPasswordValidator<User> _passwordValidator;
-        private readonly IPasswordHasher<User> _passwordHasher;
-        private readonly IDistributedCache _cache;
-        private readonly IModuleManager _moduleManager;
-        private readonly IEventFactory _eventFactory;
-
-        public TenantsController(
-            ICoreUnitOfWork uow,
-            UserManager<User> userManager,
-            IPasswordValidator<User> passwordValidator,
-            IWorkContext workContext,
-            IPasswordHasher<User> passwordHasher,
-            IDistributedCache cache,
-            IModuleManager moduleManager,
-            IEventFactory eventFactory)
-        {
-            _uow = uow;
-            _userManager = userManager;
-            _passwordValidator = passwordValidator;
-            _workContext = workContext;
-            _passwordHasher = passwordHasher;
-            _cache = cache;
-            _moduleManager = moduleManager;
-            _eventFactory = eventFactory;
-        }
-
         [HttpGet]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Read))]
-        public async Task<IActionResult> GetAsync([FromQuery] Paging paging)
+        public async Task<IActionResult> GetAsync(
+            [FromQuery] Paging paging,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workContext)
         {
-            var idTenant = await _workContext.GetTenantCodeAsync();
-            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var idTenant = await workContext.GetTenantCodeAsync();
+            var repoTenant = uow.GetRepository<ITenantRepository>();
             var paged = await repoTenant.PagingAsync(idTenant, paging);
             var tenantCodes = paged.Data.Select(x => x.Code).ToList();
             var infos = (await repoTenant.GetInfoByCodesAsync(tenantCodes)).ToDictionary(x => x.Code, x => x);
@@ -88,7 +63,7 @@ namespace Jarvis.Core.Controllers
                 model.HostName = string.Join(';', hosts[item.Code].Select(x => x.HostName));
                 model.IsEnable = item.IsEnable;
                 model.Theme = item.Theme;
-                
+
                 if (!infos.ContainsKey(item.Code))
                 {
                     data.Add(model);
@@ -117,41 +92,13 @@ namespace Jarvis.Core.Controllers
             return Ok(result);
         }
 
-        // [HttpGet("metadata/{code?}")]
-        // [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Read))]
-        // public async Task<IActionResult> GetMetadataAsync([FromRoute]Guid code)
-        // {
-        //     var model = new List<MetadataModel>();
-
-        //     //Nếu setting ko có metadata thì trả về kết quả luôn
-        //     var repoSetting = _uow.GetRepository<ISettingRepository>();
-        //     var setting = await repoSetting.GetByKeyAsync(code, SettingKey.ThongTinDoanhNghiep_Khac);
-        //     if (setting == null)
-        //         return Ok(model);
-
-        //     var splited1 = setting.Value.Split("|");
-        //     foreach (var item in splited1)
-        //     {
-        //         var splited2 = item.Split(":");
-        //         var key = splited2[0];
-        //         var name = splited2[1];
-
-        //         //Nếu DB ko lưu value thì trả về null
-        //         model.Add(new MetadataModel
-        //         {
-        //             Key = key,
-        //             Name = name,
-        //         });
-        //     }
-
-        //     return Ok(model);
-        // }
-
         [HttpGet("{code}")]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Read))]
-        public async Task<IActionResult> GetAsync([FromRoute] Guid code)
+        public async Task<IActionResult> GetAsync(
+            [FromRoute] Guid code,
+            [FromServices] ICoreUnitOfWork uow)
         {
-            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var repoTenant = uow.GetRepository<ITenantRepository>();
             var tenant = await repoTenant.GetByCodeAsync(code);
             if (tenant == null)
                 return NotFound();
@@ -181,15 +128,23 @@ namespace Jarvis.Core.Controllers
 
         [HttpPost]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Create))]
-        public async Task<IActionResult> PostAsync([FromBody] CreateTenantCommand model)
+        public async Task<IActionResult> PostAsync(
+            [FromBody] CreateTenantCommand model,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workContext,
+            [FromServices] IEventFactory eventFactory,
+            [FromServices] IModuleManager moduleManager,
+            [FromServices] UserManager<User> userManager,
+            [FromServices] IPasswordValidator<User> passwordValidator,
+            [FromServices] IPasswordHasher<User> passwordHasher)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var currentUser = _workContext.GetUserCode();
-            var currentTenant = await _workContext.GetCurrentTenantAsync();
+            var currentUser = workContext.GetUserCode();
+            var currentTenant = await workContext.GetCurrentTenantAsync();
 
-            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var repoTenant = uow.GetRepository<ITenantRepository>();
             if (await repoTenant.AnyByNameAsync(model.Info.TaxCode))
                 throw new Exception("Mã số thuế đã bị trùng");
 
@@ -211,21 +166,21 @@ namespace Jarvis.Core.Controllers
             }
 
             //insert tenant, tenantInfo
-            var tenantInfo = await InsertTenant(model, currentUser, currentTenant);
+            var tenantInfo = await InsertTenant(uow, model, currentUser, currentTenant);
 
             //Insert user root của tenant
             var passwordRoot = RandomExtension.Random(10);
-            var rootUser = await InsertRootTenantUserAsync(model, userRootTenant, passwordRoot, currentUser, tenantInfo.Code);
+            var rootUser = await InsertRootTenantUserAsync(uow, userManager, passwordValidator, passwordHasher, model, userRootTenant, passwordRoot, currentUser, tenantInfo.Code);
 
             //insert quyền  mặc định
-            var adminRole = await AddDefaultRolesAsync(tenantInfo, currentUser);
+            var adminRole = await AddDefaultRolesAsync(uow, moduleManager, tenantInfo, currentUser);
 
             //Insert user của chi nhánh mà nsd nhập và gán quyền admin mặc định
-            var adminUser = await InsertAdminTenantUserAsync(model, currentUser, tenantInfo.Code, adminRole.Id);
+            var adminUser = await InsertAdminTenantUserAsync(uow, userManager, passwordValidator, passwordHasher, model, currentUser, tenantInfo.Code, adminRole.Id);
 
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
 
-            _eventFactory.GetOrAddEvent<IEvent<TenantCreatedEventModel>, ITenantCreatedEvent>().ForEach(async (e) =>
+            eventFactory.GetOrAddEvent<IEvent<TenantCreatedEventModel>, ITenantCreatedEvent>().ForEach(async (e) =>
             {
                 await e.PublishAsync(new TenantCreatedEventModel
                 {
@@ -246,10 +201,16 @@ namespace Jarvis.Core.Controllers
 
         [HttpPut("{code}")]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Update))]
-        public async Task<IActionResult> PutAsync([FromRoute] Guid code, [FromBody] UpdateTenantCommand model)
+        public async Task<IActionResult> PutAsync(
+            [FromRoute] Guid code,
+            [FromBody] UpdateTenantCommand model,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workContext,
+            [FromServices] IEventFactory eventFactory,
+            [FromServices] ICacheService cacheService)
         {
-            var userCode = _workContext.GetUserCode();
-            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var userCode = workContext.GetUserCode();
+            var repoTenant = uow.GetRepository<ITenantRepository>();
             var tenant = await repoTenant.GetByCodeAsync(code);
             if (tenant == null)
                 return NotFound();
@@ -297,11 +258,11 @@ namespace Jarvis.Core.Controllers
                 //xóa cache
                 foreach (var item in deletes)
                 {
-                    _cache.Remove($":TenantHost:{item.HostName}");
+                    await cacheService.RemoveAsync($":TenantHost:{item.HostName}");
                 }
 
                 //xóa token của các tk trong chi nhánh này
-                await DeleteTokenAsync(code);
+                await DeleteTokenAsync(uow, cacheService, code);
             }
 
             if (inserts.Count != 0)
@@ -318,9 +279,9 @@ namespace Jarvis.Core.Controllers
                 info.Set(x => x.FullNameVi, model.Info.FullNameVi),
                 info.Set(x => x.Address, model.Info.Address));
 
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
 
-            _eventFactory.GetOrAddEvent<IEvent<TenantUpdatedEventModel>, ITenantUpdatedEvent>().ForEach(async (e) =>
+            eventFactory.GetOrAddEvent<IEvent<TenantUpdatedEventModel>, ITenantUpdatedEvent>().ForEach(async (e) =>
             {
                 await e.PublishAsync(new TenantUpdatedEventModel
                 {
@@ -332,10 +293,15 @@ namespace Jarvis.Core.Controllers
 
         [HttpDelete("{code}")]
         [Authorize(nameof(CorePolicy.TenantPolicy.Tenant_Delete))]
-        public async Task<IActionResult> DeleteAsync([FromRoute] Guid code)
+        public async Task<IActionResult> DeleteAsync(
+            [FromRoute] Guid code,
+            [FromServices] ICoreUnitOfWork uow,
+            [FromServices] IWorkContext workContext,
+            [FromServices] IEventFactory eventFactory,
+            [FromServices] ICacheService cacheService)
         {
-            var userCode = _workContext.GetUserCode();
-            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var userCode = workContext.GetUserCode();
+            var repoTenant = uow.GetRepository<ITenantRepository>();
             var tenant = await repoTenant.GetByCodeAsync(code);
             if (tenant == null)
                 return NotFound();
@@ -359,15 +325,15 @@ namespace Jarvis.Core.Controllers
                     tenantHost.Set(x => x.DeletedVersion, tenantHost.Id));
 
                 //xóa cache
-                _cache.Remove($":TenantHost:{tenantHost.HostName}");
+                await cacheService.RemoveAsync($":TenantHost:{tenantHost.HostName}");
             }
 
             //xóa token của các tk trong chi nhánh này
-            await DeleteTokenAsync(code);
+            await DeleteTokenAsync(uow, cacheService, code);
 
-            await _uow.CommitAsync();
+            await uow.CommitAsync();
 
-            _eventFactory.GetOrAddEvent<IEvent<TenantDeletedEventModel>, ITenantDeletedEvent>().ForEach(async (e) =>
+            eventFactory.GetOrAddEvent<IEvent<TenantDeletedEventModel>, ITenantDeletedEvent>().ForEach(async (e) =>
             {
                 await e.PublishAsync(new TenantDeletedEventModel
                 {
@@ -382,9 +348,9 @@ namespace Jarvis.Core.Controllers
         /// </summary>
         /// <param name="code"></param>
         /// <returns></returns>
-        private async Task DeleteTokenAsync(Guid code)
+        private async Task DeleteTokenAsync(ICoreUnitOfWork uow, ICacheService cacheService, Guid code)
         {
-            var repoTokenInfo = _uow.GetRepository<ITokenInfoRepository>();
+            var repoTokenInfo = uow.GetRepository<ITokenInfoRepository>();
             var tokens = await repoTokenInfo.QueryByTenantAsync(code);
 
             foreach (var token in tokens)
@@ -392,7 +358,7 @@ namespace Jarvis.Core.Controllers
                 repoTokenInfo.Delete(token);
 
                 //xóa token trong cache
-                await _cache.RemoveAsync($":TokenInfos:{token.Code}");
+                await cacheService.RemoveAsync($":TokenInfos:{token.Code}");
             }
         }
 
@@ -402,10 +368,10 @@ namespace Jarvis.Core.Controllers
         /// <param name="tenantInfo"></param>
         /// <param name="idUser"></param>
         /// <returns>quyền admin</returns>
-        private async Task<Role> AddDefaultRolesAsync(TenantInfo tenantInfo, Guid idUser)
+        private async Task<Role> AddDefaultRolesAsync(ICoreUnitOfWork uow, IModuleManager moduleManager, TenantInfo tenantInfo, Guid idUser)
         {
             //lấy tất các các quyền
-            var allClaims = GetAllClaims();
+            var allClaims = GetAllClaims(moduleManager);
 
             //quyền admin
             //quyền chỉ tạo/sửa và thao tác với hóa đơn 
@@ -433,7 +399,7 @@ namespace Jarvis.Core.Controllers
                 Name = $"ADMIN_{tenantInfo.TaxCode}",
                 NormalizedName = $"ADMIN_{tenantInfo.TaxCode}"
             };
-            var repoRole = _uow.GetRepository<IRoleRepository>();
+            var repoRole = uow.GetRepository<IRoleRepository>();
             await repoRole.InsertAsync(adminRole);
 
             var accountantRole = new Role
@@ -449,7 +415,7 @@ namespace Jarvis.Core.Controllers
             await repoRole.InsertAsync(accountantRole);
 
             //thêm roleclaim
-            var repoRoleClaim = _uow.GetRepository<IPermissionRepository>();
+            var repoRoleClaim = uow.GetRepository<IPermissionRepository>();
 
             await repoRoleClaim.InsertRoleClaimsAsync(adminPermission.Select(x => new IdentityRoleClaim<Guid>
             {
@@ -472,11 +438,11 @@ namespace Jarvis.Core.Controllers
         /// lấy tất cả các quyền
         /// </summary>
         /// <returns></returns>
-        private List<string> GetAllClaims()
+        private List<string> GetAllClaims(IModuleManager moduleManager)
         {
             var allClaims = new List<string>();
 
-            var crudPolicies = _moduleManager.GetInstances<IAuthorizationCrudPolicy>();
+            var crudPolicies = moduleManager.GetInstances<IAuthorizationCrudPolicy>();
             foreach (var policy in crudPolicies)
             {
                 //Các quyền CRUD ko sử dụng abstract
@@ -486,7 +452,7 @@ namespace Jarvis.Core.Controllers
                 allClaims.Add($"{policy.Name}_Delete");
             }
 
-            var policies = _moduleManager.GetInstances<IAuthorizationPolicy>();
+            var policies = moduleManager.GetInstances<IAuthorizationPolicy>();
             foreach (var policy in policies)
             {
                 allClaims.Add(policy.Name);
@@ -504,9 +470,9 @@ namespace Jarvis.Core.Controllers
         /// <param name="tenantCode"></param>
         /// <param name="idRole"></param>
         /// <returns></returns>
-        private async Task<User> InsertAdminTenantUserAsync(CreateTenantCommand model, Guid idCurrentUser, Guid tenantCode, Guid idRole)
+        private async Task<User> InsertAdminTenantUserAsync(ICoreUnitOfWork uow, UserManager<User> userManager, IPasswordValidator<User> passwordValidator, IPasswordHasher<User> passwordHasher, CreateTenantCommand model, Guid idCurrentUser, Guid tenantCode, Guid idRole)
         {
-            var repoUser = _uow.GetRepository<IUserRepository>();
+            var repoUser = uow.GetRepository<IUserRepository>();
 
             //tk admin 
             var user = new User
@@ -523,12 +489,12 @@ namespace Jarvis.Core.Controllers
                 Email = model.User.Email,
                 NormalizedEmail = string.IsNullOrEmpty(model.User.Email) ? null : model.User.Email.ToUpper()
             };
-            var validateResult = await _passwordValidator.ValidateAsync(_userManager, user, model.User.Password);
+            var validateResult = await passwordValidator.ValidateAsync(userManager, user, model.User.Password);
             if (!validateResult.Succeeded)
                 throw new Exception(validateResult.ToMessage());
 
             //Insert user admin
-            var passwordHashed = _passwordHasher.HashPassword(user, model.User.Password);
+            var passwordHashed = passwordHasher.HashPassword(user, model.User.Password);
             user.PasswordHash = passwordHashed;
 
             await repoUser.InsertUserAsync(user);
@@ -539,7 +505,7 @@ namespace Jarvis.Core.Controllers
             });
 
             //gán tk admin đc tạo có quyền admin
-            var repoPermission = _uow.GetRepository<IPermissionRepository>();
+            var repoPermission = uow.GetRepository<IPermissionRepository>();
             await repoPermission.InsertUserRolesAsync(
               new List<IdentityUserRole<Guid>> {
                     new IdentityUserRole<Guid>
@@ -561,7 +527,7 @@ namespace Jarvis.Core.Controllers
         /// <param name="password"></param>
         /// <param name="idCurrentUser"></param>
         /// <param name="tenantCode"></param>
-        private async Task<User> InsertRootTenantUserAsync(CreateTenantCommand model, string userName, string password, Guid idCurrentUser, Guid tenantCode)
+        private async Task<User> InsertRootTenantUserAsync(ICoreUnitOfWork uow, UserManager<User> userManager, IPasswordValidator<User> passwordValidator, IPasswordHasher<User> passwordHasher, CreateTenantCommand model, string userName, string password, Guid idCurrentUser, Guid tenantCode)
         {
             //tk root của chi nhánh
             var rootUser = new User
@@ -578,14 +544,14 @@ namespace Jarvis.Core.Controllers
                 Email = model.User.Email,
                 NormalizedEmail = string.IsNullOrEmpty(model.User.Email) ? null : model.User.Email.ToUpper()
             };
-            var validateResultAdmin = await _passwordValidator.ValidateAsync(_userManager, rootUser, password);
+            var validateResultAdmin = await passwordValidator.ValidateAsync(userManager, rootUser, password);
             if (!validateResultAdmin.Succeeded)
                 throw new Exception(validateResultAdmin.ToMessage());
 
-            var passwordRootHashed = _passwordHasher.HashPassword(rootUser, password);
+            var passwordRootHashed = passwordHasher.HashPassword(rootUser, password);
             rootUser.PasswordHash = passwordRootHashed;
 
-            var repoUser = _uow.GetRepository<IUserRepository>();
+            var repoUser = uow.GetRepository<IUserRepository>();
             await repoUser.InsertUserAsync(rootUser);
             await repoUser.InsertUserInfoAsync(new UserInfo
             {
@@ -594,7 +560,7 @@ namespace Jarvis.Core.Controllers
             });
 
             //Authorization
-            var repoPermission = _uow.GetRepository<IPermissionRepository>();
+            var repoPermission = uow.GetRepository<IPermissionRepository>();
             await repoPermission.InsertUserClaimsAsync(
                 new List<IdentityUserClaim<Guid>> {
                     new IdentityUserClaim<Guid>
@@ -616,11 +582,11 @@ namespace Jarvis.Core.Controllers
         /// <param name="idCurrentUser"></param>
         /// <param name="parent"></param>
         /// <returns></returns>
-        private async Task<TenantInfo> InsertTenant(CreateTenantCommand model, Guid idCurrentUser, Tenant parent)
+        private async Task<TenantInfo> InsertTenant(ICoreUnitOfWork uow, CreateTenantCommand model, Guid idCurrentUser, Tenant parent)
         {
             //Insert tenant
             var code = Guid.NewGuid();
-            var repoTenant = _uow.GetRepository<ITenantRepository>();
+            var repoTenant = uow.GetRepository<ITenantRepository>();
             var tenant = new Tenant
             {
                 Code = code,
