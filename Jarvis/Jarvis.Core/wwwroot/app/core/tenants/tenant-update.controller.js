@@ -14,8 +14,7 @@
             rules: {
                 hostName: {
                     required: true,
-                    maxlength: 250,
-                    multipleHostName: true
+                    maxlength: 250
                 },
                 taxCode: {
                     required: true,

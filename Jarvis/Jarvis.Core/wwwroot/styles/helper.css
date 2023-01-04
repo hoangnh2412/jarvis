@@ -205,6 +205,10 @@
     margin-bottom: 20px !important;
 }
 
+.margin-audo {
+    margin: auto !important;
+}
+
 
 /* Other */
 .hover-pointer:hover {

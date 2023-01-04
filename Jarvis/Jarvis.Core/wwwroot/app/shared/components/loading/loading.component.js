@@ -5,7 +5,7 @@
         .module('jarvis')
         .component('uiLoading', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getJarvisTemplateUrl('uiLoading', '/app/shared/components/loading/loading.template.html');
+                return componentService.getTemplateUrl('uiLoading', '/app/shared/components/loading/loading.template.html');
             }],
             bindings: {
                 context: '='

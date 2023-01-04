@@ -1,5 +1,6 @@
-.login-page, .register-page {
-    background: #eeeded;
+.login-page,
+.register-page {
+  background: #eeeded;
 }
 
 .login-box,
@@ -9,21 +10,54 @@
 }
 
 @media (max-width: 768px) {
-    .login-box,
-    .register-box {
-      width: 90%;
-      margin-top: 20px;
-    }
-  }
 
-.login-box {
-    padding: 20px;
-    background-color: #fff;
-    border: 1px solid transparent;
-    border-radius: 3px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.24);
+  .login-box,
+  .register-box {
+    width: 90%;
+    margin-top: 20px;
+  }
 }
 
-.login-box-body, .register-box-body {
-    padding: 0;
+.login-box {
+  padding: 20px;
+  background-color: #fff;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .24);
+}
+
+.login-box-body,
+.register-box-body {
+  padding: 0;
+}
+
+/* .content-wrapper {
+  -webkit-transition: min-height 0.2s ease-in-out;
+  -o-transition: min-height 0.2s ease-in-out;
+  transition: min-height 0.2s ease-in-out;
+  min-height: 738px;
+} */
+
+.wrapper {
+  width: 100%;
+  min-height: 100%;
+  height: auto !important;
+  position: absolute;
+}
+
+.content-wrapper {
+  bottom: 50px;
+  /* position: fixed; */
+  /* width: 100%; */
+  top: 50px;
+}
+
+.sidebar-collapse .content-wrapper {
+  width: 100%;
+}
+
+.main-footer {
+  bottom: 0px;
+  /* position: fixed; */
+  /* width: 100%; */
 }

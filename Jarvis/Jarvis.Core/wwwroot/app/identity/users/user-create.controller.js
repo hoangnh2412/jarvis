@@ -9,39 +9,27 @@
             infos: {}
         };
         ctrl.roles = [];
+        ctrl.claims = [];
 
         ctrl.validationOptions = {
             rules: {
                 fullName: {
                     required: true,
-                    whiteSpace: true,
-                    maxlength: 250
+                    whiteSpace: true
                 },
                 email: {
                     singleEmail: true,
                     maxlength: 256
                 },
-                phoneNumber: {
-                    maxlength: 50
-                },
                 userName: {
                     required: true,
                     maxlength: 256,
                     regex: /^[a-zA-Z0-9][\w-\/]{0,}[a-zA-Z0-9]$|^[a-zA-Z0-9]$/
-                },
-                password: {
-                    required: true,
-                    minlength: 6,
-                    maxlength: 100,
-                    regex: /^\S[^\t\n\r]+[\S]$/
                 }
             },
             messages: {
                 userName: {
                     regex: "Tài khoản đăng nhập viết không dấu, được phép chứa các ký tự đặc biệt -, _, / và không đặt ở đầu hoặc cuối"
-                },
-                password: {
-                    regex: "Mật khẩu không chứa ký tự tab và không bắt đầu hoặc kết thúc bằng khoảng trắng"
                 }
             }
         };
@@ -77,6 +65,14 @@
             });
         };
 
+        ctrl.getClaims = function () {
+            userService.getClaims().then(function (response) {
+                if (response.status === 200) {
+                    ctrl.claims = response.data;
+                }
+            });
+        };
+
         ctrl.save = function (form) {
             if (!form.validate()) {
                 return;
@@ -88,6 +84,13 @@
                 if (roles[i].select) {
                     ctrl.user.idRoles.push(roles[i].id);
                 }
+            }
+
+            ctrl.user.claims = [];
+            var claims = ctrl.claims.filter(function (claim) { return claim.select === true; });
+            for (let i = 0; i < claims.length; i++) {
+                const element = claims[i];
+                ctrl.user.claims.push(element.key);
             }
 
             ctrl.loading = true;
@@ -106,6 +109,7 @@
 
         ctrl.$onInit = function () {
             ctrl.getRoles();
+            ctrl.getClaims();
         };
     };
 

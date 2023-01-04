@@ -5,7 +5,7 @@
         .module('jarvis')
         .component('uiTopbar', {
             templateUrl: ['componentService', function (componentService) {
-                return componentService.getJarvisTemplateUrl('uiTopbar', '/app/shared/components/topbar/topbar.template.html');
+                return componentService.getTemplateUrl('uiTopbar', '/app/shared/components/topbar/topbar.template.html');
             }],
             controller: 'topbarController',
             bindings: {
@@ -18,11 +18,20 @@
             ctrl.message = APP_CONFIG.MESSAGE;
 
             ctrl.$onInit = function () {
-                ctrl.getNavigation();
+                ctrl.navigations = cacheService.set('menu');
+                if (!ctrl.navigations) {
+                    var token = cacheService.get('token');
+                    if (token) {
+                        ctrl.getNavigationAsync();
+                    } else {
+                        ctrl.getNavigation();
+                    }
+                }
+
                 ctrl.currentTenant = cacheService.get('currentTenant');
             };
 
-            ctrl.getNavigation = function () {
+            ctrl.getNavigationAsync = function () {
                 httpService.get('/core/navigation').then(function (response) {
                     if (response.status !== 200) {
                         return;
@@ -65,6 +74,11 @@
                 });
             };
 
+            ctrl.getNavigation = function () {
+                ctrl.navigations = APP_CONFIG.NAVIGATION;
+                // cacheService.set('menu', ctrl.navigations);
+            };
+
             ctrl.logout = function () {
                 httpService.post('/identity/logout').then(function (response) {
                     if (response.status === 200) {
@@ -82,7 +96,7 @@
                 var states = $state.get();
                 for (var i = 0; i < states.length; i++) {
                     var element = states[i];
-                    if (element.url === url) {
+                    if (element.url && element.url.startsWith(url)) {
                         return element.name;
                     }
                 }
@@ -93,10 +107,9 @@
                     animation: true,
                     ariaLabelledBy: 'modal-title',
                     ariaDescribedBy: 'modal-body',
-                    templateUrl: 'modalChangeTenant.html',
+                    templateUrl: '/app/shared/components/change-tenant/change-tenant.template.html',
                     controller: 'changeTenantController',
                     controllerAs: '$ctrl',
-                    appendTo: angular.element('.box-modal'),
                     backdrop: false,
                     resolve: {
                         currentTenant: function () {
