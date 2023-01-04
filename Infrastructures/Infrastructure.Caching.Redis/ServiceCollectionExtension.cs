@@ -11,13 +11,10 @@ namespace Infrastructure.Caching.Redis
         /// Add Redis to DI
         /// </summary>
         /// <param name="services"></param>
-        /// <param name="redisOptions"></param>
+        /// <param name="redisOption"></param>
         /// <param name="cacheOptions">Default cache in 15 minutes</param>
-        public static void AddRedisCache(this IServiceCollection services, Action<RedisCacheOptions> redisOptions, Action<DistributedCacheEntryOptions> cacheOptions = null)
+        public static void AddRedisCache(this IServiceCollection services, Action<RedisCacheOptions> redisOption, Action<DistributedCacheEntryOptions> cacheOptions = null)
         {
-            services.AddStackExchangeRedisCache(redisOptions);
-            services.AddSingleton<ICacheService, RedisCacheService>();
-
             if (cacheOptions == null)
             {
                 services.Configure<DistributedCacheEntryOptions>(options =>
@@ -27,8 +24,11 @@ namespace Infrastructure.Caching.Redis
             }
             else
             {
-                services.Configure(cacheOptions);
+                services.Configure<DistributedCacheEntryOptions>(cacheOptions);
             }
+
+            services.AddStackExchangeRedisCache(redisOption);
+            services.AddSingleton<ICacheService, RedisCacheService>();
         }
     }
 }
