@@ -47,6 +47,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.File.Minio",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.File", "Infrastructures\Infrastructure.File\Infrastructure.File.csproj", "{26CEE131-D123-4FC8-A80E-0D7B1D1208A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Core.Database.Oracle", "Jarvis\Jarvis.Core.Database.Oracle\Jarvis.Core.Database.Oracle.csproj", "{C58B2067-26BD-4F95-A1A4-E32B4B5B2AF7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Core.Database.Postgreql", "Jarvis\Jarvis.Core.Database.Postgreql\Jarvis.Core.Database.Postgreql.csproj", "{9649ADB0-7500-4F0C-8223-B9BF0B9AB4E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -285,6 +289,30 @@ Global
 		{26CEE131-D123-4FC8-A80E-0D7B1D1208A3}.Release|x64.Build.0 = Release|Any CPU
 		{26CEE131-D123-4FC8-A80E-0D7B1D1208A3}.Release|x86.ActiveCfg = Release|Any CPU
 		{26CEE131-D123-4FC8-A80E-0D7B1D1208A3}.Release|x86.Build.0 = Release|Any CPU
+		{C58B2067-26BD-4F95-A1A4-E32B4B5B2AF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C58B2067-26BD-4F95-A1A4-E32B4B5B2AF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C58B2067-26BD-4F95-A1A4-E32B4B5B2AF7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C58B2067-26BD-4F95-A1A4-E32B4B5B2AF7}.Debug|x64.Build.0 = Debug|Any CPU
+		{C58B2067-26BD-4F95-A1A4-E32B4B5B2AF7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C58B2067-26BD-4F95-A1A4-E32B4B5B2AF7}.Debug|x86.Build.0 = Debug|Any CPU
+		{C58B2067-26BD-4F95-A1A4-E32B4B5B2AF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C58B2067-26BD-4F95-A1A4-E32B4B5B2AF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C58B2067-26BD-4F95-A1A4-E32B4B5B2AF7}.Release|x64.ActiveCfg = Release|Any CPU
+		{C58B2067-26BD-4F95-A1A4-E32B4B5B2AF7}.Release|x64.Build.0 = Release|Any CPU
+		{C58B2067-26BD-4F95-A1A4-E32B4B5B2AF7}.Release|x86.ActiveCfg = Release|Any CPU
+		{C58B2067-26BD-4F95-A1A4-E32B4B5B2AF7}.Release|x86.Build.0 = Release|Any CPU
+		{9649ADB0-7500-4F0C-8223-B9BF0B9AB4E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9649ADB0-7500-4F0C-8223-B9BF0B9AB4E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9649ADB0-7500-4F0C-8223-B9BF0B9AB4E9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9649ADB0-7500-4F0C-8223-B9BF0B9AB4E9}.Debug|x64.Build.0 = Debug|Any CPU
+		{9649ADB0-7500-4F0C-8223-B9BF0B9AB4E9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9649ADB0-7500-4F0C-8223-B9BF0B9AB4E9}.Debug|x86.Build.0 = Debug|Any CPU
+		{9649ADB0-7500-4F0C-8223-B9BF0B9AB4E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9649ADB0-7500-4F0C-8223-B9BF0B9AB4E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9649ADB0-7500-4F0C-8223-B9BF0B9AB4E9}.Release|x64.ActiveCfg = Release|Any CPU
+		{9649ADB0-7500-4F0C-8223-B9BF0B9AB4E9}.Release|x64.Build.0 = Release|Any CPU
+		{9649ADB0-7500-4F0C-8223-B9BF0B9AB4E9}.Release|x86.ActiveCfg = Release|Any CPU
+		{9649ADB0-7500-4F0C-8223-B9BF0B9AB4E9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -308,6 +336,8 @@ Global
 		{FCAC2AE4-EEC6-4E95-87A0-85EF757F2C58} = {A23CDE3F-A5C3-4171-AF80-64FCCB60DC86}
 		{BD206562-D0A7-4782-904B-20BE90C9991E} = {AAF1321B-9579-4EDF-9577-2A2076557124}
 		{26CEE131-D123-4FC8-A80E-0D7B1D1208A3} = {AAF1321B-9579-4EDF-9577-2A2076557124}
+		{C58B2067-26BD-4F95-A1A4-E32B4B5B2AF7} = {9438174B-8DC5-4EAE-B147-F20E8574DE06}
+		{9649ADB0-7500-4F0C-8223-B9BF0B9AB4E9} = {9438174B-8DC5-4EAE-B147-F20E8574DE06}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F4CE7A93-0432-480A-9EA2-8CE79AC44990}
