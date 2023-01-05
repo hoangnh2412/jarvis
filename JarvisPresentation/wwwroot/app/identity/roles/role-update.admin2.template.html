@@ -1,0 +1,72 @@
+﻿<section class="content-header">
+    <h1>Thông tin quyền</h1>
+    <ol class="breadcrumb">
+        <li><a ui-sref="dashboard"><i class="fa fa-dashboard"></i> Trang chủ</a></li>
+        <li><a ui-sref="admin.system">Hệ thống</a></li>
+        <li><a ui-sref="identity.backend.role">Quyền</a></li>
+        <li class="active">Thông tin quyền</li>
+    </ol>
+</section>
+
+<section class="content container-fluid">
+    <form name="frmRole" ng-submit="$ctrl.save(frmRole)" ng-validate="$ctrl.validationOptions" class="form-horizontal">
+        <div class="box box-success">
+            <div class="box-body">
+                <div class="form-group">
+                    <label class="col-md-2 col-sm-4 control-label">Tên</label>
+                    <div class="col-md-10 col-sm-8">
+                        <input name="name" type="text" ng-model="$ctrl.role.name" jv-autofocus class="form-control" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 col-sm-4 control-label">Chức năng</label>
+                    <div class="col-md-10 col-sm-8">
+                        <div class="box box-success box-solid" ng-repeat="module in $ctrl.modules">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">{{module.name}}</h3>
+                                <div class="box-tools pull-right">
+                                    <button type="button" class="btn btn-warning btn-box-tool" ng-click="$ctrl.moduleSelectAll(module.code)" data-toggle="tooltip" data-placement="top" title="Chọn tất cả"><i class="fa fa-check"></i></button>
+                                    <button type="button" class="btn btn-danger btn-box-tool" ng-click="$ctrl.moduleUnselectAll(module.code)" data-toggle="tooltip" data-placement="top" title="Bỏ chọn tất cả"><i class="fa fa-times"></i></button>
+                                </div>
+                            </div>
+                            <div class="box-body">
+                                <div class="box box-info no-border no-shadow" ng-repeat="group in module.groups">
+                                    <div class="box-header with-border">
+                                        <h3 class="box-title"><b>{{group.name}}</b></h3>
+                                        <div class="box-tools pull-right">
+                                            <button type="button" class="btn btn-warning btn-xs" ng-click="$ctrl.groupSelectAll(group.code)" data-toggle="tooltip" data-placement="top" title="Chọn tất cả"><i class="fa fa-check"></i></button>
+                                            <button type="button" class="btn btn-danger btn-xs" ng-click="$ctrl.groupUnselectAll(group.code)" data-toggle="tooltip" data-placement="top" title="Bỏ chọn tất cả"><i class="fa fa-times"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="box-body">
+                                        <div class="row" ng-repeat="claim in group.claims">
+                                            <div class="col-sm-12 col-md-6">
+                                                <div class="checkbox" style="padding-bottom: 7px;">
+                                                    <label><input type="checkbox" ng-model="claim.selected"> {{claim.name}}</label>
+                                                </div>
+                                            </div>
+                                            <div ng-if="claim.selected">
+                                                <div class="col-sm-6 col-md-3">
+                                                    <select class="form-control" ng-model="claim.resource" ng-options="key as value for (key, value) in claim.resources"></select>
+                                                </div>
+                                                <div class="col-sm-6 col-md-3">
+                                                    <select class="form-control" ng-model="claim.childResource" ng-options="key as value for (key, value) in claim.childResources"></select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-12 text-right">
+                <button type="submit" class="btn btn-success" ng-disabled="$ctrl.loading"><i class="fa fa-save"></i> Lưu</button>
+                <a ui-sref="identity.backend.role.read" class="btn btn-danger" ng-disabled="$ctrl.loading"><i class="fa fa-close"></i> Hủy</a>
+            </div>
+        </div>
+    </form>
+</section>
