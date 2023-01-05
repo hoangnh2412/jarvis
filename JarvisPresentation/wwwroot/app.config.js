@@ -22,7 +22,7 @@
                 // 'uiSidebar': '/customize/shared/components/sidebar/sidebar.template.html',
                 // 'uiUserInfo': '/app/shared/components/user-info/user-info.template.html',
                 // 'uiIdentity': '/customize/identity/identity.template.html',
-                'uiLogin': '/app/core/identity/login/login.admin2.template.html',
+                'uiLogin': '/app/identity/login/login.admin2.template.html',
                 // 'uiUserRead': '/customize/identity/users/user-read.template.html',
                 // 'uiTenantInfo': '/customize/core/tenant-info/tenant-info.template.html'
             },
