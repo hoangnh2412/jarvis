@@ -6,13 +6,13 @@ using Infrastructure.File.Abstractions;
 using Infrastructure.File.Minio;
 using Infrastructure.Message.Rabbit;
 using Jarvis.Core;
-using Jarvis.Core.Database.SqlServer;
-using Jarvis.Core.Events.Settings;
+using Jarvis.Core.Database.SQLite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Logging;
 
 namespace JarvisPresentation
 {
@@ -68,6 +68,7 @@ namespace JarvisPresentation
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                IdentityModelEventSource.ShowPII = true;
             }
 
             app.UseHttpsRedirection();
