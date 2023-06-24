@@ -53,6 +53,9 @@
                     abs: ['$ocLazyLoad', function ($ocLazyLoad) {
                         return $ocLazyLoad.load('moduleAbs');
                     }],
+                    utc2gmt: ['$ocLazyLoad', function ($ocLazyLoad) {
+                        return $ocLazyLoad.load('moduleUtc2Gmt');
+                    }],
                     tooltip: ['$ocLazyLoad', function ($ocLazyLoad) {
                         return $ocLazyLoad.load('moduleTooltip');
                     }],
@@ -93,18 +96,50 @@
                         files: [replaceUrl('/app/shared/filters/abs.filter.js')]
                     },
                     {
+                        name: 'moduleUtc2Gmt',
+                        files: [replaceUrl('/app/shared/filters/utc2gmt.filter.js')]
+                    },
+                    {
                         name: 'moduleTooltip',
                         files: [replaceUrl('/app/shared/directives/tooltip.directive.js')]
                     },
                     {
                         name: 'moduleUiBootstrap',
                         serie: true,
-                        files: ['/libs/jquery/moment.js', '/libs/jquery/moment-with-locales.js', '/libs/angular/ui-bootstrap-tpls-2-5-0.js']
+                        files: ['/libs/jquery/moment.js', '/libs/jquery/moment-with-locales.js', '/libs/angular/ui-bootstrap-tpls-2-5-0.js', '/styles/datepicker.css']
                     },
                     {
                         name: 'moduleTree',
                         serie: true,
                         files: ['/libs/angular/angular-tree/angular-ui-tree.min.js', '/libs/angular/angular-tree/angular-ui-tree.min.css', '/libs/angular/angular-tree/jarvis-tree.css']
+                    },
+                    {
+                        name: 'moduleDaterangepicker',
+                        serie: true,
+                        files: [
+                            'libs/jquery/daterangepicker/daterangepicker.css',
+                            'libs/jquery/daterangepicker/moment-with-locales.js',
+                            'libs/jquery/daterangepicker/daterangepicker.js',
+                            'libs/angular/daterangepicker/angular-daterangepicker-init.js',
+                            'libs/angular/daterangepicker/angular-daterangepicker-config.js',
+                            'libs/angular/daterangepicker/angular-daterangepicker.js'
+                        ]
+                    },
+                    {
+                        name: 'moduleChart',
+                        serie: true,
+                        files: [
+                            'libs/jquery/chart.js',
+                            'libs/angular/angular-chart.js'
+                        ]
+                    },
+                    {
+                        name: 'moduleTinymce',
+                        serie: true,
+                        files: [
+                            'libs/angular/tinymce/tinymce.js',
+                            'libs/angular/tinymce/ui-tinymce.js'
+                        ]
                     }
                 ]
             });

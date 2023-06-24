@@ -1,5 +1,4 @@
 ﻿using Infrastructure.Database.Abstractions;
-using Infrastructure.Database.Models;
 using System;
 
 namespace Jarvis.Core.Database.Poco
@@ -20,7 +19,7 @@ namespace Jarvis.Core.Database.Poco
         public int? DeletedVersion { get; set; }
 
 
-        public Guid Code { get; set; }
+        public Guid Key { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Icon { get; set; }

@@ -30,5 +30,30 @@ namespace Infrastructure.Caching.Redis
             services.AddStackExchangeRedisCache(redisOption);
             services.AddSingleton<ICacheService, RedisCacheService>();
         }
+
+        public static void AddRedisCache(this IServiceCollection services, RedisOption redisOption)
+        {
+            services.AddRedisCache(options =>
+            {
+                options.InstanceName = redisOption.InstanceName;
+                options.ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions
+                {
+                    Password = redisOption.Password,
+                    ConnectRetry = redisOption.ConnectRetry,
+                    AbortOnConnectFail = redisOption.AbortOnConnectFail,
+                    ConnectTimeout = redisOption.ConnectTimeout,
+                    SyncTimeout = redisOption.SyncTimeout,
+                    DefaultDatabase = redisOption.DefaultDatabase,
+                };
+
+                if (redisOption.EndPoints != null)
+                {
+                    foreach (var item in redisOption.EndPoints)
+                    {
+                        options.ConfigurationOptions.EndPoints.Add(item);
+                    }
+                }
+            });
+        }
     }
 }

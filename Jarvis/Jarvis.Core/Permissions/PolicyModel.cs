@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-using Jarvis.Core.Constants;
-
 namespace Jarvis.Core.Permissions
 {
     public class PolicyModel
@@ -16,7 +10,7 @@ namespace Jarvis.Core.Permissions
         public string ModuleCode { get; set; }
         public string ModuleName { get; set; }
         public int ModuleOrder { get; set; }
-        public List<ClaimOfResource> ClaimOfResource { get; set; }
-        public List<ClaimOfChildResource> ClaimOfChildResources { get; set; }
+        // public List<ClaimOfResource> ClaimOfResource { get; set; }
+        // public List<ClaimOfChildResource> ClaimOfChildResources { get; set; }
     }
 }

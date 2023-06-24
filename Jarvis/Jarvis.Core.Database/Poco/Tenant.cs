@@ -7,7 +7,7 @@ namespace Jarvis.Core.Database.Poco
     {
         public int Id { get; set; }
 
-        public Guid Code { get; set; }
+        public Guid Key { get; set; }
         public string Name { get; set; }
 
         /// <summary>
@@ -24,13 +24,9 @@ namespace Jarvis.Core.Database.Poco
         public string Database { get; set; }
         public string DbConnectionString { get; set; }
         public string Theme { get; set; }
+        public string Skin { get; set; }
         public string SecretKey { get; set; }
 
-        /// <summary>
-        /// có đang sử dụng và có dkph/hóa đơn hay không
-        /// true: đã được dùng để tạo dkph => không được xóa/sửa
-        /// false: chưa dkph => được xóa/sửa
-        /// </summary>
         public bool IsEnable { get; set; }
 
         public DateTime? ExpireDate { get; set; }

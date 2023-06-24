@@ -8,6 +8,7 @@ namespace Jarvis.Core.Database.Poco
     public class Ward : IEntity<int>
     {
         public int Id { get; set; }
+        public Guid Key { get; set; }
         public string Code { get; set; }
         public string Name { get; set; }
         public string Longitude { get; set; }

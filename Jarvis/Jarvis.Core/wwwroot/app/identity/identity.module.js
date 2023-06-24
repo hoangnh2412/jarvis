@@ -126,42 +126,38 @@
             return {
                 hasClaim: function (claim) {
                     var context = cacheService.get('context');
+                    if (!context)
+                        return false;
 
-                    if (context)
+                    if (context.type === 1 || context.type === 2) {
+                        return true;
+                    } else {
                         for (var prop in context.claims) {
-                            if (prop === 'Special_DoEnything') {
-                                return true;
-                            }
-
-                            if (prop === 'Special_TenantAdmin' && APP_CONFIG.claimOfTenantAdmins.includes(claim)) {
-                                return true;
-                            }
-
                             if (prop === claim) {
                                 return true;
                             }
                         }
+                    }
+
                     return false;
                 },
                 hasClaims: function (claims) {
                     var context = cacheService.get('context');
+                    if (!context)
+                        return false;
 
-                    if (context)
+                    if (context.type === 1 || context.type === 2) {
+                        return true;
+                    } else {
                         for (var prop in context.claims) {
-                            if (prop === 'Special_DoEnything') {
-                                return true;
-                            }
-
                             for (var i = 0; i < claims.length; i++) {
-                                if (prop === 'Special_TenantAdmin' && APP_CONFIG.claimOfTenantAdmins.includes(claims[i])) {
-                                    return true;
-                                }
-
                                 if (prop === claims[i]) {
                                     return true;
                                 }
                             }
                         }
+                    }
+
                     return false;
                 }
             };
@@ -190,17 +186,20 @@
                 }
             });
 
-            $stateProvider.state('identity.backend', {
+            $stateProvider.state('identity.management', {
                 abstract: true,
                 templateProvider: ['$templateRequest', 'componentService', function ($templateRequest, componentService) {
-                    var tplName = componentService.getTemplateUrl('uiIdentity', '/app/identity/identity.template.html');
-                    return $templateRequest(tplName);
-                }],
+                    var name = componentService.getTemplateUrl('uiIdentityManagement', '/app/identity/identity-management.template.html');
+                    return $templateRequest(name);
+                }]
             });
 
-            $stateProvider.state('identity.frontend', {
+            $stateProvider.state('identity.auth', {
                 abstract: true,
-                template: '<ui-view context="$ctrl.context"></ui-view>'
+                templateProvider: ['$templateRequest', 'componentService', function ($templateRequest, componentService) {
+                    var name = componentService.getTemplateUrl('uiIdentityAuth', '/app/identity/identity-auth.template.html');
+                    return $templateRequest(name);
+                }]
             });
         }])
         .config(['$ocLazyLoadProvider', function ($ocLazyLoadProvider) {
@@ -251,10 +250,9 @@
                         return true;
                     }
 
-                    //Reuire authentication but token has expired
-
-                    console.log('expireAt', new Date(token.expireAt));
-                    console.log('now', new Date());
+                    // Reuire authentication but token has expired
+                    // console.log('expireAt', new Date(token.expireAt));
+                    // console.log('now', new Date());
                     if (new Date(token.expireAt) < new Date()) {
                         cacheService.remove('token');
                         return true;
@@ -285,9 +283,9 @@
                     return;
                 }
 
-                //Token expired => not authenticate
-                console.log('expireAt', new Date(token.expireAt));
-                console.log('now', new Date());
+                // Token expired => not authenticate
+                // console.log('expireAt', new Date(token.expireAt));
+                // console.log('now', new Date());
                 if (new Date(token.expireAt) < new Date()) {
                     cacheService.remove('token');
                     return;

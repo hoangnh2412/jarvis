@@ -1,0 +1,81 @@
+﻿<section class="content-header">
+    <h1>Quản lý tài khoản</h1>
+    <ol class="breadcrumb">
+        <li><a href="dashboard"><i class="fa fa-dashboard"></i> Trang chủ</a></li>
+        <li><a ui-sref="admin.system">Hệ thống</a></li>
+        <li class="active">Tài khoản</li>
+    </ol>
+</section>
+
+<section class="content container-fluid">
+    <div class="margin-bottom">
+        <a ui-sref="identity.backend.user.create" class="btn btn-success"><i class="fa fa-plus"></i> Tạo mới</a>
+    </div>
+
+    <div class="box box-success">
+        <div class="box-header">
+            <div class="form-inline">
+                <div class="form-group">
+                    <select class="form-control" ng-model="$ctrl.paging.size" ng-change="$ctrl.getUsers()" ng-options="size for size in [10, 20, 50, 100]"></select>
+                    <span class="form-control-static">dòng/trang</span>
+                </div>
+
+                <div class="form-group pull-right">
+                    <div class="has-feedback">
+                        <input type="text" jv-autofocus ng-model="$ctrl.paging.q" ng-change="$ctrl.getUsers()" class="form-control" placeholder="Tìm kiếm...">
+                        <span class="glyphicon glyphicon-search form-control-feedback"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="box-body table-responsive">
+            <table class="table table-hover table-bordered table-striped">
+                <thead>
+                    <tr class="info">
+                        <th>Tài khoản</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Số điện thoại</th>
+                        <th style="width: 120px;" class="text-center">#</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="user in $ctrl.users">
+                        <td>{{user.userName}}</td>
+                        <td>{{user.infos.fullName}}</td>
+                        <td>{{user.email}}</td>
+                        <td>{{user.phoneNumber}}</td>
+                        <td class="text-center">
+                            <button type="button" ng-click="$ctrl.lock(user.id)" ng-if="user.userName !== $ctrl.context.user.userName && !$ctrl.isLockedout(user.lockoutEnd)" data-toggle="tooltip" data-placement="top" title="Khóa" class="btn btn-xs btn-primary"><i class="fa fa-lock"></i></button>
+                            <button type="button" ng-click="$ctrl.unlock(user.id)" ng-if="user.userName !== $ctrl.context.user.userName && $ctrl.isLockedout(user.lockoutEnd)" data-toggle="tooltip" data-placement="top" title="Mở khóa" class="btn btn-xs btn-primary"><i class="fa fa-unlock"></i></button>
+                            <a ui-sref="identity.backend.user.update({id: user.id})" ng-if="$ctrl.permissionService.hasClaims(['User_Update'])" data-toggle="tooltip" data-placement="top" title="Sửa" class="btn btn-xs btn-warning"><i class="fa fa-edit"></i></a>
+                            <button type="button" ng-click="$ctrl.delete(user.id)" ng-if="$ctrl.permissionService.hasClaims(['User_Delete'])" data-toggle="tooltip" data-placement="top" title="Xóa" class="btn btn-xs btn-danger"><i class="fa fa-remove"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="box-footer">
+            <div class="row">
+                <div class="col-sm-6">
+                    <p class="form-control-static">Từ {{($ctrl.paging.page - 1) * $ctrl.paging.size + 1}} đến {{$ctrl.paging.page * $ctrl.paging.size > $ctrl.totalItems ? $ctrl.totalItems : $ctrl.paging.page * $ctrl.paging.size}} của {{$ctrl.totalItems}} kết quả</p>
+                </div>
+                <div class="col-sm-6 text-right">
+                    <ul uib-pagination
+                        ng-model="$ctrl.paging.page"
+                        ng-change="$ctrl.getUsers()"
+                        total-items="$ctrl.totalItems"
+                        max-size="5"
+                        class="pagination no-margin"
+                        boundary-links="true"
+                        force-ellipses="true"
+                        items-per-page="$ctrl.paging.size"
+                        next-text="&rsaquo;"
+                        last-text="&raquo;"
+                        first-text="&laquo;"
+                        previous-text="&lsaquo;"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,4 +1,5 @@
 ﻿using Jarvis.Core.Attributes;
+using Jarvis.Core.Constants;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -18,5 +19,7 @@ namespace Jarvis.Models.Identity.Models.Identity
         [EmailAttribute(ErrorMessage = "Email tài khoản không đúng định dạng email")]
         public string Email { get; set; }
         public string Metadata { get; set; }
+
+        public UserType Type { get; set; }
     }
 }

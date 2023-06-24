@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    function tenantReadController($state, $uibModal, permissionService, sweetAlert, tenantService) {
+    function tenantReadController($state, $uibModal, permissionService, componentService, sweetAlert, tenantService) {
         var ctrl = this;
         ctrl.permissionService = permissionService;
         ctrl.paging = {
@@ -58,7 +58,7 @@
                 animation: true,
                 ariaLabelledBy: 'modal-title',
                 ariaDescribedBy: 'modal-body',
-                templateUrl: '/app/core/tenants/tenant-logo.template.html',
+                templateUrl: componentService.getTemplateUrl('uiTenantLogo', '/app/core/tenants/tenant-logo.template.html'),
                 controller: 'tenantLogoController',
                 controllerAs: '$ctrl',
                 // size: size,
@@ -76,5 +76,5 @@
         .module('core')
         .controller('tenantReadController', tenantReadController);
 
-    tenantReadController.$inject = ['$state', '$uibModal', 'permissionService', 'sweetAlert', 'tenantService'];
+    tenantReadController.$inject = ['$state', '$uibModal', 'permissionService', 'componentService', 'sweetAlert', 'tenantService'];
 }());

@@ -8,7 +8,7 @@ namespace Jarvis.Core.Database.Repositories
 {
     public interface IFileRepository : IRepository<File>
     {
-        Task<File> GetByIdAsync(Guid id);
+        Task<File> GetByKeyAsync(Guid id);
 
         /// <summary>
         /// lấy các file theo id

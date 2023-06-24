@@ -13,7 +13,7 @@
             }
         })
         .config(['$stateProvider', function ($stateProvider) {
-            $stateProvider.state('identity.frontend.forgot-password', {
+            $stateProvider.state('identity.auth.forgot-password', {
                 url: '/forgot-password?:idUser&:key',
                 component: 'uiForgotPassword',
                 resolve: {

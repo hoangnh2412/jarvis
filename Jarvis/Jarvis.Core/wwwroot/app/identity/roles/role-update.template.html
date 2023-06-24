@@ -1,16 +1,20 @@
-﻿<section class="content-header">
-    <h1>Thông tin quyền</h1>
-    <ol class="breadcrumb">
-        <li><a ui-sref="dashboard"><i class="fa fa-dashboard"></i> Trang chủ</a></li>
-        <li><a ui-sref="admin.system">Hệ thống</a></li>
-        <li><a ui-sref="identity.backend.role">Quyền</a></li>
-        <li class="active">Thông tin quyền</li>
-    </ol>
-</section>
+﻿<form name="frmRole" ng-submit="$ctrl.save(frmRole)" ng-validate="$ctrl.validationOptions" class="form-horizontal">
+    <section class="content-header">
+        <div class="row">
+            <div class="col-md-6 col-xs-10">
+                <h1>
+                    <a ui-sref="identity.management.role.read" class="btn btn-link"><i class="fa fa-chevron-left"></i></a>
+                    <span>Thông tin vai trò</span>
+                </h1>
+            </div>
+            <div class="col-md-6 col-xs-2 text-right">
+                <button type="submit" class="btn btn-success" ng-disabled="$ctrl.loading"><i class="fa fa-save"></i> Lưu</button>
+            </div>
+        </div>
+    </section>
 
-<section class="content container-fluid">
-    <form name="frmRole" ng-submit="$ctrl.save(frmRole)" ng-validate="$ctrl.validationOptions" class="form-horizontal">
-        <div class="box box-success">
+    <section class="content container-fluid">
+        <div class="box box-primary">
             <div class="box-body">
                 <div class="form-group">
                     <label class="col-md-2 col-sm-4 control-label">Tên</label>
@@ -21,7 +25,7 @@
                 <div class="form-group">
                     <label class="col-md-2 col-sm-4 control-label">Chức năng</label>
                     <div class="col-md-10 col-sm-8">
-                        <div class="box box-success box-solid" ng-repeat="module in $ctrl.modules">
+                        <div class="box box-primary box-solid" ng-repeat="module in $ctrl.modules">
                             <div class="box-header with-border">
                                 <h3 class="box-title">{{module.name}}</h3>
                                 <div class="box-tools pull-right">
@@ -45,14 +49,6 @@
                                                     <label><input type="checkbox" ng-model="claim.selected"> {{claim.name}}</label>
                                                 </div>
                                             </div>
-                                            <div ng-if="claim.selected">
-                                                <div class="col-sm-6 col-md-3">
-                                                    <select class="form-control" ng-model="claim.resource" ng-options="key as value for (key, value) in claim.resources"></select>
-                                                </div>
-                                                <div class="col-sm-6 col-md-3">
-                                                    <select class="form-control" ng-model="claim.childResource" ng-options="key as value for (key, value) in claim.childResources"></select>
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -62,11 +58,5 @@
                 </div>
             </div>
         </div>
-        <div class="form-group">
-            <div class="col-md-12 text-right">
-                <button type="submit" class="btn btn-success" ng-disabled="$ctrl.loading"><i class="fa fa-save"></i> Lưu</button>
-                <a ui-sref="identity.backend.role.read" class="btn btn-danger" ng-disabled="$ctrl.loading"><i class="fa fa-close"></i> Hủy</a>
-            </div>
-        </div>
-    </form>
-</section>
+    </section>
+</form>

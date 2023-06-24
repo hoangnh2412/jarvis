@@ -1,0 +1,60 @@
+﻿<section class="content-header">
+    <h1>Quản lý cài đặt</h1>
+    <ol class="breadcrumb">
+        <li><a ui-sref="dashboard"><i class="fa fa-dashboard"></i> Trang chủ</a></li>
+        <li><a ui-sref="admin.system">Hệ thống</a></li>
+        <li class="active">Cài đặt</li>
+    </ol>
+</section>
+
+<section class="content container-fluid">
+    <div class="box box-success">
+        <div class="box-body">
+            <div class="panel panel-default" ng-repeat="groupSetting in $ctrl.groupSettings track by $index" ng-include src="$ctrl.template"></div>
+        </div>
+    </div>
+</section>
+
+<script type="text/ng-template" id="group-setting.tpl">
+    <div class="panel-heading" role="tab" id="heading-{{groupSetting.key}}">
+        <h4 class="panel-title">
+            <a class="collapsed" role="button" data-toggle="collapse" data-parent=".accordion" data-target="#collapse-{{groupSetting.key}}" aria-expanded="false" aria-controls="collapse-{{groupSetting.key}}">
+                {{groupSetting.name}}
+            </a>
+        </h4>
+    </div>
+    <div id="collapse-{{groupSetting.key}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{groupSetting.key}}">
+        <div class="panel-body">
+            <form name="frmSetting" ng-submit="$ctrl.save(frmSetting, groupSetting.key)" ng-validate="$ctrl.validationOptions">
+                <table class="table">
+                    <tbody>
+                        <tr ng-repeat="setting in groupSetting.settings">
+                            <td>
+                                <p>{{setting.name}}</p>
+                                <p ng-if="setting.description" class="cursor-help" style="font-size: 13px"><code><em><i class="fa fa-hand-o-right"></i> {{setting.description}}</em></code></p>
+                            </td>
+                            <td>
+                                <span ng-switch="setting.type">
+                                    <span ng-switch-when="2">
+                                        <textarea name="value" class="form-control" rows="5" ng-model="setting.value"></textarea>
+                                    </span>
+                                    <span ng-switch-when="3">
+                                        <select name="value" class="form-control" ng-model="setting.value" ng-options="option.key as option.value for option in setting.options"></select>
+                                    </span>
+                                    <span ng-switch-when="4">
+                                        <input name="value" type="password" class="form-control" ng-model="setting.value" />
+                                    </span>
+                                    <span ng-switch-default>
+                                        <input name="value" type="text" class="form-control" ng-model="setting.value" />
+                                    </span>
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <button ng-if="$ctrl.permissionService.hasClaims(['Setting_Update'])" type="submit" class="btn btn-success pull-right" ng-disabled="$ctrl.loading"><i class="fa fa-floppy-o"></i> Lưu</button>
+            </form>
+        </div>
+    </div>
+</script>

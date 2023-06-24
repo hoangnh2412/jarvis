@@ -1,18 +1,18 @@
-﻿using Jarvis.Core.Constants;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using Jarvis.Core.Constants;
 
 namespace Jarvis.Core.Models
 {
     public class SessionModel
     {
         public Guid IdUser { get; set; }
+        public UserType Type { get; set; }
         public string UserName { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public DateTime CreatedAt { get; set; }
-        public Dictionary<string, KeyValuePair<ClaimOfResource, ClaimOfChildResource>> Claims { get; set; }
+        public Dictionary<string, List<string>> Claims { get; set; }
         public SessionInfoModel UserInfo { get; set; }
         public SessionTenantModel TenantInfo { get; set; }
         public List<SessionOrganizationModel> OrganizationInfos { get; set; }

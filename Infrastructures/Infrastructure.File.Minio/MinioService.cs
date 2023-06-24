@@ -14,79 +14,172 @@ namespace Infrastructure.File.Minio
 {
     public class MinioService : IFileService
     {
-        private readonly MinioOptions _minioOptions;
+        private readonly ObjectStorageOption _options;
         private readonly MinioClient _minio;
         private readonly ILogger<MinioService> _logger;
 
         public MinioService(
-            IOptions<MinioOptions> minioOptions,
-            MinioClient minio,
+            IOptions<ObjectStorageOption> options,
+            IMinioHttpClient minioHttpClient,
             ILogger<MinioService> logger)
         {
-            _minioOptions = minioOptions.Value;
-            _minio = minio;
+            _options = options.Value;
+
+            _minio = new MinioClient()
+                .WithEndpoint(_options.Endpoint)
+                .WithCredentials(_options.AccessKey, _options.SecretKey);
+
+            if (_options.UseSsl)
+                _minio = _minio.WithSSL();
+
+            _minio = _minio
+                .WithHttpClient(minioHttpClient.GetClient())
+                .Build();
+
             _logger = logger;
         }
 
-        public async Task DeleteAsync(string fileName)
+        public async Task DeleteAsync(string bucket, string fileName)
         {
-            await _minio.RemoveObjectAsync(_minioOptions.BucketName, fileName);
+            var args = new RemoveObjectArgs()
+                    .WithBucket(bucket)
+                    .WithObject(fileName);
+            await _minio.RemoveObjectAsync(args);
         }
 
-        public async Task DeletesAsync(List<string> fileNames)
+        public async Task DeletesAsync(string bucket, List<string> fileNames)
         {
-            IObservable<DeleteError> observable = await _minio.RemoveObjectAsync(_minioOptions.BucketName, fileNames);
+            var args = new RemoveObjectsArgs()
+                    .WithBucket(bucket)
+                    .WithObjects(fileNames);
+            IObservable<DeleteError> observable = await _minio.RemoveObjectsAsync(args);
             IDisposable subscription = observable.Subscribe(
-                deleteError => _logger.LogDebug($"Đã xoá file: {deleteError.Key} trên bucket {_minioOptions.BucketName}"),
+                deleteError => _logger.LogDebug($"Đã xoá file: {deleteError.Key} trên bucket {bucket}"),
                 ex => _logger.LogError(ex.Message, ex),
-                () => _logger.LogDebug($"Thực hiện xong thao tác xoá trên bucket {_minioOptions.BucketName}")
+                () => _logger.LogDebug($"Thực hiện xong thao tác xoá trên bucket {bucket}")
             );
             observable.Wait();
             subscription.Dispose();
         }
 
-        public async Task<byte[]> DownloadAsync(string fileName)
+        public async Task<byte[]> DownloadAsync(string bucket, string fileName)
         {
-            await _minio.StatObjectAsync(_minioOptions.BucketName, fileName);
+            var args1 = new StatObjectArgs()
+                .WithBucket(bucket)
+                .WithObject(fileName);
+            await _minio.StatObjectAsync(args1);
 
             MemoryStream memoryStream = new MemoryStream();
-            await _minio.GetObjectAsync(_minioOptions.BucketName, fileName, (stream) =>
-            {
-                stream.CopyTo(memoryStream);
-            });
+            var args2 = new GetObjectArgs()
+                .WithBucket(bucket)
+                .WithObject(fileName)
+                .WithCallbackStream((stream) =>
+                {
+                    stream.CopyTo(memoryStream);
+                });
+            await _minio.GetObjectAsync(args2);
             var bytes = memoryStream.ToArray();
             return bytes;
         }
 
-        public async Task<string> ViewAsync(string fileName, int expireTime)
+        public async Task<string> ViewAsync(string bucket, string fileName, int expireTime = 1800)
         {
-            return await _minio.PresignedGetObjectAsync(_minioOptions.BucketName, fileName, expireTime);
+            var args = new PresignedGetObjectArgs()
+                .WithBucket(bucket)
+                .WithObject(fileName)
+                .WithExpiry(expireTime * 60);
+            return await _minio.PresignedGetObjectAsync(args);
         }
 
-        public async Task UploadAsync(string fileName, byte[] bytes)
+        public async Task UploadAsync(string bucket, string fileName, byte[] bytes)
         {
-            MemoryStream stream = new MemoryStream(bytes);
+            try
+            {
+                MemoryStream stream = new MemoryStream(bytes);
 
-            // Specify SSE-C encryption options
-            // Aes aesEncryption = Aes.Create();
-            // aesEncryption.KeySize = 256;
-            // aesEncryption.GenerateKey();
-            // var ssec = new SSEC(aesEncryption.Key);
+                // Specify SSE-C encryption options
+                // Aes aesEncryption = Aes.Create();
+                // aesEncryption.KeySize = 256;
+                // aesEncryption.GenerateKey();
+                // var ssec = new SSEC(aesEncryption.Key);
 
-            await _minio.PutObjectAsync(
-                bucketName: _minioOptions.BucketName,
-                objectName: fileName,
-                data: stream,
-                size: stream.Length,
-                contentType: "application/octet-stream",
-                metaData: null,
-                sse: null);
+                var args = new PutObjectArgs()
+                    .WithBucket(bucket)
+                    .WithObject(fileName)
+                    .WithObjectSize(stream.Length)
+                    .WithStreamData(stream)
+                    .WithContentType("application/actet-stream");
+                await _minio.PutObjectAsync(args);
+            }
+            // catch (InvalidBucketNameException)
+            // {
+            //     // _logger.LogError(ex, ex.Message);
+            //     await _minio.MakeBucketAsync(name);
+
+            //     // Upload a file to bucket.
+            //     await UploadAsync(fileName, bytes, bucketName);
+            // }
+            catch (ConnectionException)
+            {
+                try
+                {
+                    await ReUpload(bucket, fileName, bytes);
+                }
+                catch (System.Exception ex)
+                {
+                    throw ex;
+                }
+            }
+            catch (UnexpectedMinioException ex)
+            {
+                if (ex.ServerMessage != "The specified bucket does not exist")
+                    throw ex;
+
+                try
+                {
+                    await ReUpload(bucket, fileName, bytes);
+                }
+                catch (System.Exception ex2)
+                {
+                    throw ex2;
+                }
+            }
+            catch (BucketNotFoundException)
+            {
+                try
+                {
+                    await ReUpload(bucket, fileName, bytes);
+                }
+                catch (System.Exception ex)
+                {
+                    throw ex;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
-        public List<string> GetFileNames(string prefix = null)
+        private async Task ReUpload(string bucket, string fileName, byte[] bytes)
+        {
+            var args = new MakeBucketArgs()
+                .WithBucket(bucket);
+            await _minio.MakeBucketAsync(args);
+
+            // Upload a file to bucket.
+            await UploadAsync(bucket, fileName, bytes);
+        }
+
+        public List<string> GetFileNames(string bucket, string prefix = null)
         {
             var fileNames = new List<string>();
-            IObservable<Item> observable = _minio.ListObjectsAsync(_minioOptions.BucketName, prefix, true);
+
+            var args = new ListObjectsArgs()
+                    .WithBucket(bucket)
+                    .WithPrefix(prefix)
+                    .WithRecursive(true);
+            IObservable<Item> observable = _minio.ListObjectsAsync(args);
             IDisposable subscription = observable.Subscribe(
                 item => fileNames.Add(item.Key),
                 ex => _logger.LogError(ex.Message, ex),
@@ -94,6 +187,7 @@ namespace Infrastructure.File.Minio
             );
             observable.Wait();
             subscription.Dispose();
+
             return fileNames;
         }
     }

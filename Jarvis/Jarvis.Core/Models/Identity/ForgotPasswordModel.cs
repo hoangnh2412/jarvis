@@ -12,8 +12,5 @@ namespace Jarvis.Core.Models.Identity
 
         [Required(ErrorMessage = "Tên đăng nhập không được để trống")]
         public string UserName { get; set; }
-
-        [Required(ErrorMessage = "Link đăng nhập không được để trống")]
-        public string HostName { get; set; }
     }
 }

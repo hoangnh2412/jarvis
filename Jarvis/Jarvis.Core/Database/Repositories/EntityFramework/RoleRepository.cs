@@ -13,19 +13,19 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
 {
     public class RoleRepository : EntityRepository<Role>, IRoleRepository
     {
-        public async Task<Role> GetRoleByIdAsync(ContextModel context, Guid id)
+        public async Task<Role> GetRoleByKeyAsync(ContextModel context, Guid key)
         {
-            IQueryable<Role> query = DbSet.Where(x => x.Id == id);
+            IQueryable<Role> query = DbSet.Where(x => x.Key == key);
             //query = query.QueryByPermission(context);
-            query = query.QueryByTenantCode(context.TenantCode);
-            return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
+            query = query.QueryByTenantCode(context.TenantKey);
+            return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<Role> GetRoleByIdAsync(Guid tenantCode, Guid id)
+        public async Task<Role> GetRoleByKeyAsync(Guid tenantKey, Guid key)
         {
-            IQueryable<Role> query = DbSet.Where(x => x.Id == id);
-            query = query.QueryByTenantCode(tenantCode);
-            return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
+            IQueryable<Role> query = DbSet.Where(x => x.Key == key);
+            query = query.QueryByTenantCode(tenantKey);
+            return await query.FirstOrDefaultAsync();
         }
 
         public async Task<Paged<Role>> PagingAsync(ContextModel context, Paging paging)
@@ -35,7 +35,7 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
                     filter: (items) =>
                     {
                         //items = items.QueryByPermission(context);
-                        items = items.QueryByTenantCode(context.TenantCode);
+                        items = items.QueryByTenantCode(context.TenantKey);
                         items = items.QueryByDeletedBy();
 
                         if (!string.IsNullOrEmpty(paging.Q))

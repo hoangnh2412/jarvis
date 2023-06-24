@@ -15,28 +15,17 @@
                     <input type="password" ng-model="$ctrl.identity.password" name="password" class="form-control" placeholder="Mật khẩu">
                     <span class="glyphicon glyphicon-lock form-control-feedback"></span>
                 </div>
-                <!-- <div class="row">
-                    <div class="col-xs-6">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox"> Tự động đăng nhập
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-xs-6">
-                        
-                    </div>
-                </div> -->
-                <div class="row">
+                <div class="row margin-bottom-15">
                     <div class="col-md-12 text-center">
-                        <button type="submit" class="btn btn-primary btn-block btn-flat"><i class="fa fa-signin"></i> Đăng nhập</button>
+                        <button type="submit" class="btn btn-primary btn-block"><i class="fa fa-signin"></i> Đăng nhập</button>
                     </div>
                 </div>
             </form>
 
             <div class="text-center">
                 <a href="#">Quên mật khẩu</a><br>
-                <a href="register.html" class="text-center">Đăng ký tài khoản mới</a>
+                <a ui-sref="identity.auth.register" class="text-center">Đăng ký tài khoản mới</a>
+                <!-- <a href="register.html" class="text-center"></a> -->
             </div>
         </div>
     </div>

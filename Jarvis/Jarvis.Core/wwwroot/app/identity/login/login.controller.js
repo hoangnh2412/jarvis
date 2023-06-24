@@ -48,7 +48,8 @@
                 if (response.status === 200) {
                     ctrl.context = response.data;
                     ctrl.context.cache = {};
-                    ctrl.context.theme = APP_CONFIG.THEME;
+                    ctrl.context.theme = APP_CONFIG.PRESENTATION.THEME_NAME;
+                    ctrl.context.skin = APP_CONFIG.PRESENTATION.SKIN_NAME;
                     cacheService.set('token', token);
                     cacheService.set('context', ctrl.context);
                     cacheService.set('currentTenant', {

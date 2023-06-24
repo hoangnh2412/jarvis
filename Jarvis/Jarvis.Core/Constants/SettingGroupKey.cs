@@ -9,5 +9,8 @@ namespace Jarvis.Core.Constants
 
         [Display(Name = "Đăng nhập")]
         Login = 2,
+
+        [Display(Name = "Cấu hình SMTP")]
+        Smtp = 3,
     }
 }

@@ -48,7 +48,7 @@ namespace Jarvis.Core.Multitenant
             if (tenantHost == null)
                 return null;
 
-            tenant = await repoTenant.GetByCodeAsync(tenantHost.Code);
+            tenant = await repoTenant.GetByCodeAsync(tenantHost.Key);
 
             //Cập nhật cache
             await _cache.SetAsync(cacheKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(tenant)));

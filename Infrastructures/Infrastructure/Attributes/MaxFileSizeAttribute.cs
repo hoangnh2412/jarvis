@@ -14,15 +14,13 @@ namespace Infrastructure.Attributes
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
             var file = value as IFormFile;
-            if (file != null)
-            {
-                if (file.Length > _maxFileSize)
-                {
-                    return new ValidationResult($"Maximum allowed file size is { _maxFileSize} bytes.");
-                }
-            }
+            if (file == null)
+                return ValidationResult.Success;
 
-            return ValidationResult.Success;
+            if (file.Length <= _maxFileSize)
+                return ValidationResult.Success;
+
+            return new ValidationResult($"Maximum allowed file size is {_maxFileSize} bytes.");
         }
     }
 }

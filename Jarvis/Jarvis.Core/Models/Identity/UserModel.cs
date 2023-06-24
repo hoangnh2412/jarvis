@@ -6,7 +6,7 @@ namespace Jarvis.Models.Identity.Models.Identity
 {
     public class UserModel
     {
-        public Guid Id { get; set; }
+        public Guid Key { get; set; }
         public string UserName { get; set; }
         public string Password { get; set; }
         public string Email { get; set; }
@@ -25,7 +25,7 @@ namespace Jarvis.Models.Identity.Models.Identity
                 return null;
 
             var model = new UserModel();
-            model.Id = entity.Id;
+            model.Key = entity.Key;
             model.UserName = entity.UserName;
             model.Email = entity.Email;
             model.PhoneNumber = entity.PhoneNumber;

@@ -66,7 +66,7 @@ namespace Jarvis.Core.Controllers
             [FromServices] ICoreUnitOfWork uow,
             [FromServices] IEventFactory eventFactory)
         {
-            var tenantCode = await workcontext.GetTenantCodeAsync();
+            var tenantCode = await workcontext.GetTenantKeyAsync();
             var code = Guid.NewGuid();
             var repo = uow.GetRepository<ILabelRepository>();
             await repo.InsertAsync(new Label
@@ -74,12 +74,12 @@ namespace Jarvis.Core.Controllers
                 Color = model.Color,
                 Description = model.Description,
                 Icon = model.Icon,
-                Code = code,
+                Key = code,
                 TenantCode = tenantCode,
                 Name = model.Name,
                 CreatedAt = DateTime.Now,
                 CreatedAtUtc = DateTime.UtcNow,
-                CreatedBy = workcontext.GetUserCode()
+                CreatedBy = workcontext.GetUserKey()
             });
             await uow.CommitAsync();
 
@@ -104,7 +104,7 @@ namespace Jarvis.Core.Controllers
             [FromServices] ICoreUnitOfWork uow,
             [FromServices] IEventFactory eventFactory)
         {
-            var tenantCode = await workcontext.GetTenantCodeAsync();
+            var tenantCode = await workcontext.GetTenantKeyAsync();
 
             var repo = uow.GetRepository<ILabelRepository>();
             var label = await repo.GetByCodeAsync(tenantCode, code);
@@ -141,7 +141,7 @@ namespace Jarvis.Core.Controllers
             [FromServices] ICoreUnitOfWork uow,
             [FromServices] IEventFactory eventFactory)
         {
-            var tenantCode = await workcontext.GetTenantCodeAsync();
+            var tenantCode = await workcontext.GetTenantKeyAsync();
 
             var repo = uow.GetRepository<ILabelRepository>();
             var label = await repo.GetByCodeAsync(tenantCode, code);

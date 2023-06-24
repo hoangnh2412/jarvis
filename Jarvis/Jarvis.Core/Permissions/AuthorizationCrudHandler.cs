@@ -18,7 +18,7 @@ namespace Jarvis.Core.Permissions
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, CrudRequirement requirement)
         {
-            var result = await context.User.HasClaimAsync(_httpContext, x => x.Type == requirement.PolicyName);
+            var result = await context.User.HasClaimAsync(_httpContext, x => x.Value == requirement.PolicyName);
             if (result)
                 context.Succeed(requirement);
             else

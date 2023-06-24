@@ -19,7 +19,7 @@ namespace Jarvis.Core.Database.Poco
         public int? DeletedVersion { get; set; }
         
 
-        public Guid Code { get; set; }
+        public Guid Key { get; set; }
 
         /// <summary>
         /// Nhóm cấu hình, sử dụng để lấy ra nhiều Setting cùng 1 lúc khi CanDelete = true hoặc CanCreate = true
@@ -29,7 +29,7 @@ namespace Jarvis.Core.Database.Poco
         /// <summary>
         /// Mã để lấy cấu hình, ko dc trùng
         /// </summary>
-        public string Key { get; set; }
+        public string Code { get; set; }
 
         /// <summary>
         /// Tên cấu hình, hiển thị trên UI
@@ -52,9 +52,11 @@ namespace Jarvis.Core.Database.Poco
         public int Type { get; set; }
 
         /// <summary>
-        /// mô tả cho setting
+        /// Mô tả
         /// </summary>
         public string Description { get; set; }
+
+        public string Note { get; set; }
 
         public bool IsReadOnly { get; set; }
 

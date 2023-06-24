@@ -17,7 +17,7 @@
         };
 
         this.put = function (user) {
-            return httpService.put(api + '/' + user.id, user);
+            return httpService.put(api + '/' + user.key, user);
         };
 
         this.delete = function (id) {

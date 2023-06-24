@@ -29,7 +29,7 @@
                 if (response.status === 200) {
                     ctrl.user = response.data;
                     ctrl.getRoles();
-                    ctrl.getClaims();
+                    // ctrl.getClaims();
                 }
             });
         };
@@ -41,7 +41,7 @@
                 if (response.status === 200) {
                     ctrl.roles = response.data.data;
 
-                    if (ctrl.user.id) {
+                    if (ctrl.user.key) {
                         for (var i = 0; i < ctrl.roles.length; i++) {
                             for (var j = 0; j < ctrl.user.idRoles.length; j++) {
                                 if (ctrl.user.idRoles[j] === ctrl.roles[i].id) {
@@ -59,10 +59,10 @@
                 if (response.status === 200) {
                     ctrl.claims = response.data;
 
-                    if (ctrl.user.id) {
+                    if (ctrl.user.key) {
                         for (let i = 0; i < ctrl.claims.length; i++) {
                             var element = ctrl.claims[i];
-                            var claim = ctrl.user.claims.find(function(x) { return x === element.key; });
+                            var claim = ctrl.user.claims.find(function (x) { return x === element.key; });
                             if (claim) {
                                 element.select = true;
                             }
@@ -85,12 +85,12 @@
                 }
             }
 
-            ctrl.user.claims = [];
-            var claims = ctrl.claims.filter(function (claim) { return claim.select === true; });
-            for (let i = 0; i < claims.length; i++) {
-                const element = claims[i];
-                ctrl.user.claims.push(element.key);
-            }
+            // ctrl.user.claims = [];
+            // var claims = ctrl.claims.filter(function (claim) { return claim.select === true; });
+            // for (let i = 0; i < claims.length; i++) {
+            //     const element = claims[i];
+            //     ctrl.user.claims.push(element.key);
+            // }
 
             ctrl.loading = true;
             userService.put(ctrl.user).then(function (response) {
@@ -101,7 +101,7 @@
                         text: "Bạn đã sửa TÀI KHOẢN thành công!",
                         type: "success",
                     });
-                    $state.go('identity.backend.user.read');
+                    $state.go('identity.management.user.read');
                 }
             });
         };

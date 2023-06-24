@@ -1,7 +1,4 @@
 ﻿using Infrastructure.Abstractions;
-using Jarvis.Core.Constants;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Jarvis.Core.Permissions
@@ -12,332 +9,76 @@ namespace Jarvis.Core.Permissions
         [Display(Name = "Quản lý người dùng")]
         public class UserPolicy : IPolicy
         {
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> User_Read = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Danh sách người dùng",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> User_Create = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Tạo người dùng",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> User_Update = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Sửa người dùng",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> User_Delete = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Xóa người dùng",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> User_Lock = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Khóa người dùng",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> User_Reset_Password = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Đổi mật khẩu tài khoản",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
+            public static string User_Read = "Danh sách người dùng";
+            public static string User_Create = "Tạo người dùng";
+            public static string User_Update = "Sửa người dùng";
+            public static string User_Delete = "Xóa người dùng";
+            public static string User_Lock = "Khóa người dùng";
+            public static string User_Reset_Password = "Đổi mật khẩu tài khoản";
         }
 
-        [Display(Name = "Quản lý quyền")]
+        [Display(Name = "Quản lý vai trò")]
         public class RolePolicy : IPolicy
         {
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Role_Read = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Danh sách quyền",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Role_Create = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Tạo quyền",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Role_Update = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Sửa quyền",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Role_Delete = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Xóa quyền",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
+            public static string Role_Read = "Danh sách vai trò";
+            public static string Role_Create = "Tạo vai trò";
+            public static string Role_Update = "Sửa vai trò";
+            public static string Role_Delete = "Xóa vai trò";
         }
 
-        [Display(Name = "Quản lý site")]
+        [Display(Name = "Quản lý tenant")]
         public class TenantPolicy : IPolicy
         {
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Tenant_Read = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Danh sách chi nhánh",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Tenant_Create = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Tạo chi nhánh",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Tenant_Update = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Sửa chi nhánh",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Tenant_Delete = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Xóa chi nhánh",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
+            public static string Tenant_Read = "Danh sách tenant";
+            public static string Tenant_Create = "Tạo tenant";
+            public static string Tenant_Update = "Sửa tenant";
+            public static string Tenant_Delete = "Xóa tenant";
         }
 
         [Display(Name = "Quản lý nhãn")]
         public class LabelPolicy : IPolicy
         {
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Label_Read = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Danh sách nhãn",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Label_Create = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Tạo nhãn",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Label_Update = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Sửa nhãn",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Label_Delete = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Xóa nhãn",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
+            public static string Label_Read = "Danh sách nhãn";
+            public static string Label_Create = "Tạo nhãn";
+            public static string Label_Update = "Sửa nhãn";
+            public static string Label_Delete = "Xóa nhãn";
         }
 
         [Display(Name = "Quản lý tham số")]
         public class SettingPolicy : IPolicy
         {
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Setting_Read = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Danh sách tham số",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> Setting_Update = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Sửa tham số",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
+            public static string Setting_Read = "Danh sách tham số";
+            public static string Setting_Update = "Sửa tham số";
+            public static string Setting_Import = "Import tham số";
+            public static string Setting_Export = "Export tham số";
         }
 
         [Display(Name = "Quản lý phòng ban")]
         public class OrganizationPolicy : IPolicy
         {
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> OrganizationUnit_Read = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Danh sách phòng ban",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
+            public static string OrganizationUnit_Read = "Danh sách phòng ban";
+            public static string OrganizationUnit_Create = "Tạo phòng ban";
+            public static string OrganizationUnit_Update = "Sửa phòng ban";
+            public static string OrganizationUnit_Delete = "Xóa phòng ban";
+            public static string OrganizationUnit_Users = "Thành viên trong phòng ban";
+            public static string OrganizationUnit_Roles = "Vai trò trong phòng ban";
+        }
 
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> OrganizationUnit_Create = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Tạo phòng ban",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant
-                });
+        [Display(Name = "Quản lý mẫu email")]
+        public class EmailTemplatePolicy : IPolicy
+        {
+            public static string EmailTemplate_Read = "Danh sách mẫu email";
+            public static string EmailTemplate_Create = "Tạo mẫu email";
+            public static string EmailTemplate_Update = "Sửa mẫu email";
+            public static string EmailTemplate_Delete = "Xóa mẫu email";
+        }
 
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> OrganizationUnit_Update = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Sửa phòng ban",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> OrganizationUnit_Delete = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Xóa phòng ban",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> OrganizationUnit_Users = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Thành viên phòng ban",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
-
-            public static Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>> OrganizationUnit_Roles = new Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>(
-                "Quyền phòng ban",
-                new List<ClaimOfResource> {
-                    ClaimOfResource.Tenant,
-                    ClaimOfResource.Owner
-                },
-                new List<ClaimOfChildResource> {
-                    ClaimOfChildResource.None,
-                    ClaimOfChildResource.Tenant,
-                    ClaimOfChildResource.Owner
-                });
+        [Display(Name = "Quản lý lịch sử email")]
+        public class EmailHistoryPolicy : IPolicy
+        {
+            public static string EmailHistory_Read = "Lịch sử email";
+            public static string EmailHistory_Update = "Gửi lại mail";
+            public static string EmailHistory_Delete = "Xoá lịch sử mail";
         }
     }
 }

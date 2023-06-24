@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Jarvis.Core.Services;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jarvis.Models.Identity.Models.Identity;
 using Jarvis.Core.Models.Identity;
+using Infrastructure.Abstractions.Events;
+using Jarvis.Core.Events.Identity;
+using Jarvis.Core.Models.Events.Identity;
 
 namespace Jarvis.Core.Controllers
 {
@@ -15,11 +17,23 @@ namespace Jarvis.Core.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync(
             [FromBody] RegisterModel model,
-            [FromServices] IWorkContext workContext,
+            [FromServices] IDomainWorkContext workContext,
+            [FromServices] IEventFactory eventFactory,
             [FromServices] IIdentityService identityService)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
-            await identityService.RegisterAsync(tenantCode, model);
+            var tenantKey = workContext.GetTenantKey();
+            var userKey = await identityService.RegisterAsync(tenantKey, model, Constants.UserType.User);
+
+            eventFactory.GetOrAddEvent<IEvent<IdentityRegistedEventModel>, IIdentityRegistedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new IdentityRegistedEventModel
+                {
+                    UserKey = userKey,
+                    UserName = model.UserName,
+                    Password = model.Password,
+                    FullName = model.FullName,
+                });
+            });
             return Ok();
         }
 
@@ -29,8 +43,11 @@ namespace Jarvis.Core.Controllers
             [FromServices] IWorkContext workContext,
             [FromServices] IIdentityService identityService)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
-            var token = await identityService.LoginAsync(tenantCode, model);
+            var tenant = await workContext.GetCurrentTenantAsync();
+            if (tenant == null)
+                return StatusCode(500, "Tài khoản hoặc mật khẩu không đúng");
+
+            var token = await identityService.LoginAsync(tenant.Key, model);
             return Ok(token);
         }
 
@@ -71,47 +88,29 @@ namespace Jarvis.Core.Controllers
             return Ok(token);
         }
 
-        [Authorize]
-        [HttpGet("has-claims")]
-        public async Task<IActionResult> HasClaimsAsync(
-            [FromQuery] List<string> claims,
-            [FromServices] IWorkContext workContext)
-        {
-            if (await workContext.HasClaimsAsync(claims))
-                return Ok();
-            return Forbid();
-        }
-
-        [Authorize]
-        [HttpGet("get-claims")]
-        public async Task<IActionResult> GetClaimsAsync(
-            [FromQuery] string prefix,
-            [FromServices] IWorkContext workContext)
-        {
-            var claims = await workContext.GetClaimsAsync(prefix);
-            return Ok(claims);
-        }
-
-        [Authorize]
-        [HttpGet("is-authorize")]
-        public async Task<IActionResult> IsAuthorizeAsync(
-            [FromServices] IWorkContext workContext
-        )
-        {
-            var session = await workContext.GetSessionAsync();
-            if (session == null)
-                return Unauthorized();
-            return Ok();
-        }
-
-
         [AllowAnonymous]
         [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword(
+        public async Task<IActionResult> ForgotPasswordAsync(
             [FromBody] ForgotPasswordModel model,
+            [FromServices] IWorkContext workContext,
+            [FromServices] IEventFactory eventFactory,
             [FromServices] IIdentityService identityService)
         {
-            await identityService.ForgotPasswordAsync(model);
+            var tenant = await workContext.GetCurrentTenantAsync();
+            if (tenant == null)
+                return NotFound("Tài khoản không tồn tại");
+
+            var userKey = await identityService.ForgotPasswordAsync(tenant.Key, model);
+            eventFactory.GetOrAddEvent<IEvent<IdentityPasswordForgotedEventModel>, IIdentityPasswordForgotedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new IdentityPasswordForgotedEventModel
+                {
+                    TenantKey = tenant.Key,
+                    UserKey = userKey,
+                    UserName = model.UserName,
+                    Email = model.Email
+                });
+            });
             return Ok();
         }
 
@@ -120,9 +119,24 @@ namespace Jarvis.Core.Controllers
         [HttpPost("reset-forgot-password")]
         public async Task<IActionResult> RestForgotPassword(
             [FromBody] ResetForgotPasswordModel model,
+            [FromServices] IWorkContext workContext,
+            [FromServices] IEventFactory eventFactory,
             [FromServices] IIdentityService identityService)
         {
-            await identityService.ResetForgotPasswordAsync(model);
+            var tenant = await workContext.GetCurrentTenantAsync();
+            if (tenant == null)
+                return NotFound("Tài khoản không tồn tại");
+
+            var userKey = await identityService.ResetForgotPasswordAsync(tenant.Key, model);
+            eventFactory.GetOrAddEvent<IEvent<IdentityPasswordResetedEventModel>, IIdentityPasswordResetedEvent>().ForEach(async (e) =>
+            {
+                await e.PublishAsync(new IdentityPasswordResetedEventModel
+                {
+                    TenantKey = tenant.Key,
+                    UserKey = userKey,
+                    Password = model.NewPassword
+                });
+            });
             return Ok();
         }
     }

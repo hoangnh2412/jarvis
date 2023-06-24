@@ -102,14 +102,14 @@
                         text: "Bạn đã tạo TÀI KHOẢN thành công!",
                         type: "success",
                     });
-                    $state.go('identity.backend.user.read');
+                    $state.go('identity.management.user.read');
                 }
             });
         };
 
         ctrl.$onInit = function () {
             ctrl.getRoles();
-            ctrl.getClaims();
+            // ctrl.getClaims();
         };
     };
 

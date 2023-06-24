@@ -1,240 +1,334 @@
-﻿//using Infrastructure.Database.Abstractions;
-//using Infrastructure.Database.Constants;
-//using Infrastructure.Database.Models;
-//using Jarvis.Core.Database;
-//using Jarvis.Core.Multitenant;
-//using Jarvis.Core.Services;
-//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Infrastructure.Database.Abstractions;
+using Infrastructure.Database.EntityFramework;
+using Infrastructure.Database.Models;
+using Jarvis.Core.Services;
+using Microsoft.EntityFrameworkCore;
 
-//namespace Jarvis.Core.Abstractions
-//{
-//    public abstract class CrudService<TModel, TEntity, TKey> : ICrudService<TModel, TEntity, TKey> where TEntity : CrudEntity<TKey>
-//    {
-//        private readonly IUnitOfWork<CoreDbContext> _uow;
-//        private readonly IWorkContext _workContext;
-//        private readonly ITenantService _tenantService;
+namespace Jarvis.Core.Abstractions
+{
+    public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingOutput, TCreateInput, TUpdateInput> : ICrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingOutput, TCreateInput, TUpdateInput>
+        where TUnitOfWork : IUnitOfWork
+        where TEntity : class, IEntity<TKey>, ITenantEntity, ILogCreatedEntity, ILogUpdatedEntity, ILogDeletedEntity, ILogDeletedVersionEntity<TKey>
+    {
+        private readonly TUnitOfWork _uow;
+        private readonly IDomainWorkContext _workContext;
 
-//        public CrudService(
-//            IUnitOfWork<CoreDbContext> unitOfWork,
-//            IWorkContext workContext,
-//            ITenantService tenantService)
-//        {
-//            _uow = unitOfWork;
-//            _workContext = workContext;
-//            _tenantService = tenantService;
-//        }
+        public CrudService(TUnitOfWork uow, IDomainWorkContext workContext)
+        {
+            _uow = uow;
+            _workContext = workContext;
+        }
 
-//        public IPaged<TModel> Query(IPaging paging)
-//        {
-//            var idTenant = _tenantService.GetIdTenant();
+        public virtual async Task<IPaged<TPagingOutput>> PaginationAsync(IPaging paging)
+        {
+            var repo = _uow.GetRepository<IRepository<TEntity>>();
+            var queryable = repo.GetQuery();
+            queryable = PaginationWhere(queryable, paging);
+            queryable = PaginationOrderBy(queryable, paging);
+            var paged = await queryable.ToPaginationAsync(paging);
+            return new Paged<TPagingOutput>
+            {
+                Data = paged.Data.Select(entity => MapToPagingOutput(entity)),
+                Page = paged.Page,
+                Q = paged.Q,
+                Size = paged.Size,
+                TotalItems = paged.TotalItems,
+                TotalPages = paged.TotalPages
+            };
+        }
 
-//            var repo = _uow.GetRepository<TEntity>();
-//            var query = repo.Paging(
-//                paging: paging,
-//                filter: items => Filter(items, paging, idTenant),
-//                include: items => Include(items, paging),
-//                order: items => Order(items, paging));
+        public virtual async Task<TModel> GetByIdAsync(TKey id)
+        {
+            var repo = _uow.GetRepository<IRepository<TEntity>>();
+            var entity = await repo.GetQuery().FirstOrDefaultAsync(x => x.Id.Equals(id));
+            return MapToModel(entity);
+        }
 
-//            var paged = new Paged<TEntity>(query, paging);
-//            var result = new Paged<TModel>
-//            {
-//                Data = paged.Data.Select(x => EntityToModel(x)),
-//                Page = paged.Page,
-//                Q = paged.Q,
-//                Size = paged.Size,
-//                TotalItems = paged.TotalItems,
-//                TotalPages = paged.TotalPages
-//            };
-//            return result;
-//        }
+        public virtual async Task<TModel> GetByKeyAsync(Guid key)
+        {
+            var repo = _uow.GetRepository<IRepository<TEntity>>();
+            var entity = await repo.GetQuery().FirstOrDefaultAsync(x => x.Key.Equals(key));
+            return MapToModel(entity);
+        }
 
-//        public TModel Query(TKey id)
-//        {
-//            var repo = _uow.GetRepository<TEntity>();
-//            var entity = repo.First(x => x.Id.Equals(id));
-//            if (entity == null)
-//                return default(TModel);
+        public virtual async Task<int> CreateAsync(TCreateInput input)
+        {
+            await OnCreateBeginAsync();
 
-//            var model = EntityToModel(entity);
-//            return model;
-//        }
+            var repo = _uow.GetRepository<IRepository<TEntity>>();
+            var entity = MapToEntity(input);
+            SetTenantCode(entity);
 
-//        public void Create(TModel model)
-//        {
-//            OnBeforeCreate(model);
+            entity.Key = Guid.NewGuid();
+            entity.CreatedAt = DateTime.UtcNow;
+            entity.CreatedAtUtc = DateTime.UtcNow;
+            entity.CreatedBy = _workContext.GetUserKey();
 
-//            TEntity entity = Activator.CreateInstance<TEntity>();
-//            ModelToEntity(model, entity);
-//            entity.CreatedAtUtc = DateTime.UtcNow;
-//            entity.CreatedAt = DateTime.Now;
-//            entity.CreatedBy = _workContext.GetIdUser();
-//            entity.IdTenant = _tenantService.GetIdTenant();
+            await repo.InsertAsync(entity);
+            var result = await _uow.CommitAsync();
 
-//            var repo = _uow.GetRepository<TEntity>();
-//            repo.Add(entity);
-//            _uow.Commit();
+            if (result > 0)
+                await OnCreateSuccessAsync();
+            else
+                await OnCreateFailAsync();
 
-//            OnAfterCreate(model);
-//        }
+            await OnCreateEndAsync();
+            return result;
+        }
 
-//        public void Update(TKey id, TModel model)
-//        {
-//            OnBeforeUpdate(model);
-//            var idTenant = _tenantService.GetIdTenant();
+        public virtual Task OnCreateEndAsync()
+        {
+            return Task.CompletedTask;
+        }
 
-//            var repo = _uow.GetRepository<TEntity>();
-//            var entity = repo.First(x => x.Id.Equals(id) && x.IdTenant == idTenant);
+        public virtual Task OnCreateFailAsync()
+        {
+            return Task.CompletedTask;
+        }
 
-//            ModelToEntity(model, entity);
-//            entity.UpdatedBy = _workContext.GetIdUser();
-//            entity.UpdatedAtUtc = DateTime.UtcNow;
-//            entity.UpdatedAt = DateTime.Now;
+        public virtual Task OnCreateSuccessAsync()
+        {
+            return Task.CompletedTask;
+        }
 
-//            repo.Update(entity);
-//            _uow.Commit();
+        public virtual Task OnCreateBeginAsync()
+        {
+            return Task.CompletedTask;
+        }
 
-//            OnAfterUpdate(model);
-//        }
+        public virtual async Task<int> UpdateAsync(TKey id, TUpdateInput input)
+        {
+            await OnUpdateBeginAsync();
 
-//        public void Delete(TKey id)
-//        {
-//            OnBeforeDelete(id);
-//            var idTenant = _tenantService.GetIdTenant();
+            var repo = _uow.GetRepository<IRepository<TEntity>>();
+            var entity = await repo.GetQuery().FirstOrDefaultAsync(x => x.Id.Equals(id));
+            if (entity == null)
+                return 0;
 
-//            var repo = _uow.GetRepository<TEntity>();
-//            var entity = repo.First(x => x.Id.Equals(id) && x.IdTenant == idTenant);
-//            //if (entity == null)
-//            //    throw new Exception(ErrorCodes.ErrorDefault.DuLieuKhongTonTai.GetHashCode().ToString());
+            MapToEntity(input, entity);
 
-//            entity.DeletedAtUtc = DateTime.UtcNow;
-//            entity.DeletedAt = DateTime.Now;
-//            entity.DeletedBy = _workContext.GetIdUser();
-//            repo.Update(entity);
-//            _uow.Commit();
+            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedAtUtc = DateTime.UtcNow;
+            entity.UpdatedBy = _workContext.GetUserKey();
 
-//            OnAfterDelete(id);
-//        }
+            var result = await _uow.CommitAsync();
+
+            if (result > 0)
+                await OnUpdateFailAsync();
+            else
+                await OnUpdateSuccessAsync();
+
+            await OnUpdateFinishAsync();
+            return result;
+        }
+
+        public virtual async Task<int> UpdateAsync(Guid key, TUpdateInput input)
+        {
+            await OnUpdateBeginAsync();
+
+            var repo = _uow.GetRepository<IRepository<TEntity>>();
+            var entity = await repo.GetQuery().FirstOrDefaultAsync(x => x.Key.Equals(key));
+            if (entity == null)
+                return 0;
+
+            MapToEntity(input, entity);
+
+            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedAtUtc = DateTime.UtcNow;
+            entity.UpdatedBy = _workContext.GetUserKey();
+
+            var result = await _uow.CommitAsync();
+
+            if (result > 0)
+                await OnUpdateFailAsync();
+            else
+                await OnUpdateSuccessAsync();
+
+            await OnUpdateFinishAsync();
+            return result;
+        }
+
+        public virtual Task OnUpdateFinishAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public virtual Task OnUpdateSuccessAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public virtual Task OnUpdateFailAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public virtual Task OnUpdateBeginAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public virtual async Task<int> DeleteAsync(TKey id)
+        {
+            await OnDeleteBeginAsync();
+            var repo = _uow.GetRepository<IRepository<TEntity>>();
+            var entity = await repo.GetQuery().FirstOrDefaultAsync(x => x.Id.Equals(id));
+            if (entity == null)
+                return 0;
+
+            repo.Delete(entity);
+            var result = await _uow.CommitAsync();
+
+            if (result > 0)
+                await OnDeleteSuccessAsync();
+            else
+                await OnDeleteFailAsync();
+
+            await OnDeleteFinishAsync();
+            return result;
+        }
+
+        public virtual async Task<int> DeleteAsync(Guid key)
+        {
+            await OnDeleteBeginAsync();
+            var repo = _uow.GetRepository<IRepository<TEntity>>();
+            var entity = await repo.GetQuery().FirstOrDefaultAsync(x => x.Key.Equals(key));
+            if (entity == null)
+                return 0;
+
+            repo.Delete(entity);
+            var result = await _uow.CommitAsync();
+
+            if (result > 0)
+                await OnDeleteSuccessAsync();
+            else
+                await OnDeleteFailAsync();
+
+            await OnDeleteFinishAsync();
+            return result;
+        }
+
+        public virtual Task OnDeleteFinishAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public virtual Task OnDeleteFailAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public virtual Task OnDeleteSuccessAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public virtual Task OnDeleteBeginAsync()
+        {
+            return Task.CompletedTask;
+        }
 
 
+        public virtual async Task<int> TrashAsync(TKey id)
+        {
+            await OnTrashBeginAsync();
 
+            var repo = _uow.GetRepository<IRepository<TEntity>>();
+            var entity = await repo.GetQuery().FirstOrDefaultAsync(x => x.Id.Equals(id));
+            if (entity == null)
+                return 0;
 
-//        /// <summary>
-//        /// Hàm sắp xếp, mặc định theo Id
-//        /// </summary>
-//        /// <param name="items"></param>
-//        /// <returns></returns>
-//        public virtual IOrderedQueryable<TEntity> Order(IQueryable<TEntity> items, IPaging paging)
-//        {
-//            return items.OrderBy(x => x.Id);
-//        }
+            entity.DeletedAt = DateTime.UtcNow;
+            entity.DeletedAtUtc = DateTime.UtcNow;
+            entity.DeletedVersion = entity.Id;
+            entity.DeletedBy = _workContext.GetUserKey();
 
-//        /// <summary>
-//        /// Hàm truy vấn các dữ liệu liên quan
-//        /// </summary>
-//        /// <param name="items"></param>
-//        /// <returns></returns>
-//        public virtual IQueryable<TEntity> Include(IQueryable<TEntity> items, IPaging paging)
-//        {
-//            return items;
-//        }
+            var result = await _uow.CommitAsync();
+            if (result > 0)
+                await OnTrashSuccessAsync();
+            else
+                await OnTrashFailAsync();
 
-//        /// <summary>
-//        /// Hàm truy vấn dữ liệu
-//        /// </summary>
-//        /// <param name="items"></param>
-//        /// <param name="paging"></param>
-//        /// <param name="idTenant"></param>
-//        /// <returns></returns>
-//        public virtual IQueryable<TEntity> Filter(IQueryable<TEntity> items, IPaging paging, Guid idTenant)
-//        {
-//            items = items.Where(x => !x.DeletedBy.HasValue);
-//            //items = SearchByPermission(items, session, claim);
-//            if (string.IsNullOrWhiteSpace(paging.Q))
-//                return AdvanceSearch(items, paging);
-//            else
-//                return NormalSearch(items, paging);
-//        }
+            await OnTrashFinishAsync();
+            return result;
+        }
 
-//        public virtual IQueryable<TEntity> NormalSearch(IQueryable<TEntity> items, IPaging paging)
-//        {
-//            return items;
-//        }
+        public virtual async Task<int> TrashAsync(Guid key)
+        {
+            await OnTrashBeginAsync();
 
-//        public virtual IQueryable<TEntity> AdvanceSearch(IQueryable<TEntity> items, IPaging paging)
-//        {
-//            return items;
-//        }
+            var repo = _uow.GetRepository<IRepository<TEntity>>();
+            var entity = await repo.GetQuery().FirstOrDefaultAsync(x => x.Key.Equals(key));
+            if (entity == null)
+                return 0;
 
-//        /// <summary>
-//        /// Hàm chuyển từ Model sang Entity
-//        /// </summary>
-//        /// <param name="model"></param>
-//        /// <returns></returns>
-//        public abstract void ModelToEntity(TModel model, TEntity entity);
+            entity.DeletedAt = DateTime.UtcNow;
+            entity.DeletedAtUtc = DateTime.UtcNow;
+            entity.DeletedVersion = entity.Id;
+            entity.DeletedBy = _workContext.GetUserKey();
 
-//        /// <summary>
-//        /// Hàm chuyển từ Entity sang Model
-//        /// </summary>
-//        /// <param name="entity"></param>
-//        /// <returns></returns>
-//        public abstract TModel EntityToModel(TEntity entity);
+            var result = await _uow.CommitAsync();
+            if (result > 0)
+                await OnTrashSuccessAsync();
+            else
+                await OnTrashFailAsync();
 
-//        /// <summary>
-//        /// Hàm xử lý trước khi tạo
-//        /// </summary>
-//        /// <param name="model"></param>
-//        public virtual void OnBeforeCreate(TModel model)
-//        {
+            await OnTrashFinishAsync();
+            return result;
+        }
 
-//        }
+        public virtual Task OnTrashFinishAsync()
+        {
+            return Task.CompletedTask;
+        }
 
-//        /// <summary>
-//        /// Hàm xử lý sau khi tạo
-//        /// </summary>
-//        /// <param name="model"></param>
-//        public virtual void OnAfterCreate(TModel model)
-//        {
+        public virtual Task OnTrashFailAsync()
+        {
+            return Task.CompletedTask;
+        }
 
-//        }
+        public virtual Task OnTrashSuccessAsync()
+        {
+            return Task.CompletedTask;
+        }
 
-//        /// <summary>
-//        /// Hàm xử lý trước khi sửa
-//        /// </summary>
-//        /// <param name="model"></param>
-//        public virtual void OnBeforeUpdate(TModel model)
-//        {
+        public virtual Task OnTrashBeginAsync()
+        {
+            return Task.CompletedTask;
+        }
 
-//        }
+        public virtual void SetTenantCode(TEntity entity)
+        {
+            if (!(entity is ITenantEntity) || entity.GetType().GetProperty(nameof(ITenantEntity.TenantCode)) == null)
+                return;
 
-//        /// <summary>
-//        /// Hàm xử lý sau khi sửa
-//        /// </summary>
-//        /// <param name="model"></param>
-//        public virtual void OnAfterUpdate(TModel model)
-//        {
+            var tenantKey = _workContext.GetTenantKey();
+            if (tenantKey == null)
+                return;
 
-//        }
+            var property = entity.GetType().GetProperty(nameof(ITenantEntity.TenantCode));
+            if (property == null)
+                return;
 
-//        /// <summary>
-//        /// Hàm xử lý trước khi xóa
-//        /// </summary>
-//        /// <param name="model"></param>
-//        public virtual void OnBeforeDelete(TKey id)
-//        {
+            property.SetValue(entity, tenantKey);
+        }
 
-//        }
+        public virtual IQueryable<TEntity> PaginationOrderBy(IQueryable<TEntity> queryable, IPaging paging)
+        {
+            return queryable.OrderByDescending(x => x.CreatedAt);
+        }
 
-//        /// <summary>
-//        /// Hàm xử lý sau khi xóa
-//        /// </summary>
-//        /// <param name="model"></param>
-//        public virtual void OnAfterDelete(TKey id)
-//        {
+        public virtual IQueryable<TEntity> PaginationWhere(IQueryable<TEntity> queryable, IPaging paging)
+        {
+            return queryable.Where(x => x.DeletedVersion.Equals(default(TKey)));
+        }
 
-//        }
-//    }
-//}
+        protected abstract TPagingOutput MapToPagingOutput(TEntity entity);
+        protected abstract TModel MapToModel(TEntity entity);
+        protected abstract TEntity MapToEntity(TCreateInput input);
+        protected abstract TEntity MapToEntity(TUpdateInput input, TEntity entity);
+    }
+}

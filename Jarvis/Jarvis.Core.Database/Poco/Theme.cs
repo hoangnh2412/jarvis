@@ -6,9 +6,10 @@ using System.Text;
 
 namespace Jarvis.Core.Database.Poco
 {
-    public class Theme : IEntity<Guid>
+    public class Theme : IEntity<int>
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
+        public Guid Key { get; set; }
         
         public string Code { get; set; }
         public string Name { get; set; }

@@ -43,7 +43,7 @@
                 if (response.status === 200) {
                     sweetAlert.success('Thành công', 'Bạn đã đổi mật khẩu thành công, vui lòng đăng nhập lại');
                     cacheService.clean();
-                    $state.go('identity.frontend.login');
+                    $state.go('identity.auth.login');
                 }
             });
         };

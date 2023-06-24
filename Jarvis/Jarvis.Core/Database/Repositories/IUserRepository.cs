@@ -15,19 +15,17 @@ namespace Jarvis.Core.Database.Repositories
     {
         Task<Paged<User>> PagingAsync(ContextModel context, Paging paging);
 
-        Task<Paged<User>> PagingAsync(Guid tenantCode, Paging paging);
-
         Task<Paged<User>> PagingWithoutSomeUsersAsync(Guid tenantCode, Paging paging, List<Guid> codes);
 
-        Task<User> FindUserByIdAsync(ContextModel context, Guid id);
+        Task<User> FindUserByKeyAsync(ContextModel context, Guid id);
 
-        Task<User> FindUserByIdAsync(Guid tenantCode, Guid id);
+        Task<User> FindUserByKeyAsync(Guid tenantCode, Guid id);
 
         Task<User> FindUserByUsernameAsync(Guid tenantCode, string username);
 
-        Task<UserInfo> FindUserInfoByIdAsync(Guid code);
+        Task<UserInfo> FindUserInfoByKeyAsync(Guid code);
 
-        Task<List<UserInfo>> FindUserInfoByIdsAsync(List<Guid> ids);
+        Task<List<UserInfo>> FindUserInfoByKeysAsync(List<Guid> ids);
 
         Task<List<IdentityUserClaim<Guid>>> GetUserClaimsAsync(Guid id);
 
@@ -35,7 +33,7 @@ namespace Jarvis.Core.Database.Repositories
 
         Task AssignRoleToUserAsync(Guid idUser, Guid idRole);
 
-        Task AssignClaimToUserAsync(Guid idUser, List<string> claims);
+        Task AssignClaimToUserAsync(Guid idUser, Dictionary<string, string> claims);
 
         Task InsertUserAsync(User user);
 

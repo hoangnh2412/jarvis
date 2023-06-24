@@ -60,7 +60,7 @@ namespace Jarvis.Core.Services
             var items = await repoOrganizationUnit.GetAllAsync(tenantCode);
             return items.Select(x => new GetOrganizationUnitResponseModel
             {
-                Code = x.Code,
+                Code = x.Key,
                 Description = x.Description,
                 FullName = x.FullName,
                 IdParent = x.IdParent,
@@ -72,10 +72,10 @@ namespace Jarvis.Core.Services
         public async Task<GetOrganizationUnitResponseModel> GetUnitByCodeAsync(Guid code)
         {
             var repoOrganizationUnit = _uowCore.GetRepository<IOrganizationUnitRepository>();
-            var organizationUnit = await repoOrganizationUnit.GetQuery().FirstOrDefaultAsync(x => x.Code == code);
+            var organizationUnit = await repoOrganizationUnit.GetQuery().FirstOrDefaultAsync(x => x.Key == code);
             return new GetOrganizationUnitResponseModel
             {
-                Code = organizationUnit.Code,
+                Code = organizationUnit.Key,
                 Description = organizationUnit.Description,
                 FullName = organizationUnit.FullName,
                 IdParent = organizationUnit.IdParent,
@@ -89,10 +89,10 @@ namespace Jarvis.Core.Services
             var repoOrganizationUser = _uowCore.GetRepository<IOrganizationUserRepository>();
             var paged = await repoOrganizationUser.PagingAsync(code, paging);
 
-            var userCodes = paged.Data.Select(x => x.IdUser).ToList();
+            var userKey = paged.Data.Select(x => x.IdUser).ToList();
             var repoUser = _uowCore.GetRepository<IUserRepository>();
-            var infos = (await repoUser.FindUserInfoByIdsAsync(userCodes)).ToDictionary(x => x.Id, x => x);
-            var usernames = (await repoUser.FindUserByIdsAsync(userCodes)).ToDictionary(x => x.Id, x => x.UserName);
+            var infos = (await repoUser.FindUserInfoByKeysAsync(userKey)).ToDictionary(x => x.Key, x => x);
+            var usernames = (await repoUser.FindUserByIdsAsync(userKey)).ToDictionary(x => x.Key, x => x.UserName);
 
             var users = new List<OrganizationUserInfoModel>();
             foreach (var item in paged.Data)
@@ -126,15 +126,15 @@ namespace Jarvis.Core.Services
         {
             //Lấy danh sách user trong unit
             var repoOrganizationUser = _uowCore.GetRepository<IOrganizationUserRepository>();
-            var userCodes = await repoOrganizationUser.GetQuery().Where(x => x.OrganizationCode == code).Select(x => x.IdUser).AsQueryable().ToListAsync();
+            var userKeys = await repoOrganizationUser.GetQuery().Where(x => x.OrganizationCode == code).Select(x => x.IdUser).AsQueryable().ToListAsync();
 
             //Lấy thông in user nhưng loại bỏ các user đã có trong unit và phân trang
             var repoUser = _uowCore.GetRepository<IUserRepository>();
-            var paged = await repoUser.PagingWithoutSomeUsersAsync(tenantcode, paging, userCodes);
-            userCodes = paged.Data.Select(x => x.Id).ToList();
+            var paged = await repoUser.PagingWithoutSomeUsersAsync(tenantcode, paging, userKeys);
+            userKeys = paged.Data.Select(x => x.Id).ToList();
 
             var repoUserInfo = _uowCore.GetRepository<IUserRepository>();
-            var infos = (await repoUserInfo.FindUserInfoByIdsAsync(userCodes)).ToDictionary(x => x.Id, x => x);
+            var infos = (await repoUserInfo.FindUserInfoByKeysAsync(userKeys)).ToDictionary(x => x.Key, x => x);
 
             var users = new List<OrganizationUserInfoModel>();
             foreach (var data in paged.Data)
@@ -172,7 +172,7 @@ namespace Jarvis.Core.Services
             {
                 Data = paged.Data.Select(x => new PagingOrganizationResponseModel
                 {
-                    Code = x.Code,
+                    Code = x.Key,
                     Description = x.Description,
                     FullName = x.FullName,
                     IdParent = x.IdParent,
@@ -190,7 +190,7 @@ namespace Jarvis.Core.Services
         public async Task<bool> UpdateUnitAsync(Guid tenantCode, Guid userCode, Guid code, UpdateOrganizationUnitRequestModel request)
         {
             var repoOrganizationUnit = _uowCore.GetRepository<IOrganizationUnitRepository>();
-            var organizationUnit = await repoOrganizationUnit.GetQuery().FirstOrDefaultAsync(x => x.Code == code);
+            var organizationUnit = await repoOrganizationUnit.GetQuery().FirstOrDefaultAsync(x => x.Key == code);
             if (organizationUnit == null)
                 return false;
 
@@ -218,7 +218,7 @@ namespace Jarvis.Core.Services
 
             var units = entities.Select(x => new OrganizationUnit
             {
-                Code = x.Code,
+                Key = x.Key,
                 Description = x.Description,
                 FullName = x.FullName,
                 IdParent = x.IdParent.HasValue ? x.IdParent.Value : Guid.Empty,
@@ -269,7 +269,7 @@ namespace Jarvis.Core.Services
 
                 await repoUnit.InsertAsync(new OrganizationUnit
                 {
-                    Code = code,
+                    Key = code,
                     CreatedAt = DateTime.Now,
                     CreatedAtUtc = DateTime.UtcNow,
                     CreatedBy = userCode,
@@ -338,7 +338,7 @@ namespace Jarvis.Core.Services
                 //Chèn node với LEFT = parent RIGHT - 2 và RIGHT = parent RIGHT - 1
                 await repoUnit.InsertAsync(new OrganizationUnit
                 {
-                    Code = code,
+                    Key = code,
                     CreatedAt = DateTime.Now,
                     CreatedAtUtc = DateTime.UtcNow,
                     CreatedBy = userCode,
@@ -385,7 +385,7 @@ namespace Jarvis.Core.Services
                 var nodes = new List<OrganizationUnit>();
                 nodes.Add(node);
                 nodes.AddRange(children);
-                var codes = nodes.Select(x => x.Code).ToList();
+                var codes = nodes.Select(x => x.Key).ToList();
 
                 var space = nodes.Count * 2;
 
@@ -437,7 +437,7 @@ namespace Jarvis.Core.Services
                     .ToListAsync();
 
                 //Bỏ qua không dồn các node cần dịch chuyển
-                rightForInserts = rightForInserts.Where(x => !codes.Contains(x.Code)).ToList();
+                rightForInserts = rightForInserts.Where(x => !codes.Contains(x.Key)).ToList();
                 foreach (var item in rightForInserts)
                 {
                     repoUnit.UpdateFields(item,
@@ -451,7 +451,7 @@ namespace Jarvis.Core.Services
                     .ToListAsync();
 
                 //Bỏ qua không dồn các node cần dịch chuyển
-                leftForInserts = leftForInserts.Where(x => !codes.Contains(x.Code)).ToList();
+                leftForInserts = leftForInserts.Where(x => !codes.Contains(x.Key)).ToList();
                 foreach (var item in leftForInserts)
                 {
                     repoUnit.UpdateFields(item,
@@ -510,7 +510,7 @@ namespace Jarvis.Core.Services
                 var repoUnit = _uowCore.GetRepository<IOrganizationUnitRepository>();
 
                 //Tìm node cần xoá
-                var node = await repoUnit.GetQuery().FirstOrDefaultAsync(x => x.Code == code && x.TenantCode == tenantCode && !x.DeletedVersion.HasValue);
+                var node = await repoUnit.GetQuery().FirstOrDefaultAsync(x => x.Key == code && x.TenantCode == tenantCode && !x.DeletedVersion.HasValue);
                 if (node == null)
                     return false;
 

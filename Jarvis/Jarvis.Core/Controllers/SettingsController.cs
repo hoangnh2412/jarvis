@@ -33,68 +33,58 @@ namespace Jarvis.Core.Controllers
         {
             //lấy ra tất các các group default trong Db có tenantCode = Guid.Empty() hiển thị
             // setting nào có tenantCode != Guid.Empty rồi thì lấy dữ liệu db ra
-            var tenantCode = await workContext.GetTenantCodeAsync();
+            var tenantCode = workContext.GetTenantKey();
 
             var repo = uow.GetRepository<ISettingRepository>();
             var settings = await repo.GetByTenantCodesAsync(new List<Guid> { Guid.Empty, tenantCode });
-            settings = settings.Where(x => !x.IsReadOnly).ToList(); //chỉ lấy setting nào đc hiển thị
 
-            var defaulSettings = settings.Where(x => x.TenantCode == Guid.Empty);
-            var entities = settings.Except(defaulSettings);
+            var grouped = settings.GroupBy(x => x.Group);
+            var groupNames = settingService.GetGroupSettings();
 
-            var groupSettingKeys = settingService.GetGroupSettings();
-
-            var settingGroups = new List<SettingGroupModel>();
-
-            var defaultGroups = defaulSettings.GroupBy(x => x.Group);
-
-
-            //Hiển thị toàn bộ setting theo group
-            foreach (var defaultGroup in defaultGroups)
+            var groups = new List<SettingGroupModel>();
+            foreach (var element in grouped)
             {
-                //Nếu group nào chưa có DisplayName sẽ ko hiển thị ra ngoài
-                if (!groupSettingKeys.ContainsKey(defaultGroup.Key))
-                    continue;
-
-                var settingGroup = new SettingGroupModel
+                var group = new SettingGroupModel
                 {
-                    Key = defaultGroup.Key,
-                    Name = groupSettingKeys[defaultGroup.Key],
+                    Key = element.Key,
+                    Name = groupNames.ContainsKey(element.Key) ? groupNames[element.Key] : "",
                     Settings = new List<SettingModel>()
                 };
 
-                var defaultSettings = defaultGroup.ToList();
-                foreach (var defaultSetting in defaultSettings)
-                {
+                var defaultSettings = element.Where(x => x.TenantCode == Guid.Empty);
+                var tenantSettings = element.Where(x => x.TenantCode == tenantCode);
 
-                    //Lấy cấu hình mặc định
+                foreach (var item in defaultSettings)
+                {
                     var setting = new SettingModel
                     {
-                        Key = defaultSetting.Key,
-                        Name = defaultSetting.Name,
-                        Type = EnumExtension.ToEnum<SettingType>(defaultSetting.Type),
-                        Group = defaultSetting.Group,
-                        Options = string.IsNullOrWhiteSpace(defaultSetting.Options) ? new List<KeyValuePair<string, string>>() : defaultSetting.Options.Split("|").Select(x => x.Split(":")).Select(x => new KeyValuePair<string, string>(x[0], x[1])).ToList(),
-                        Value = defaultSetting.Value,
-                        Description = defaultSetting.Description
+                        TenantCode = item.TenantCode,
+                        Key = item.Key,
+                        Code = item.Code,
+                        Name = item.Name,
+                        Description = item.Description,
+                        Note = item.Note,
+                        Type = EnumExtension.ToEnum<SettingType>(item.Type),
+                        Group = item.Group,
+                        Options = string.IsNullOrWhiteSpace(item.Options) ? new Dictionary<string, string>() : item.Options.Split("|").Select(x => x.Split(":")).ToDictionary(x => x[0], x => x[1]),
+                        Value = item.Value,
                     };
 
-                    //Lấy giá trị trên CSDL
-                    var entity = entities.FirstOrDefault(x => x.Key == defaultSetting.Key);
-                    if (entity != null)
+                    var tenantSetting = tenantSettings.FirstOrDefault(x => x.Code == item.Code);
+                    if (tenantSetting != null)
                     {
-                        setting.Id = entity.Id;
-                        setting.Code = entity.Code;
-                        setting.TenantCode = entity.TenantCode;
-                        setting.Value = entity.Value;
+                        setting.Key = tenantSetting.Key;
+                        setting.TenantCode = tenantSetting.TenantCode;
+                        setting.Value = tenantSetting.Value;
                     }
-                    settingGroup.Settings.Add(setting);
+
+                    group.Settings.Add(setting);
                 }
 
-                settingGroups.Add(settingGroup);
+                groups.Add(group);
             }
 
-            return Ok(settingGroups);
+            return Ok(groups);
         }
 
         [HttpGet("group/{key}")]
@@ -104,14 +94,14 @@ namespace Jarvis.Core.Controllers
             [FromServices] ICoreUnitOfWork uow,
             [FromServices] IWorkContext workContext)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
+            var tenantCode = await workContext.GetTenantKeyAsync();
 
             var settingRepo = uow.GetRepository<ISettingRepository>();
             var settings = await settingRepo.GetByGroupAsync(tenantCode, key);
             return Ok(settings.Select(x => new
             {
                 x.Id,
-                x.Key,
+                x.Code,
                 x.Value
             }));
         }
@@ -123,14 +113,14 @@ namespace Jarvis.Core.Controllers
             [FromServices] ICoreUnitOfWork uow,
             [FromServices] IWorkContext workContext)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
+            var tenantCode = await workContext.GetTenantKeyAsync();
 
             var settingRepo = uow.GetRepository<ISettingRepository>();
             var setting = await settingRepo.GetByKeyAsync(tenantCode, key);
             return Ok(new
             {
                 setting.Id,
-                setting.Key,
+                setting.Code,
                 setting.Value
             });
         }
@@ -150,90 +140,60 @@ namespace Jarvis.Core.Controllers
         [Authorize(nameof(CorePolicy.SettingPolicy.Setting_Update))]
         public async Task<IActionResult> PostAsync(
             [FromRoute] string group,
-            [FromBody] List<SettingModel> command,
+            [FromBody] List<SettingModel> input,
             [FromServices] ICoreUnitOfWork uow,
             [FromServices] IWorkContext workContext,
             [FromServices] ISettingService settingService,
             [FromServices] IEventFactory eventFactory)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
-            var usercode = workContext.GetUserCode();
+            var tenantCode = workContext.GetTenantKey();
+            var userCode = workContext.GetUserKey();
 
-            //phân biệt ra sửa và thêm
-            //Sửa setting
             var repo = uow.GetRepository<ISettingRepository>();
-            var entities = await repo.GetByGroupTenantAsync(tenantCode, group);
-            var entityByKey = entities.GroupBy(x => x.Key, x => x)
-                                       .ToDictionary(x => x.Key, x => x.FirstOrDefault());
+            var settings = await repo.GetByGroupTenantAsync(tenantCode, group);
+            var indexSetting = settings.ToDictionary(x => x.Code, x => x);
+            var defaultSettings = settingService.GetDefaultSettings().Where(x => x.Group == group);
 
-            var defaultSettings = settingService.GetDefaultSettings();
-
-            var inserts = new List<Setting>();
-            var updates = new List<Setting>();
-            foreach (var item in command)
+            foreach (var item in input)
             {
-                if (entityByKey.ContainsKey(item.Key))
+                if (indexSetting.ContainsKey(item.Code))
                 {
-                    //sửa
-                    var setting = entityByKey[item.Key];
-
+                    var setting = indexSetting[item.Code];
                     setting.Value = item.Value;
                     setting.UpdatedAt = DateTime.Now;
                     setting.UpdatedAtUtc = DateTime.UtcNow;
-                    setting.UpdatedBy = usercode;
-
-                    updates.Add(setting);
+                    setting.UpdatedBy = userCode;
                 }
                 else
                 {
-                    //thêm
-                    //Setting ko có trong default => bỏ qua
-                    var defaultSetting = defaultSettings.FirstOrDefault(x => x.Key == item.Key);
-                    if (defaultSetting == null)
-                        continue;
-
-                    var setting = new Setting
+                    var defaultSetting = defaultSettings.FirstOrDefault(x => x.Code == item.Code);
+                    await repo.InsertAsync(new Setting
                     {
-                        Code = Guid.NewGuid(),
-                        Group = group,
-                        Key = item.Key,
+                        Key = Guid.NewGuid(),
+                        Code = item.Code,
                         Name = defaultSetting.Name,
+                        Group = group,
                         Value = item.Value,
                         Options = defaultSetting.Options,
                         Type = defaultSetting.Type,
                         CreatedAt = DateTime.Now,
                         CreatedAtUtc = DateTime.UtcNow,
-                        CreatedBy = usercode,
+                        CreatedBy = userCode,
                         Description = defaultSetting.Description,
-                        TenantCode = tenantCode,
-                    };
-                    inserts.Add(setting);
+                        Note = defaultSetting.Note,
+                        TenantCode = tenantCode
+                    });
                 }
             }
 
-            var hasChange = false;
-            if (inserts.Count > 0)
-            {
-                await repo.InsertsAsync(inserts);
-                hasChange = true;
-            }
-
-            if (updates.Count > 0)
-            {
-                repo.Updates(updates);
-                hasChange = true;
-            }
-
-            if (!hasChange)
-                return Ok();
-
             await uow.CommitAsync();
 
-            //Notification
             eventFactory.GetOrAddEvent<IEvent<SettingUpdatedEventModel>, ISettingUpdatedEvent>().ForEach(async (e) =>
             {
                 await e.PublishAsync(new SettingUpdatedEventModel
                 {
+                    TenantKey = tenantCode,
+                    UserKey = userCode,
                     Group = group
                 });
             });

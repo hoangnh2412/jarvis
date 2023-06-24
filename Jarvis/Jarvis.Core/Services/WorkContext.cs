@@ -23,9 +23,9 @@ namespace Jarvis.Core.Services
 {
     public interface IWorkContext
     {
-        Guid? GetTokenCode();
+        Guid GetTokenId();
 
-        Guid GetUserCode();
+        Guid GetUserKey();
 
         Task<User> GetUserAsync();
 
@@ -39,7 +39,7 @@ namespace Jarvis.Core.Services
         /// Lấy TenantCode theo domain hoặc querystring
         /// </summary>
         /// <returns></returns>
-        Task<Guid> GetTenantCodeAsync();
+        Task<Guid> GetTenantKeyAsync();
 
         /// <summary>
         /// Lấy Tenant theo domain hoặc querystring
@@ -51,19 +51,16 @@ namespace Jarvis.Core.Services
         /// Lấy TenantCode trong token
         /// </summary>
         /// <returns></returns>
-        Guid GetTenantCode();
+        Guid GetTenantKey();
 
         Task<bool> HasClaimsAsync(List<string> claims);
 
         Task<List<string>> GetClaimsAsync(string prefix);
 
-        Task<KeyValuePair<ClaimOfResource, ClaimOfChildResource>> GetClaimOfResourceAsync(string claim);
-
         Task<ContextModel> GetContextAsync(string policy);
 
         Task<T> GetOrAddCachePerRequestAsync<T>(string key, Func<Task<T>> builder);
     }
-
 
     public class WorkContext : IWorkContext
     {
@@ -98,7 +95,7 @@ namespace Jarvis.Core.Services
             //Nếu sử dụng JWT để đăng nhập
             if (_httpContext.User.Identity.AuthenticationType == "AuthenticationTypes.Federation")
             {
-                var idUser = GetUserCode();
+                var idUser = GetUserKey();
                 if (idUser != Guid.Empty)
                     _currentUser = await _userManager.FindByIdAsync(idUser.ToString());
             }
@@ -117,11 +114,11 @@ namespace Jarvis.Core.Services
                 return _currentToken;
             }
 
-            var tokenCode = GetTokenCode();
-            if (tokenCode == null)
+            var tokenId = GetTokenId();
+            if (tokenId == Guid.Empty)
                 return null;
 
-            var bytes = await _cache.GetAsync($":TokenInfos:{tokenCode}");
+            var bytes = await _cache.GetAsync($":TokenInfos:{tokenId}");
             if (bytes != null)
             {
                 var data = JsonConvert.DeserializeObject<TokenInfo>(Encoding.UTF8.GetString(bytes));
@@ -130,7 +127,7 @@ namespace Jarvis.Core.Services
             }
 
             var repoToken = _uow.GetRepository<ITokenRepository>();
-            var token = await repoToken.GetByCodeAsync(tokenCode.Value);
+            var token = await repoToken.GetByCodeAsync(tokenId);
 
             if (token == null)
                 return null;
@@ -139,24 +136,24 @@ namespace Jarvis.Core.Services
 
             var cacheOption = new DistributedCacheEntryOptions();
             cacheOption.AbsoluteExpiration = token.ExpireAt;
-            await _cache.SetAsync($":TokenInfos:{tokenCode}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
+            await _cache.SetAsync($":TokenInfos:{tokenId}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(token)), cacheOption);
             return _currentToken;
         }
 
-        public Guid? GetTokenCode()
+        public Guid GetTokenId()
         {
             var tokenCode = _httpContext.User.FindFirstValue(JwtRegisteredClaimNames.Jti);
             if (tokenCode == null)
-                return null;
+                return Guid.Empty;
             return Guid.Parse(tokenCode);
         }
 
-        public Guid GetUserCode()
+        public Guid GetUserKey()
         {
-            var userCode = _httpContext.User.FindFirstValue(ClaimTypes.Sid);
-            if (userCode == null)
+            var userKey = _httpContext.User.FindFirstValue(ClaimTypes.Sid);
+            if (userKey == null)
                 return Guid.Empty;
-            return Guid.Parse(userCode);
+            return Guid.Parse(userKey);
         }
 
         public async Task<Tenant> GetCurrentTenantAsync()
@@ -172,16 +169,16 @@ namespace Jarvis.Core.Services
             return await identiticationService.GetCurrentTenantAsync(_httpContext);
         }
 
-        public async Task<Guid> GetTenantCodeAsync()
+        public async Task<Guid> GetTenantKeyAsync()
         {
             var tenant = await GetCurrentTenantAsync();
             if (tenant != null)
-                return tenant.Code;
+                return tenant.Key;
 
             return Guid.Empty;
         }
 
-        public Guid GetTenantCode()
+        public Guid GetTenantKey()
         {
             var tenantCode = _httpContext.User.FindFirstValue(ClaimTypes.GroupSid);
             if (tenantCode != null)
@@ -195,7 +192,7 @@ namespace Jarvis.Core.Services
             if (session == null)
                 return false;
 
-            if (session.Claims.ContainsKey(nameof(SpecialPolicy.Special_DoEnything)) || session.Claims.Any(x => claims.Contains(x.Key)))
+            if (session.Claims.Any(x => claims.Contains(x.Key)))
                 return true;
             return false;
         }
@@ -203,9 +200,6 @@ namespace Jarvis.Core.Services
         public async Task<List<string>> GetClaimsAsync(string prefix)
         {
             var claims = new List<string>();
-
-            var specials = typeof(SpecialPolicy).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy).Where(fi => fi.IsLiteral && !fi.IsInitOnly).ToList();
-            claims.AddRange(specials.Select(x => x.Name).ToList());
 
             var session = await GetSessionAsync();
             if (session == null)
@@ -215,36 +209,17 @@ namespace Jarvis.Core.Services
             return claims;
         }
 
-        public async Task<KeyValuePair<ClaimOfResource, ClaimOfChildResource>> GetClaimOfResourceAsync(string claim)
-        {
-            var session = await GetSessionAsync();
-            if (session == null)
-                return new KeyValuePair<ClaimOfResource, ClaimOfChildResource>(default, default);
-
-            if (!session.Claims.ContainsKey(claim))
-                return new KeyValuePair<ClaimOfResource, ClaimOfChildResource>(default, default);
-
-            return session.Claims[claim];
-        }
-
         public async Task<ContextModel> GetContextAsync(string policy)
         {
             var session = await GetSessionAsync();
             if (session == null)
                 return null;
 
-            KeyValuePair<ClaimOfResource, ClaimOfChildResource> claim = new KeyValuePair<ClaimOfResource, ClaimOfChildResource>(default(ClaimOfResource), default(ClaimOfChildResource));
-            if (session.Claims.ContainsKey(policy))
-                claim = session.Claims[policy];
-
             var context = new ContextModel
             {
                 Session = session,
-                TenantCode = await GetTenantCodeAsync(),
-                IdUser = GetUserCode(),
-                ClaimOfOperation = policy,
-                ClaimOfResource = claim.Key,
-                ClaimOfChildResource = claim.Value
+                TenantKey = await GetTenantKeyAsync(),
+                UserKey = GetUserKey()
             };
             return context;
         }

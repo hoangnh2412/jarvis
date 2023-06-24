@@ -11,14 +11,14 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
 {
     public class FileRepository : EntityRepository<File>, IFileRepository
     {
-        public async Task<File> GetByIdAsync(Guid id)
+        public async Task<File> GetByKeyAsync(Guid key)
         {
-            return await Query.FirstOrDefaultAsync(x => x.Id == id);
+            return await Query.FirstOrDefaultAsync(x => x.Key == key);
         }
 
-        public async Task<List<File>> QueryByIdsAsync(List<Guid> idDocuments)
+        public async Task<List<File>> QueryByIdsAsync(List<Guid> keys)
         {
-            return await Query.Query(x => idDocuments.Contains(x.Id)).ToListAsync();
+            return await Query.Query(x => keys.Contains(x.Key)).ToListAsync();
         }
 
         public async Task<List<File>> QueryFileInRangeAsync(DateTime from, DateTime to)

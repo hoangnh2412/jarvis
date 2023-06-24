@@ -4,7 +4,8 @@ namespace Jarvis.Core.Models.Events.Roles
 {
     public class RoleCreatedEventModel
     {
-        public Guid TenantCode { get; set; }
+        public Guid TenantKey { get; set; }
+        public Guid RoleKey { get; set; }
         public string Name { get; set; }
     }
 }

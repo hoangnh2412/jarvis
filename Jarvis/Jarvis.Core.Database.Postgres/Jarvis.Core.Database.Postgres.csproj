@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Infrastructures\Infrastructure.Database.EntityFramework\Infrastructure.Database.EntityFramework.csproj" />
+    <ProjectReference Include="..\Jarvis.Core.Database\Jarvis.Core.Database.csproj" />
+  </ItemGroup>
+
+</Project>

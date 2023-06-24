@@ -1,0 +1,7 @@
+.dropzone-file-over {
+    border: dotted 3px lightgray;
+    margin: 0 auto;
+    padding: 20px;
+    width: 100%;
+    text-align: center;
+}

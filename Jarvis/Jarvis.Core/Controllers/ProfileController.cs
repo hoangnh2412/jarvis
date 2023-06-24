@@ -26,7 +26,7 @@ namespace Jarvis.Core.Controllers
         {
             var user = await workContext.GetUserAsync();
             var repoUser = uow.GetRepository<IUserRepository>();
-            var info = await repoUser.FindUserInfoByIdAsync(user.Id);
+            var info = await repoUser.FindUserInfoByKeyAsync(user.Key);
 
             var model = new ProfileModel
             {
@@ -53,12 +53,12 @@ namespace Jarvis.Core.Controllers
             user.PhoneNumber = model.PhoneNumber;
             user.UpdatedAt = DateTime.Now;
             user.UpdatedAtUtc = DateTime.UtcNow;
-            user.UpdatedBy = user.Id;
+            user.UpdatedBy = user.Key;
 
             repoUser.Update(user);
 
             var repoInfo = uow.GetRepository<IUserRepository>();
-            var info = await repoInfo.FindUserInfoByIdAsync(user.Id);
+            var info = await repoInfo.FindUserInfoByKeyAsync(user.Key);
             if (info != null)
             {
                 repoInfo.UpdateUserInfoFields(info,
@@ -72,7 +72,7 @@ namespace Jarvis.Core.Controllers
             {
                 await e.PublishAsync(new ProfileUpdatedEventModel
                 {
-                    IdUser = user.Id
+                    UserKey = user.Key
                 });
             });
             return Ok();
@@ -86,13 +86,13 @@ namespace Jarvis.Core.Controllers
         )
         {
             var user = await workContext.GetUserAsync();
-            await identityService.DeleteAsync(user.Id);
+            await identityService.DeleteAsync(user.Key);
 
             eventFactory.GetOrAddEvent<IEvent<ProfileDeletedEventModel>, IProfileDeletedEvent>().ForEach(async (e) =>
             {
                 await e.PublishAsync(new ProfileDeletedEventModel
                 {
-                    IdUser = user.Id
+                    UserKey = user.Key
                 });
             });
             return Ok();
@@ -108,14 +108,15 @@ namespace Jarvis.Core.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = await workContext.GetUserAsync();
-            await identityService.ChangePasswordAsync(user.Id, model);
+            var tenantKey = workContext.GetTenantKey();
+            var userKey = workContext.GetUserKey();
+            await identityService.ChangePasswordAsync(tenantKey, userKey, model);
 
             eventFactory.GetOrAddEvent<IEvent<ProfilePasswordChangedEventModel>, IProfilePasswordChangedEvent>().ForEach(async (e) =>
             {
                 await e.PublishAsync(new ProfilePasswordChangedEventModel
                 {
-                    IdUser = user.Id,
+                    UserKey = userKey,
                     Password = model.NewPassword
                 });
             });

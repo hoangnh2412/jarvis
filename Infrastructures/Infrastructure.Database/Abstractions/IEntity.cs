@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Infrastructure.Database.Abstractions
 {
     public interface IEntity
     {
+        public Guid Key { get; set; }
     }
 
     public interface IEntity<T> : IEntity
