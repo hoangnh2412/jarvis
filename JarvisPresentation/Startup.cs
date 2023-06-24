@@ -6,7 +6,7 @@ using Infrastructure.File.Abstractions;
 using Infrastructure.File.Minio;
 using Infrastructure.Message.Rabbit;
 using Jarvis.Core;
-using Jarvis.Core.Database.InMemory;
+using Jarvis.Core.Database.SQLite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
