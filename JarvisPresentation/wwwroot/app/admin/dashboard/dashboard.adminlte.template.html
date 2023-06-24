@@ -1,0 +1,285 @@
+<section class="content">
+    <div class="row margin-bottom-10">
+        <div class="col-sm-3 padding-right-5 padding-left-5">
+            <button id="drpTime" type="button" class="btn btn-warning btn-block" date-range-picker="" options="$ctrl.dateRangePicker.options" ng-model="$ctrl.dateRangePicker.date">
+                <i class="fa fa-calendar pull-left"></i>
+                <span> {{$ctrl.queryable.from | date: 'dd/MM/yyyy'}} - {{$ctrl.queryable.to | date: 'dd/MM/yyyy'}} </span>
+                <i class="fa fa-caret-down pull-right"></i>
+            </button>
+        </div>
+        <div class="col-sm-3 padding-right-5 padding-left-5">
+            <ng-selectize config='$ctrl.selectizeDimensionConfig' options='$ctrl.dimensions.data' ng-model='$ctrl.queryable.dimension'></ng-selectize>
+        </div>
+        <div class="col-sm-3 padding-right-5 padding-left-5">
+            <ng-selectize config='$ctrl.selectizeMeasureConfig' options='$ctrl.measures' ng-model='$ctrl.queryable.measure'></ng-selectize>
+        </div>
+        <div class="col-sm-3 padding-right-5 padding-left-5">
+            <a href="http://www.voicetotext-v1.vpbank.com.vn/" target="_blank" ng-if="$ctrl.context.tenantInfo.code === 'd11705b5-967b-4c10-b883-2808b0c16e89'" class="btn btn-success btn-block">Xem dữ liệu trước ngày 17/12/2022</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Tổng cuộc gọi</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.summary.total.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <div ng-if="$ctrl.data.summary.total.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                    <h1 class="no-margin text-center padding-bottom-10">{{$ctrl.data.summary.total.value | number: 0}}</h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Cuộc gọi được QC</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.summary.hasQC.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <div ng-if="$ctrl.data.summary.hasQC.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                    <h1 class="no-margin text-center padding-bottom-10">
+                        <span class="text-green">{{$ctrl.data.summary.hasQC.value | number: 0}}</span>
+                        <small>{{$ctrl.data.summary.hasQC.percent | number: 2}}%</small>
+                    </h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Cuộc gọi không QC</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.summary.notQC.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <div ng-if="$ctrl.data.summary.notQC.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                    <h1 class="no-margin text-center padding-bottom-10">
+                        <span class="text-primary">{{$ctrl.data.summary.notQC.value | number: 0}}</span>
+                        <small>{{$ctrl.data.summary.notQC.percent | number: 2}}%</small>
+                    </h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Cuộc gọi QC tự động không đạt</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.summary.failQCauto.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <div ng-if="$ctrl.data.summary.failQCauto.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                    <h1 class="no-margin text-center padding-bottom-10">
+                        <span class="text-orange">{{$ctrl.data.summary.failQCauto.value | number: 0}}</span>
+                        <small>{{$ctrl.data.summary.failQCauto.percent | number: 2}}%</small>
+                    </h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Cuộc gọi QC thủ công không đạt</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.summary.failQCmanual.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <div ng-if="$ctrl.data.summary.failQCmanual.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                    <h1 class="no-margin text-center padding-bottom-10">
+                        <span class="text-orange">{{$ctrl.data.summary.failQCmanual.value | number: 0}}</span>
+                        <small>{{$ctrl.data.summary.failQCmanual.percent | number: 2}}%</small>
+                    </h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-2 col-sm-6 col-xs-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Cuộc gọi không chuẩn mực</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.summary.bad.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <div ng-if="$ctrl.data.summary.bad.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                    <h1 class="no-margin text-center padding-bottom-10">
+                        <span class="text-danger">{{$ctrl.data.summary.bad.value | number: 0}}</span>
+                        <small>{{$ctrl.data.summary.bad.percent | number: 2}}%</small>
+                    </h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-3 col-md-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Số lượng cuộc gọi</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.charts.callQC.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <div class="chart" style="height: 230px;">
+                        <div ng-if="$ctrl.data.charts.callQC.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                        <canvas id="chartCall" height="230" class="chart chart-bar" chart-data="$ctrl.data.charts.callQC.config.data" chart-colors="$ctrl.data.charts.callQC.config.colors" chart-labels="$ctrl.data.charts.callQC.config.labels" chart-series="$ctrl.data.charts.callQC.config.series" chart-options="$ctrl.data.charts.callQC.config.options" chart-dataset-override="$ctrl.data.charts.callQC.config.datasetOverride" chart-click="$ctrl.data.charts.callQC.config.onClick"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Phát hiện lỗi từ khóa của ĐTV</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.charts.keyword.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <div class="chart" style="height: 230px;">
+                        <div class="loading" ng-if="$ctrl.data.charts.keyword.loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                        <canvas id="chartKeyword" height="230" class="chart chart-line" chart-data="$ctrl.data.charts.keyword.config.data" chart-labels="$ctrl.data.charts.keyword.config.labels" chart-series="$ctrl.data.charts.keyword.config.series" chart-options="$ctrl.data.charts.keyword.config.options" chart-colors="$ctrl.data.charts.keyword.config.colors" chart-dataset-override="$ctrl.data.charts.keyword.config.datasetOverride" chart-click="$ctrl.data.charts.keyword.config.onClick"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Đánh giá dữ liệu QC</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.charts.QC.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <div class="chart" style="height: 230px;">
+                        <div ng-if="$ctrl.data.charts.QC.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                        <canvas id="chartQC" height="230" class="chart chart-line" chart-data="$ctrl.data.charts.QC.config.data" chart-colors="$ctrl.data.charts.QC.config.colors" chart-labels="$ctrl.data.charts.QC.config.labels" chart-series="$ctrl.data.charts.QC.config.series" chart-options="$ctrl.data.charts.QC.config.options" chart-dataset-override="$ctrl.data.charts.QC.config.datasetOverride" chart-click="$ctrl.data.charts.QC.config.onClick"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Top 10 ý định thiếu</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.charts.topIntentMiss.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding" style="height: 230px; overflow-y: auto;">
+                    <div ng-if="$ctrl.data.charts.topIntentMiss.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                    <table class="table no-margin">
+                        <tbody>
+                            <tr ng-repeat="item in $ctrl.data.charts.topIntentMiss.config.data">
+                                <td><a href="javascript:void(0)" ng-click="$ctrl.data.charts.topIntentMiss.view(item.code)">{{item.name}}</a></td>
+                                <td>{{item.percent | number: 2}}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="col-lg-4 col-md-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Phân tích cảm xúc qua nội dung và âm điệu ĐTV</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.charts.emotionAgent.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <div class="chart" style="height: 230px;">
+                        <div ng-if="$ctrl.data.charts.emotionAgent.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                        <canvas id="chartEmotion" height="230" class="chart chart-bar" chart-data="$ctrl.data.charts.emotionAgent.config.data" chart-colors="$ctrl.data.charts.emotionAgent.config.colors" chart-labels="$ctrl.data.charts.emotionAgent.config.labels" chart-series="$ctrl.data.charts.emotionAgent.config.series" chart-options="$ctrl.data.charts.emotionAgent.config.options" chart-dataset-override="$ctrl.data.charts.emotionAgent.config.datasetOverride" chart-click="$ctrl.data.charts.emotionAgent.config.onClick"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Phân tích trạng thái kết thúc cuộc gọi</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.charts.endCallStatus.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <div class="chart" style="height: 230px;">
+                        <div ng-if="$ctrl.data.charts.endCallStatus.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                        <canvas id="chartendCallStatus" height="230" class="chart chart-bar" chart-data="$ctrl.data.charts.endCallStatus.config.data" chart-colors="$ctrl.data.charts.endCallStatus.config.colors" chart-labels="$ctrl.data.charts.endCallStatus.config.labels" chart-series="$ctrl.data.charts.endCallStatus.config.series" chart-options="$ctrl.data.charts.endCallStatus.config.options" chart-dataset-override="$ctrl.data.charts.endCallStatus.config.datasetOverride" chart-click="$ctrl.data.charts.endCallStatus.config.onClick"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Phân loại cuộc gọi theo thái độ ĐTV</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.charts.emotionCalling.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <div class="chart" style="height: 230px;">
+                        <div ng-if="$ctrl.data.charts.emotionCalling.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                        <canvas id="chartEmotionCalling" height="230" class="chart chart-bar" chart-data="$ctrl.data.charts.emotionCalling.config.data" chart-colors="$ctrl.data.charts.emotionCalling.config.colors" chart-labels="$ctrl.data.charts.emotionCalling.config.labels" chart-series="$ctrl.data.charts.emotionCalling.config.series" chart-options="$ctrl.data.charts.emotionCalling.config.options" chart-dataset-override="$ctrl.data.charts.emotionCalling.config.datasetOverride" chart-click="$ctrl.data.charts.emotionCalling.config.onClick"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-lg-6 col-md-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Cuộc gọi QC tự động KHÔNG ĐẠT</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.charts.failQCauto.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <div class="chart" style="height: 230px;">
+                        <div ng-if="$ctrl.data.charts.failQCauto.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                        <canvas id="chartQCAutoFail" height="230" class="chart-bar" chart-data="$ctrl.data.charts.failQCauto.config.data" chart-colors="$ctrl.data.charts.failQCauto.config.colors" chart-labels="$ctrl.data.charts.failQCauto.config.labels" chart-series="$ctrl.data.charts.failQCauto.config.series" chart-options="$ctrl.data.charts.failQCauto.config.options" chart-dataset-override="$ctrl.data.charts.failQCauto.config.datasetOverride" chart-click="$ctrl.data.charts.failQCauto.config.onClick"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-md-6 padding-right-5 padding-left-5">
+            <div class="box no-border margin-bottom-10">
+                <div class="box-header text-center">
+                    <h3 class="box-title box-title-15">Cuộc gọi QC thủ công KHÔNG ĐẠT</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" ng-click="$ctrl.data.charts.failQCmanual.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+                    </div>
+                </div>
+                <div class="box-body no-padding">
+                    <div class="chart" style="height: 230px;">
+                        <div ng-if="$ctrl.data.charts.failQCmanual.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+                        <canvas id="chartQCManualFail" height="230" class="chart-bar" chart-data="$ctrl.data.charts.failQCmanual.config.data" chart-colors="$ctrl.data.charts.failQCmanual.config.colors" chart-labels="$ctrl.data.charts.failQCmanual.config.labels" chart-series="$ctrl.data.charts.failQCmanual.config.series" chart-options="$ctrl.data.charts.failQCmanual.config.options" chart-dataset-override="$ctrl.data.charts.failQCmanual.config.datasetOverride" chart-click="$ctrl.data.charts.failQCmanual.config.onClick"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
