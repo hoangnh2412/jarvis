@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Infrastructures\Infrastructure.Database.Dapper\Infrastructure.Database.Dapper.csproj" />
-    <ProjectReference Include="..\Jarvis\Jarvis.Core.Database.SqlServer\Jarvis.Core.Database.SqlServer.csproj" />
+    <ProjectReference Include="..\Jarvis\Jarvis.Core.Database.InMemory\Jarvis.Core.Database.InMemory.csproj" />
     <ProjectReference Include="..\Jarvis\Jarvis.Core\Jarvis.Core.csproj" />
     <ProjectReference Include="..\Infrastructures\Infrastructure.File.Minio\Infrastructure.File.Minio.csproj" />
     <ProjectReference Include="..\Infrastructures\Infrastructure.Caching.InMemory\Infrastructure.Caching.InMemory.csproj" />

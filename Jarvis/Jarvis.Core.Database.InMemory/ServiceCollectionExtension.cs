@@ -2,7 +2,7 @@ using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Jarvis.Core.Database.MySql
+namespace Jarvis.Core.Database.InMemory
 {
     public static class ServiceCollectionExtension
     {
@@ -13,10 +13,7 @@ namespace Jarvis.Core.Database.MySql
 
             services.AddDbContextPool<CoreDbContext>(options =>
             {
-                options.UseMySql(ServerVersion.AutoDetect(connectionString), sqlOptions =>
-                {
-                    sqlOptions.MigrationsHistoryTable("__Core_Migration_History");
-                });
+                options.UseInMemoryDatabase(connectionString);
             });
             services.AddScoped<ICoreUnitOfWork, CoreUnitOfWork>();
         }
