@@ -82,18 +82,19 @@ namespace Jarvis.Core
             }
 
             DirectoryInfo solution = null;
+            var parent = Directory.GetParent(env.ContentRootPath);
             var times = 0;
             while (times < 5)
             {
-                var parent = Directory.GetParent(env.ContentRootPath);
                 var sln = parent.GetFiles("*.sln");
-                if (sln == null)
+                if (sln == null || sln.Length == 0)
                 {
+                    parent = parent.Parent;
                     times++;
                     continue;
                 }
 
-                solution = parent.Parent;
+                solution = parent;
                 break;
             }
 
@@ -112,33 +113,38 @@ namespace Jarvis.Core
                     FileProvider = new PhysicalFileProvider(path),
                 });
             }
-
         }
 
-        public static void UseConfigSwagger(this IApplicationBuilder app, Dictionary<string, string> endpoints = null, string prefix = null)
+        public static void UseConfigSwagger(this IApplicationBuilder app, string prefix = null)
+        {
+            app.UseSwagger(options =>
+            {
+                options.RouteTemplate = "/swagger/{documentName}/swagger.json";
+            });
+
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint((string.IsNullOrEmpty(prefix) ? string.Empty : $"/{prefix}") + "/swagger/v1/swagger.json", $"{Assembly.GetEntryAssembly().GetName().Name} document API");
+            });
+        }
+
+        public static void UseConfigSwaggerWithPrefix(this IApplicationBuilder app, string prefix)
         {
             app.UseSwagger(options =>
             {
                 options.RouteTemplate = prefix + "/swagger/{documentName}/swagger.json";
-                // options.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
-                // {
-                //     swaggerDoc.Servers = new List<OpenApiServer> { new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}{prefix}" } };
-                // });
             });
+
             app.UseSwaggerUI(options =>
             {
-                if (endpoints == null)
+                if (string.IsNullOrEmpty(prefix))
                 {
-                    options.SwaggerEndpoint("/swagger/v0/swagger.json", $"{Assembly.GetEntryAssembly().GetName().Name} API");
-                    // options.RoutePrefix = string.Empty;
+                    options.SwaggerEndpoint($"{prefix}/swagger/v1/swagger.json", $"{Assembly.GetEntryAssembly().GetName().Name} document API");
                 }
                 else
                 {
-                    foreach (var endpoint in endpoints)
-                    {
-                        options.SwaggerEndpoint(endpoint.Key, endpoint.Value);
-                    }
-                    // options.RoutePrefix = prefix;
+                    options.SwaggerEndpoint($"/{prefix}/swagger/v1/swagger.json", $"{Assembly.GetEntryAssembly().GetName().Name} document API");
+                    options.RoutePrefix = $"{prefix}/swagger";
                 }
             });
         }

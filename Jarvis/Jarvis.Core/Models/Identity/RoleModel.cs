@@ -8,7 +8,8 @@ namespace Jarvis.Models.Identity.Models.Identity
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public Dictionary<string, string> Claims { get; set; }
+        public string[] FunctionClaims { get; set; }
+        public string[] DataClaims { get; set; }
 
         public static implicit operator RoleModel(Role entity)
         {
@@ -16,7 +17,7 @@ namespace Jarvis.Models.Identity.Models.Identity
                 return null;
 
             var model = new RoleModel();
-            model.Id = entity.Id;
+            model.Id = entity.Key;
             model.Name = entity.Name;
             return model;
         }

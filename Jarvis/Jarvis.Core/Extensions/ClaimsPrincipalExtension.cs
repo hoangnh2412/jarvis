@@ -28,13 +28,15 @@ namespace Jarvis.Core.Extensions
             if (session == null)
                 return false;
 
-            var claims = session.Claims.Select(x => new Claim(x.Key, x.Value.ToString())).ToList();
+            if (session.Type == UserType.SuperAdmin)
+                return true;
 
-            var result = claims.Any(x => x.Type == nameof(SpecialPolicy.Special_DoEnything)
-                            || (x.Type == nameof(SpecialPolicy.Special_TenantAdmin) && ClaimOfTenantAdmin.Claims.Any(y => match(y)))
-                            || match(x));
+            if (session.Type == UserType.Admin)
+                return true;
 
-            return result;
+            var temp1 = session.Claims.Select(x => x.Value.Select(y => new Claim(x.Key, y)));
+            var temp2 = temp1.SelectMany(x => x);
+            return temp2.Any(x => match(x));
         }
     }
 }

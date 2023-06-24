@@ -6,7 +6,7 @@ namespace Jarvis.Core.Database.Poco
     public class TenantInfo : IEntity<int>
     {
         public int Id { get; set; }
-        public Guid Code { get; set; }
+        public Guid Key { get; set; }
         public bool IsCurrent { get; set; }
         public string TaxCode { get; set; }
         public string Address { get; set; }

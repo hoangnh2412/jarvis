@@ -28,4 +28,12 @@ namespace Jarvis.Core.Permissions
     public class OrganizationAuthorizationCrudPolicy : AuthorizationCrudPolicy<OrganizationUnit>, IAuthorizationCrudPolicy
     {
     }
+
+    public class EmailTemplateAuthorizationCrudPolicy : AuthorizationCrudPolicy<EmailTemplate>, IAuthorizationCrudPolicy
+    {
+    }
+
+    public class EmailHistoryAuthorizationCrudPolicy : AuthorizationCrudPolicy<EmailHistory>, IAuthorizationCrudPolicy
+    {
+    }
 }

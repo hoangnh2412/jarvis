@@ -5,7 +5,6 @@ using Jarvis.Core.Constants;
 using Jarvis.Core.Database;
 using Jarvis.Core.Database.Poco;
 using Jarvis.Core.Database.Repositories;
-using Jarvis.Core.Permissions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -32,18 +31,18 @@ namespace Jarvis.Core.Controllers
             if (await repoTenant.AnyAsync())
                 return BadRequest("Hệ thống đã được cài đặt, không thể cài lại");
 
-            var tenantCode = Guid.NewGuid();
+            var tenantKey = Guid.NewGuid();
 
             //Thông tin doanh nghiệp
             await repoTenant.InsertAsync(new Tenant
             {
                 Name = model.TaxCode,
-                Code = tenantCode,
+                Key = tenantKey,
                 IsEnable = true,
                 CreatedAt = DateTime.Now,
                 CreatedAtUtc = DateTime.UtcNow,
                 CreatedBy = Guid.Empty,
-                Path = tenantCode.ToString()
+                Path = tenantKey.ToString()
             });
 
             await repoTenant.InsertInfoAsync(new TenantInfo
@@ -55,7 +54,7 @@ namespace Jarvis.Core.Controllers
                 District = model.District,
                 FullNameVi = model.FullNameVi,
                 FullNameEn = model.FullNameEn,
-                Code = tenantCode,
+                Key = tenantKey,
                 IsCurrent = true
             });
 
@@ -64,13 +63,13 @@ namespace Jarvis.Core.Controllers
             {
                 await repoTenant.InsertHostAsync(new TenantHost
                 {
-                    Code = tenantCode,
+                    Key = tenantKey,
                     HostName = model.HostName
                 });
             }
 
             await uow.CommitAsync();
-            return Ok(tenantCode);
+            return Ok(tenantKey);
         }
 
         /// <summary>
@@ -84,8 +83,8 @@ namespace Jarvis.Core.Controllers
             [FromServices] UserManager<User> userManager,
             [FromServices] ICoreUnitOfWork uow)
         {
-            //Tạo tài khoản ROOT
-            var idUser = Guid.NewGuid();
+            // Tạo tài khoản admin
+            var userKey = Guid.NewGuid();
             var user = new User
             {
                 CreatedAt = DateTime.Now,
@@ -93,25 +92,22 @@ namespace Jarvis.Core.Controllers
                 CreatedBy = Guid.Empty,
                 UserName = model.UserName,
                 TenantCode = model.TenantCode,
-                Id = idUser
+                Type = UserType.SuperAdmin.GetHashCode(),
+                Key = userKey,
+                Id = Guid.NewGuid()
             };
             var identityResult = await userManager.CreateAsync(user, model.Password);
             if (!identityResult.Succeeded)
                 return BadRequest(string.Join(";", identityResult.Errors.Select(x => x.Description)));
 
-            var repoUserInfo = uow.GetRepository<IUserRepository>();
-            await repoUserInfo.InsertUserInfoAsync(new UserInfo
+            var repoUser = uow.GetRepository<IUserRepository>();
+            await repoUser.InsertUserInfoAsync(new UserInfo
             {
                 AvatarPath = null,
                 FullName = model.FullName,
-                Id = idUser
+                Key = userKey
             });
             await uow.CommitAsync();
-
-            //Phân quyền tài khoản root
-            identityResult = await userManager.AddClaimAsync(user, new System.Security.Claims.Claim(nameof(SpecialPolicy.Special_DoEnything), $"{default(ClaimOfResource)}|{default(ClaimOfChildResource)}"));
-            if (!identityResult.Succeeded)
-                return BadRequest(string.Join(";", identityResult.Errors.Select(x => x.Description)));
             return Ok();
         }
 
@@ -141,9 +137,9 @@ namespace Jarvis.Core.Controllers
             {
                 await repoSetting.InsertAsync(new Setting
                 {
-                    Code = Guid.NewGuid(),
+                    Key = Guid.NewGuid(),
                     Group = item.Group,
-                    Key = item.Key,
+                    Code = item.Code,
                     Name = item.Name,
                     Value = item.Value,
                     Options = item.Options,
@@ -155,10 +151,9 @@ namespace Jarvis.Core.Controllers
                     TenantCode = Guid.Empty,
                 });
             }
-
             await uow.CommitAsync();
 
-            return Ok("Thêm setting mặc định thành công");
+            return Ok();
         }
     }
 }

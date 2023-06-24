@@ -5,9 +5,10 @@ using System.Text;
 
 namespace Jarvis.Core.Database.Poco
 {
-    public class UserInfo : IEntity<Guid>
+    public class UserInfo : IEntity<int>
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
+        public Guid Key { get; set; }
         public string FullName { get; set; }
         public string AvatarPath { get; set; }
     }

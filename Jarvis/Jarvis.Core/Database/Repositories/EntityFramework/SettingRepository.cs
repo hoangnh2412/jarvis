@@ -17,14 +17,11 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
     public class SettingRepository : EntityRepository<Setting>, ISettingRepository
     {
         private readonly ICacheService _cache;
-        private readonly DistributedCacheEntryOptions _cacheOptions;
 
         public SettingRepository(
-            ICacheService cache,
-            IOptions<DistributedCacheEntryOptions> cacheOptions)
+            ICacheService cache)
         {
             _cache = cache;
-            _cacheOptions = cacheOptions.Value;
         }
 
         public async Task<List<Setting>> GetByGroupAsync(Guid tenantCode, string group)
@@ -63,28 +60,17 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
 
             settings = await GetByTenantCodeAsync(tenantCode);
             if (settings.Count != 0)
-                await _cache.HashSetAsync(cacheKey, settings.ToDictionary(x => x.Key, x => JsonConvert.SerializeObject(x)), _cacheOptions);
+                await _cache.HashSetAsync(cacheKey, settings.ToDictionary(x => x.Code.ToString(), x => JsonConvert.SerializeObject(x)));
 
             return settings;
         }
 
-        public async Task<Setting> GetByKeyAsync(Guid tenantCode, string key)
+        public async Task<Setting> GetByKeyAsync(Guid tenantCode, string code)
         {
-            IQueryable<Setting> query = Query.Where(x => x.Key == key);
+            IQueryable<Setting> query = Query.Where(x => x.Code == code);
             query = query.Where(x => x.TenantCode == Guid.Empty || x.TenantCode == tenantCode);
 
             var settings = await query.AsQueryable().ToListAsync();
-            settings = RemoveDefaultSettings(tenantCode, settings);
-
-            return settings.FirstOrDefault();
-        }
-
-        public async Task<Setting> GetByKeyAsNoTrackingAsync(Guid tenantCode, string key)
-        {
-            IQueryable<Setting> query = Query.Where(x => x.Key == key);
-            query = query.Where(x => x.TenantCode == Guid.Empty || x.TenantCode == tenantCode);
-
-            var settings = await query.AsQueryable().AsNoTracking().ToListAsync();
             settings = RemoveDefaultSettings(tenantCode, settings);
 
             return settings.FirstOrDefault();
@@ -100,7 +86,7 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             if (bytes == null)
             {
                 setting = await GetByKeyAsync(tenantCode, key);
-                await _cache.SetAsync(cacheKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(setting)), _cacheOptions);
+                await _cache.SetAsync(cacheKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(setting)));
                 return setting;
             }
 
@@ -109,22 +95,22 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             return setting;
         }
 
-        public async Task<Setting> GetByKeyAsync(string key)
+        public async Task<Setting> GetByKeyAsync(string code)
         {
-            IQueryable<Setting> query = Query.Where(x => x.Key == key);
+            IQueryable<Setting> query = Query.Where(x => x.Code == code);
             query = query.QueryByTenantCode(Guid.Empty);
-            return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
+            return await query.FirstOrDefaultAsync();
         }
 
         public async Task<List<Setting>> GetByTenantCodesAsync(List<Guid> tenantCodes)
         {
-            return await Query.Query(x => tenantCodes.Contains(x.TenantCode)).ToListAsync();
+            return await Query.Query(x => tenantCodes.Contains(x.TenantCode) && !x.IsReadOnly).ToListAsync();
         }
 
         private static List<Setting> RemoveDefaultSettings(Guid tenantCode, List<Setting> entities)
         {
             var settings = new List<Setting>();
-            var groups = entities.GroupBy(x => x.Key);
+            var groups = entities.GroupBy(x => x.Code);
             foreach (var group in groups)
             {
                 //Nếu tất cả là setting mặc định => dùng setting default

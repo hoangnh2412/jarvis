@@ -17,7 +17,7 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
 
         public async Task<TokenInfo> QueryByCodeAsync(Guid code)
         {
-            return await Query.FirstOrDefaultAsync(x => x.Code == code);
+            return await Query.FirstOrDefaultAsync(x => x.Key == code);
         }
 
         public async Task<List<TokenInfo>> QueryByUserAsync(List<Guid> idUsers)

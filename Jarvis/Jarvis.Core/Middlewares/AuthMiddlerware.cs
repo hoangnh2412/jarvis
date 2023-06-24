@@ -60,7 +60,7 @@ namespace Jarvis.Core.Middlewares
                 //lưu vào cache
                 var cacheOption = new DistributedCacheEntryOptions();
                 cacheOption.AbsoluteExpirationRelativeToNow = tokenInfo.ExpireAtUtc.AddMilliseconds(-100) - now;
-                await cacheService.SetAsync($":TokenInfos:{tokenInfo.Code}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(tokenInfo)), cacheOption);
+                await cacheService.SetAsync($":TokenInfos:{tokenInfo.Key}", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(tokenInfo)), cacheOption);
 
                 await _next.Invoke(context);
                 return;

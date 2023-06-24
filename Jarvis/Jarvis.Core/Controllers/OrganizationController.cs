@@ -27,8 +27,8 @@ namespace Jarvis.Core.Controllers
             [FromServices] IWorkContext workContext
         )
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
-            var userCode = workContext.GetUserCode();
+            var tenantCode = await workContext.GetTenantKeyAsync();
+            var userCode = workContext.GetUserKey();
 
             var tree = await organizationService.GetTreeAsync(tenantCode);
             return Ok(tree);
@@ -52,8 +52,8 @@ namespace Jarvis.Core.Controllers
             [FromServices] IOrganizationService organizationService,
             [FromServices] IWorkContext workContext)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
-            var userCode = workContext.GetUserCode();
+            var tenantCode = await workContext.GetTenantKeyAsync();
+            var userCode = workContext.GetUserKey();
 
             var code = Guid.NewGuid();
 
@@ -77,8 +77,8 @@ namespace Jarvis.Core.Controllers
             [FromServices] IOrganizationService organizationService,
             [FromServices] IWorkContext workContext)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
-            var userCode = workContext.GetUserCode();
+            var tenantCode = await workContext.GetTenantKeyAsync();
+            var userCode = workContext.GetUserKey();
 
             var result = await organizationService.UpdateUnitAsync(tenantCode, userCode, code, request);
             if (!result)
@@ -96,8 +96,8 @@ namespace Jarvis.Core.Controllers
             [FromServices] IOrganizationService organizationService,
             [FromServices] IWorkContext workContext)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
-            var userCode = workContext.GetUserCode();
+            var tenantCode = await workContext.GetTenantKeyAsync();
+            var userCode = workContext.GetUserKey();
 
             var result = await organizationService.MoveNodeAsync(tenantCode, userCode, code, new MoveNodeRequestModel
             {
@@ -119,8 +119,8 @@ namespace Jarvis.Core.Controllers
             [FromServices] IOrganizationService organizationService,
             [FromServices] IWorkContext workContext)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
-            var userCode = workContext.GetUserCode();
+            var tenantCode = await workContext.GetTenantKeyAsync();
+            var userCode = workContext.GetUserKey();
 
             var result = await organizationService.RemoveNodeAsync(tenantCode, userCode, code);
             if (!result)
@@ -137,8 +137,8 @@ namespace Jarvis.Core.Controllers
             [FromServices] IOrganizationService organizationService,
             [FromServices] IWorkContext workContext)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
-            var userCode = workContext.GetUserCode();
+            var tenantCode = await workContext.GetTenantKeyAsync();
+            var userCode = workContext.GetUserKey();
 
             var users = await organizationService.GetUsersNotInUnitAsync(tenantCode, code, paging);
             return Ok(users);
@@ -152,8 +152,8 @@ namespace Jarvis.Core.Controllers
             [FromServices] IOrganizationService organizationService,
             [FromServices] IWorkContext workContext)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
-            var userCode = workContext.GetUserCode();
+            var tenantCode = await workContext.GetTenantKeyAsync();
+            var userCode = workContext.GetUserKey();
 
             var users = await organizationService.GetUsersInUnitAsync(tenantCode, code, paging);
             return Ok(users);
@@ -167,9 +167,9 @@ namespace Jarvis.Core.Controllers
             [FromServices] IOrganizationService organizationService,
             [FromServices] IWorkContext workContext)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
+            var tenantCode = await workContext.GetTenantKeyAsync();
 
-            var result = await organizationService.CreateUsersAsync(tenantCode, workContext.GetUserCode(), new CreateOrganizationUserRequestModel
+            var result = await organizationService.CreateUsersAsync(tenantCode, workContext.GetUserKey(), new CreateOrganizationUserRequestModel
             {
                 UnitCode = code,
                 UserCodes = new List<Guid> { userCode }
@@ -188,8 +188,8 @@ namespace Jarvis.Core.Controllers
             [FromServices] IOrganizationService organizationService,
             [FromServices] IWorkContext workContext)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
-            var userCode = workContext.GetUserCode();
+            var tenantCode = await workContext.GetTenantKeyAsync();
+            var userCode = workContext.GetUserKey();
 
             var result = await organizationService.CreateUsersAsync(code, userCode, new CreateOrganizationUserRequestModel
             {

@@ -16,7 +16,7 @@ namespace Jarvis.Core.Models
                 return null;
             
             var model = new OrganizationUnitModel {
-                Code = entity.Code,
+                Code = entity.Key,
                 Name = entity.Name,
                 FullName = entity.FullName,
                 Description = entity.Description,

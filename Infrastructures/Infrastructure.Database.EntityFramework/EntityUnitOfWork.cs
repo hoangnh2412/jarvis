@@ -40,9 +40,9 @@ namespace Infrastructure.Database.EntityFramework
             return repo;
         }
 
-        public async Task CommitAsync()
+        public async Task<int> CommitAsync()
         {
-            await StorageContext.SaveChangesAsync();
+            return await StorageContext.SaveChangesAsync();
         }
 
         public TTransaction BeginTransaction<TTransaction>(IsolationLevel? isolation = null)

@@ -12,7 +12,7 @@ namespace Infrastructure.Database.Abstractions
 
         TRepository GetRepository<TRepository>() where TRepository : IRepository;
 
-        Task CommitAsync();
+        Task<int> CommitAsync();
 
         TTransaction BeginTransaction<TTransaction>(IsolationLevel? isolation = null);
 

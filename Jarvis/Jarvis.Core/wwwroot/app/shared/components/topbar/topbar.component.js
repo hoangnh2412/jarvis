@@ -18,7 +18,7 @@
             ctrl.message = APP_CONFIG.MESSAGE;
 
             ctrl.$onInit = function () {
-                ctrl.navigations = cacheService.set('menu');
+                ctrl.navigations = cacheService.get('menu');
                 if (!ctrl.navigations) {
                     var token = cacheService.get('token');
                     if (token) {
@@ -130,44 +130,6 @@
                         $state.reload();
                     }
                 });
-            };
-        }])
-        .controller('changeTenantController', ['$scope', '$uibModalInstance', 'httpService', 'currentTenant', function ($scope, $uibModalInstance, httpService, currentTenant) {
-            var ctrl = $scope.$ctrl;
-            ctrl.tenants = [];
-
-            ctrl.$onInit = function () {
-                ctrl.getTenants();
-            };
-
-            ctrl.getTenants = function () {
-                httpService.get('/core/tenants', { cache: true }).then(function (response) {
-                    if (response.status === 200) {
-                        ctrl.tenants = response.data;
-                        ctrl.tenants.forEach(tenant => {
-                            if (tenant.code === currentTenant.code) {
-                                tenant.selected = true;
-                            } else {
-                                tenant.selected = false;
-                            }
-                        });
-                    }
-                });
-            };
-
-            ctrl.select = function (item) {
-                var tenant = ctrl.tenants.find(function (x) { return x.code === item.code; });
-                if (tenant) {
-                    ctrl.tenants.forEach(tenant => {
-                        tenant.selected = false;
-                    });
-                    tenant.selected = true;
-                }
-                $uibModalInstance.close(tenant);
-            };
-
-            ctrl.close = function () {
-                $uibModalInstance.close();
             };
         }]);
 }());

@@ -1,15 +1,12 @@
 ﻿using Jarvis.Core.Constants;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Jarvis.Core.Models
 {
     public class SettingModel
     {
-        public int Id { get; set; }
-        public Guid Code { get; set; }
-
+        public Guid Key { get; set; }
         public Guid TenantCode { get; set; }
 
         /// <summary>
@@ -20,8 +17,9 @@ namespace Jarvis.Core.Models
         /// <summary>
         /// Mã để lấy cấu hình, ko dc trùng
         /// </summary>
-        public string Key { get; set; }
 
+        public string Code { get; set; }
+        
         /// <summary>
         /// Tên cấu hình, hiển thị trên UI
         /// </summary>
@@ -35,7 +33,7 @@ namespace Jarvis.Core.Models
         /// <summary>
         /// Options để chọn khi cấu hình
         /// </summary>
-        public List<KeyValuePair<string, string>> Options { get; set; }
+        public Dictionary<string, string> Options { get; set; }
 
         /// <summary>
         /// Text, Textarea, Combobox
@@ -46,6 +44,8 @@ namespace Jarvis.Core.Models
         /// mô tả
         /// </summary>
         public string Description { get; set; }
+
+        public string Note { get; set; }
 
         /// <summary>
         /// Những cấu hình không được hiển thị nút xóa = true, mặc định ko dc xóa = false

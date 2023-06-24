@@ -15,7 +15,7 @@ namespace Jarvis.Core.Abstractions
 
             authorizationPolicyBuilder.RequireAssertion(async context =>
             {
-                return await context.User.HasClaimAsync(httpContext, x => x.Type == Name);
+                return await context.User.HasClaimAsync(httpContext, x => x.Value == Name);
             });
 
             return authorizationPolicyBuilder.Build();

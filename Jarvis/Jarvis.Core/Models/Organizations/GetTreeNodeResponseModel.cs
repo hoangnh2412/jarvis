@@ -24,7 +24,7 @@ namespace Jarvis.Core.Models.Organizations
 
             return new GetTreeNodeResponseModel
             {
-                Code = entity.Code,
+                Code = entity.Key,
                 Name = entity.Name,
                 FullName = entity.FullName,
                 Description = entity.Description,

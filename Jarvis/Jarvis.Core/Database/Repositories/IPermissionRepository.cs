@@ -25,5 +25,7 @@ namespace Jarvis.Core.Database.Repositories
         void DeleteRoleClaims(List<IdentityRoleClaim<Guid>> claims);
 
         void DeleteUserRoles(List<IdentityUserRole<Guid>> userRoles);
+
+        void DeleteUserClaims(List<IdentityUserClaim<Guid>> claims);
     }
 }

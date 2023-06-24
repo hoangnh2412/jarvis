@@ -2750,7 +2750,7 @@
             self.focus();
             self.isOpen = true;
             self.refreshState();
-            self.$dropdown.css({ visibility: 'hidden', display: 'block' });
+            self.$dropdown.css({ visibility: 'hidden', display: 'block', 'z-index': '99999' });
             self.positionDropdown();
             self.$dropdown.css({ visibility: 'visible' });
             self.trigger('dropdown_open', self.$dropdown);

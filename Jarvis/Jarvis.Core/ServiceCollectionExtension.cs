@@ -31,6 +31,9 @@ using Jarvis.Core.Abstractions;
 using Jarvis.Core.Services;
 using Jarvis.Core.Permissions;
 using Infrastructure.Abstractions.Validations;
+using Infrastructure.File.Abstractions;
+using Infrastructure.Abstractions.Events;
+using Jarvis.Core.Models;
 
 namespace Jarvis.Core
 {
@@ -54,14 +57,17 @@ namespace Jarvis.Core
         {
             //Base service
             services.AddSingleton<IModuleManager, ModuleManager>();
+            services.AddSingleton<IEventFactory, EventFactory>();
             services.AddScoped<IWorkContext, WorkContext>();
+            services.AddScoped<IDomainWorkContext, DomainWorkContext>();
 
             //Bussiness Services
             services.AddScoped<IIdentityService, IdentityService>();
             services.AddScoped<IEntityService, EntityService>();
             services.AddScoped<ISettingService, SettingService>();
-            services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<IOrganizationService, OrganizationService>();
+            services.AddScoped<IEmailTemplateCrudService, EmailTemplateCrudService>();
 
             //Repositories
             services.AddScoped<ICityRepository, CityRepository>();
@@ -79,6 +85,30 @@ namespace Jarvis.Core
             services.AddScoped<IUserRepository, UserRepository>();
         }
 
+        public static void AddConfigSetting(this IServiceCollection services, List<Type> instances = null)
+        {
+            services.AddSingleton<IGroupSetting, CoreGroupSetting>();
+            if (instances != null)
+            {
+                foreach (var item in instances)
+                {
+                    services.AddSingleton(typeof(IGroupSetting), item);
+                }
+            }
+        }
+
+        public static void AddConfigDefaultData(this IServiceCollection services, List<Type> instances = null)
+        {
+            services.AddSingleton<IDefaultData, JarvisDefaultData>();
+            if (instances != null)
+            {
+                foreach (var item in instances)
+                {
+                    services.AddSingleton(typeof(IDefaultData), item);
+                }
+            }
+        }
+
         public static void AddConfigMultitenant(this IServiceCollection services)
         {
             services.AddScoped<ITenantIdentificationService, HostTenantService>();
@@ -87,17 +117,40 @@ namespace Jarvis.Core
             //services.AddScoped<ICrudTenantService, CrudTenantService>();
         }
 
+        public static void AddConfigNavigation(this IServiceCollection services, List<Type> navs = null)
+        {
+            services.AddSingleton<INavigationService, NavigationService>();
+            services.AddSingleton<INavigation, SystemNavigation>();
+            services.AddSingleton<INavigation, TenantInfoNavigation>();
+            services.AddSingleton<INavigation, OrganizationNavigation>();
+            services.AddSingleton<INavigation, TenantNavigation>();
+            services.AddSingleton<INavigation, UserNavigation>();
+            services.AddSingleton<INavigation, RoleNavigation>();
+            services.AddSingleton<INavigation, LabelNavigation>();
+            services.AddSingleton<INavigation, SettingNavigation>();
+            services.AddSingleton<INavigation, EmailTemplateNavigation>();
+            services.AddSingleton<INavigation, EmailHistoryNavigation>();
+
+            if (navs != null)
+            {
+                foreach (var nav in navs)
+                {
+                    services.AddSingleton(typeof(INavigation), nav);
+                }
+            }
+        }
+
         public static void AddConfigPolicy(this IServiceCollection services, List<Type> policies = null)
         {
             services.AddSingleton<IPoliciesStorage, PoliciesStorage>();
-            services.AddSingleton<INavigationService, NavigationService>();
-
             services.AddSingleton<IPolicy, CorePolicy.LabelPolicy>();
             services.AddSingleton<IPolicy, CorePolicy.OrganizationPolicy>();
             services.AddSingleton<IPolicy, CorePolicy.RolePolicy>();
             services.AddSingleton<IPolicy, CorePolicy.SettingPolicy>();
             services.AddSingleton<IPolicy, CorePolicy.TenantPolicy>();
             services.AddSingleton<IPolicy, CorePolicy.UserPolicy>();
+            services.AddSingleton<IPolicy, CorePolicy.EmailTemplatePolicy>();
+            services.AddSingleton<IPolicy, CorePolicy.EmailHistoryPolicy>();
 
             if (policies != null)
             {
@@ -116,6 +169,8 @@ namespace Jarvis.Core
             services.AddSingleton<IAuthorizationCrudPolicy, LabelAuthorizationCrudPolicy>();
             services.AddSingleton<IAuthorizationCrudPolicy, SettingAuthorizationCrudPolicy>();
             services.AddSingleton<IAuthorizationCrudPolicy, OrganizationAuthorizationCrudPolicy>();
+            services.AddSingleton<IAuthorizationCrudPolicy, EmailTemplateAuthorizationCrudPolicy>();
+            services.AddSingleton<IAuthorizationCrudPolicy, EmailHistoryAuthorizationCrudPolicy>();
 
             services.AddSingleton<IAuthorizationPolicy, UserLockAuthorizationPolicy>();
             services.AddSingleton<IAuthorizationPolicy, UserResetPasswordAuthorizationPolicy>();
@@ -298,7 +353,7 @@ namespace Jarvis.Core
                 var name = Assembly.GetEntryAssembly().GetName().Name;
                 if (versions == null)
                 {
-                    options.SwaggerDoc("v0", new OpenApiInfo { Title = $"{name} API", Version = "v0" });
+                    options.SwaggerDoc("v1", new OpenApiInfo { Title = $"{name} API", Version = "v1" });
                 }
                 else
                 {

@@ -7,7 +7,7 @@ namespace Jarvis.Core.Database.Poco
     public class OrganizationUnit : IEntity<int>, ITenantEntity, ILogCreatedEntity, ILogUpdatedEntity, ILogDeletedEntity, ILogDeletedVersionEntity<int?>, IPermissionEntity
     {
         public int Id { get; set; }
-        public Guid Code { get; set; }
+        public Guid Key { get; set; }
         public string Name { get; set; }
         public string FullName { get; set; }
         public string Description { get; set; }

@@ -16,10 +16,10 @@ namespace Jarvis.Models.Identity.Models.Identity
 
         public bool Selected { get; set; }
 
-        public string Resource { get; set; }
-        public Dictionary<string, string> Resources { get; set; }
+        // public string Resource { get; set; }
+        // public Dictionary<string, string> Resources { get; set; }
         
-        public string ChildResource { get; set; }
-        public Dictionary<string, string> ChildResources { get; set; }
+        // public string ChildResource { get; set; }
+        // public Dictionary<string, string> ChildResources { get; set; }
     }
 }

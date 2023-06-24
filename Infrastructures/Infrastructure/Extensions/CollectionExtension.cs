@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Infrastructure.Extensions
 {
@@ -18,6 +19,17 @@ namespace Infrastructure.Extensions
             {
                 collection.Add(item);
             }
+        }
+
+        public static List<T> PaginationList<T>(this List<T> collection, int page, int size)
+        {
+            page = page - 1;
+            return collection.Skip(page * size).Take(size).ToList();
+        }
+
+        public static int PaginationPage<T>(this List<T> collection, int page, int size)
+        {
+            return collection.Count % size == 0 ? collection.Count / size : collection.Count / size + 1;
         }
     }
 }

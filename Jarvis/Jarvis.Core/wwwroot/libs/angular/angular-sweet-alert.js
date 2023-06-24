@@ -73,6 +73,23 @@
                         }).then(callback);
                     });
                 },
+                mConfirm: function (title, message, preConfirm, callback) {
+                    $rootScope.$evalAsync(function () {
+                        Swal.fire({
+                            title: title,
+                            text: message,
+                            type: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Có',
+                            cancelButtonText: 'Không',
+                            showLoaderOnConfirm: true,
+                            allowOutsideClick: false,
+                            preConfirm: preConfirm
+                        }).then(callback);
+                    });
+                },
                 pConfirm: function (text, preConfirm) {
                     return Swal.fire({
                         title: 'Xác nhận',

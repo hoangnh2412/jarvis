@@ -32,17 +32,17 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
         public async Task<OrganizationUnit> GetByCodeAsync(ContextModel context, Guid code)
         {
             IQueryable<OrganizationUnit> query = Query.QueryByPermission(context);
-            return await query.FirstOrDefaultAsync(x => x.Code == code && !x.DeletedVersion.HasValue);
+            return await query.FirstOrDefaultAsync(x => x.Key == code && !x.DeletedVersion.HasValue);
         }
 
         public async Task<OrganizationUnit> GetByCodeAsync(Guid tenantCode, Guid code)
         {
-            return await Query.FirstOrDefaultAsync(x => x.Code == code && x.TenantCode == tenantCode && !x.DeletedVersion.HasValue);
+            return await Query.FirstOrDefaultAsync(x => x.Key == code && x.TenantCode == tenantCode && !x.DeletedVersion.HasValue);
         }
 
         public async Task<List<OrganizationUnit>> GetByCodesAsync(Guid tenantCode, List<Guid> codes)
         {
-            return await Query.Where(x => codes.Contains(x.Code) && x.TenantCode == tenantCode && !x.DeletedVersion.HasValue).ToListAsync();
+            return await Query.Where(x => codes.Contains(x.Key) && x.TenantCode == tenantCode && !x.DeletedVersion.HasValue).ToListAsync();
         }
 
         public async Task<List<OrganizationUnit>> GetNodeLeafsAsync(Guid tenantCode)
@@ -52,7 +52,7 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
 
         public async Task<bool> IsNodeLeafAsync(Guid tenantCode, Guid code)
         {
-            return await Query.AnyAsync(x => x.Right == x.Left + 1 && x.Code == code && x.TenantCode == tenantCode && !x.DeletedVersion.HasValue);
+            return await Query.AnyAsync(x => x.Right == x.Left + 1 && x.Key == code && x.TenantCode == tenantCode && !x.DeletedVersion.HasValue);
         }
 
         public Task<Dictionary<Guid, int>> GetNodeDepth(Guid tenantCode)

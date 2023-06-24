@@ -15,7 +15,7 @@ namespace Jarvis.Core.Permissions
 
             authorizationPolicyBuilder.RequireAssertion(async context =>
             {
-                return await context.User.HasClaimAsync(httpContext, x => x.Type == Name);
+                return await context.User.HasClaimAsync(httpContext, x => x.Value == Name);
             });
 
             return authorizationPolicyBuilder.Build();
@@ -32,7 +32,7 @@ namespace Jarvis.Core.Permissions
 
             authorizationPolicyBuilder.RequireAssertion(async context =>
             {
-                return await context.User.HasClaimAsync(httpContext, x => x.Type == Name);
+                return await context.User.HasClaimAsync(httpContext, x => x.Value == Name);
             });
 
             return authorizationPolicyBuilder.Build();

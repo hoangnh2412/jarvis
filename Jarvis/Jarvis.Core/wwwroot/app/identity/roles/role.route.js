@@ -31,9 +31,9 @@
             }
         })
         .config(function ($stateProvider) {
-            $stateProvider.state('identity.backend.role', {
+            $stateProvider.state('identity.management.role', {
                 url: '/role',
-                redirectTo: 'identity.backend.role.read',
+                redirectTo: 'identity.management.role.read',
                 resolve: {
                     roleService: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
                         return $ocLazyLoad.load(componentService.replace('/app/identity/roles/role.service.js'));
@@ -41,7 +41,7 @@
                 }
             });
 
-            $stateProvider.state('identity.backend.role.read', {
+            $stateProvider.state('identity.management.role.read', {
                 url: '/read',
                 component: 'uiRoleRead',
                 // data: {
@@ -54,7 +54,7 @@
                 }
             });
 
-            $stateProvider.state('identity.backend.role.create', {
+            $stateProvider.state('identity.management.role.create', {
                 component: 'uiRoleCreate',
                 url: '/create',
                 // data: {
@@ -67,7 +67,7 @@
                 }
             });
 
-            $stateProvider.state('identity.backend.role.update', {
+            $stateProvider.state('identity.management.role.update', {
                 component: 'uiRoleUpdate',
                 url: '/update/:id',
                 // data: {

@@ -20,4 +20,34 @@
             return this; // for testing purposes
         };
     }
+
+    if (!Date.prototype.removeTime) {
+        Date.prototype.removeTime = function () {
+            return new Date(
+                this.getFullYear(),
+                this.getMonth(),
+                this.getDate()
+            );
+        };
+    };
 })(this);
+
+var DatetimeExtension = {
+    dateDiff: function (from, to, type) {
+        let difference = from.getTime() - to.getTime();
+
+        if (type === 'days') {
+            return Math.ceil(difference / (1000 * 3600 * 24));
+        }
+
+        if (type === 'hours') {
+            return Math.ceil(difference / (1000 * 3600 * 24) / 24);
+        }
+
+        if (type === 'minutes') {
+            return Math.ceil(difference / (1000 * 3600 * 24) / 24 / 60);
+        }
+
+        return difference;
+    }
+};

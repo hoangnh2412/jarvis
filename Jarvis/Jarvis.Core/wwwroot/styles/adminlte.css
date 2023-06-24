@@ -61,3 +61,40 @@
   /* position: fixed; */
   /* width: 100%; */
 }
+
+
+/* Form control */
+.form-control {
+  border-radius: 6px;
+}
+
+.form-control:focus {
+  color: #212529;
+  background-color: #fff;
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25);
+}
+
+.btn {
+  border-radius: 6px;
+}
+
+.btn-primary {
+  border: 1px solid #0d6efd;
+  background-color: #0d6efd;
+}
+
+.btn-primary:hover {
+  color: #fff;
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary.hover {
+  color: #fff !important;
+  background-color: #0a58ca m !important;
+  border-color: #0a53be !important;
+}

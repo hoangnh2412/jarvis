@@ -101,7 +101,7 @@
                     if (result.value.status === 200) {
                         sweetAlert.success('Đã xóa', 'Bạn đã xóa TÀI KHOẢN thành công!');
                         cacheService.clean();
-                        $state.go('identity.frontend.login');
+                        $state.go('identity.auth.login');
                     } else {
                         sweetAlert.error("Lỗi", result.value.data);
                     }
@@ -150,7 +150,7 @@
                 if (response.status === 200) {
                     sweetAlert.success('Thành công', 'Bạn đã đổi mật khẩu thành công, vui lòng đăng nhập lại');
                     cacheService.clean();
-                    $state.go('identity.frontend.login');
+                    $state.go('identity.auth.login');
                 }
             });
         };

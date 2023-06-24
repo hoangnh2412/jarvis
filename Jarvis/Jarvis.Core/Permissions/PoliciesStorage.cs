@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using Infrastructure;
 using Infrastructure.Abstractions;
-using Jarvis.Core.Constants;
 
 namespace Jarvis.Core.Permissions
 {
@@ -37,17 +35,15 @@ namespace Jarvis.Core.Permissions
                 var fields = type.GetFields();
                 foreach (var item in fields)
                 {
-                    var key = item.Name;
-                    var data = item.GetValue(item) as Tuple<string, List<ClaimOfResource>, List<ClaimOfChildResource>>;
-                    if (_policies.Any(x => x.Code == key))
-                        throw new Exception($"Policy info Key: {key} - Name: {data.Item1} has ben exist");
+                    var code = item.Name;
+                    var name = item.GetValue(item) as string;
+                    if (_policies.Any(x => x.Code == code))
+                        throw new Exception($"Policy info Code: {code} - Name: {name} has ben exist");
 
                     var policy = new PolicyModel
                     {
-                        Code = key,
-                        Name = data.Item1,
-                        ClaimOfResource = data.Item2,
-                        ClaimOfChildResources = data.Item3
+                        Code = code,
+                        Name = name
                     };
 
                     var attrGroup = item.DeclaringType.GetCustomAttribute(typeof(DisplayAttribute)) as DisplayAttribute;

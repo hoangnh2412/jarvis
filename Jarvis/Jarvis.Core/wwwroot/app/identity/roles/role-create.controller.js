@@ -36,7 +36,6 @@
             }
 
             var role = ctrl.prepareSave();
-
             ctrl.loading = true;
             roleService.post(role).then(function (response) {
                 ctrl.loading = false;
@@ -46,7 +45,7 @@
                         text: "Bạn đã tạo QUYỀN thành công!",
                         type: "success",
                     });
-                    $state.go('identity.backend.role.read');
+                    $state.go('identity.management.role.read');
                 }
             });
         };
@@ -162,7 +161,7 @@
                 name: ctrl.role.name
             };
 
-            var claims = {};
+            var claims = [];
 
             for (var m = 0; m < ctrl.modules.length; m++) {
                 var module = ctrl.modules[m];
@@ -171,12 +170,12 @@
                     for (var c = 0; c < group.claims.length; c++) {
                         var claim = group.claims[c];
                         if (claim.selected) {
-                            claims[claim.code] = claim.resource + '|' + claim.childResource;
+                            claims.push(claim.code);
                         }
                     }
                 }
             }
-            role.claims = claims;
+            role.functionClaims = claims;
             return role;
         };
     };

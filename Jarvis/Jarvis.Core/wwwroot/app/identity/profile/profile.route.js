@@ -13,7 +13,7 @@
             }
         })
         .config(function ($stateProvider) {
-            $stateProvider.state('identity.backend.profile', {
+            $stateProvider.state('identity.management.profile', {
                 url: '/profile',
                 component: 'uiProfile',
                 data: {

@@ -6,7 +6,7 @@ namespace Jarvis.Core.Database.Poco
     public class TokenInfo : IEntity<int>, ITenantEntity
     {
         public int Id { get; set; }
-        public Guid Code { get; set; }
+        public Guid Key { get; set; }
         public Guid TenantCode { get; set; }
         public Guid IdUser { get; set; }
         public string AccessToken { get; set; }

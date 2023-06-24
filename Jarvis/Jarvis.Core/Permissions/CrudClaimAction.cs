@@ -21,7 +21,9 @@ namespace Jarvis.Core.Permissions
                 new ClaimAction { Id = 1, Name = "Read", Description = "Xem" },
                 new ClaimAction { Id = 2, Name = "Create", Description = "Tạo" },
                 new ClaimAction { Id = 4, Name = "Update", Description = "Sửa" },
-                new ClaimAction { Id = 8, Name = "Delete", Description = "Xoá" }
+                new ClaimAction { Id = 8, Name = "Delete", Description = "Xoá" },
+                new ClaimAction { Id = 16, Name = "Import", Description = "Import" },
+                new ClaimAction { Id = 32, Name = "Export", Description = "Export" },
             };
         }
     }

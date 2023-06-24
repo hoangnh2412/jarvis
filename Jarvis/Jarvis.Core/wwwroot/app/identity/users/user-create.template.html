@@ -1,16 +1,20 @@
-﻿<section class="content-header">
-    <h1>Thông tin người dùng</h1>
-    <ol class="breadcrumb">
-        <li><a ui-sref="dashboard"><i class="fa fa-dashboard"></i> Trang chủ</a></li>
-        <li><a ui-sref="admin.system">Hệ thống</a></li>
-        <li><a ui-sref="identity.backend.user">Người dùng</a></li>
-        <li class="active">Thông tin người dùng</li>
-    </ol>
-</section>
+﻿<form name="frmUser" ng-submit="$ctrl.save(frmUser)" ng-validate="$ctrl.validationOptions" class="form-horizontal">
+    <section class="content-header">
+        <div class="row">
+            <div class="col-md-6 col-xs-10">
+                <h1>
+                    <a ui-sref="identity.management.user" class="btn btn-link"><i class="fa fa-chevron-left"></i></a>
+                    <span>Thông tin người dùng</span>
+                </h1>
+            </div>
+            <div class="col-md-6 col-xs-2 text-right">
+                <button type="submit" class="btn btn-success" ng-disabled="$ctrl.loading"><i class="fa fa-save"></i> Lưu</button>
+            </div>
+        </div>
+    </section>
 
-<section class="content container-fluid">
-    <form name="frmUser" ng-submit="$ctrl.save(frmUser)" ng-validate="$ctrl.validationOptions" class="form-horizontal">
-        <div class="box box-success">
+    <section class="content container-fluid">
+        <div class="box box-primary">
             <div class="box-body">
                 <div class="form-group">
                     <label class="col-md-2 col-sm-4 control-label">Họ tên</label>
@@ -51,24 +55,12 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="col-md-2 col-sm-4 control-label">Quyền</label>
+                    <label class="col-md-2 col-sm-4 control-label">Vai trò</label>
                     <div class="col-md-10 col-sm-8">
                         <div class="checkbox" ng-repeat="role in $ctrl.roles track by $index"><label><input type="checkbox" ng-model="role.select" value="{{role.id}}"> {{role.name}}</label></div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="col-md-2 col-sm-4 control-label">Quyền dữ liệu</label>
-                    <div class="col-md-10 col-sm-8">
-                        <div class="checkbox" ng-repeat="claim in $ctrl.claims track by $index"><label><input type="checkbox" ng-model="claim.select" value="{{claim.key}}"> {{claim.value}}</label></div>
-                    </div>
-                </div>
             </div>
         </div>
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10 col-sm-offset-4 col-sm-8 text-right">
-                <button type="submit" class="btn btn-success" ng-disabled="$ctrl.loading"><i class="fa fa-save"></i> Lưu</button>
-                <a ui-sref="identity.backend.user" class="btn btn-danger" ng-disabled="$ctrl.loading"><i class="fa fa-close"></i> Hủy</a>
-            </div>
-        </div>
-    </form>
-</section>
+    </section>
+</form>

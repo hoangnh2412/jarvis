@@ -14,7 +14,7 @@
             }
         })
         .config(['$stateProvider', function ($stateProvider) {
-            $stateProvider.state('identity.frontend.login', {
+            $stateProvider.state('identity.auth.login', {
                 url: '/login',
                 component: 'uiLogin',
                 // onEnter: ['$transition$', '$state', function ($transition$, $state) {

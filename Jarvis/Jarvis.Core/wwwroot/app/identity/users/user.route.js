@@ -31,9 +31,9 @@
             }
         })
         .config(function ($stateProvider) {
-            $stateProvider.state('identity.backend.user', {
+            $stateProvider.state('identity.management.user', {
                 url: '/user',
-                redirectTo: 'identity.backend.user.read',
+                redirectTo: 'identity.management.user.read',
                 resolve: {
                     userService: ['$ocLazyLoad', 'componentService', function ($ocLazyLoad, componentService) {
                         return $ocLazyLoad.load(componentService.replace('/app/identity/users/user.service.js'));
@@ -41,7 +41,7 @@
                 }
             });
 
-            $stateProvider.state('identity.backend.user.read', {
+            $stateProvider.state('identity.management.user.read', {
                 url: '/read',
                 component: 'uiUserRead',
                 // data: {
@@ -54,7 +54,7 @@
                 }
             });
 
-            $stateProvider.state('identity.backend.user.create', {
+            $stateProvider.state('identity.management.user.create', {
                 component: 'uiUserCreate',
                 url: '/create',
                 // data: {
@@ -70,7 +70,7 @@
                 }
             });
 
-            $stateProvider.state('identity.backend.user.update', {
+            $stateProvider.state('identity.management.user.update', {
                 component: 'uiUserUpdate',
                 url: '/update/:id',
                 // data: {

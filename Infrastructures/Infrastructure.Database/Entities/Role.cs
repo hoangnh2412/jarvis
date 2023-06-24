@@ -6,6 +6,7 @@ namespace Infrastructure.Database.Entities
 {
     public class Role : IdentityRole<Guid>, IEntity<Guid>, ITenantEntity, ILogCreatedEntity, ILogUpdatedEntity, ILogDeletedEntity, ILogDeletedVersionEntity<Guid?>, IPermissionEntity
     {
+        public Guid Key { get; set; }
         public Guid TenantCode { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime CreatedAtUtc { get; set; }
@@ -18,7 +19,7 @@ namespace Infrastructure.Database.Entities
         public Guid? DeletedBy { get; set; }
         public Guid? DeletedVersion { get; set; }
 
-        
+
 
         // public bool IsBranchManagement { get; set; }
     }

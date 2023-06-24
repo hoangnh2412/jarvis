@@ -20,7 +20,7 @@
             q: null
         }
 
-        ctrl.getRoles = function () {
+        ctrl.getItems = function () {
             ctrl.loading = true;
             roleService.get(ctrl.paging).then(function (response) {
                 ctrl.loading = false;
@@ -40,7 +40,7 @@
                 if (result.value) {
                     if (result.value.status === 200) {
                         sweetAlert.success('Đã xóa', 'Bạn đã xóa QUYỀN thành công!');
-                        ctrl.getRoles();
+                        ctrl.getItems();
                     } else {
                         sweetAlert.error("Lỗi", result.value.data);
                     }
@@ -49,7 +49,7 @@
         };
 
         ctrl.$onInit = function () {
-            ctrl.getRoles();
+            ctrl.getItems();
         };
     };
 

@@ -67,20 +67,20 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
                         },
                         order: null,
                         include: null)
-                    .Select(x => x.Code)
+                    .Select(x => x.Key)
                     .AsQueryable()
                     .ToListAsync();
 
                 //query tên miền
-                IQueryable<TenantHost> queryTenantHost = StorageContext.Set<TenantHost>().Where(x => codeTenants.Contains(x.Code) && !x.DeletedVersion.HasValue);
-                var codeTenantHosts = await queryTenantHost.Where(x => x.HostName.Contains(paging.Q)).Select(x => x.Code).AsQueryable().ToListAsync();
+                IQueryable<TenantHost> queryTenantHost = StorageContext.Set<TenantHost>().Where(x => codeTenants.Contains(x.Key) && !x.DeletedVersion.HasValue);
+                var codeTenantHosts = await queryTenantHost.Where(x => x.HostName.Contains(paging.Q)).Select(x => x.Key).AsQueryable().ToListAsync();
 
                 //query các thông tin khác
-                IQueryable<TenantInfo> queryTenantInfo = StorageContext.Set<TenantInfo>().Where(x => codeTenants.Contains(x.Code));
+                IQueryable<TenantInfo> queryTenantInfo = StorageContext.Set<TenantInfo>().Where(x => codeTenants.Contains(x.Key));
                 var codeTenantInfos = await queryTenantInfo.Where(x => x.TaxCode.Contains(paging.Q)
                                                           || x.FullNameVi.Contains(paging.Q)
                                                           || x.Address.Contains(paging.Q))
-                                                   .Select(x => x.Code).AsQueryable().ToListAsync();
+                                                   .Select(x => x.Key).AsQueryable().ToListAsync();
 
                 codeTenants = codeTenantHosts;
                 codeTenants.AddRange(codeTenantInfos);
@@ -91,7 +91,7 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
                    .Query(
                        filter: queryable =>
                        {
-                           queryable = queryable.Where(x => codeTenants.Contains(x.Code));
+                           queryable = queryable.Where(x => codeTenants.Contains(x.Key));
 
                            return queryable;
                        },
@@ -106,27 +106,27 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
         public async Task<List<TenantInfo>> GetInfoByCodesAsync(List<Guid> tenantCodes)
         {
             IQueryable<TenantInfo> query = StorageContext.Set<TenantInfo>();
-            query = query.Where(x => tenantCodes.Contains(x.Code));
+            query = query.Where(x => tenantCodes.Contains(x.Key));
             return await query.ToListAsync();
         }
 
         public async Task<List<TenantHost>> GetHostByCodesAsync(List<Guid> tenantCodes)
         {
             IQueryable<TenantHost> query = StorageContext.Set<TenantHost>();
-            return await query.Where(x => tenantCodes.Contains(x.Code) && !x.DeletedVersion.HasValue).ToListAsync();
+            return await query.Where(x => tenantCodes.Contains(x.Key) && !x.DeletedVersion.HasValue).ToListAsync();
         }
 
         public async Task<TenantInfo> GetInfoByCodeAsync(Guid tenantCode)
         {
             IQueryable<TenantInfo> query = StorageContext.Set<TenantInfo>();
-            var info = await query.FirstOrDefaultAsync(x => x.Code == tenantCode);
+            var info = await query.FirstOrDefaultAsync(x => x.Key == tenantCode);
             return info;
         }
 
         public async Task<List<TenantHost>> GetHostByCodeAsync(Guid tenantCode)
         {
             IQueryable<TenantHost> query = StorageContext.Set<TenantHost>();
-            return await query.Where(x => x.Code == tenantCode && !x.DeletedVersion.HasValue).ToListAsync();
+            return await query.Where(x => x.Key == tenantCode && !x.DeletedVersion.HasValue).ToListAsync();
         }
 
         public async Task<TenantHost> GetByHostAsync(string host)
@@ -138,7 +138,7 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
         public async Task<List<Tenant>> GetByCodesAsync(List<Guid> tenantCodes)
         {
             IQueryable<Tenant> query = StorageContext.Set<Tenant>();
-            query = query.Where(x => tenantCodes.Contains(x.Code));
+            query = query.Where(x => tenantCodes.Contains(x.Key));
             query = query.QueryByDeletedBy();
 
             return await query.AsQueryable().ToListAsync();
@@ -146,12 +146,12 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
 
         public async Task<Tenant> GetByCodeAsync(Guid code)
         {
-            return await Query.FirstOrDefaultAsync(x => x.Code == code);
+            return await Query.FirstOrDefaultAsync(x => x.Key == code);
         }
 
         public async Task<Tenant> GetByCodeAsync(Guid code, Guid parent)
         {
-            return await Query.FirstOrDefaultAsync(x => x.Code == code && x.Path.Contains(parent.ToString()));
+            return await Query.FirstOrDefaultAsync(x => x.Key == code && x.Path.Contains(parent.ToString()));
         }
 
         public async Task InsertInfoAsync(TenantInfo info)
@@ -225,7 +225,7 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
                 .Select(x => new Tenant
                 {
                     Id = x.Id,
-                    Code = x.Code,
+                    Key = x.Key,
                     Name = x.Name,
                     Path = x.Path,
                     IdParent = x.IdParent,
@@ -251,7 +251,7 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             IQueryable<Tenant> query = StorageContext.Set<Tenant>();
             query = query.QueryByDeletedBy();
 
-            return await query.Select(x => x.Code).AsQueryable().ToListAsync();
+            return await query.Select(x => x.Key).AsQueryable().ToListAsync();
         }
 
         public async Task<List<TenantHost>> QueryHostByHostNameAsync(string hostName)

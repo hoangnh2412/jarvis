@@ -1,36 +1,40 @@
 ﻿using Infrastructure.Database.Abstractions;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Jarvis.Core.Database.Poco
 {
-    public class File : IEntity<Guid>, ITenantEntity, ILogCreatedEntity, IPermissionEntity
+    public class File : IEntity<int>, ITenantEntity, ILogCreatedEntity, IPermissionEntity
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
+        public Guid Key { get; set; }
         public Guid TenantCode { get; set; }
         public Guid CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime CreatedAtUtc { get; set; }
 
         /// <summary>
-        /// Tên file vật lý
+        /// Tên file hiển thị
         /// </summary>
-        public string Name { get; set; }
+        /// <value></value>
+        public string Path { get; set; }
 
         /// <summary>
         /// Đuôi file. Ví dụ jpg
         /// </summary>
-        public string ContentType { get; set; }
+        public string Extension { get; set; }
 
         /// <summary>
         /// Tên file và cả đuôi file. Ví dụ image.jpg
         /// </summary>
         public string FileName { get; set; }
 
+        public string BucketName { get; set; }
+
         /// <summary>
         /// Dung lượng file
         /// </summary>
         public long Length { get; set; }
+
+        public string Metadata { get; set; }
     }
 }

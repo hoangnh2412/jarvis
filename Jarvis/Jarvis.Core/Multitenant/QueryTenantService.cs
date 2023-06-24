@@ -52,7 +52,7 @@ namespace Jarvis.Core.Multitenant
             if (current == null)
                 return null;
 
-            tenant = await repoTenant.GetByCodeAsync(tenantCode, current.Code);
+            tenant = await repoTenant.GetByCodeAsync(tenantCode, current.Key);
             if (tenant == null)
                 return null;
 

@@ -20,7 +20,7 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
                     {
                         queryable = queryable.QueryByDeletedBy();
                         //queryable = queryable.QueryByPermission(context);
-                        queryable = queryable.QueryByTenantCode(context.TenantCode);
+                        queryable = queryable.QueryByTenantCode(context.TenantKey);
                         return queryable;
                     },
                     order: x => x.OrderByDescending(y => y.CreatedAt),
@@ -31,17 +31,17 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
 
         public async Task<Label> GetByCodeAsync(ContextModel context, Guid code)
         {
-            IQueryable<Label> query = DbSet.Where(x => x.Code == code);
+            IQueryable<Label> query = DbSet.Where(x => x.Key == code);
             //query = query.QueryByPermission(context);
-            query = query.QueryByTenantCode(context.TenantCode);
-            return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
+            query = query.QueryByTenantCode(context.TenantKey);
+            return await query.FirstOrDefaultAsync();
         }
 
         public async Task<Label> GetByCodeAsync(Guid tenantCode, Guid code)
         {
-            IQueryable<Label> query = DbSet.Where(x => x.Code == code);
+            IQueryable<Label> query = DbSet.Where(x => x.Key == code);
             query = query.QueryByTenantCode(tenantCode);
-            return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
+            return await query.FirstOrDefaultAsync();
         }
     }
 }

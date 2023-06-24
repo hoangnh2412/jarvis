@@ -75,5 +75,10 @@ namespace Infrastructure.Database.Dapper
         {
             throw new NotImplementedException("Dapper ORM is not implement UseTransaction<TTransaction> function");
         }
+
+        Task<int> IUnitOfWork.CommitAsync()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

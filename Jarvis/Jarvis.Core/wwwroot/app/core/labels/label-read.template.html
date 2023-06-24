@@ -1,18 +1,19 @@
 ﻿<section class="content-header">
-    <h1>Quản lý nhãn</h1>
-    <ol class="breadcrumb">
-        <li><a ui-sref="admin"><i class="fa fa-dashboard"></i> Trang chủ</a></li>
-        <li><a ui-sref="admin.system">Hệ thống</a></li>
-        <li class="active">Nhãn</li>
-    </ol>
+    <div class="row">
+        <div class="col-md-6 col-xs-10">
+            <h1>
+                <a ui-sref="admin.dashboard" class="btn btn-link"><i class="fa fa-chevron-left"></i></a>
+                <span>Quản lý nhãn</span>
+            </h1>
+        </div>
+        <div class="col-md-6 col-xs-2 text-right">
+            <a ui-sref="core.label.create" class="btn btn-success"><i class="fa fa-plus"></i> Tạo mới</a>
+        </div>
+    </div>
 </section>
 
 <section class="content container-fluid">
-    <div class="margin-bottom">
-        <a ui-sref="core.label.create" class="btn btn-success"><i class="fa fa-plus"></i> Tạo mới</a>
-    </div>
-
-    <div class="box box-success">
+    <div class="box box-primary">
         <div class="box-header">
             <div class="form-inline">
                 <div class="form-group">

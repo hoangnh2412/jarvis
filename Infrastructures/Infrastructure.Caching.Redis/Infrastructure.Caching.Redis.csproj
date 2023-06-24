@@ -6,11 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Infrastructure.Caching\Infrastructure.Caching.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.1.2" />
+    <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <ProjectReference Include="..\Infrastructure.Caching\Infrastructure.Caching.csproj" />
   </ItemGroup>
 
 </Project>

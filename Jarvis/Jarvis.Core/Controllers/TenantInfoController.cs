@@ -29,7 +29,7 @@ namespace Jarvis.Core.Controllers
             [FromServices] IWorkContext workContext
         )
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
+            var tenantCode = await workContext.GetTenantKeyAsync();
             var repoTenant = uow.GetRepository<ITenantRepository>();
             var info = await repoTenant.GetInfoByCodeAsync(tenantCode);
             if (info == null)
@@ -38,7 +38,7 @@ namespace Jarvis.Core.Controllers
             var model = new TenantInfoModel
             {
                 Id = info.Id,
-                Code = info.Code,
+                Code = info.Key,
                 FullNameVi = info.FullNameVi,
                 TaxCode = info.TaxCode,
                 Address = info.Address,
@@ -91,7 +91,7 @@ namespace Jarvis.Core.Controllers
             [FromServices] IWorkContext workContext,
             [FromServices] IEventFactory eventFactory)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
+            var tenantCode = await workContext.GetTenantKeyAsync();
 
             var repoTenant = uow.GetRepository<ITenantRepository>();
             var info = await repoTenant.GetInfoByCodeAsync(tenantCode);
@@ -125,7 +125,7 @@ namespace Jarvis.Core.Controllers
             [FromServices] ICoreUnitOfWork uow,
             [FromServices] IWorkContext workContext)
         {
-            var tenantCode = await workContext.GetTenantCodeAsync();
+            var tenantCode = await workContext.GetTenantKeyAsync();
             var repoTenant = uow.GetRepository<ITenantRepository>();
             var listTaxCodes = new List<KeyValuePair<string, Guid>>();
 
@@ -135,13 +135,13 @@ namespace Jarvis.Core.Controllers
                 if (tenant == null)
                     return NotFound();
 
-                listTaxCodes.Add(new KeyValuePair<string, Guid>(tenant.TaxCode, tenant.Code));
+                listTaxCodes.Add(new KeyValuePair<string, Guid>(tenant.TaxCode, tenant.Key));
             }
             else
             {
                 // nếu lấy dữ liệu của chi nhánh
                 var hierarchies = await repoTenant.GetHierarchyByCodeAsync(tenantCode);
-                listTaxCodes = hierarchies.Select(x => new KeyValuePair<string, Guid>(x.Name, x.Code)).ToList();
+                listTaxCodes = hierarchies.Select(x => new KeyValuePair<string, Guid>(x.Name, x.Key)).ToList();
             }
 
             return Ok(listTaxCodes.Select(x => new { TaxCode = x.Key, Code = x.Value }));

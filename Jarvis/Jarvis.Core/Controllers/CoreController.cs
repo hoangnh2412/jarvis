@@ -22,8 +22,7 @@ namespace Jarvis.Core.Controllers
         [HttpGet("navigation")]
         public async Task<IActionResult> GetNavigationAsync(
             [FromServices] IEnumerable<INavigationService> navigationServices,
-            [FromServices] IWorkContext workContext,
-            [FromServices] IServiceProvider serviceProvider
+            [FromServices] IWorkContext workContext
         )
         {
             var session = await workContext.GetSessionAsync();
@@ -33,7 +32,7 @@ namespace Jarvis.Core.Controllers
             var navigation = new List<NavigationItem>();
             foreach (var item in navigationServices)
             {
-                navigation.AddRange(item.GetNavigation(serviceProvider, session));
+                navigation.AddRange(item.GetNavigation(session));
             }
 
             navigation = navigation.OrderBy(x => x.Order).ToList();
@@ -81,7 +80,7 @@ namespace Jarvis.Core.Controllers
             var hierarchy = (await repoTenant.GetHierarchyByCodeAsync(session.TenantInfo.Code)).Select(x => new HierarchyTenantModel
             {
                 Id = x.Id,
-                Code = x.Code,
+                Code = x.Key,
                 Name = x.Name,
                 Path = x.Path,
                 Codes = x.Path.Split('|').ToList(),
@@ -146,7 +145,7 @@ namespace Jarvis.Core.Controllers
 
 
             //Đổi tên thành _.
-            var infos = (await repoTenant.GetInfoByCodesAsync(hierarchy.Select(x => x.Code).ToList())).ToDictionary(x => x.Code, x => x);
+            var infos = (await repoTenant.GetInfoByCodesAsync(hierarchy.Select(x => x.Code).ToList())).ToDictionary(x => x.Key, x => x);
 
             //lưu lại item cuối cùng có level = 2
             var lastSecond = 0;

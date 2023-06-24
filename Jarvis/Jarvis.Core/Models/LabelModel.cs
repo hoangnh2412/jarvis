@@ -19,7 +19,7 @@ namespace Jarvis.Core.Models
                 return null;
 
             var model = new LabelModel();
-            model.Code = entity.Code;
+            model.Code = entity.Key;
             model.Name = entity.Name;
             model.Description = entity.Description;
             model.Icon = entity.Icon;

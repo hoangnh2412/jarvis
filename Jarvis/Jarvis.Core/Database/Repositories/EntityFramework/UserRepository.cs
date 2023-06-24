@@ -16,22 +16,22 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
 {
     public class UserRepository : EntityRepository<User>, IUserRepository
     {
-        public async Task<User> FindUserByIdAsync(Guid tenantCode, Guid id)
+        public async Task<User> FindUserByKeyAsync(Guid tenantCode, Guid key)
         {
             IQueryable<User> query = StorageContext.Set<User>();
-            query = query.Where(x => x.Id == id && x.TenantCode == tenantCode);
+            query = query.Where(x => x.Key == key && x.TenantCode == tenantCode);
             query = query.QueryByDeletedBy();
 
-            return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
+            return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<User> FindUserByIdAsync(ContextModel contextModel, Guid id)
+        public async Task<User> FindUserByKeyAsync(ContextModel contextModel, Guid key)
         {
-            IQueryable<User> query = StorageContext.Set<User>().Where(x => x.Id == id);
+            IQueryable<User> query = StorageContext.Set<User>().Where(x => x.Key == key);
             query = query.QueryByPermission(contextModel);
             query = query.QueryByDeletedBy();
 
-            return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
+            return await query.FirstOrDefaultAsync();
         }
 
         public async Task<User> FindUserByUsernameAsync(Guid idTenant, string username)
@@ -40,33 +40,35 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             query = query.Where(x => x.TenantCode == idTenant && x.NormalizedUserName == username);
             query = query.QueryByDeletedBy();
 
-            return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
+            return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<UserInfo> FindUserInfoByIdAsync(Guid id)
+        public async Task<UserInfo> FindUserInfoByKeyAsync(Guid key)
         {
             IQueryable<UserInfo> query = StorageContext.Set<UserInfo>();
-            var info = await query.FirstOrDefaultAsync(x => x.Id == id);
+            var info = await query.FirstOrDefaultAsync(x => x.Key == key);
             return info;
         }
 
-        public async Task<List<UserInfo>> FindUserInfoByIdsAsync(List<Guid> ids)
+        public async Task<List<UserInfo>> FindUserInfoByKeysAsync(List<Guid> keys)
         {
             IQueryable<UserInfo> query = StorageContext.Set<UserInfo>();
-            var info = await query.Where(x => ids.Contains(x.Id)).ToListAsync();
+            var info = await query.Where(x => keys.Contains(x.Key)).ToListAsync();
             return info;
         }
 
-        public async Task<Paged<User>> PagingAsync(ContextModel contextModel, Paging paging)
+        public async Task<Paged<User>> PagingAsync(ContextModel context, Paging paging)
         {
             IQueryable<User> query = StorageContext.Set<User>();
 
-            if (contextModel.Session.Claims.ContainsKey(nameof(SpecialPolicy.Special_DoEnything)))
-                query = query.Where(x => x.Id != contextModel.IdUser);
+            if (context.Session.Type == Constants.UserType.SuperAdmin)
+                query = query.Where(x => x.Key != context.UserKey);
+            else if (context.Session.Type == Constants.UserType.Admin)
+                query = query.Where(x => x.Key != context.UserKey && x.Type != Constants.UserType.SuperAdmin.GetHashCode());
             else
-                query = query.Where(x => x.CreatedBy != Guid.Empty && x.Id != contextModel.IdUser && x.NormalizedUserName != "ROOT");
+                query = query.Where(x => x.Key != context.UserKey && x.Type != Constants.UserType.SuperAdmin.GetHashCode() && x.Type != Constants.UserType.Admin.GetHashCode());
 
-            query = query.QueryByPermission(contextModel);
+            query = query.QueryByTenantCode(context.TenantKey);
             query = query.QueryByDeletedBy();
 
             if (!string.IsNullOrEmpty(paging.Q))
@@ -77,35 +79,18 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
                                     || x.PhoneNumber.Contains(paging.Q));
             }
 
+            query = query.OrderByDescending(x => x.CreatedAt);
             return await query.ToPaginationAsync(paging);
         }
 
-        public async Task<Paged<User>> PagingAsync(Guid tenantCode, Paging paging)
+        public async Task<Paged<User>> PagingWithoutSomeUsersAsync(Guid tenantCode, Paging paging, List<Guid> keys)
         {
             IQueryable<User> query = StorageContext.Set<User>();
 
             query = query.QueryByTenantCode(tenantCode);
             query = query.QueryByDeletedBy();
 
-            if (!string.IsNullOrEmpty(paging.Q))
-            {
-                var q = paging.Q.ToUpper();
-                query = query.Where(x => x.NormalizedUserName.Contains(q)
-                                    || x.NormalizedEmail.Contains(q)
-                                    || x.PhoneNumber.Contains(paging.Q));
-            }
-
-            return await query.ToPaginationAsync(paging);
-        }
-
-        public async Task<Paged<User>> PagingWithoutSomeUsersAsync(Guid tenantCode, Paging paging, List<Guid> codes)
-        {
-            IQueryable<User> query = StorageContext.Set<User>();
-
-            query = query.QueryByTenantCode(tenantCode);
-            query = query.QueryByDeletedBy();
-
-            query = query.Where(x => !codes.Contains(x.Id));
+            query = query.Where(x => !keys.Contains(x.Key));
 
             if (!string.IsNullOrEmpty(paging.Q))
             {
@@ -120,13 +105,13 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             return await query.ToPaginationAsync(paging);
         }
 
-        public async Task AssignRoleToUserAsync(Guid idUser, Guid idRole)
+        public async Task AssignRoleToUserAsync(Guid userKey, Guid rokeKey)
         {
             var dbset = StorageContext.Set<IdentityUserRole<Guid>>();
             await dbset.AddAsync(new IdentityUserRole<Guid>
             {
-                RoleId = idRole,
-                UserId = idUser
+                RoleId = rokeKey,
+                UserId = userKey
             });
         }
 
@@ -190,7 +175,7 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             query = query.Where(x => x.Id == id);
             query = query.QueryByDeletedBy();
 
-            return await query.Take(1).AsQueryable().FirstOrDefaultAsync();
+            return await query.FirstOrDefaultAsync();
         }
 
         public async Task<List<User>> FindUserByIdsAsync(List<Guid> ids)
@@ -219,10 +204,10 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             return user;
         }
 
-        public async Task<List<IdentityUserClaim<Guid>>> GetUserClaimsAsync(Guid id)
+        public async Task<List<IdentityUserClaim<Guid>>> GetUserClaimsAsync(Guid key)
         {
             var dbset = StorageContext.Set<IdentityUserClaim<Guid>>();
-            return await dbset.Where(x => x.UserId == id).ToListAsync();
+            return await dbset.Where(x => x.UserId == key).ToListAsync();
         }
 
         public async Task<bool> UserHasClaimAsync(Guid id, string claim, bool notracking = false)
@@ -235,14 +220,14 @@ namespace Jarvis.Core.Database.Repositories.EntityFramework
             return await queryable.AnyAsync(x => x.UserId == id && x.ClaimType == claim);
         }
 
-        public async Task AssignClaimToUserAsync(Guid idUser, List<string> claims)
+        public async Task AssignClaimToUserAsync(Guid idUser, Dictionary<string, string> claims)
         {
             var dbset = StorageContext.Set<IdentityUserClaim<Guid>>();
             await dbset.AddRangeAsync(claims.Select(x => new IdentityUserClaim<Guid>
             {
                 UserId = idUser,
-                ClaimType = x,
-                ClaimValue = "Tenant|Tenant"
+                ClaimType = x.Key,
+                ClaimValue = x.Value
             }));
         }
 
