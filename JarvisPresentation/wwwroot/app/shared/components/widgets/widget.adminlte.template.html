@@ -1,0 +1,12 @@
+<div class="box no-border margin-bottom-10">
+    <div class="box-header text-center">
+        <h3 class="box-title box-title-15">{{component.title}}</h3>
+        <div class="box-tools pull-right">
+            <button type="button" ng-click="$ctrl.data.summary.total.view()" class="btn btn-box-tool hint--left" aria-label="Chi tiết"><i class="fa fa-info"></i></button>
+        </div>
+    </div>
+    <div class="box-body no-padding">
+        <div ng-if="$ctrl.data.summary.total.loading" class="loading"><i class="fa fa-refresh fa-spin fa-3x fa-fw"></i></div>
+        <ui-widget-chart-number></ui-widget-chart-number>
+    </div>
+</div>

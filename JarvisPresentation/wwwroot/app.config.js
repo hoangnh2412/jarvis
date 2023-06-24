@@ -1,90 +1,129 @@
-(function () {
+﻿(function () {
     'use strict';
 
     angular
         .module('jarvis')
         .constant('APP_CONFIG', {
-            THEME: 'skin-green',
             VISUALIZER: false,
-            THEME: 'skin-blue',
-            APP_NAME: 'JARVIS',
             BASE_UI_PATH: '/app/',
-            NAMESPACE_STORAGE: 'jarvis-dev',
+            BASE_API_PATH: '/api/v4',
+            APP_NAME: 'JARVIS',
+            NAMESPACE_STORAGE: 'jarvis',
             DEFAULT_URL: '/login',
             DASHBOARD_URL: '/dashboard',
             LOGIN_URL: '/login',
-            //Customize template of component
-            TEMPLATE_URLS: {
-                // 'uiCore': '/customize/core/core.template.html',
-                // 'uiNavbar': '/customize/shared/components/navbar/navbar.template.html',
-                // 'uiTopbar': '/customize/shared/components/topbar/topbar.template.html',
-                // 'uiFooter': '/app/shared/components/footer/footer.template.html',
-                // 'uiSidebar': '/customize/shared/components/sidebar/sidebar.template.html',
-                // 'uiUserInfo': '/app/shared/components/user-info/user-info.template.html',
-                // 'uiIdentity': '/customize/identity/identity.template.html',
-                'uiLogin': '/app/identity/login/login.admin2.template.html',
-                // 'uiUserRead': '/customize/identity/users/user-read.template.html',
-                // 'uiTenantInfo': '/customize/core/tenant-info/tenant-info.template.html'
-            },
-            //Customize controller of component
-            CONTROLLER_URLS: {
-                // 'tenantInfoController': '/customize/core/tenant-info/tenant-info.controller.js'
+            PRESENTATION: {
+                THEME_NAME: 'adminlte',
+                SKIN_NAME: 'skin-blue',
+                //Customize template of component
+                TEMPLATE_URLS: {
+                    // 'uiCore': '/app/core/core.template.html',
+                    'uiLabelRead': '/app/core/labels/label-read.template.html',
+                    'uiLabelCreate': '/app/core/labels/label-create.template.html',
+                    'uiLabelUpdate': '/app/core/labels/label-update.template.html',
+                    'uiOrganizations': '/app/core/organizations/organizations.template.html',
+                    'uiSettings': '/app/core/settings/settings.template.html',
+                    'uiTenantInfo': '/app/core/tenant-info/tenant-info.template.html',
+                    'uiTenantRead': '/app/core/tenants/tenant-read.template.html',
+                    'uiTenantCreate': '/app/core/tenants/tenant-create.template.html',
+                    'uiTenantUpdate': '/app/core/tenants/tenant-update.template.html',
+                    'uiTenantLogo': '/app/core/tenants/tenant-logo.template.html',
+
+                    // 'uiIdentityManagement': '/app/identity/identity-management.template.html',
+                    'uiIdentityAuth': '/app/identity/identity-auth.template.html',
+                    'uiUserInfo': '/app/shared/components/user-info/user-info.template.html',
+                    'uiChangePassword': '/app/identity/change-password/change-password.template.html',
+                    'uiForgotPassword': '/app/identity/forgot-password/forgot-password.template.html',
+                    // 'uiLogin': '/app/identity/login/login.template.html',
+                    'uiProfile': '/app/identity/profile/profile.template.html',
+                    'uiRoleRead': '/app/identity/roles/role-read.template.html',
+                    'uiRoleCreate': '/app/identity/roles/role-create.template.html',
+                    'uiRoleUpdate': '/app/identity/roles/role-update.template.html',
+                    'uiUserRead': '/app/identity/users/user-read.template.html',
+                    'uiUserCreate': '/app/identity/users/user-create.template.html',
+                    'uiUserUpdate': '/app/identity/users/user-update.template.html',
+
+                    'uiEmailTemplateList': '/app/core/emails/email-template-list.template.html',
+                    'uiEmailTemplateDetail': '/app/core/emails/email-template-detail.template.html',
+                    'uiEmailHistoryList': '/app/core/emails/email-history-list.template.html',
+
+                    'uiAlert': '/app/shared/components/alert/alert.template.html',
+                    'uiFooter': '/app/shared/components/footer/footer.template.html',
+                    'uiLoading': '/app/shared/components/loading/loading.template.html',
+                    // 'uiNavbar': '/app/shared/components/navbar/navbar.template.html',
+                    'uiSidebar': '/app/shared/components/sidebar/sidebar.adminlte.template.html',
+                    // 'uiTopbar': '/app/shared/components/topbar/topbar.template.html',
+                    'uiTopbarToggle': '/app/shared/components/topbar-toggle/topbar-toggle.adminlte.template.html'
+                },
+                //Customize controller of component
+                CONTROLLER_URLS: {
+                    'uiLabelRead': '/app/core/labels/label-read.controller.js',
+                    'uiLabelCreate': '/app/core/labels/label-create.controller.js',
+                    'uiLabelUpdate': '/app/core/labels/label-update.controller.js',
+                    'uiOrganizations': '/app/core/organizations/organizations.controller.js',
+                    'uiOrganizationUnit': '/app/core/organizations/organization-unit.controller.js',
+                    'uiOrganizationUser': '/app/core/organizations/organization-user.controller.js',
+                    'uiSettings': '/app/core/settings/settings.controller.js',
+                    'uiTenantInfo': '/app/core/tenant-info/tenant-info.controller.js',
+                    'uiTenantRead': '/app/core/tenants/tenant-read.controller.js',
+                    'uiTenantCreate': '/app/core/tenants/tenant-create.controller.js',
+                    'uiTenantUpdate': '/app/core/tenants/tenant-update.controller.js',
+                    'uiTenantLogo': '/app/core/tenants/tenant-logo.controller.js',
+
+                    // 'uiUserInfo': '/app/shared/components/user-info/user-info.controller.js',
+                    // 'uiIdentityManagement': '/app/identity/user-info.controller.js',
+                    // 'uiChangePassword': '/app/identity/change-password/change-password.controller.js',
+                    // 'uiForgotPassword': '/app/identity/forgot-password/forgot-password.controller.js',
+                    // 'uiLogin': '/app/identity/login/login.controller.js',
+                    // 'uiProfile': '/app/identity/profile/profile.controller.js',
+                    'uiRoleRead': '/app/identity/roles/role-read.controller.js',
+                    'uiRoleCreate': '/app/identity/roles/role-create.controller.js',
+                    'uiRoleUpdate': '/app/identity/roles/role-update.controller.js',
+                    'uiUserRead': '/app/identity/users/user-read.controller.js',
+                    'uiUserCreate': '/app/identity/users/user-create.controller.js',
+                    'uiUserUpdate': '/app/identity/users/user-update.controller.js',
+
+                    'uiEmailTemplateList': '/app/core/emails/email-template-list.controller.js',
+                    'uiEmailTemplateDetail': '/app/core/emails/email-template-detail.controller.js',
+                    'uiEmailHistoryList': '/app/core/emails/email-history-list.controller.js'
+
+                    // 'uiAlert': '/app/shared/components/alert/alert.controller.js',
+                    // 'uiFooter': '/app/shared/components/footer/footer.controller.js',
+                    // 'uiLoading': '/app/shared/components/loading/loading.controller.js',
+                    // 'uiNavbar': '/app/shared/components/navbar/navbar.controller.js',
+                    // 'uiSidebar': '/app/shared/components/sidebar/sidebar.controller.js',
+                    // 'uiTopbar': '/app/shared/components/topbar/topbar.controller.js',
+                    // 'uiTopbarToggle': '/app/shared/components/topbar-toggle/topbar-toggle.controller.js'
+                }
             },
             //Mapping nagication code from BE to URL FE
             NAVIGATION_CODE_MAPPING_TO_STATE: {
                 //Core
-                'system': null,
-                'users': 'identity.backend.user',
-                'roles': 'identity.backend.role',
+                'tenant-info': 'core.tenant-info',
+                'users': 'identity.management.user',
+                'roles': 'identity.management.role',
                 'labels': 'core.label',
                 'settings': 'core.settings',
-                'tenant-info': 'core.tenant-info',
                 'tenants': 'core.tenant',
                 'tenant': 'core.tenant',
+                'licenses': 'core.license',
+                'organization': 'core.organization',
+                'email-template': 'core.email-template',
+                'email-history': 'core.email-history',
 
-                // 'dashboard': 'vnis.dashboard',
-                // 'email': 'catalog.email',
+                'dashboard': 'admin.dashboard({ from: "' + moment().subtract(7, 'days').format('YYYY-MM-DD') + '", to: "' + moment().format('YYYY-MM-DD') + '" })',
+                'word-statistic': 'admin.catalog.word-statistic',
+                'word-agent': 'admin.catalog.word-agent',
+                'word-customer': 'admin.catalog.word-customer',
+                'word-phonetic': 'admin.catalog.word-phonetic',
+                'intent': 'admin.catalog.intent',
+                'criteria': 'admin.catalog.criteria',
+                'script': 'admin.catalog.script',
+                'call': 'admin.business.call',
+                'caller': 'admin.business.caller',
             },
-            claimOfTenantAdmins: [
-                'User_Read', 'User_Create', 'User_Update', 'User_Delete', 'User_Lock', 'User_Reset_Password',
-                'Tenant_Create', 'Tenant_Read', 'Tenant_Update', 'Tenant_Delete',
-                'Role_Create', 'Role_Delete', 'Role_Read', 'Role_Update',
-                'Setting_Read', 'Setting_Update',
-                'OrganizationUnit_Create', 'OrganizationUnit_Delete', 'OrganizationUnit_Read', 'OrganizationUnit_Roles', 'OrganizationUnit_Update', 'OrganizationUnit_Users',
-                'Label_Create', 'Label_Delete', 'Label_Read', 'Label_Update',
-                'License_Update'
-            ],
+            NAVIGATION: [],
             // Thêm thông báo vào cặp dấu ''
             MESSAGE: ''
-        })
-        .constant('CONST_PERMISSION', {
-            // hệ thống
-            User_Read: 'User_Read',
-            User_Create: 'User_Create',
-            User_Update: 'User_Update',
-            User_Delete: 'User_Delete',
-            User_Lock: 'User_Lock',
-            User_Reset_Password: 'User_Reset_Password',
-            Role_Read: 'Role_Read',
-            Role_Create: 'Role_Create',
-            Role_Update: 'Role_Update',
-            Role_Delete: 'Role_Delete',
-            Tenant_Read: 'Tenant_Read',
-            Tenant_Create: 'Tenant_Create',
-            Tenant_Update: 'Tenant_Update',
-            Tenant_Delete: 'Tenant_Delete',
-            Label_Read: 'Label_Read',
-            Label_Create: 'Label_Create',
-            Label_Update: 'Label_Update',
-            Label_Delete: 'Label_Delete',
-            Setting_Read: 'Setting_Read',
-            Setting_Update: 'Setting_Update',
-            License_Update: 'License_Update',
-            OrganizationUnit_Read: 'OrganizationUnit_Read',
-            OrganizationUnit_Create: 'OrganizationUnit_Create',
-            OrganizationUnit_Update: 'OrganizationUnit_Update',
-            OrganizationUnit_Delete: 'OrganizationUnit_Delete',
-            OrganizationUnit_Users: 'OrganizationUnit_Users',
-            OrganizationUnit_Roles: 'OrganizationUnit_Roles',
         });
 })();

@@ -23,6 +23,8 @@
     <ProjectReference Include="..\Jarvis\Jarvis.Core.Database.SqlServer\Jarvis.Core.Database.SqlServer.csproj" />
     <ProjectReference Include="..\Jarvis\Jarvis.Core\Jarvis.Core.csproj" />
     <ProjectReference Include="..\Infrastructures\Infrastructure.File.Minio\Infrastructure.File.Minio.csproj" />
+    <ProjectReference Include="..\Infrastructures\Infrastructure.Caching.InMemory\Infrastructure.Caching.InMemory.csproj" />
+    <ProjectReference Include="..\Infrastructures\Infrastructure.Message.Rabbit\Infrastructure.Message.Rabbit.csproj" />
   </ItemGroup>
 
   <ItemGroup>
