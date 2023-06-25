@@ -11,17 +11,14 @@
     <title>JARVIS - Admin framework</title>
 
     <!-- Core: Not edit -->
-    <link rel="stylesheet" href="themes/sneat/dist/assets/vendor/fonts/boxicons.css" />
-    <link rel="stylesheet" href="themes/sneat/dist/assets/vendor/fonts/fontawesome.css" />
-    <link rel="stylesheet" href="themes/sneat/dist/assets/vendor/fonts/flag-icons.css" />
-
-    <link rel="stylesheet" href="themes/sneat/dist/assets/vendor/css/rtl/core.css" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="themes/sneat/dist/assets/vendor/css/rtl/theme-default.css" class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="themes/sneat/dist/assets/css/demo.css" />
+    <link rel="stylesheet" href="assets/vendor/fonts/boxicons.css" />
+	<link rel="stylesheet" href="assets/vendor/fonts/fontawesome.css" />
+	<link rel="stylesheet" href="assets/vendor/fonts/flag-icons.css" />
     <!-- Core: Not edit -->
 
     <!-- Code here -->
-    <link rel="stylesheet" href="themes/sneat/dist/assets/vendor/css/pages/page-auth.css">
+    <link rel="stylesheet" href="styles/helper.css" />
+    <link rel="stylesheet" href="styles/custom.css" />
 </head>
 
 <body>
@@ -39,11 +36,9 @@
     <!-- <script src="//unpkg.com/@uirouter/visualizer@7"></script> -->
     <!-- Core: Not edit -->
     <script src="libs/common.js"></script>
-    <!-- <script src="themes/sneat/dist/assets/vendor/js/helpers.js"></script>
-    <script src="themes/sneat/dist/assets/vendor/js/template-customizer.js"></script>
-    <script src="themes/sneat/dist/assets/js/config.js"></script> -->
-
-    <script src="themes/sneat/dist/assets/vendor/libs/jquery/jquery.js"></script>
+    
+    <script src="themes/adminlte/lib/jquery/jquery.min.js"></script>
+    <script src="themes/adminlte/lib/bootstrap/bootstrap.min.js"></script>
 
     <script src="libs/jquery/sweet-alert.js"></script>
 
@@ -58,21 +53,8 @@
     <script src="libs/angular/loading-bar/angular-loading-bar.js"></script>
     <script src="libs/angular/angular-sweet-alert.js"></script>
 
-    <!-- Theme -->
-    <script src="themes/sneat/dist/assets/vendor/libs/popper/popper.js"></script>
-    <script src="themes/sneat/dist/assets/vendor/js/bootstrap.js"></script>
-    <script src="themes/sneat/dist/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-
-    <script src="themes/sneat/dist/assets/vendor/libs/hammer/hammer.js"></script>
-    <script src="themes/sneat/dist/assets/vendor/libs/i18n/i18n.js"></script>
-    <script src="themes/sneat/dist/assets/vendor/libs/typeahead-js/typeahead.js"></script>
-
-    <script src="themes/sneat/dist/assets/vendor/js/menu.js"></script>
-    <!-- End theme -->
-
-    <!-- Page JS -->
-
-
+    <script src="themes/adminlte/js/adminlte.js"></script>
+    <script src="themes/adminlte/js/site.js"></script>
 
     <script src="app/core/core.module.js"></script>
     <script src="app/identity/identity.module.js"></script>
@@ -110,10 +92,19 @@
 
     <script src="app/admin/admin.module.js"></script>
     <script src="app/admin/dashboard/dashboard.route.js"></script>
-
+    
     <script src="app/admin/catalog/catalog.module.js"></script>
+    <script src="app/admin/catalog/word-statistic/word-statistic.route.js"></script>
+    <script src="app/admin/catalog/word-agent/word-agent.route.js"></script>
+    <script src="app/admin/catalog/word-customer/word-customer.route.js"></script>
+    <script src="app/admin/catalog/word-phonetic/word-phonetic.route.js"></script>
+    <script src="app/admin/catalog/intent/intent.route.js"></script>
+    <script src="app/admin/catalog/criteria/criteria.route.js"></script>
+    <script src="app/admin/catalog/script/script.route.js"></script>
 
     <script src="app/admin/business/business.module.js"></script>
+    <script src="app/admin/business/call/call.route.js"></script>
+
 </body>
 
 </html>
