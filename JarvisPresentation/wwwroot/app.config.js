@@ -74,7 +74,7 @@
                     // 'uiIdentityManagement': '/app/identity/user-info.controller.js',
                     // 'uiChangePassword': '/app/identity/change-password/change-password.controller.js',
                     // 'uiForgotPassword': '/app/identity/forgot-password/forgot-password.controller.js',
-                    'uiLogin': '/app/identity/login/login.controller.js',
+                    // 'uiLogin': '/app/identity/login/login.controller.js',
                     // 'uiProfile': '/app/identity/profile/profile.controller.js',
                     'uiRoleRead': '/app/identity/roles/role-read.controller.js',
                     'uiRoleCreate': '/app/identity/roles/role-create.controller.js',

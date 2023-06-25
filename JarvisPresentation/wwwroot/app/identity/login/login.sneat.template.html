@@ -20,23 +20,21 @@
                         </a>
                     </div>
                     <!-- /Logo -->
-                    <h4 class="mb-2">Welcome to Sneat! 👋</h4>
+                    <h4 class="mb-2">Lightweight admin framework</h4>
                     <p class="mb-4">Please sign-in to your account and start the adventure</p>
 
-                    <form id="formAuthentication" class="mb-3" action="index.html" method="POST">
+                    <form name="frmLogin" ng-submit="$ctrl.login(frmLogin)" ng-validate="$ctrl.validationOptions">
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email or Username</label>
-                            <input type="text" class="form-control" id="email" name="email-username" placeholder="Enter your email or username" autofocus>
+                            <label for="username" class="form-label">Email or Username</label>
+                            <input type="text" ng-model="$ctrl.identity.username" name="username" id="username" class="form-control" placeholder="Enter your email or username" jv-autofocus>
                         </div>
                         <div class="mb-3 form-password-toggle">
                             <div class="d-flex justify-content-between">
                                 <label class="form-label" for="password">Password</label>
-                                <a href="auth-forgot-password-cover.html">
-                                    <small>Forgot Password?</small>
-                                </a>
+                                <a href="auth-forgot-password-cover.html"><small>Forgot Password?</small></a>
                             </div>
                             <div class="input-group input-group-merge">
-                                <input type="password" id="password" class="form-control" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" />
+                                <input type="password" ng-model="$ctrl.identity.password" id="password" name="password" class="form-control" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" />
                                 <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
                             </div>
                         </div>
@@ -48,16 +46,12 @@
                                 </label>
                             </div>
                         </div>
-                        <button class="btn btn-primary d-grid w-100">
-                            Sign in
-                        </button>
+                        <button type="submit" class="btn btn-primary d-grid w-100">Sign in</button>
                     </form>
 
                     <p class="text-center">
                         <span>New on our platform?</span>
-                        <a href="auth-register-cover.html">
-                            <span>Create an account</span>
-                        </a>
+                        <a ui-sref="identity.auth.register"><span>Create an account</span></a>
                     </p>
 
                     <div class="divider my-4">

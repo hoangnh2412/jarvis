@@ -9,18 +9,25 @@
             //From validation $validatorProvider
             $validatorProvider.setDefaults({
                 errorElement: 'span',
-                errorClass: 'help-block',
+                errorClass: 'is-invalid',
+                validClass: 'is-valid',
                 highlight: function (element, errorClass, validClass) {
                     if (element.type === "radio") {
                         this.findByName(element.name).addClass(errorClass).removeClass(validClass);
                     } else {
+                        // var $element = angular.element(element);
+                        // var $parent = angular.element($element.parent()[0]);
+                        // console.log($parent.className);
+
                         angular.element(element).addClass(errorClass).removeClass(validClass);
                     }
 
-                    var parent = angular.element(element).parent()[0];
-                    if (parent.tagName === 'DIV' || parent.tagName === 'SPAN') {
-                        angular.element(parent).addClass('has-error').removeClass('has-success');
-                    }
+                    angular.element(document.querySelector('#' + element.id + '-error')).addClass('invalid-feedback').removeClass('valid-feedback');
+
+                    // var parent = angular.element(element).parent()[0];
+                    // if (parent.tagName === 'DIV' || parent.tagName === 'SPAN') {
+                    //     angular.element(parent).addClass('has-error').removeClass('has-success');
+                    // }
                 },
                 unhighlight: function (element, errorClass, validClass) {
                     if (element.type === "radio") {
@@ -29,10 +36,11 @@
                         angular.element(element).removeClass(errorClass).addClass(validClass);
                     }
 
-                    var parent = angular.element(element).parent()[0];
-                    if (parent.tagName === 'DIV' || parent.tagName === 'SPAN') {
-                        angular.element(parent).removeClass('has-error').addClass('has-success');
-                    }
+                    angular.element(document.querySelector('#' + element.id + '-error')).removeClass('invalid-feedback').addClass('valid-feedback');
+                    // var parent = angular.element(element).parent()[0];
+                    // if (parent.tagName === 'DIV' || parent.tagName === 'SPAN') {
+                    //     angular.element(parent).removeClass('has-error').addClass('has-success');
+                    // }
                 }
             });
 
