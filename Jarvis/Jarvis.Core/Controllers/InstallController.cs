@@ -144,11 +144,13 @@ namespace Jarvis.Core.Controllers
                     Value = item.Value,
                     Options = item.Options,
                     Type = item.Type,
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     CreatedAtUtc = DateTime.UtcNow,
                     CreatedBy = Guid.Empty,
                     Description = item.Description,
                     TenantCode = Guid.Empty,
+                    IsReadOnly = item.IsReadOnly,
+                    Note = item.Note
                 });
             }
             await uow.CommitAsync();

@@ -13,9 +13,9 @@ namespace Jarvis.Core.Database.MySql
 
             services.AddDbContextPool<CoreDbContext>(options =>
             {
-                options.UseMySql(ServerVersion.AutoDetect(connectionString), sqlOptions =>
+                options.UseMySql(connectionString, sqlOptions =>
                 {
-                    sqlOptions.MigrationsHistoryTable("__Core_Migration_History");
+                    sqlOptions.MigrationsHistoryTable("__core_migration_history");
                 });
             });
             services.AddScoped<ICoreUnitOfWork, CoreUnitOfWork>();
