@@ -7,7 +7,9 @@
             'admin.business'
         ])
         .component('uiAdmin', {
-            templateUrl: '/app/admin/admin.template.html',
+            templateUrl: ['componentService', function (componentService) {
+                return componentService.getTemplateUrl('uiAdmin', '/app/admin/admin.template.html');
+            }],
             controller: 'adminController',
             bindings: {
                 context: '='
