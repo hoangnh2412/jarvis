@@ -1,79 +1,113 @@
-using Microsoft.Extensions.Configuration;
-using Jarvis.Shared.Options;
 using OpenTelemetry.Resources;
 using System.Reflection;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
 using System.Diagnostics.Metrics;
 using OpenTelemetry.Logs;
-using Jarvis.Application.MultiTenancy;
-using Jarvis.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Jarvis.Application.Interfaces.Repositories;
+using Microsoft.Extensions.Configuration;
 
 namespace Jarvis.WebApi.Monitoring;
 
 public static class MonitoringExtension
 {
-    public static IServiceCollection AddCoreMonitor(this IServiceCollection services, IConfiguration configuration)
+    public static OTLPOption BuildOptionMonitor(this IServiceCollection services, IConfiguration configuration)
     {
         var otlpOptions = new OTLPOption();
         var otlpSection = configuration.GetSection("OTLP");
         services.Configure<OTLPOption>(otlpSection);
         otlpSection.Bind(otlpOptions);
 
-        services.AddOpenTelemetry()
+        // OTLPType.TraceInstrumentations.Add(OTLPOption.InstrumentationType.Redis, typeof(RedisTraceInstrumentation).AssemblyQualifiedName);
+        // OTLPType.TraceInstrumentations.Add(OTLPOption.InstrumentationType.Elasticsearch, typeof(ElasticsearchTraceInstrumentation).AssemblyQualifiedName);
+
+        // OTLPType.TraceExporters.Add(OTLPOption.ExporterType.Uptrace, typeof(UptraceTraceExporter).AssemblyQualifiedName);
+        // OTLPType.MetricExporters.Add(OTLPOption.ExporterType.Uptrace, typeof(UptraceMetricExporter).AssemblyQualifiedName);
+        // OTLPType.LoggingExporters.Add(OTLPOption.ExporterType.Uptrace, typeof(UptraceLogExporter).AssemblyQualifiedName);
+
+        return otlpOptions;
+    }
+
+    public static IServiceCollection AddCoreMonitor(this IServiceCollection services, OTLPOption otlpOptions)
+    {
+        services
+            .AddOpenTelemetry()
             .ConfigureResource(options =>
             {
-                options.AddService(
-                    serviceName: string.IsNullOrEmpty(otlpOptions.ServiceName) ? Assembly.GetEntryAssembly().GetName().Name : otlpOptions.ServiceName,
-                    serviceVersion: Assembly.GetEntryAssembly().GetName().Version?.ToString() ?? "unknown",
-                    serviceInstanceId: string.IsNullOrEmpty(otlpOptions.ServiceInstanceId) ? Environment.MachineName : otlpOptions.ServiceInstanceId);
-            })
-            .WithTracing(builder =>
-            {
-                if (otlpOptions.Tracing == null)
-                    return;
+                options
+                    .AddEnvironmentVariableDetector()
+                    .AddTelemetrySdk()
+                    .AddService(
+                        serviceName: string.IsNullOrEmpty(otlpOptions.ServiceName) ? Assembly.GetEntryAssembly().GetName().Name : otlpOptions.ServiceName,
+                        serviceVersion: Assembly.GetEntryAssembly().GetName().Version?.ToString() ?? "unknown",
+                        serviceInstanceId: string.IsNullOrEmpty(otlpOptions.ServiceInstanceId) ? Environment.MachineName : otlpOptions.ServiceInstanceId);
+            });
 
-                builder
-                    .AddSource(Assembly.GetEntryAssembly().GetName().Name)
+        return services;
+    }
+
+    public static IServiceCollection AddCoreTrace(this IServiceCollection services, OTLPOption otlpOptions, params string[] sources)
+    {
+        if (otlpOptions.Tracing == null)
+            return services;
+
+        services
+            .AddOpenTelemetry()
+            .WithTracing(configure =>
+            {
+                configure.AddSource(Assembly.GetEntryAssembly().GetName().Name);
+                if (sources != null && sources.Length > 0)
+                    configure.AddSource(sources);
+
+                configure
+                    .SetResourceBuilder(BuildResource(otlpOptions))
                     .SetSampler(new AlwaysOnSampler())
+                    .SetErrorStatusOnException(true)
                     .AddAspNetCoreInstrumentation(options =>
                     {
-                        // options.EnrichWithHttpRequest = (activity, httpRequest) =>
-                        // {
-                        //     activity.SetParentId("d43431c6d79e8a26");
-                        // };
-                        options.RecordException = otlpOptions.AspNetCoreInstrumentation == null ? true : otlpOptions.AspNetCoreInstrumentation.RecordException;
+                        options.RecordException = true;
                     })
                     .AddHttpClientInstrumentation(options =>
                     {
                         options.RecordException = true;
                     })
-                    // TODO: Implement config
                     .AddEntityFrameworkCoreInstrumentation()
-                    .AddRedisInstrumentation()
-                    .AddElasticsearchClientInstrumentation()
                     .AddSqlClientInstrumentation();
 
-                switch (otlpOptions.Tracing.Exporter)
+                // Intstrumentations
+                foreach (var item in OTLPType.TraceInstrumentations)
                 {
-                    case OTLPOption.ExporterType.OTLP:
-                        builder.AddOtlpExporter(options =>
-                        {
-                            options.Endpoint = new Uri(otlpOptions.Tracing.Endpoint);
-                        });
-                        break;
-                    default:
-                        builder.AddConsoleExporter();
-                        break;
+                    var instance = Activator.CreateInstance(Type.GetType(item.Value), otlpOptions) as ITraceInstrumentation;
+                    instance.AddInstrumentation(configure);
                 }
-            })
-            .WithMetrics(builder =>
+
+                // Exporters
+                configure.AddConsoleExporter();
+                if (otlpOptions.Tracing.Exporter == default(OTLPOption.ExporterType) || !OTLPType.TraceExporters.TryGetValue(otlpOptions.Tracing.Exporter, out string exporterTypeName))
+                    configure.AddConsoleExporter();
+                else
+                    (Activator.CreateInstance(Type.GetType(exporterTypeName), otlpOptions) as ITraceExporter).AddExporter(configure);
+            });
+
+        return services;
+    }
+
+    public static IServiceCollection AddCoreMetric(this IServiceCollection services, OTLPOption otlpOptions, params string[] meters)
+    {
+        if (otlpOptions.Metric == null)
+            return services;
+
+        services
+            .AddOpenTelemetry()
+            .WithMetrics(configure =>
             {
-                builder
-                    .AddMeter(Assembly.GetEntryAssembly().GetName().Name)
+                configure.AddMeter(Assembly.GetEntryAssembly().GetName().Name);
+                if (meters != null && meters.Length > 0)
+                    configure.AddMeter(meters);
+
+                configure
+                    .SetResourceBuilder(BuildResource(otlpOptions))
                     .AddRuntimeInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddAspNetCoreInstrumentation();
@@ -81,7 +115,7 @@ public static class MonitoringExtension
                 switch (otlpOptions.HistogramAggregation)
                 {
                     case "exponential":
-                        builder.AddView(instrument =>
+                        configure.AddView(instrument =>
                         {
                             return instrument.GetType().GetGenericTypeDefinition() == typeof(Histogram<>)
                                 ? new Base2ExponentialBucketHistogramConfiguration()
@@ -92,90 +126,69 @@ public static class MonitoringExtension
                         break;
                 }
 
-                switch (otlpOptions.Metric.Exporter)
+                // Instrumentations
+                foreach (var item in OTLPType.MetricInstrumentations)
                 {
-                    case OTLPOption.ExporterType.Prometheus:
-                        builder.AddPrometheusExporter();
-                        break;
-                    case OTLPOption.ExporterType.OTLP:
-                        builder.AddOtlpExporter(options =>
-                        {
-                            options.Endpoint = new Uri(otlpOptions.Metric.Endpoint);
-                        });
-                        break;
-                    default:
-                        builder.AddConsoleExporter();
-                        break;
+                    var instance = Activator.CreateInstance(Type.GetType(item.Value), otlpOptions) as IMetricInstrumentation;
+                    instance.AddInstrumentation(configure);
                 }
+
+                // Exporters
+                if (otlpOptions.Metric.Exporter == default(OTLPOption.ExporterType) || !OTLPType.MetricExporters.TryGetValue(otlpOptions.Metric.Exporter, out string exporterTypeName))
+                    configure.AddConsoleExporter();
+                else
+                    (Activator.CreateInstance(Type.GetType(exporterTypeName), otlpOptions) as IMetricExporter).AddExporter(configure);
             });
 
         return services;
     }
 
-    public static IServiceCollection AddCoreLogging(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddCoreLogging(this IServiceCollection services, OTLPOption otlpOptions)
     {
-        var otlpOptions = new OTLPOption();
-        configuration.GetSection("OTLP").Bind(otlpOptions);
-
-        services.AddLogging((builder) =>
+        services.AddLogging(builder =>
         {
             builder.ClearProviders();
             builder.Configure(options =>
             {
                 options.ActivityTrackingOptions = ActivityTrackingOptions.TraceId | ActivityTrackingOptions.SpanId;
             });
+
             builder.AddOpenTelemetry(options =>
             {
                 options.IncludeFormattedMessage = true;
                 options.IncludeScopes = true;
                 options.ParseStateValues = true;
 
-                options
-                    .SetResourceBuilder(
-                        ResourceBuilder
-                        .CreateDefault()
-                        .AddService(
-                            serviceName: string.IsNullOrEmpty(otlpOptions.ServiceName) ? Assembly.GetEntryAssembly().GetName().Name : otlpOptions.ServiceName,
-                            serviceVersion: Assembly.GetEntryAssembly().GetName().Version?.ToString() ?? "unknown",
-                            serviceInstanceId: string.IsNullOrEmpty(otlpOptions.ServiceInstanceId) ? Environment.MachineName : otlpOptions.ServiceInstanceId)
-                    );
+                options.SetResourceBuilder(BuildResource(otlpOptions));
 
-                switch (otlpOptions.Logging.Exporter)
-                {
-                    case OTLPOption.ExporterType.OTLP:
-                        options.AddOtlpExporter(options =>
-                        {
-                            options.Endpoint = new Uri(otlpOptions.Logging.Endpoint);
-                        });
-                        break;
-                    default:
-                        options.AddConsoleExporter();
-                        break;
-                }
+                // Exporters
+                options.AddConsoleExporter();
+                if (otlpOptions.Logging.Exporter == default(OTLPOption.ExporterType) || !OTLPType.LoggingExporters.TryGetValue(otlpOptions.Logging.Exporter, out string exporterTypeName))
+                    options.AddConsoleExporter();
+                else
+                    (Activator.CreateInstance(Type.GetType(exporterTypeName), otlpOptions) as ILoggingExporter).AddExporter(options);
             });
         });
 
         return services;
     }
 
-    public static IServiceCollection AddCoreHealthcheckMySql<T>(this IServiceCollection services) where T : IStorageContext
+    private static ResourceBuilder BuildResource(OTLPOption otlpOptions)
     {
-        services
-            .AddHealthChecks()
-            .AddMySql(sp =>
-            {
-                var factory = sp.GetService<Func<string, IConnectionStringResolver>>();
-                var resolver = factory.Invoke(InstanceStorage.ConnectionStringResolver);
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        if (string.IsNullOrEmpty(env))
+            env = "Development";
 
-                return resolver.GetConnectionStringAsync(typeof(T).Name).GetAwaiter().GetResult();
-            });
-
-        return services;
-    }
-
-    public static IServiceCollection AddCoreHealthcheck(this IServiceCollection services)
-    {
-        services.AddHealthChecks();
-        return services;
+        return ResourceBuilder
+            .CreateDefault()
+            .AddEnvironmentVariableDetector()
+            .AddTelemetrySdk()
+            .AddAttributes(new List<KeyValuePair<string, object>> {
+                new KeyValuePair<string, object>("deployment.environment", env)
+            })
+            .AddService(
+                serviceName: string.IsNullOrEmpty(otlpOptions.ServiceName) ? Assembly.GetEntryAssembly().GetName().Name : otlpOptions.ServiceName,
+                serviceVersion: Assembly.GetEntryAssembly().GetName().Version?.ToString() ?? "unknown",
+                serviceInstanceId: string.IsNullOrEmpty(otlpOptions.ServiceInstanceId) ? Environment.MachineName : otlpOptions.ServiceInstanceId);
     }
 }

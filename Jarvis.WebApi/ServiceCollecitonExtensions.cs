@@ -17,9 +17,13 @@ public static class ServiceCollecitonExtensions
 {
     public static IServiceCollection AddCoreDefault(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddCoreLogging(configuration);
-        services.AddCoreMonitor(configuration);
-        services.AddCoreHealthcheck();
+        var otlpOptions = services.BuildOptionMonitor(configuration);
+        services
+            .AddCoreMonitor(otlpOptions)
+            .AddCoreTrace(otlpOptions)
+            .AddCoreMetric(otlpOptions)
+            .AddCoreLogging(otlpOptions)
+            .AddHealthChecks();
 
         services.AddCoreApplication();
         services.AddCoreWebApi(configuration);
