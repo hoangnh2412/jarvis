@@ -1,5 +1,7 @@
 Jarvis is lightweight admin framework
 
+Version 1.8.0
+
 I. Functions
 ---
 1. Login (multi-tenant, switch tenant)

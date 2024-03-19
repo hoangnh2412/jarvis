@@ -700,7 +700,7 @@ namespace Jarvis.Core.Services
                 claims: claims.Select(x => new Claim(x.Key, x.Value.ToString())),
                 notBefore: issuedAt,
                 expires: expiredAt,
-                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_options.SecretKey)), SecurityAlgorithms.HmacSha256)
+                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey)), SecurityAlgorithms.HmacSha256)
             );
 
             var handler = new JwtSecurityTokenHandler();
