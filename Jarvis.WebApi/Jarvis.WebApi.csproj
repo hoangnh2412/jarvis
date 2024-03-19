@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jarvis.Application\Jarvis.Application.csproj" />
+    <ProjectReference Include="..\Jarvis.Persistence\Jarvis.Persistence.csproj" />
+    <ProjectReference Include="..\Jarvis.Shared\Jarvis.Shared.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <PackageId>Jarvis.WebApi</PackageId>
+    <Version>1.0.1</Version>
+    <Authors>Hoang Nguyen</Authors>
+    <Company>TEV</Company>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- <PackageReference Include="Asp.Versioning.Http" Version="6.5.0" /> -->
+    <PackageReference Include="AspNetCore.Authentication.ApiKey" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="6.0.25" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.7" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.Zipkin" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.7.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.7.0-rc.1" />
+
+    <PackageReference Include="OpenTelemetry.Instrumentation.ElasticsearchClient" Version="1.0.0-beta.5" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.0.0-beta.8" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.6.0-beta.3" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="1.0.0-rc9.13" />
+
+    <PackageReference Include="AspNetCore.HealthChecks.MySql" Version="8.0.0" />
+  </ItemGroup>
+
+</Project>
