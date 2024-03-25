@@ -9,8 +9,7 @@ public abstract class BaseEmailSender : IEmailSender
     public BaseEmailSender(
         IOptions<SmtpOption> options)
     {
-        if (options != null)
-            _options = options.Value;
+        _options = options.Value;
     }
 
     public async Task SendAsync(string subject, string content, string to)
