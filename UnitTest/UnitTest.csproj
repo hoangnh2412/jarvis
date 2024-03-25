@@ -28,6 +28,8 @@
     <ProjectReference Include="..\Jarvis.Infrastructures\Jarvis.Infrastructure.Auth.Cognito\Jarvis.Infrastructure.Auth.Cognito.csproj" />
     <ProjectReference Include="..\Jarvis.Infrastructures\Jarvis.Infrastructure.DistributedEvent\Jarvis.Infrastructure.DistributedEvent.csproj" />
     <ProjectReference Include="..\Jarvis.Infrastructures\Jarvis.Infrastructure.DistributedEvent.EventBridge\Jarvis.Infrastructure.DistributedEvent.EventBridge.csproj" />
+    <ProjectReference Include="..\Jarvis.Infrastructures\Jarvis.Infrastructure.Emailing.Mailkit\Jarvis.Infrastructure.Emailing.Mailkit.csproj" />
+    <ProjectReference Include="..\Jarvis.Infrastructures\Jarvis.Infrastructure.Emailing.Mailgun\Jarvis.Infrastructure.Emailing.Mailgun.csproj" />
   </ItemGroup>
 
   <ItemGroup>
