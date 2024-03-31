@@ -1,11 +1,11 @@
-using MailKit.Net.Smtp;
+using System.Net.Mail;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 
 namespace Jarvis.Infrastructure.Emailing.Mailkit;
 
-public class MailkitSender : BaseEmailSender, IEmailSender
+public class MailkitSender : BaseSmtpSender, IEmailSender
 {
     public MailkitSender(
         IOptions<SmtpOption> options)
@@ -13,28 +13,50 @@ public class MailkitSender : BaseEmailSender, IEmailSender
     {
     }
 
-    public override async Task SendAsync(SmtpOption option, string subject, string content, string to, string[] cc, string[] bcc, Dictionary<string, byte[]> attachments)
+    public override async Task SendAsync<T>(MailMessage message, T option = default)
     {
-        var message = GenerateMessage(option, subject, content, to, cc, bcc, attachments);
+        await SendAsync(
+            message.Subject,
+            message.Body,
+            message.To[0].Address,
+            message.CC.Select(x => x.Address).ToArray(),
+            message.Bcc.Select(x => x.Address).ToArray(),
+            message.Attachments.ToArray(),
+            option);
+    }
 
-        using (var client = new SmtpClient())
+    public override Task SendAsync<T>(string subject, string content, string to, string[] cc, string[] bcc, Attachment[] attachments, T option = default)
+    {
+        return SendAsync<T>(subject, content, new string[1] { to }, cc, bcc, attachments, option);
+    }
+
+    public override async Task SendAsync<T>(string subject, string content, string[] to, string[] cc, string[] bcc, Attachment[] attachments, T option = default)
+    {
+        var smtpOption = option as SmtpOption;
+        var message = GenerateMessage(smtpOption, subject, content, to, cc, bcc, attachments);
+
+        using (var client = new MailKit.Net.Smtp.SmtpClient())
         {
-            if (option.WithoutSsl)
+            if (smtpOption.WithoutSsl)
                 client.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 
-            await client.ConnectAsync(option.Host, option.Port, (SecureSocketOptions)option.Socket);
-            await client.AuthenticateAsync(option.UserName, option.Password);
+            await client.ConnectAsync(smtpOption.Host, smtpOption.Port, (SecureSocketOptions)smtpOption.Socket);
+            await client.AuthenticateAsync(smtpOption.UserName, smtpOption.Password);
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
         }
     }
 
-    public virtual MimeMessage GenerateMessage(SmtpOption option, string subject, string content, string to, string[] cc, string[] bcc, Dictionary<string, byte[]> attachments)
+    public virtual MimeMessage GenerateMessage(SmtpOption option, string subject, string content, string[] to, string[] cc, string[] bcc, Attachment[] attachments)
     {
         var message = new MimeMessage();
         message.Subject = subject;
         message.From.Add(new MailboxAddress(option.FromName, option.From));
-        message.To.Add(MailboxAddress.Parse(to));
+
+        foreach (var item in to)
+        {
+            message.To.Add(MailboxAddress.Parse(item));
+        }
 
         if (cc != null && cc.Length > 0)
         {
@@ -55,11 +77,14 @@ public class MailkitSender : BaseEmailSender, IEmailSender
         }
 
         var bodyBuilder = new BodyBuilder { HtmlBody = content };
-        if (attachments != null && attachments.Count > 0)
+        if (attachments != null && attachments.Length > 0)
         {
             foreach (var item in attachments)
             {
-                bodyBuilder.Attachments.Add(item.Key, item.Value, new ContentType("", ""));
+                var memoryStream = item.ContentStream as MemoryStream;
+                var fileContent = new ByteArrayContent(memoryStream.ToArray());
+
+                bodyBuilder.Attachments.Add(item.Name, item.ContentStream, ContentType.Parse(item.ContentType.MediaType));
             }
         }
         message.Body = bodyBuilder.ToMessageBody();

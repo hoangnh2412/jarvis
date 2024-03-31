@@ -1,73 +1,92 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Headers;
+using System.Net.Mail;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
 namespace Jarvis.Infrastructure.Emailing.Mailgun;
 
-public class MailgunClient
+public class MailgunClient : IMailgunClient
 {
     private readonly HttpClient _client;
-    private readonly SmtpOption _options;
+    private readonly HttpOption _options;
 
     public MailgunClient(
         HttpClient client,
-        IOptions<SmtpOption> options)
+        IOptions<HttpOption> options)
     {
         _client = client;
         _options = options.Value;
-
-        _client.BaseAddress = new Uri(options.Value.Host);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes($"api:{options.Value.Password}")));
     }
 
-    public void Send()
+    public async Task SendAsync<T>(string subject, string content, string[] to, string[] cc, string[] bcc, Attachment[] attachments, T option = default)
     {
         var formContent = new MultipartFormDataContent
+        {
+            { new StringContent($"{_options.FromName}<{_options.From}>"), "from" },
+            { new StringContent(subject), "subject" },
+            { new StringContent(content), "html" },
+            { new StringContent("true"), "o:tracking" },
+            { new StringContent("true"), "o:tracking-opens" },
+            { new StringContent("true"), "o:tracking-clicks" }
+        };
+
+        if (to.Length > 0)
+        {
+            foreach (var item in to)
             {
-                { new StringContent($"{_options.FromName}<{_options.From}>"), "from" },
-                // { new StringContent(message.ToAdress.Address), "to" },
-                // { new StringContent(message.Subject), "subject" },
-                // { new StringContent(message.Body), "html" },
-                { new StringContent("true"), "o:tracking" },
-                { new StringContent("true"), "o:tracking-opens" },
-                { new StringContent("true"), "o:tracking-clicks" }
-            };
+                formContent.Add(new StringContent(item), "to");
+            }
+        }
 
-        // if (message.Bcc.Count > 0)
-        // {
-        //     foreach (var bcc in message.Bcc)
-        //     {
-        //         formContent.Add(new StringContent(bcc.Address), "bcc");
-        //     }
-        // }
+        if (cc != null && cc.Length > 0)
+        {
+            foreach (var item in cc)
+            {
+                formContent.Add(new StringContent(item), "cc");
+            }
+        }
 
-        // if (message.Attachments.Count > 0)
-        // {
-        //     foreach (var attach in message.Attachments)
-        //     {
-        //         var memoryStream = attach.ContentStream as MemoryStream;
-        //         var fileContent = new ByteArrayContent(memoryStream.ToArray());
+        if (bcc != null && bcc.Length > 0)
+        {
+            foreach (var item in bcc)
+            {
+                formContent.Add(new StringContent(item), "bcc");
+            }
+        }
 
-        //         fileContent.Headers.ContentType = new MediaTypeHeaderValue(attach.ContentType.MediaType);
-        //         fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
-        //         {
-        //             Name = "attachment",
-        //             FileName = attach.Name,
+        if (attachments.Length > 0)
+        {
+            foreach (var item in attachments)
+            {
+                var memoryStream = item.ContentStream as MemoryStream;
+                var fileContent = new ByteArrayContent(memoryStream.ToArray());
 
-        //         };
-        //         formContent.Add(fileContent);
-        //     }
-        // }
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(item.ContentType.MediaType);
+                fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+                {
+                    Name = "attachment",
+                    FileName = item.Name,
 
-        // var response = await client.PostAsync(url, formContent);
-        // if (!response.IsSuccessStatusCode)
-        // {
-        //     throw new Exception($"Send mail with mailgun error with " +
-        //         $"  StatusCode:{response.StatusCode} - ReasonPhrase:{response.ReasonPhrase}");
-        // }
+                };
+                formContent.Add(fileContent);
+            }
+        }
+
+        var request = new HttpRequestMessage(HttpMethod.Post, new Uri($"{_options.Host}/{_options.UserName}/messages"));
+        request.Content = formContent;
+        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes($"api:{_options.Password}")));
+
+        var response = await _client.SendAsync(request);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Send mail with mailgun error with " +
+                $"  StatusCode: {response.StatusCode} - ReasonPhrase: {response.ReasonPhrase} - Content: {responseContent}");
+        }
+    }
+
+    public async Task SendAsync<T>(string subject, string content, string to, string[] cc, string[] bcc, Attachment[] attachments, T option = default)
+    {
+        await SendAsync<T>(subject, content, new string[1] { to }, cc, bcc, attachments, option);
     }
 }
