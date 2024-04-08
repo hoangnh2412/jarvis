@@ -1,4 +1,6 @@
-namespace Jarvis.Application.MultiTenancy;
+using Jarvis.Application.MultiTenancy;
+
+namespace Jarvis.Persistence.MultiTenancy;
 
 public class MultiTenantConnectionStringResolver : IConnectionStringResolver
 {

@@ -2,6 +2,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Persistence;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http;
+using Jarvis.Persistence.MultiTenancy;
+using Moq;
 
 namespace UnitTest.DataStorage;
 
@@ -15,11 +19,27 @@ public class DataAccessPostgresTest : BaseTest
     {
         var services = new ServiceCollection();
 
+        InstanceStorage.ConnectionStringResolver = typeof(MultiTenantConnectionStringResolver).AssemblyQualifiedName;
+        InstanceStorage.Resolver.Get();
+
         services.AddSingleton<IConfiguration>(Configuration);
+        services.AddSingleton<IHttpContextAccessor>((sp) =>
+        {
+            var accessor = new HttpContextAccessor();
+            accessor.HttpContext = CreateHttpContext();
+            return accessor;
+        });
         services.AddCorePersistence(Configuration);
         services.AddSampleDbContext();
 
         _serviceProvider = services.BuildServiceProvider();
+    }
+
+    private static DefaultHttpContext CreateHttpContext()
+    {
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["X-Tenant-Id"] = Guid.NewGuid().ToString();
+        return httpContext;
     }
 
     [TestMethod]

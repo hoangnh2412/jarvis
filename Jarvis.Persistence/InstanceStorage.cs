@@ -1,5 +1,5 @@
 using Jarvis.Application.Interfaces.Repositories;
-using Jarvis.Application.MultiTenancy;
+using Jarvis.Persistence.MultiTenancy;
 using Jarvis.Shared.Extensions;
 
 namespace Jarvis.Persistence;
@@ -10,6 +10,21 @@ namespace Jarvis.Persistence;
 public static partial class InstanceStorage
 {
     public static string ConnectionStringResolver = typeof(SingleTenantConnectionStringResolver).AssemblyQualifiedName;
+
+    public static class Resolver
+    {
+        private static Type InstanceType = typeof(SingleTenantConnectionStringResolver);
+
+        public static string Get()
+        {
+            return InstanceType.AssemblyQualifiedName;
+        }
+
+        public static void Set(Type type)
+        {
+            InstanceType = type;
+        }
+    }
 
     public static class StorageContext
     {

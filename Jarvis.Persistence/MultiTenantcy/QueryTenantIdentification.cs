@@ -1,6 +1,9 @@
+using Jarvis.Application.MultiTenancy;
+using Jarvis.Domain.Common.Interfaces;
+using Jarvis.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 
-namespace Jarvis.Application.MultiTenancy;
+namespace Jarvis.Persistence.MultiTenancy;
 
 /// <summary>
 /// Use query string of request to tenant identification
@@ -21,5 +24,15 @@ public class QueryTenantIdentification : ITenantIdentification
             return Task.FromResult(Guid.Empty);
 
         return Task.FromResult(tenantId);
+    }
+
+    public Task<ITenant> GetTenantAsync(string hostname)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ITenant> GetTenantAsync(Guid tenantId)
+    {
+        throw new NotImplementedException();
     }
 }

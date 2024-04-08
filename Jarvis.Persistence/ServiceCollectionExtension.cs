@@ -5,6 +5,7 @@ using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Application.MultiTenancy;
 using Jarvis.Persistence.Repositories;
 using Jarvis.Shared.Options;
+using Jarvis.Persistence.MultiTenancy;
 
 namespace Jarvis.Persistence;
 
@@ -42,6 +43,18 @@ public static class ServiceCollectionExtension
         services.AddScoped<MultiTenantConnectionStringResolver>();
         services.AddScoped<ITenantIdAccessor, TenantIdAccessor>();
         services.AddScoped<ITenantConnectionAccessor, TenantConnectionAccessor>();
+
+        services.AddScoped<HeaderTenantIdentification>();
+        services.AddScoped<QueryTenantIdentification>();
+        services.AddScoped<HostTenantIdentification>();
+        services.AddSingleton<Func<string, ITenantIdentification>>(sp => name =>
+        {
+            using (var scope = sp.CreateScope())
+            {
+                return (ITenantIdentification)sp.GetService(Type.GetType(name));
+            }
+        });
+
         services.AddSingleton<Func<string, IConnectionStringResolver>>(sp => name =>
         {
             using (var scope = sp.CreateScope())

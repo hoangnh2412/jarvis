@@ -1,6 +1,7 @@
+using Jarvis.Application.MultiTenancy;
 using Microsoft.Extensions.Configuration;
 
-namespace Jarvis.Application.MultiTenancy;
+namespace Jarvis.Persistence.MultiTenancy;
 
 public class SingleTenantConnectionStringResolver : IConnectionStringResolver
 {
