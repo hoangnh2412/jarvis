@@ -34,12 +34,12 @@ public class PersistenceTest : BaseTest
     public async Task Test_GetCacheKey()
     {
         var cacheService = _serviceProvider.GetService<ICachingService>();
-        var users = await cacheService.QueryCacheKeyAsync<List<User>>("users", async () =>
+        var users = await cacheService.GetAsync<List<User>>("users", async () =>
         {
             var uow = _serviceProvider.GetService<ISampleUnitOfWork>();
             var repo = uow.GetRepository<IRepository<User>>();
 
             return await repo.GetQuery().ToListAsync();
-        });
+        }, TimeSpan.FromMinutes(15));
     }
 }

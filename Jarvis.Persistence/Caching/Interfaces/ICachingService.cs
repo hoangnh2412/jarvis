@@ -34,7 +34,7 @@ public interface ICachingService : IDistributedCache
     /// <param name="token"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<List<T>> HashGetAsync<T>(string key, List<string> hashFields, CancellationToken token = default);
+    Task<List<T>> HashGetAsync<T>(string key, string[] hashFields, CancellationToken token = default);
 
     /// <summary>
     /// Get items in hash table
@@ -44,7 +44,7 @@ public interface ICachingService : IDistributedCache
     /// <param name="token"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<List<string>> HashGetAsync(string key, List<string> hashFields, CancellationToken token = default);
+    Task<List<string>> HashGetAsync(string key, string[] hashFields, CancellationToken token = default);
 
     /// <summary>
     /// Get an item in hash table by hash key
@@ -123,9 +123,62 @@ public interface ICachingService : IDistributedCache
 
     Task ExecuteCommandAsync(string key);
 
-    Task<T> QueryCacheKeyAsync<T>(string cache, Func<Task<T>> query, DistributedCacheEntryOptions options = null, CancellationToken token = default);
+    /// <summary>
+    /// Get data from Cache use CacheKey, if does not exist, query from the database and set result back to Cache
+    /// </summary>
+    /// <param name="cache"></param>
+    /// <param name="query"></param>
+    /// <param name="options"></param>
+    /// <param name="token"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    Task<T> GetAsync<T>(string cache, Func<Task<T>> query, DistributedCacheEntryOptions options = null, CancellationToken token = default);
 
-    Task<T> QueryHashKeyAsync<T>(string cache, string key, Func<Task<T>> query, DistributedCacheEntryOptions options = null, CancellationToken token = default);
+    /// <summary>
+    /// Get data from Cache use CacheKey, if does not exist, query from the database and set result back to Cache
+    /// </summary>
+    /// <param name="cache"></param>
+    /// <param name="query"></param>
+    /// <param name="expireTime"></param>
+    /// <param name="token"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    Task<T> GetAsync<T>(string cache, Func<Task<T>> query, TimeSpan? expireTime = null, CancellationToken token = default);
 
-    Task<List<T>> QueryHashKeysAsync<T>(string cache, List<string> keys, Func<Task<List<T>>> query, Func<List<T>, Dictionary<string, T>> parser, DistributedCacheEntryOptions options = null, CancellationToken token = default);
+    /// <summary>
+    /// Get data from Cache use HashTable, if does not exist, query from the database and set result back to Cache
+    /// </summary>
+    /// <param name="cache"></param>
+    /// <param name="hashField"></param>
+    /// <param name="query"></param>
+    /// <param name="options"></param>
+    /// <param name="token"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    Task<T> HashGetAsync<T>(string cache, string hashField, Func<Task<T>> query, DistributedCacheEntryOptions options = null, CancellationToken token = default);
+
+    /// <summary>
+    /// Get data from Cache use HashTable, if does not exist, query from the database and set result back to Cache
+    /// </summary>
+    /// <param name="cache"></param>
+    /// <param name="hashField"></param>
+    /// <param name="query"></param>
+    /// <param name="expireTime"></param>
+    /// <param name="token"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    Task<T> HashGetAsync<T>(string cache, string hashField, Func<Task<T>> query, TimeSpan? expireTime = null, CancellationToken token = default);
+
+    /// <summary>
+    /// Get data from Cache use HashTable, if does not exist, query from the database and set result back to Cache
+    /// </summary>
+    /// <param name="cache"></param>
+    /// <param name="hashFields"></param>
+    /// <param name="query"></param>
+    /// <param name="parser"></param>
+    /// <param name="options"></param>
+    /// <param name="token"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    Task<List<T>> HashGetAsync<T>(string cache, string[] hashFields, Func<Task<List<T>>> query, Func<List<T>, Dictionary<string, T>> parser, DistributedCacheEntryOptions options = null, CancellationToken token = default);
 }

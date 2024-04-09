@@ -83,13 +83,13 @@ public class MemoryCacheService : MemoryDistributedCache, ICachingService
         return items.Select(x => JsonConvert.DeserializeObject<T>(x.Value)).ToList();
     }
 
-    public async Task<List<T>> HashGetAsync<T>(string key, List<string> hashFields, CancellationToken token = default)
+    public async Task<List<T>> HashGetAsync<T>(string key, string[] hashFields, CancellationToken token = default)
     {
         var items = await HashGetAsync(key, token);
         return items.Where(x => hashFields.Contains(x.Key)).Select(x => JsonConvert.DeserializeObject<T>(x.Value)).ToList();
     }
 
-    public async Task<List<string>> HashGetAsync(string key, List<string> hashFields, CancellationToken token = default)
+    public async Task<List<string>> HashGetAsync(string key, string[] hashFields, CancellationToken token = default)
     {
         var items = await HashGetAsync(key, token);
         return items.Where(x => hashFields.Contains(x.Key)).Select(x => x.Value).ToList();
@@ -142,36 +142,52 @@ public class MemoryCacheService : MemoryDistributedCache, ICachingService
         throw new NotImplementedException();
     }
 
-    public async Task<T> QueryCacheKeyAsync<T>(string cache, Func<Task<T>> query, DistributedCacheEntryOptions options = null, CancellationToken token = default)
+    public async Task<T> GetAsync<T>(string key, Func<Task<T>> query, DistributedCacheEntryOptions options = null, CancellationToken token = default)
     {
-        var bytes = await GetAsync(cache, token);
+        var bytes = await GetAsync(key, token);
         if (bytes != null)
             return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(bytes));
 
         var data = await query.Invoke();
-        await SetAsync(cache, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(data)), options, token);
+        await SetAsync(key, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(data)), options, token);
         return data;
     }
 
-    public async Task<T> QueryHashKeyAsync<T>(string cache, string key, Func<Task<T>> query, DistributedCacheEntryOptions options = null, CancellationToken token = default)
+    public async Task<T> HashGetAsync<T>(string key, string hashField, Func<Task<T>> query, DistributedCacheEntryOptions options = null, CancellationToken token = default)
     {
-        var data = await HashGetAsync<T>(cache, key, token);
+        var data = await HashGetAsync<T>(key, hashField, token);
         if (data != null)
             return data;
 
         var item = await query.Invoke();
-        await HashSetAsync(cache, key, JsonConvert.SerializeObject(item), options, token);
+        await HashSetAsync(key, hashField, JsonConvert.SerializeObject(item), options, token);
         return item;
     }
 
-    public async Task<List<T>> QueryHashKeysAsync<T>(string cache, List<string> keys, Func<Task<List<T>>> query, Func<List<T>, Dictionary<string, T>> parser, DistributedCacheEntryOptions options = null, CancellationToken token = default)
+    public async Task<List<T>> HashGetAsync<T>(string cache, string[] hashFields, Func<Task<List<T>>> query, Func<List<T>, Dictionary<string, T>> parser, DistributedCacheEntryOptions options = null, CancellationToken token = default)
     {
-        var data = await HashGetAsync<T>(cache, keys, token);
+        var data = await HashGetAsync<T>(cache, hashFields, token);
         if (data != null)
             return data;
 
         var item = await query.Invoke();
         await HashSetAsync(cache, parser.Invoke(item), options, token);
         return item;
+    }
+
+    public async Task<T> GetAsync<T>(string cache, Func<Task<T>> query, TimeSpan? expireTime = null, CancellationToken token = default)
+    {
+        return await GetAsync<T>(cache, query, new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = expireTime
+        }, token);
+    }
+
+    public async Task<T> HashGetAsync<T>(string cache, string hashField, Func<Task<T>> query, TimeSpan? expireTime = null, CancellationToken token = default)
+    {
+        return await HashGetAsync(cache, hashField, query, new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = expireTime
+        }, token);
     }
 }
