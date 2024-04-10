@@ -1,5 +1,5 @@
 using Jarvis.Application.Interfaces.Repositories;
-using Jarvis.Persistence.MultiTenancy;
+using Jarvis.Application.MultiTenancy;
 using Jarvis.Shared.Extensions;
 
 namespace Jarvis.Persistence;
@@ -9,36 +9,45 @@ namespace Jarvis.Persistence;
 /// </summary>
 public static partial class InstanceStorage
 {
-    public static string ConnectionStringResolver = typeof(SingleTenantConnectionStringResolver).AssemblyQualifiedName;
-
-    public static class Resolver
+    public static class ConnectionStringResolver
     {
-        private static Type InstanceType = typeof(SingleTenantConnectionStringResolver);
+        private static Dictionary<string, Type> InstanceTypes = new Dictionary<string, Type>();
 
-        public static string Get()
+        public static string Get<TContext>()
         {
-            return InstanceType.AssemblyQualifiedName;
+            var name = nameof(TContext);
+
+            if (InstanceTypes.ContainsKey(name))
+                return InstanceTypes[name].AssemblyQualifiedName;
+
+            return null;
         }
 
-        public static void Set(Type type)
+        public static void Set<TContext, TResolver>()
+            where TContext : IStorageContext
+            where TResolver : IConnectionStringResolver
         {
-            InstanceType = type;
+            var name = nameof(TContext);
+            if (InstanceTypes.ContainsKey(name))
+                return;
+
+            InstanceTypes[name] = typeof(TResolver);
         }
     }
 
     public static class StorageContext
     {
-        public static Dictionary<string, Type> Items = new Dictionary<string, Type>();
+        public static Dictionary<string, Type> InstanceTypes = new Dictionary<string, Type>();
 
         public static void Add<T>(Type type) where T : IStorageContext
         {
-            if (Items.ContainsKey(type.AssemblyQualifiedName))
+            if (InstanceTypes.ContainsKey(type.AssemblyQualifiedName))
                 throw new Exception($"Storage context {type.Name} has been exist");
 
             if (!type.IsInstanceOfType<IStorageContext>())
                 throw new Exception($"Storage context {type.Name} does not implement interface {nameof(IStorageContext)}");
 
-            Items.Add(type.AssemblyQualifiedName, type);
+            InstanceTypes.Add(type.AssemblyQualifiedName, type);
         }
     }
 }

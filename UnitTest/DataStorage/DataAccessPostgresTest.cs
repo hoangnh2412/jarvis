@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http;
 using Jarvis.Persistence.MultiTenancy;
 using Moq;
+using Jarvis.Persistence.DataContexts;
 
 namespace UnitTest.DataStorage;
 
@@ -19,9 +20,6 @@ public class DataAccessPostgresTest : BaseTest
     {
         var services = new ServiceCollection();
 
-        InstanceStorage.ConnectionStringResolver = typeof(MultiTenantConnectionStringResolver).AssemblyQualifiedName;
-        InstanceStorage.Resolver.Get();
-
         services.AddSingleton<IConfiguration>(Configuration);
         services.AddSingleton<IHttpContextAccessor>((sp) =>
         {
@@ -30,6 +28,7 @@ public class DataAccessPostgresTest : BaseTest
             return accessor;
         });
         services.AddCorePersistence(Configuration);
+        services.AddTenantDbContext();
         services.AddSampleDbContext();
 
         _serviceProvider = services.BuildServiceProvider();
@@ -61,5 +60,25 @@ public class DataAccessPostgresTest : BaseTest
         });
         await uow.CommitAsync();
         Assert.AreEqual(items.Count + 1, await repo.CountAsync());
+    }
+
+    [TestMethod]
+    public async Task Test_DataStorage_MultiTenantcy()
+    {
+        try
+        {
+            var uowTenant = _serviceProvider.GetService<ITenantUnitOfWork>();
+            var repoTenant = uowTenant.GetRepository<IRepository<Tenant>>();
+
+            var uowApp = _serviceProvider.GetService<ISampleUnitOfWork>();
+            var repoUser = uowApp.GetRepository<IRepository<User>>();
+
+            var items = await repoUser.ListAsync();
+            Assert.AreEqual(0, items.Count);
+        }
+        catch (System.Exception ex)
+        {
+            throw ex;
+        }
     }
 }

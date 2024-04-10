@@ -32,7 +32,7 @@ public static class ServiceCollectionExtension
         services.AddScoped(typeof(IQueryRepository<>), typeof(BaseQueryRepository<>));
         services.AddScoped(typeof(ICommandRepository<>), typeof(BaseCommandRepository<>));
         services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
-        services.AddScoped<Func<string, IStorageContext>>(sp => name => (IStorageContext)sp.GetService(InstanceStorage.StorageContext.Items[name]));
+        services.AddScoped<Func<string, IStorageContext>>(sp => name => (IStorageContext)sp.GetService(InstanceStorage.StorageContext.InstanceTypes[name]));
 
         return services;
     }
@@ -82,7 +82,7 @@ public static class ServiceCollectionExtension
         services.AddDbContextPool<T>((sp, options) =>
         {
             var factory = sp.GetService<Func<string, IConnectionStringResolver>>();
-            var resolver = factory.Invoke(InstanceStorage.ConnectionStringResolver);
+            var resolver = factory.Invoke(InstanceStorage.ConnectionStringResolver.Get<T>());
             builder.Invoke(resolver, options);
         });
 
@@ -105,8 +105,8 @@ public static class ServiceCollectionExtension
         services.AddDbContextPool<T>(async (sp, options) =>
         {
             var factory = sp.GetService<Func<string, IConnectionStringResolver>>();
-            var resolver = factory.Invoke(InstanceStorage.ConnectionStringResolver);
-            var connection = await resolver.GetConnectionStringAsync(typeof(T).Name);
+            var resolver = factory.Invoke(InstanceStorage.ConnectionStringResolver.Get<T>());
+            var connection = await resolver.GetConnectionStringAsync(nameof(T));
             builder.Invoke(connection, options);
         });
 

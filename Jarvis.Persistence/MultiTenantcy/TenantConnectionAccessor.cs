@@ -10,14 +10,14 @@ namespace Jarvis.Persistence.MultiTenancy;
 public class TenantConnectionAccessor : ITenantConnectionAccessor
 {
     private readonly IConfiguration _configuration;
-    private readonly ICoreUnitOfWork _uow;
+    // private readonly ICoreUnitOfWork _uow;
 
     public TenantConnectionAccessor(
-        IConfiguration configuration,
-        ICoreUnitOfWork uow)
+        IConfiguration configuration)
+    // ICoreUnitOfWork uow)
     {
         _configuration = configuration;
-        _uow = uow;
+        // _uow = uow;
     }
 
     public Task<string> GetConnectionStringAsync()
@@ -27,11 +27,12 @@ public class TenantConnectionAccessor : ITenantConnectionAccessor
 
     public async Task<string> GetConnectionStringAsync(Guid tenantId)
     {
-        var repo = _uow.GetRepository<IRepository<ITenant>>();
-        var tenant = await repo.GetQuery().FirstOrDefaultAsync(x => x.Id == tenantId);
-        if (tenant == null)
-            throw new Exception($"Not found connection string of tenant {tenantId}");
+        // var repo = _uow.GetRepository<IRepository<ITenant>>();
+        // var tenant = await repo.GetQuery().FirstOrDefaultAsync(x => x.Id == tenantId);
+        // if (tenant == null)
+        //     throw new Exception($"Not found connection string of tenant {tenantId}");
 
-        return tenant.ConnectionString;
+        // return tenant.ConnectionString;
+        return null;
     }
 }

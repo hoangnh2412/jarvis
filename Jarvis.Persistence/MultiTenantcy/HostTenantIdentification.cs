@@ -13,11 +13,11 @@ namespace Jarvis.Persistence.MultiTenancy;
 public class HostTenantIdentification : ITenantIdentification
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ICoreUnitOfWork _uow;
+    private readonly ITenantUnitOfWork _uow;
 
     public HostTenantIdentification(
         IHttpContextAccessor httpContextAccessor,
-        ICoreUnitOfWork uow)
+        ITenantUnitOfWork uow)
     {
         _httpContextAccessor = httpContextAccessor;
         _uow = uow;
