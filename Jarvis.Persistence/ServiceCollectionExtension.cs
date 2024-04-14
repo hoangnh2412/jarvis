@@ -42,26 +42,12 @@ public static class ServiceCollectionExtension
         services.AddScoped<SingleTenantConnectionStringResolver>();
         services.AddScoped<MultiTenantConnectionStringResolver>();
         services.AddScoped<ITenantIdAccessor, TenantIdAccessor>();
-        services.AddScoped<ITenantConnectionAccessor, TenantConnectionAccessor>();
 
         services.AddScoped<HeaderTenantIdentification>();
         services.AddScoped<QueryTenantIdentification>();
         services.AddScoped<HostTenantIdentification>();
-        services.AddSingleton<Func<string, ITenantIdentification>>(sp => name =>
-        {
-            using (var scope = sp.CreateScope())
-            {
-                return (ITenantIdentification)sp.GetService(Type.GetType(name));
-            }
-        });
-
-        services.AddSingleton<Func<string, IConnectionStringResolver>>(sp => name =>
-        {
-            using (var scope = sp.CreateScope())
-            {
-                return (IConnectionStringResolver)scope.ServiceProvider.GetService(Type.GetType(name));
-            }
-        });
+        services.AddScoped<Func<string, ITenantIdentification>>(sp => name => (ITenantIdentification)sp.GetService(Type.GetType(name)));
+        services.AddScoped<Func<string, IConnectionStringResolver>>(sp => name => (IConnectionStringResolver)sp.GetService(Type.GetType(name)));
 
         return services;
     }
@@ -106,7 +92,7 @@ public static class ServiceCollectionExtension
         {
             var factory = sp.GetService<Func<string, IConnectionStringResolver>>();
             var resolver = factory.Invoke(InstanceStorage.ConnectionStringResolver.Get<T>());
-            var connection = await resolver.GetConnectionStringAsync(nameof(T));
+            var connection = await resolver.GetConnectionStringAsync(typeof(T).Name);
             builder.Invoke(connection, options);
         });
 

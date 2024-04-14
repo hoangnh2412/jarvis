@@ -15,8 +15,7 @@ public static partial class InstanceStorage
 
         public static string Get<TContext>()
         {
-            var name = nameof(TContext);
-
+            var name = typeof(TContext).Name;
             if (InstanceTypes.ContainsKey(name))
                 return InstanceTypes[name].AssemblyQualifiedName;
 
@@ -27,7 +26,7 @@ public static partial class InstanceStorage
             where TContext : IStorageContext
             where TResolver : IConnectionStringResolver
         {
-            var name = nameof(TContext);
+            var name = typeof(TContext).Name;
             if (InstanceTypes.ContainsKey(name))
                 return;
 

@@ -6,12 +6,12 @@ using Jarvis.Application.Interfaces.Repositories;
 
 namespace Jarvis.Persistence.Repositories;
 
-public class BaseUnitOfWork<T> : IUnitOfWork<T> where T : IStorageContext
+public class BaseEFUnitOfWork<T> : IUnitOfWork<T> where T : IStorageContext
 {
     private readonly IServiceProvider _services;
     protected DbContext StorageContext { get; private set; }
 
-    public BaseUnitOfWork(
+    public BaseEFUnitOfWork(
         IServiceProvider services,
         Func<string, IStorageContext> factory)
     {

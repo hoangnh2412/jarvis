@@ -4,8 +4,13 @@ using Jarvis.Persistence.Repositories;
 
 namespace UnitTest.DataStorage;
 
-public class TenantUnitOfWork : BaseUnitOfWork<SampleDbContext>, ITenantUnitOfWork
+public class TenantUnitOfWork : BaseEFUnitOfWork<TenantDbContext>, ITenantUnitOfWork
 {
+    // public TenantUnitOfWork(
+    //     IServiceProvider services,
+    //     IDbContextFactory<TenantDbContext> factory) : base(services, factory)
+    // {
+    // }
     public TenantUnitOfWork(IServiceProvider services, Func<string, IStorageContext> factory) : base(services, factory)
     {
     }

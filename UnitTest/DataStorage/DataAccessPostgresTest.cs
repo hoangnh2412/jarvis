@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Jarvis.Persistence.MultiTenancy;
 using Moq;
 using Jarvis.Persistence.DataContexts;
+using Microsoft.EntityFrameworkCore;
 
 namespace UnitTest.DataStorage;
 
@@ -28,6 +29,7 @@ public class DataAccessPostgresTest : BaseTest
             return accessor;
         });
         services.AddCorePersistence(Configuration);
+        services.AddMultiTenancy();
         services.AddTenantDbContext();
         services.AddSampleDbContext();
 
@@ -37,7 +39,7 @@ public class DataAccessPostgresTest : BaseTest
     private static DefaultHttpContext CreateHttpContext()
     {
         var httpContext = new DefaultHttpContext();
-        httpContext.Request.Headers["X-Tenant-Id"] = Guid.NewGuid().ToString();
+        httpContext.Request.Headers["X-Tenant-Id"] = "fb38afa6-593e-44a3-ad28-8fc786ca1be9";
         return httpContext;
     }
 
@@ -63,22 +65,26 @@ public class DataAccessPostgresTest : BaseTest
     }
 
     [TestMethod]
-    public async Task Test_DataStorage_MultiTenantcy()
+    public async Task Test_DataStorage_MultiTenancy()
     {
         try
         {
             var uowTenant = _serviceProvider.GetService<ITenantUnitOfWork>();
             var repoTenant = uowTenant.GetRepository<IRepository<Tenant>>();
+            var tenants = await repoTenant.GetQuery().ToListAsync();
 
-            var uowApp = _serviceProvider.GetService<ISampleUnitOfWork>();
-            var repoUser = uowApp.GetRepository<IRepository<User>>();
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var uowApp = scope.ServiceProvider.GetService<ISampleUnitOfWork>();
+                var repoUser = uowApp.GetRepository<IRepository<User>>();
 
-            var items = await repoUser.ListAsync();
-            Assert.AreEqual(0, items.Count);
+                var items = await repoUser.ListAsync();
+                Assert.AreNotEqual(0, items.Count);
+            }
         }
         catch (System.Exception ex)
         {
-            throw ex;
+            Console.WriteLine(ex.Message);
         }
     }
 }

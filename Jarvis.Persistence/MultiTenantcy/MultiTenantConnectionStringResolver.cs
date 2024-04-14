@@ -2,7 +2,6 @@ using Jarvis.Application.MultiTenancy;
 
 namespace Jarvis.Persistence.MultiTenancy;
 
-
 // Multitenant: Xác định tenant/connection string qua TenantId
 // Xác định TenantId gồm 2 nhóm:
 // A. HTTP request, gồm 3 cách
