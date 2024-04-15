@@ -39,13 +39,8 @@ public static class ServiceCollectionExtension
 
     private static IServiceCollection AddConnectionStringResolver(this IServiceCollection services)
     {
-        services.AddScoped<SingleTenantConnectionStringResolver>();
-        services.AddScoped<MultiTenantConnectionStringResolver>();
-        services.AddScoped<ITenantIdAccessor, TenantIdAccessor>();
-
         services.AddScoped<HeaderTenantIdentification>();
         services.AddScoped<QueryTenantIdentification>();
-        services.AddScoped<HostTenantIdentification>();
         services.AddScoped<Func<string, ITenantIdentification>>(sp => name => (ITenantIdentification)sp.GetService(Type.GetType(name)));
         services.AddScoped<Func<string, IConnectionStringResolver>>(sp => name => (IConnectionStringResolver)sp.GetService(Type.GetType(name)));
 

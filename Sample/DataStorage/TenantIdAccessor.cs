@@ -1,7 +1,8 @@
 using Jarvis.Application.MultiTenancy;
+using Jarvis.Persistence.MultiTenancy;
 using Microsoft.AspNetCore.Http;
 
-namespace Jarvis.Persistence.MultiTenancy;
+namespace Sample.DataStorage;
 
 public class TenantIdAccessor : ITenantIdAccessor
 {

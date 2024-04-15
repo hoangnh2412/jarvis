@@ -5,7 +5,7 @@ using Jarvis.Persistence.DataContexts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
-namespace Jarvis.Persistence.MultiTenancy;
+namespace Sample.DataStorage;
 
 /// <summary>
 /// Use host name to tenant identification
@@ -35,13 +35,13 @@ public class HostTenantIdentification : ITenantIdentification
 
     public async Task<ITenant> GetTenantAsync(string hostname)
     {
-        var repo = _uow.GetRepository<IRepository<ITenant>>();
+        var repo = _uow.GetRepository<IRepository<Tenant>>();
         return await repo.GetQuery().FirstOrDefaultAsync(x => x.Name == hostname);
     }
 
     public async Task<ITenant> GetTenantAsync(Guid tenantId)
     {
-        var repo = _uow.GetRepository<IRepository<ITenant>>();
+        var repo = _uow.GetRepository<IRepository<Tenant>>();
         return await repo.GetQuery().FirstOrDefaultAsync(x => x.Id == tenantId);
     }
 }
