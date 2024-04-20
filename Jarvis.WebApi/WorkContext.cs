@@ -2,11 +2,40 @@ using Microsoft.AspNetCore.Http;
 using Jarvis.Application.Interfaces;
 using Jarvis.Shared.Auth;
 using Jarvis.Shared.Extensions;
+using System.Security.Claims;
+using Newtonsoft.Json;
 
 namespace Jarvis.WebApi;
+
 public class WorkContext : IWorkContext
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public Guid TokenId => FindClaim<Guid>(ClaimTypes.SerialNumber);
+
+    public Guid TenantId => FindClaim<Guid>(ClaimTypes.GroupSid);
+
+    public Guid UserId => FindClaim<Guid>(ClaimTypes.Sid);
+
+    public string UserName => FindClaim<string>(ClaimTypes.NameIdentifier);
+
+    public string FirstName => FindClaim<string>(ClaimTypes.Surname);
+
+    public string LastName => FindClaim<string>(ClaimTypes.GivenName);
+
+    public string FullName => FindClaim<string>(ClaimTypes.Name);
+
+    public UserInfoModel UserInfo
+    {
+        get
+        {
+            var data = FindClaim<string>(ClaimTypes.UserData);
+            if (string.IsNullOrEmpty(data))
+                return null;
+
+            return JsonConvert.DeserializeObject<UserInfoModel>(data);
+        }
+    }
 
     public WorkContext(
         IHttpContextAccessor httpContextAccessor)
@@ -14,58 +43,17 @@ public class WorkContext : IWorkContext
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public Guid GetTokenKey()
+    private T FindClaim<T>(string claimType)
     {
-        // var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, JwtRegisteredClaimNames.Jti);
-        var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, "jti");
+        var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, claimType);
         if (claim == null || claim.Value == null)
-            return Guid.Empty;
+            return default(T);
 
-        return Guid.Parse(claim.Value);
+        return (T)Convert.ChangeType(claim.Value, typeof(T));
     }
 
-    public Guid GetTenantKey()
+    public bool IsInRole(string roleName)
     {
-        // var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, JwtRegisteredClaimNames.Sub);
-        var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, "sub");
-        if (claim == null || claim.Value == null)
-            return Guid.Empty;
-
-        return Guid.Parse(claim.Value);
-    }
-
-    public Guid GetUserKey()
-    {
-        // var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, JwtRegisteredClaimNames.Sid);
-        var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, "sid");
-        if (claim == null || claim.Value == null)
-            return Guid.Empty;
-
-        return Guid.Parse(claim.Value);
-    }
-
-    public string GetUserName()
-    {
-        // var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, JwtRegisteredClaimNames.NameId);
-        var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, "nameId");
-        if (claim == null || claim.Value == null)
-            return null;
-
-        return claim.Value;
-    }
-
-    public string GetUserFullName()
-    {
-        // var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, JwtRegisteredClaimNames.Name);
-        var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, "name");
-        if (claim == null || claim.Value == null)
-            return null;
-
-        return claim.Value;
-    }
-
-    public UserInfoModel GetUserInfo()
-    {
-        throw new NotImplementedException();
+        return _httpContextAccessor.HttpContext.User.Claims.Any(x => x.Type == ClaimTypes.Role && x.Value == roleName);
     }
 }

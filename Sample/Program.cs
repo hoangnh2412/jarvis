@@ -1,6 +1,5 @@
-using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Persistence;
-using Jarvis.Persistence.DataContexts;
+using Jarvis.WebApi;
 using Sample.DataStorage;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,9 +10,10 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddCoreWebApi(builder.Configuration);
 builder.Services.AddCorePersistence(builder.Configuration);
+
 builder.Services.AddMultiTenancy();
 builder.Services.AddTenantDbContext();
 builder.Services.AddSampleDbContext();
