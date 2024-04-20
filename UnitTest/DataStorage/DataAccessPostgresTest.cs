@@ -2,12 +2,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Persistence;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http;
-using Jarvis.Persistence.MultiTenancy;
-using Moq;
 using Jarvis.Persistence.DataContexts;
 using Microsoft.EntityFrameworkCore;
+using Sample.DataStorage;
 
 namespace UnitTest.DataStorage;
 

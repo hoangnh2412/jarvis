@@ -1,11 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Persistence;
-using UnitTest.DataStorage;
 using Jarvis.Persistence.Caching;
 using Microsoft.Extensions.Configuration;
 using Jarvis.Persistence.Caching.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Sample.DataStorage;
 
 namespace UnitTest.Persistences;
 

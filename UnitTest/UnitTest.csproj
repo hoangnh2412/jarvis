@@ -30,6 +30,7 @@
     <ProjectReference Include="..\Jarvis.Infrastructures\Jarvis.Infrastructure.DistributedEvent.EventBridge\Jarvis.Infrastructure.DistributedEvent.EventBridge.csproj" />
     <ProjectReference Include="..\Jarvis.Infrastructures\Jarvis.Infrastructure.Emailing.Mailkit\Jarvis.Infrastructure.Emailing.Mailkit.csproj" />
     <ProjectReference Include="..\Jarvis.Infrastructures\Jarvis.Infrastructure.Emailing.Mailgun\Jarvis.Infrastructure.Emailing.Mailgun.csproj" />
+    <ProjectReference Include="..\Sample\Sample.csproj" />
   </ItemGroup>
 
   <ItemGroup>

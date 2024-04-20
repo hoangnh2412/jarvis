@@ -45,11 +45,7 @@ public class WorkContext : IWorkContext
 
     private T FindClaim<T>(string claimType)
     {
-        var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, claimType);
-        if (claim == null || claim.Value == null)
-            return default(T);
-
-        return (T)Convert.ChangeType(claim.Value, typeof(T));
+        return ClaimsPrincipalExtension.GetClaim<T>(_httpContextAccessor.HttpContext.User, claimType);
     }
 
     public bool IsInRole(string roleName)
