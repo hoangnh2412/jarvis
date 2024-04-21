@@ -3,6 +3,7 @@ using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Persistence.DataContexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Sample.DataStorage;
 
 namespace Sample.Controllers;
@@ -44,6 +45,31 @@ public class SampleController : ControllerBase
         await Task.WhenAll(tasks);
 
         return Ok(users);
+    }
+
+    [HttpGet("switch")]
+    public async Task<IActionResult> SwitchConnectionAsync()
+    {
+        using (var scope = _serviceProvider.CreateScope())
+        {
+            var uow = scope.ServiceProvider.GetService<ISampleUnitOfWork>();
+            var dbContext = uow.GetDbContext() as DbContext;
+
+            var conn = dbContext.Database.GetConnectionString();
+            var users = await GetUsersInternal(uow);
+            Console.WriteLine($"{conn} Users: {JsonConvert.SerializeObject(users)}");
+        }
+
+        using (var scope = _serviceProvider.CreateScope())
+        {
+            var uow = scope.ServiceProvider.GetService<ISampleUnitOfWork>();
+            var dbContext = uow.GetDbContext() as DbContext;
+            dbContext.Database.SetConnectionString("Server=localhost;Database=admin2;user id=admin;password=Admin@123;");
+            var conn = dbContext.Database.GetConnectionString();
+            var users = await GetUsersInternal(uow);
+            Console.WriteLine($"{conn} Users: {JsonConvert.SerializeObject(users)}");
+        }
+        return Ok();
     }
 
     private async Task<List<User>> GetUsers()
