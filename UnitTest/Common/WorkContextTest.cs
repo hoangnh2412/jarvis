@@ -31,9 +31,9 @@ public class WorkContextTest : BaseTest
     public void Test_WorkContext()
     {
         var workContext = _serviceProvider.GetService<IWorkContext>();
-        Assert.IsNotNull(workContext.GetUserInfo());
-        Assert.IsNotNull(workContext.GetUserKey());
-        Assert.IsNotNull(workContext.GetUserName());
-        Assert.IsNotNull(workContext.GetUserFullName());
+        Assert.IsNotNull(workContext.UserInfo);
+        Assert.IsNotNull(workContext.UserId);
+        Assert.IsNotNull(workContext.UserName);
+        Assert.IsNotNull(workContext.FullName);
     }
 }

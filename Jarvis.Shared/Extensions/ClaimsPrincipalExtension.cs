@@ -40,4 +40,13 @@ public static partial class ClaimsPrincipalExtension
 
         return null;
     }
+
+    public static T GetClaim<T>(ClaimsPrincipal principal, string claimType)
+    {
+        var claim = ClaimsPrincipalExtension.GetClaim(principal.Claims, claimType);
+        if (claim == null || claim.Value == null)
+            return default(T);
+
+        return (T)Convert.ChangeType(claim.Value, typeof(T));
+    }
 }

@@ -4,11 +4,29 @@ using Newtonsoft.Json;
 using Jarvis.Application.Interfaces;
 using Jarvis.Shared.Auth;
 using Jarvis.Shared.Extensions;
+using System.Security.Claims;
 
 namespace UnitTest;
 public class TestWorkContext : IWorkContext
 {
     private UserInfoModel UserInfo { get; }
+
+    public Guid TokenId => FindClaim<Guid>(ClaimTypes.SerialNumber);
+
+    public Guid TenantId => FindClaim<Guid>(ClaimTypes.GroupSid);
+
+    public Guid UserId => UserInfo.Id;
+
+    public string UserName => UserInfo.UserName;
+
+    public string FirstName => UserInfo.FirstName;
+
+    public string LastName => UserInfo.LastName;
+
+    public string FullName => UserInfo.FullName;
+
+    UserInfoModel IWorkContext.UserInfo => GetUserInfor();
+
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public TestWorkContext(
@@ -17,6 +35,11 @@ public class TestWorkContext : IWorkContext
         _httpContextAccessor = httpContextAccessor;
 
         UserInfo = GetUserInfor();
+    }
+
+    public bool IsInRole(string roleName)
+    {
+        return _httpContextAccessor.HttpContext.User.Claims.Any(x => x.Type == ClaimTypes.Role && x.Value == roleName);
     }
 
     private UserInfoModel GetUserInfor()
@@ -108,43 +131,8 @@ public class TestWorkContext : IWorkContext
         return userCognito;
     }
 
-    public Guid GetTokenKey()
+    private T FindClaim<T>(string claimType)
     {
-        var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, "jti");
-        if (claim == null || claim.Value == null)
-            return Guid.Empty;
-
-        return Guid.Parse(claim.Value);
-    }
-
-    public Guid GetTenantKey()
-    {
-        return Guid.Empty;
-        // var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, JwtRegisteredClaimNames.Sub);
-        // var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, "sub");
-        // if (claim == null || claim.Value == null)
-        //     return Guid.Empty;
-
-        // return Guid.Parse(claim.Value);
-    }
-
-    public Guid GetUserKey()
-    {
-        return UserInfo.Id;
-    }
-
-    public string GetUserName()
-    {
-        return UserInfo.UserName;
-    }
-
-    public string GetUserFullName()
-    {
-        return UserInfo.FullName;
-    }
-
-    public UserInfoModel GetUserInfo()
-    {
-        return UserInfo;
+        return ClaimsPrincipalExtension.GetClaim<T>(_httpContextAccessor.HttpContext.User, claimType);
     }
 }

@@ -3,25 +3,46 @@ using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
 using System.Data.Common;
 using Jarvis.Application.Interfaces.Repositories;
+using Jarvis.Application.MultiTenancy;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jarvis.Persistence.Repositories;
 
-public class BaseEFUnitOfWork<T> : IUnitOfWork<T> where T : IStorageContext
+public abstract class BaseEFUnitOfWork<T> : IUnitOfWork<T> where T : DbContext, IStorageContext
 {
     private readonly IServiceProvider _services;
-    protected DbContext StorageContext { get; private set; }
+    protected DbContext StorageContext { get; set; }
 
     public BaseEFUnitOfWork(
         IServiceProvider services,
-        Func<string, IStorageContext> factory)
+        IDbContextFactory<T> factory)
     {
         _services = services;
-        StorageContext = factory.Invoke(typeof(T).AssemblyQualifiedName) as DbContext;
+        StorageContext = factory.CreateDbContext();
     }
 
     public IStorageContext GetDbContext()
     {
         return (IStorageContext)StorageContext;
+    }
+
+    public IStorageContext GetDbContext(string name)
+    {
+        var resolver = _services.GetService<ITenantConnectionStringResolver>();
+
+        var connectionString = resolver.GetConnectionString(name);
+        StorageContext.Database.SetConnectionString(connectionString);
+        return GetDbContext();
+    }
+
+    public IStorageContext GetDbContext<TResolver>(string name)
+    {
+        var factory = _services.GetService<Func<string, ITenantConnectionStringResolver>>();
+        var resolver = factory.Invoke(typeof(TResolver).AssemblyQualifiedName);
+
+        var connectionString = resolver.GetConnectionString(name);
+        StorageContext.Database.SetConnectionString(connectionString);
+        return GetDbContext();
     }
 
     public string GetConnectionString()

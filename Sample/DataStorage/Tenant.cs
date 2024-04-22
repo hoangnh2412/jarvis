@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Jarvis.Domain.Entities;
 
-namespace UnitTest.DataStorage;
+namespace Sample.DataStorage;
 
 public class Tenant : ITenant
 {

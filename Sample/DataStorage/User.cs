@@ -1,6 +1,6 @@
 using Jarvis.Domain.Common.Interfaces;
 
-namespace UnitTest.DataStorage;
+namespace Sample.DataStorage;
 
 public class User : IEntity<int>
 {

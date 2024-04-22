@@ -22,7 +22,7 @@ public static class ServiceCollectionExtension
         services.Configure<StorageContextOption>(otlpSection);
 
         services.AddRepositories();
-        services.AddConnectionStringResolver();
+        services.AddMultitenancy();
 
         return services;
     }
@@ -32,22 +32,19 @@ public static class ServiceCollectionExtension
         services.AddScoped(typeof(IQueryRepository<>), typeof(BaseQueryRepository<>));
         services.AddScoped(typeof(ICommandRepository<>), typeof(BaseCommandRepository<>));
         services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
-        services.AddScoped<Func<string, IStorageContext>>(sp => name => (IStorageContext)sp.GetService(InstanceStorage.StorageContext.InstanceTypes[name]));
 
         return services;
     }
 
-    private static IServiceCollection AddConnectionStringResolver(this IServiceCollection services)
+    private static IServiceCollection AddMultitenancy(this IServiceCollection services)
     {
-        services.AddScoped<SingleTenantConnectionStringResolver>();
-        services.AddScoped<MultiTenantConnectionStringResolver>();
-        services.AddScoped<ITenantIdAccessor, TenantIdAccessor>();
+        services.AddScoped<HeaderTenantIdResolver>();
+        services.AddScoped<QueryTenantIdResolver>();
+        services.AddScoped<UserTenantIdResolver>();
+        services.AddScoped<Func<string, ITenantIdResolver>>(sp => name => (ITenantIdResolver)sp.GetService(Type.GetType(name)));
 
-        services.AddScoped<HeaderTenantIdentification>();
-        services.AddScoped<QueryTenantIdentification>();
-        services.AddScoped<HostTenantIdentification>();
-        services.AddScoped<Func<string, ITenantIdentification>>(sp => name => (ITenantIdentification)sp.GetService(Type.GetType(name)));
-        services.AddScoped<Func<string, IConnectionStringResolver>>(sp => name => (IConnectionStringResolver)sp.GetService(Type.GetType(name)));
+        services.AddScoped<ConfigConnectionStringResolver>();
+        services.AddScoped<Func<string, ITenantConnectionStringResolver>>(sp => name => (ITenantConnectionStringResolver)sp.GetService(Type.GetType(name)));
 
         return services;
     }
@@ -58,44 +55,21 @@ public static class ServiceCollectionExtension
     /// <param name="services"></param>
     /// <param name="builder"></param>
     /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TResolver"></typeparam>
     /// <returns></returns>
-    public static IServiceCollection AddCoreDbContext<T>(this IServiceCollection services, Action<IConnectionStringResolver, DbContextOptionsBuilder> builder)
+    public static IServiceCollection AddCoreDbContext<T, TResolver>(this IServiceCollection services, Action<ITenantConnectionStringResolver, DbContextOptionsBuilder> builder)
         where T : DbContext, IStorageContext
+        where TResolver : ITenantConnectionStringResolver
     {
-        InstanceStorage.StorageContext.Add<IStorageContext>(typeof(T));
-        services.AddScoped(typeof(T));
-
-        services.AddDbContextPool<T>((sp, options) =>
+        services.AddPooledDbContextFactory<T>((sp, options) =>
         {
-            var factory = sp.GetService<Func<string, IConnectionStringResolver>>();
-            var resolver = factory.Invoke(InstanceStorage.ConnectionStringResolver.Get<T>());
-            builder.Invoke(resolver, options);
+            using (var scope = sp.CreateScope())
+            {
+                var factory = scope.ServiceProvider.GetService<Func<string, ITenantConnectionStringResolver>>();
+                var resolver = factory.Invoke(typeof(TResolver).AssemblyQualifiedName);
+                builder.Invoke(resolver, options);
+            }
         });
-
-        return services;
-    }
-
-    /// <summary>
-    /// Add DbContext to DI with connection string
-    /// </summary>
-    /// <param name="services"></param>
-    /// <param name="builder"></param>
-    /// <typeparam name="T"></typeparam>
-    /// <returns></returns>
-    public static IServiceCollection AddCoreDbContext<T>(this IServiceCollection services, Action<string, DbContextOptionsBuilder> builder)
-        where T : DbContext, IStorageContext
-    {
-        InstanceStorage.StorageContext.Add<IStorageContext>(typeof(T));
-        services.AddScoped(typeof(T));
-
-        services.AddDbContextPool<T>(async (sp, options) =>
-        {
-            var factory = sp.GetService<Func<string, IConnectionStringResolver>>();
-            var resolver = factory.Invoke(InstanceStorage.ConnectionStringResolver.Get<T>());
-            var connection = await resolver.GetConnectionStringAsync(typeof(T).Name);
-            builder.Invoke(connection, options);
-        });
-
         return services;
     }
 }

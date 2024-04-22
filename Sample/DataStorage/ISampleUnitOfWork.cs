@@ -1,6 +1,6 @@
 using Jarvis.Application.Interfaces.Repositories;
 
-namespace UnitTest.DataStorage;
+namespace Sample.DataStorage;
 
 public interface ISampleUnitOfWork : IUnitOfWork
 {

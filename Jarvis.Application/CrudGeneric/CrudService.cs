@@ -51,7 +51,7 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
         var queryable = repo.GetQuery(asNoTracking);
         queryable = PaginationCondition(queryable, paging);
         queryable = PaginationSearch(queryable, paging);
-        queryable = queryable.QueryByTenantId(_workContext.GetTenantKey());
+        queryable = queryable.QueryByTenantId(_workContext.TenantId);
         queryable = PaginationOrderBy(queryable, paging);
         queryable = PaginationSelect(queryable, paging);
         var paged = await queryable.ToPagedAsync(paging);
@@ -82,7 +82,7 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
         var repo = _uow.GetRepository<IRepository<TEntity>>();
         var entity = await repo.GetQuery(asNoTracking)
             .QueryById(id)
-            .QueryByTenantId(_workContext.GetTenantKey())
+            .QueryByTenantId(_workContext.TenantId)
             .FirstOrDefaultAsync();
 
         if (entity == null)
@@ -124,7 +124,7 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
         var repo = _uow.GetRepository<IRepository<TEntity>>();
         var entity = await repo.GetQuery(asNoTracking)
             .QueryEqual(fieldCode.Name, code)
-            .QueryByTenantId(_workContext.GetTenantKey())
+            .QueryByTenantId(_workContext.TenantId)
             .FirstOrDefaultAsync();
 
         if (entity == null)
@@ -526,7 +526,7 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
 
         var fieldTenantId = type.GetProperty(nameof(ITenantEntity.TenantId));
         if (fieldTenantId != null)
-            fieldTenantId.SetValue(entity, _workContext.GetTenantKey());
+            fieldTenantId.SetValue(entity, _workContext.TenantId);
     }
 
     /// <summary>
@@ -539,7 +539,7 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
             return;
 
         entity.CreatedAt = DateTime.UtcNow;
-        entity.CreatedBy = _workContext.GetUserKey();
+        entity.CreatedBy = _workContext.UserId;
     }
 
     /// <summary>
@@ -559,7 +559,7 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
 
         var fieldUpdatedBy = type.GetProperty(nameof(ILogUpdatedEntity.UpdatedBy));
         if (fieldUpdatedBy != null)
-            fieldUpdatedBy.SetValue(entity, _workContext.GetUserKey());
+            fieldUpdatedBy.SetValue(entity, _workContext.UserId);
     }
 
     /// <summary>
@@ -579,7 +579,7 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
 
         var fieldDeletedBy = type.GetProperty(nameof(ILogDeletedEntity<TKey>.DeletedBy));
         if (fieldDeletedBy != null)
-            fieldDeletedBy.SetValue(entity, _workContext.GetUserKey());
+            fieldDeletedBy.SetValue(entity, _workContext.UserId);
 
         var fieldDeletedId = type.GetProperty(nameof(ILogDeletedEntity<TKey>.DeletedId));
         if (fieldDeletedId != null)

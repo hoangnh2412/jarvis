@@ -9,6 +9,10 @@ namespace Jarvis.Application.Interfaces.Repositories;
 public interface IUnitOfWork
 {
     IStorageContext GetDbContext();
+ 
+    IStorageContext GetDbContext(string name);
+
+    IStorageContext GetDbContext<TResolver>(string name);
 
     string GetConnectionString();
 

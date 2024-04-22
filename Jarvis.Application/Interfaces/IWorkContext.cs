@@ -7,39 +7,20 @@ namespace Jarvis.Application.Interfaces;
 /// </summary>
 public interface IWorkContext
 {
-    /// <summary>
-    /// Return token key from JWT
-    /// </summary>
-    /// <returns></returns>
-    Guid GetTokenKey();
+    Guid TokenId { get; }
+    Guid TenantId { get; }
 
-    /// <summary>
-    /// Return tenant key from JWT
-    /// </summary>
-    /// <returns></returns>
-    Guid GetTenantKey();
-
-    /// <summary>
-    /// Return user key from JWT
-    /// </summary>
-    /// <returns></returns>
-    Guid GetUserKey();
-
-    /// <summary>
-    /// Return user name from JWT
-    /// </summary>
-    /// <returns></returns>
-    string GetUserName();
-
-    /// <summary>
-    /// Return full name from JWT
-    /// </summary>
-    /// <returns></returns>
-    string GetUserFullName();
+    Guid UserId { get; }
+    string UserName { get; }
+    string FirstName { get; }
+    string LastName { get; }
+    string FullName { get; }
 
     /// <summary>
     /// Return full user info from claim UserInfo
     /// </summary>
     /// <returns></returns>
-    UserInfoModel GetUserInfo();
+    UserInfoModel UserInfo { get; }
+
+    bool IsInRole(string roleName);
 }

@@ -2,11 +2,11 @@ using System.Diagnostics.CodeAnalysis;
 using Jarvis.Application.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace UnitTest.DataStorage;
+namespace Sample.DataStorage;
 
-public class TenantDbContext : DbContext, IStorageContext
+public class SampleDbContext : DbContext, IStorageContext
 {
-    public TenantDbContext([NotNullAttribute] DbContextOptions<TenantDbContext> options) : base(options)
+    public SampleDbContext([NotNullAttribute] DbContextOptions<SampleDbContext> options) : base(options)
     {
     }
 
@@ -15,9 +15,9 @@ public class TenantDbContext : DbContext, IStorageContext
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema("public");
 
-        modelBuilder.Entity<Tenant>(builder =>
+        modelBuilder.Entity<User>(builder =>
         {
-            builder.ToTable("tenants");
+            builder.ToTable("users");
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Id).IsRequired();
         });

@@ -3,7 +3,7 @@ namespace Jarvis.Application.MultiTenancy;
 /// <summary>
 /// The interface abstract tenant identification
 /// </summary>
-public interface ITenantIdAccessor
+public interface ITenantIdResolver
 {
-    Task<Guid> GetCurrentAsync();
+    Guid GetTenantId();
 }
