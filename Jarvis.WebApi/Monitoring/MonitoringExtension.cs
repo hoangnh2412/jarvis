@@ -62,17 +62,46 @@ public static class MonitoringExtension
                     {
                         options.RecordException = true;
 
-                        // options.EnrichWithHttpRequest = (activity, request) =>
-                        // {
-                        //     request.HttpContext.RequestServices
-                        // };
+                        options.EnrichWithHttpRequest = (activity, request) =>
+                        {
+                            var services = request.HttpContext.RequestServices.GetServices<IAspNetCoreHttpRequest>();
+                            foreach (var item in services)
+                            {
+                                item.Enrich(activity, request);
+                            }
+                        };
+
+                        options.EnrichWithHttpResponse = (activity, response) =>
+                        {
+                            var services = response.HttpContext.RequestServices.GetServices<IAspNetCoreEntricHttpResponse>();
+                            foreach (var item in services)
+                            {
+                                item.Enrich(activity, response);
+                            }
+                        };
+
+                        options.EnrichWithException = (activity, exception) =>
+                        {
+                            activity.SetTag("app.exception.errorCode", exception.HResult);
+                        };
                     })
                     .AddHttpClientInstrumentation(options =>
                     {
                         options.RecordException = true;
+                        options.EnrichWithException = (activity, exception) =>
+                        {
+                            activity.SetTag("app.exception.errorCode", exception.HResult);
+                        };
                     })
-                    .AddEntityFrameworkCoreInstrumentation()
-                    .AddSqlClientInstrumentation();
+                    .AddEntityFrameworkCoreInstrumentation(options =>
+                    {
+                        options.SetDbStatementForText = true;
+                    })
+                    .AddSqlClientInstrumentation(options =>
+                    {
+                        options.RecordException = true;
+                        options.SetDbStatementForText = true;
+                    });
 
                 // Intstrumentations
                 foreach (var item in OTLPType.TraceInstrumentations)
