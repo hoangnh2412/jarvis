@@ -63,8 +63,17 @@ public class SampleController : ControllerBase
         using (var scope = _serviceProvider.CreateScope())
         {
             var uow = scope.ServiceProvider.GetService<ISampleUnitOfWork>();
+            var dbContext = uow.GetDbContext("tenant2") as DbContext;
+            var conn = dbContext.Database.GetConnectionString();
+            var users = await GetUsersInternal(uow);
+            Console.WriteLine($"{conn} Users: {JsonConvert.SerializeObject(users)}");
+        }
+
+        using (var scope = _serviceProvider.CreateScope())
+        {
+            var uow = scope.ServiceProvider.GetService<ISampleUnitOfWork>();
             var dbContext = uow.GetDbContext() as DbContext;
-            dbContext.Database.SetConnectionString("Server=localhost;Database=admin2;user id=admin;password=Admin@123;");
+
             var conn = dbContext.Database.GetConnectionString();
             var users = await GetUsersInternal(uow);
             Console.WriteLine($"{conn} Users: {JsonConvert.SerializeObject(users)}");

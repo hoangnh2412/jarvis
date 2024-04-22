@@ -10,7 +10,9 @@ public static class ServiceCollectionExtension
     public static IServiceCollection AddMultiTenancy(this IServiceCollection services)
     {
         services.AddScoped<HostTenantIdResolver>();
-        services.AddScoped<StorageConnectionStringResolver>();
+        services.AddScoped<HttpStorageConnectionStringResolver>();
+
+        services.AddScoped<ITenantConnectionStringResolver, StorageConnectionStringResolver>();
         return services;
     }
 
@@ -26,7 +28,7 @@ public static class ServiceCollectionExtension
 
     public static IServiceCollection AddSampleDbContext(this IServiceCollection services)
     {
-        services.AddCoreDbContext<SampleDbContext, StorageConnectionStringResolver>((resolver, options) =>
+        services.AddCoreDbContext<SampleDbContext, HttpStorageConnectionStringResolver>((resolver, options) =>
         {
             options.UseNpgsql(resolver.GetConnectionString());
         });
