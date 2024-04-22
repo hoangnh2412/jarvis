@@ -17,11 +17,28 @@ public class EventBridgeClient : IDistributedEventBus
     {
         _options = options.Value;
 
-        Client = new AmazonEventBridgeClient(
-            awsAccessKeyId: _options.AccessKey,
-            awsSecretAccessKey: _options.SecretKey,
-            region: RegionEndpoint.GetBySystemName(_options.Region)
-        );
+        Client = InitProvider();
+    }
+
+    private AmazonEventBridgeClient InitProvider()
+    {
+        if (string.IsNullOrEmpty(_options.SessionToken))
+        {
+            return new AmazonEventBridgeClient(
+                awsAccessKeyId: _options.AccessKey,
+                awsSecretAccessKey: _options.SecretKey,
+                region: RegionEndpoint.GetBySystemName(_options.Region)
+            );
+        }
+        else
+        {
+            return new AmazonEventBridgeClient(
+                awsAccessKeyId: _options.AccessKey,
+                awsSecretAccessKey: _options.SecretKey,
+                awsSessionToken: _options.SessionToken,
+                region: RegionEndpoint.GetBySystemName(_options.Region)
+            );
+        }
     }
 
     public async Task PublishAsync(IBaseEventMessage message, string topic, string subject = null, IDictionary<string, string> attributes = null)
