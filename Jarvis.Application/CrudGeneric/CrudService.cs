@@ -258,6 +258,16 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
     /// <returns></returns>
     public virtual async Task<TModel> UpdateAsync(TKey id, TUpdateInput input, bool asNoQuery = false)
     {
+        return await UpdateInternalAsync(id, input, null, asNoQuery);
+    }
+
+    public virtual async Task<TModel> UpdateAsync(TKey id, TUpdateInput input, Action<TUpdateInput, TEntity> mapping, bool asNoQuery = false)
+    {
+        return await UpdateInternalAsync(id, input, mapping, asNoQuery);
+    }
+
+    private async Task<TModel> UpdateInternalAsync(TKey id, TUpdateInput input, Action<TUpdateInput, TEntity> mapping, bool asNoQuery)
+    {
         await OnUpdateBeginAsync(id, input);
         var repo = _uow.GetRepository<IRepository<TEntity>>();
 
@@ -275,10 +285,25 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
         if (entity == null)
             return default(TModel);
 
-        MapToEntity(input, entity);
+        if (mapping == null)
+            MapToEntity(input, entity);
+        else
+            mapping.Invoke(input, entity);
+
         SetUpdateAudited(entity);
 
         await OnBeforeSaveChangesUpdateAsync(input, entity);
+
+        if (asNoQuery)
+        {
+            var dbContext = _uow.GetDbContext() as DbContext;
+            var entry = dbContext.Entry(entity);
+            if (entry.State == EntityState.Detached)
+                dbContext.Attach(entity);
+
+            entry.State = EntityState.Modified;
+        }
+
         var result = await _uow.CommitAsync();
 
         if (result == 0)
