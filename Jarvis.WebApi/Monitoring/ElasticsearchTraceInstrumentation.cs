@@ -1,3 +1,4 @@
+using Jarvis.WebApi.Monitoring.Interfaces;
 using OpenTelemetry.Trace;
 
 namespace Jarvis.WebApi.Monitoring;

@@ -1,6 +1,6 @@
 using OpenTelemetry.Metrics;
 
-namespace Jarvis.WebApi.Monitoring;
+namespace Jarvis.WebApi.Monitoring.Interfaces;
 
 public interface IMetricExporter
 {

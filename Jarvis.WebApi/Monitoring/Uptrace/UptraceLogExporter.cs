@@ -1,7 +1,7 @@
+using Jarvis.WebApi.Monitoring.Interfaces;
 using OpenTelemetry.Logs;
-using Uptrace.OpenTelemetry;
 
-namespace Jarvis.WebApi.Monitoring;
+namespace Jarvis.WebApi.Monitoring.Uptrace;
 
 public class UptraceLogExporter : ILoggingExporter
 {
@@ -15,7 +15,11 @@ public class UptraceLogExporter : ILoggingExporter
 
     public OpenTelemetryLoggerOptions AddExporter(OpenTelemetryLoggerOptions builder)
     {
-        builder.AddUptrace(_options.Logging.Endpoint);
+        builder.AddOtlpExporter(options =>
+        {
+            options.Endpoint = UptraceMonitoringExtension.ParseUptraceDsn(_options.Tracing.Endpoint);
+            options.Headers = string.Format("uptrace-dsn={0}", _options.Tracing.Endpoint);
+        });
         return builder;
     }
 }

@@ -7,6 +7,7 @@ using OpenTelemetry.Logs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using Jarvis.WebApi.Monitoring.Interfaces;
 
 namespace Jarvis.WebApi.Monitoring;
 
@@ -18,13 +19,6 @@ public static class MonitoringExtension
         var otlpSection = configuration.GetSection("OTLP");
         services.Configure<OTLPOption>(otlpSection);
         otlpSection.Bind(otlpOptions);
-
-        // OTLPType.TraceInstrumentations.Add(OTLPOption.InstrumentationType.Redis, typeof(RedisTraceInstrumentation).AssemblyQualifiedName);
-        // OTLPType.TraceInstrumentations.Add(OTLPOption.InstrumentationType.Elasticsearch, typeof(ElasticsearchTraceInstrumentation).AssemblyQualifiedName);
-
-        // OTLPType.TraceExporters.Add(OTLPOption.ExporterType.Uptrace, typeof(UptraceTraceExporter).AssemblyQualifiedName);
-        // OTLPType.MetricExporters.Add(OTLPOption.ExporterType.Uptrace, typeof(UptraceMetricExporter).AssemblyQualifiedName);
-        // OTLPType.LoggingExporters.Add(OTLPOption.ExporterType.Uptrace, typeof(UptraceLogExporter).AssemblyQualifiedName);
 
         return otlpOptions;
     }
@@ -67,6 +61,11 @@ public static class MonitoringExtension
                     .AddAspNetCoreInstrumentation(options =>
                     {
                         options.RecordException = true;
+
+                        // options.EnrichWithHttpRequest = (activity, request) =>
+                        // {
+                        //     request.HttpContext.RequestServices
+                        // };
                     })
                     .AddHttpClientInstrumentation(options =>
                     {
