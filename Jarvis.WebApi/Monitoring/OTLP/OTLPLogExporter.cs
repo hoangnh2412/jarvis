@@ -3,11 +3,11 @@ using OpenTelemetry.Logs;
 
 namespace Jarvis.WebApi.Monitoring.Uptrace;
 
-public class UptraceLogExporter : ILoggingExporter
+public class OTLPLogExporter : ILoggingExporter
 {
     private readonly OTLPOption _options;
 
-    public UptraceLogExporter(
+    public OTLPLogExporter(
         OTLPOption options)
     {
         _options = options;
@@ -17,8 +17,7 @@ public class UptraceLogExporter : ILoggingExporter
     {
         builder.AddOtlpExporter(options =>
         {
-            options.Endpoint = UptraceMonitoringExtension.ParseUptraceDsn(_options.Logging.Endpoint);
-            options.Headers = string.Format("uptrace-dsn={0}", _options.Logging.Endpoint);
+            options.Endpoint = new Uri(_options.Logging.Endpoint);
         });
         return builder;
     }

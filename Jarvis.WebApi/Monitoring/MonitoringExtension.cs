@@ -64,6 +64,9 @@ public static class MonitoringExtension
 
                         options.EnrichWithHttpRequest = (activity, request) =>
                         {
+                            if (request.HttpContext.RequestServices == null)
+                                return;
+
                             var services = request.HttpContext.RequestServices.GetServices<IAspNetCoreHttpRequest>();
                             foreach (var item in services)
                             {
@@ -73,6 +76,9 @@ public static class MonitoringExtension
 
                         options.EnrichWithHttpResponse = (activity, response) =>
                         {
+                            if (response.HttpContext.RequestServices == null)
+                                return;
+
                             var services = response.HttpContext.RequestServices.GetServices<IAspNetCoreEntricHttpResponse>();
                             foreach (var item in services)
                             {

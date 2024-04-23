@@ -3,11 +3,11 @@ using OpenTelemetry.Metrics;
 
 namespace Jarvis.WebApi.Monitoring.Uptrace;
 
-public class UptraceMetricExporter : IMetricExporter
+public class OTLPMetricExporter : IMetricExporter
 {
     private readonly OTLPOption _options;
 
-    public UptraceMetricExporter(
+    public OTLPMetricExporter(
         OTLPOption options)
     {
         _options = options;
@@ -17,8 +17,7 @@ public class UptraceMetricExporter : IMetricExporter
     {
         builder.AddOtlpExporter(options =>
         {
-            options.Endpoint = UptraceMonitoringExtension.ParseUptraceDsn(_options.Metric.Endpoint);
-            options.Headers = string.Format("uptrace-dsn={0}", _options.Metric.Endpoint);
+            options.Endpoint = new Uri(_options.Metric.Endpoint);
         });
         return builder;
     }

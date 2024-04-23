@@ -1,10 +1,21 @@
 using Jarvis.Persistence;
 using Jarvis.WebApi;
+using Jarvis.WebApi.Monitoring;
+using Jarvis.WebApi.Monitoring.Uptrace;
 using Sample.DataStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+OTLPType.TraceExporters.Add(OTLPOption.ExporterType.OTLP, typeof(OTLPTraceExporter).AssemblyQualifiedName);
+OTLPType.MetricExporters.Add(OTLPOption.ExporterType.OTLP, typeof(OTLPMetricExporter).AssemblyQualifiedName);
+OTLPType.LoggingExporters.Add(OTLPOption.ExporterType.OTLP, typeof(OTLPLogExporter).AssemblyQualifiedName);
+var optionMonitor = builder.Services.BuildOptionMonitor(builder.Configuration);
+builder.Services
+    .AddCoreMonitor(optionMonitor)
+    .AddCoreTrace(optionMonitor)
+    .AddCoreMetric(optionMonitor)
+    .AddCoreLogging(optionMonitor);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
