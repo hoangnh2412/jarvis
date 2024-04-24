@@ -1,4 +1,4 @@
-namespace Jarvis.Infrastructure.DistributedEvent;
+namespace Jarvis.Infrastructure.DistributedEvent.EventBridge;
 
 public interface IDistributedEventBus
 {

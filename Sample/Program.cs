@@ -1,8 +1,11 @@
+using Jarvis.Application.Events;
+using Jarvis.Infrastructure.DistributedEvent.RabbitMQ;
 using Jarvis.Persistence;
 using Jarvis.WebApi;
 using Jarvis.WebApi.Monitoring;
 using Jarvis.WebApi.Monitoring.Uptrace;
 using Sample.DataStorage;
+using Sample.EventBus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +31,14 @@ builder.Services.AddCorePersistence(builder.Configuration);
 builder.Services.AddMultiTenancy();
 builder.Services.AddTenantDbContext();
 builder.Services.AddSampleDbContext();
+
+builder.Services.AddRabbitMQ(builder.Configuration);
+
+builder.Services.AddSingleton<IDistributedEventProducer, BaseEventProducer>();
+builder.Services.AddHostedService<SampleWorker>();
+
+builder.Services.AddSingleton<IEventBus, EventBus>();
+builder.Services.AddTransient<IEvent<SampleEto>, SsmpleEventHandler>();
 
 var app = builder.Build();
 

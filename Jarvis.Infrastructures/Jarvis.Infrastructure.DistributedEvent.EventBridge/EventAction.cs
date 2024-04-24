@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Jarvis.Infrastructure.DistributedEvent;
+namespace Jarvis.Infrastructure.DistributedEvent.EventBridge;
 
 public enum EventAction
 {

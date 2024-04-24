@@ -9,12 +9,12 @@ using Sample.DataStorage;
 namespace Sample.Controllers;
 
 [ApiController]
-[Route("sample")]
-public class SampleController : ControllerBase
+[Route("storage")]
+public class StorageController : ControllerBase
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public SampleController(IServiceProvider serviceProvider)
+    public StorageController(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
@@ -48,7 +48,9 @@ public class SampleController : ControllerBase
     }
 
     [HttpGet("switch")]
-    public async Task<IActionResult> SwitchConnectionAsync()
+    public async Task<IActionResult> SwitchConnectionAsync(
+        [FromServices] IServiceProvider serviceProvider
+    )
     {
         using (var scope = _serviceProvider.CreateScope())
         {

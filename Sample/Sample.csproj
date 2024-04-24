@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Jarvis.WebApi\Jarvis.WebApi.csproj" />
+    <ProjectReference Include="..\Jarvis.Infrastructures\Jarvis.Infrastructure.DistributedEvent.RabbitMQ\Jarvis.Infrastructure.DistributedEvent.RabbitMQ.csproj" />
   </ItemGroup>
 
 </Project>

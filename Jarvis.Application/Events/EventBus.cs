@@ -12,11 +12,11 @@ public class EventBus : IEventBus
         _serviceScopeFactory = serviceScopeFactory;
     }
 
-    public async Task PublishAsync<TEvent, T>(T data) where TEvent : IEvent<T>
+    public async Task PublishAsync<T>(T data)
     {
         using (var scope = _serviceScopeFactory.CreateScope())
         {
-            var events = scope.ServiceProvider.GetServices<TEvent>();
+            var events = scope.ServiceProvider.GetServices<IEvent<T>>();
             foreach (var item in events)
             {
                 var task = item.HandleAsync(data);
