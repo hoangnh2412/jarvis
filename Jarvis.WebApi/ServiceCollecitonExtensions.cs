@@ -7,7 +7,6 @@ using Jarvis.Persistence;
 using Jarvis.Application;
 using Jarvis.Application.Interfaces;
 using Jarvis.WebApi.Monitoring;
-using Jarvis.WebApi.Auth;
 using Jarvis.Shared.Options;
 using System.Text.Json.Serialization;
 
@@ -30,7 +29,6 @@ public static class ServiceCollecitonExtensions
         services.AddCorePersistence(configuration);
 
         services.AddCoreSwagger(configuration);
-        services.AddCoreAuth(configuration);
         services.AddCoreLocalization(configuration);
 
         return services;
@@ -84,7 +82,6 @@ public static class ServiceCollecitonExtensions
             {
                 options.JsonSerializerOptions.DefaultIgnoreCondition = jsonOption.IgnoreNull ? JsonIgnoreCondition.WhenWritingNull : JsonIgnoreCondition.Never;
             });
-
 
         services.AddEndpointsApiExplorer();
 
