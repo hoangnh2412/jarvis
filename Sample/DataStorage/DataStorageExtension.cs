@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Jarvis.Persistence;
 using Jarvis.Persistence.DataContexts;
 using Jarvis.Application.MultiTenancy;
+using Jarvis.Shared.DependencyInjection;
 
 namespace Sample.DataStorage;
 
@@ -9,7 +10,10 @@ public static class ServiceCollectionExtension
 {
     public static IServiceCollection AddMultiTenancy(this IServiceCollection services)
     {
-        services.AddScoped<HostTenantIdResolver>();
+        services.AddByName<ITenantIdResolver>()
+            .AddScoped<HostTenantIdResolver>();
+
+        // services.AddScoped<HostTenantIdResolver>();
         services.AddScoped<HttpStorageConnectionStringResolver>();
 
         services.AddScoped<ITenantConnectionStringResolver, StorageConnectionStringResolver>();

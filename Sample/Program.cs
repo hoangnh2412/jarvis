@@ -1,5 +1,6 @@
 using Jarvis.Application.Events;
 using Jarvis.Infrastructure.DistributedEvent.RabbitMQ;
+using Jarvis.Application;
 using Jarvis.Persistence;
 using Jarvis.WebApi;
 using Jarvis.WebApi.Monitoring;
@@ -25,6 +26,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCoreApplication();
 builder.Services.AddCoreWebApi(builder.Configuration);
 builder.Services.AddCorePersistence(builder.Configuration);
 
@@ -35,7 +37,7 @@ builder.Services.AddSampleDbContext();
 builder.Services.AddRabbitMQ(builder.Configuration);
 
 builder.Services.AddSingleton<IDistributedEventProducer, BaseEventProducer>();
-builder.Services.AddHostedService<SampleWorker>();
+builder.Services.AddHostedService<SampleHostedService>();
 
 builder.Services.AddSingleton<IEventBus, EventBus>();
 builder.Services.AddTransient<IEvent<SampleEto>, SsmpleEventHandler>();

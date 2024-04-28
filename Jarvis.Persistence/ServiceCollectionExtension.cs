@@ -6,6 +6,7 @@ using Jarvis.Application.MultiTenancy;
 using Jarvis.Persistence.Repositories;
 using Jarvis.Shared.Options;
 using Jarvis.Persistence.MultiTenancy;
+using Jarvis.Shared.DependencyInjection;
 
 namespace Jarvis.Persistence;
 
@@ -38,10 +39,15 @@ public static class ServiceCollectionExtension
 
     private static IServiceCollection AddMultitenancy(this IServiceCollection services)
     {
-        services.AddScoped<HeaderTenantIdResolver>();
-        services.AddScoped<QueryTenantIdResolver>();
-        services.AddScoped<UserTenantIdResolver>();
-        services.AddScoped<Func<string, ITenantIdResolver>>(sp => name => (ITenantIdResolver)sp.GetService(Type.GetType(name)));
+        services.AddByName<ITenantIdResolver>()
+            .AddScoped<HeaderTenantIdResolver>()
+            .AddScoped<QueryTenantIdResolver>()
+            .AddScoped<UserTenantIdResolver>();
+
+        // services.AddScoped<HeaderTenantIdResolver>();
+        // services.AddScoped<QueryTenantIdResolver>();
+        // services.AddScoped<UserTenantIdResolver>();
+        // services.AddScoped<Func<string, ITenantIdResolver>>(sp => name => (ITenantIdResolver)sp.GetService(Type.GetType(name)));
 
         services.AddScoped<ConfigConnectionStringResolver>();
         services.AddScoped<Func<string, ITenantConnectionStringResolver>>(sp => name => (ITenantConnectionStringResolver)sp.GetService(Type.GetType(name)));

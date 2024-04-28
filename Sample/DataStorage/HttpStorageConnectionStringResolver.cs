@@ -2,6 +2,7 @@ using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Application.MultiTenancy;
 using Jarvis.Persistence.DataContexts;
 using Jarvis.Persistence.MultiTenancy;
+using Jarvis.Shared.DependencyInjection;
 
 namespace Sample.DataStorage;
 
@@ -33,15 +34,15 @@ public class HttpStorageConnectionStringResolver : ITenantConnectionStringResolv
         var tenantId = Guid.Empty;
         if (string.IsNullOrEmpty(tenantIdOrName))
         {
-            var factory = _httpContextAccessor.HttpContext.RequestServices.GetService<Func<string, ITenantIdResolver>>();
+            var factory = _httpContextAccessor.HttpContext.RequestServices.GetService<IServiceFactory<ITenantIdResolver>>();
 
             ITenantIdResolver resolver = null;
             if (!string.IsNullOrEmpty(_httpContextAccessor.HttpContext.Request.Headers["X-Tenant-Id"].ToString()))
-                resolver = factory.Invoke(typeof(HeaderTenantIdResolver).AssemblyQualifiedName);
+                resolver = factory.GetByName(nameof(HeaderTenantIdResolver));
             else if (_httpContextAccessor.HttpContext.Request.Query.TryGetValue("tenantId", out Microsoft.Extensions.Primitives.StringValues tenantIdString))
-                resolver = factory.Invoke(typeof(QueryTenantIdResolver).AssemblyQualifiedName);
+                resolver = factory.GetByName(nameof(QueryTenantIdResolver));
             else
-                resolver = factory.Invoke(typeof(HostTenantIdResolver).AssemblyQualifiedName);
+                resolver = factory.GetByName(nameof(HostTenantIdResolver));
 
             tenantId = resolver.GetTenantId();
         }

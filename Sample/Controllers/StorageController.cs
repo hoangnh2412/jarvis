@@ -3,7 +3,6 @@ using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Persistence.DataContexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using Sample.DataStorage;
 
 namespace Sample.Controllers;
@@ -52,6 +51,8 @@ public class StorageController : ControllerBase
         [FromServices] IServiceProvider serviceProvider
     )
     {
+        var result = new Dictionary<string, KeyValuePair<string, List<User>>>();
+
         using (var scope = _serviceProvider.CreateScope())
         {
             var uow = scope.ServiceProvider.GetService<ISampleUnitOfWork>();
@@ -59,7 +60,8 @@ public class StorageController : ControllerBase
 
             var conn = dbContext.Database.GetConnectionString();
             var users = await GetUsersInternal(uow);
-            Console.WriteLine($"{conn} Users: {JsonConvert.SerializeObject(users)}");
+
+            result.Add("BeforeChange", new KeyValuePair<string, List<User>>(conn, users));
         }
 
         using (var scope = _serviceProvider.CreateScope())
@@ -68,7 +70,8 @@ public class StorageController : ControllerBase
             var dbContext = uow.GetDbContext("tenant2") as DbContext;
             var conn = dbContext.Database.GetConnectionString();
             var users = await GetUsersInternal(uow);
-            Console.WriteLine($"{conn} Users: {JsonConvert.SerializeObject(users)}");
+
+            result.Add("Change", new KeyValuePair<string, List<User>>(conn, users));
         }
 
         using (var scope = _serviceProvider.CreateScope())
@@ -78,9 +81,10 @@ public class StorageController : ControllerBase
 
             var conn = dbContext.Database.GetConnectionString();
             var users = await GetUsersInternal(uow);
-            Console.WriteLine($"{conn} Users: {JsonConvert.SerializeObject(users)}");
+
+            result.Add("AfterChange", new KeyValuePair<string, List<User>>(conn, users));
         }
-        return Ok();
+        return Ok(result);
     }
 
     private async Task<List<User>> GetUsers()
