@@ -48,8 +48,7 @@ public abstract class BaseEFUnitOfWork<T> : IUnitOfWork<T> where T : DbContext, 
 
     public string GetConnectionString()
     {
-        var dbContext = StorageContext as DbContext;
-        return dbContext.Database.GetDbConnection().ConnectionString;
+        return StorageContext.Database.GetDbConnection().ConnectionString;
     }
 
     public TRepository GetRepository<TRepository>() where TRepository : IRepository
