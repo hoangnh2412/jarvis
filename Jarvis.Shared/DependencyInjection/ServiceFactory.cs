@@ -2,12 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jarvis.Shared.DependencyInjection;
 
-public static class ServiceFactory
-{
-    public static Dictionary<string, IDictionary<string, string>> Collection = new Dictionary<string, IDictionary<string, string>>();
-}
-
-public class ServiceFactory<T> : IServiceFactory<T>
+public class ServiceFactory : IServiceFactory
 {
     private readonly IServiceProvider _serviceProvider;
 
@@ -17,17 +12,17 @@ public class ServiceFactory<T> : IServiceFactory<T>
         _serviceProvider = serviceProvider;
     }
 
-    private static IDictionary<string, string> GetRegistration()
+    private static IDictionary<string, string> GetRegistration<T>()
     {
-        if (!ServiceFactory.Collection.TryGetValue(typeof(T).AssemblyQualifiedName, out IDictionary<string, string> registration))
+        if (!InstanceStorage.Services.TryGetValue(typeof(T).AssemblyQualifiedName, out IDictionary<string, string> registration))
             throw new ArgumentException($"Service {typeof(T).Name} is not registered");
 
         return registration;
     }
 
-    public T GetByName(string name)
+    public T GetByName<T>(string name)
     {
-        if (!GetRegistration().TryGetValue(name, out var implementationType))
+        if (!GetRegistration<T>().TryGetValue(name, out var implementationType))
             throw new ArgumentException($"Service name '{name}' is not registered");
 
         var type = Type.GetType(implementationType);
@@ -35,16 +30,16 @@ public class ServiceFactory<T> : IServiceFactory<T>
         return (T)service;
     }
 
-    public T GetRequiredByName(string name)
+    public T GetRequiredByName<T>(string name)
     {
-        if (!GetRegistration().TryGetValue(name, out var implementationType))
+        if (!GetRegistration<T>().TryGetValue(name, out var implementationType))
             throw new ArgumentException($"Service name '{name}' is not registered");
 
         return (T)_serviceProvider.GetRequiredService(Type.GetType(implementationType));
     }
 
-    public ICollection<string> GetNames()
+    public ICollection<string> GetNames<T>()
     {
-        return GetRegistration().Keys;
+        return GetRegistration<T>().Keys;
     }
 }

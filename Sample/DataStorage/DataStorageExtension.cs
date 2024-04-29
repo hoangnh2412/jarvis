@@ -10,13 +10,10 @@ public static class ServiceCollectionExtension
 {
     public static IServiceCollection AddMultiTenancy(this IServiceCollection services)
     {
-        services.AddByName<ITenantIdResolver>()
-            .AddScoped<HostTenantIdResolver>();
+        services.AddScopedByName<ITenantIdResolver, HostTenantIdResolver>();
 
-        // services.AddScoped<HostTenantIdResolver>();
-        services.AddScoped<HttpStorageConnectionStringResolver>();
-
-        services.AddScoped<ITenantConnectionStringResolver, StorageConnectionStringResolver>();
+        services.AddScopedByName<ITenantConnectionStringResolver, HttpStorageConnectionStringResolver>();
+        services.AddScopedByName<ITenantConnectionStringResolver, StorageConnectionStringResolver>();
         return services;
     }
 

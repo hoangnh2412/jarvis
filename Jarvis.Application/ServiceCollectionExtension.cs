@@ -9,7 +9,7 @@ public static class ServiceCollectionExtension
     public static IServiceCollection AddCoreApplication(this IServiceCollection services)
     {
         services.AddSingleton<IEventBus, EventBus>();
-        services.AddScoped(typeof(IServiceFactory<>), typeof(ServiceFactory<>));
+        services.AddScoped<IServiceFactory, ServiceFactory>();
 
         return services;
     }

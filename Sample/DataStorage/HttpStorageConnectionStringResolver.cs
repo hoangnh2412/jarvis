@@ -34,15 +34,13 @@ public class HttpStorageConnectionStringResolver : ITenantConnectionStringResolv
         var tenantId = Guid.Empty;
         if (string.IsNullOrEmpty(tenantIdOrName))
         {
-            var factory = _httpContextAccessor.HttpContext.RequestServices.GetService<IServiceFactory<ITenantIdResolver>>();
-
             ITenantIdResolver resolver = null;
             if (!string.IsNullOrEmpty(_httpContextAccessor.HttpContext.Request.Headers["X-Tenant-Id"].ToString()))
-                resolver = factory.GetByName(nameof(HeaderTenantIdResolver));
+                resolver = _httpContextAccessor.HttpContext.RequestServices.GetService<ITenantIdResolver>(nameof(HeaderTenantIdResolver));
             else if (_httpContextAccessor.HttpContext.Request.Query.TryGetValue("tenantId", out Microsoft.Extensions.Primitives.StringValues tenantIdString))
-                resolver = factory.GetByName(nameof(QueryTenantIdResolver));
+                resolver = _httpContextAccessor.HttpContext.RequestServices.GetService<ITenantIdResolver>(nameof(QueryTenantIdResolver));
             else
-                resolver = factory.GetByName(nameof(HostTenantIdResolver));
+                resolver = _httpContextAccessor.HttpContext.RequestServices.GetService<ITenantIdResolver>(nameof(HostTenantIdResolver));
 
             tenantId = resolver.GetTenantId();
         }

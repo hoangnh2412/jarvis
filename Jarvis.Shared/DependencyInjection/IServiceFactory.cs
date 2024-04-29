@@ -1,10 +1,10 @@
 namespace Jarvis.Shared.DependencyInjection;
 
-public interface IServiceFactory<T>
+public interface IServiceFactory
 {
-    T GetByName(string name);
+    T GetByName<T>(string name);
 
-    T GetRequiredByName(string name);
+    T GetRequiredByName<T>(string name);
 
-    ICollection<string> GetNames();
+    ICollection<string> GetNames<T>();
 }

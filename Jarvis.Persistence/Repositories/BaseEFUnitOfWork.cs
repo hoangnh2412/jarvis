@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Application.MultiTenancy;
+using Jarvis.Shared.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jarvis.Persistence.Repositories;
@@ -28,7 +29,8 @@ public abstract class BaseEFUnitOfWork<T> : IUnitOfWork<T> where T : DbContext, 
 
     public IStorageContext GetDbContext(string name)
     {
-        var resolver = _services.GetService<ITenantConnectionStringResolver>();
+        var resolverName = InstanceStorage.DbContexts[StorageContext.GetType().AssemblyQualifiedName];
+        var resolver = (ITenantConnectionStringResolver)_services.GetService(Type.GetType(resolverName));
 
         var connectionString = resolver.GetConnectionString(name);
         StorageContext.Database.SetConnectionString(connectionString);
@@ -37,8 +39,7 @@ public abstract class BaseEFUnitOfWork<T> : IUnitOfWork<T> where T : DbContext, 
 
     public IStorageContext GetDbContext<TResolver>(string name)
     {
-        var factory = _services.GetService<Func<string, ITenantConnectionStringResolver>>();
-        var resolver = factory.Invoke(typeof(TResolver).AssemblyQualifiedName);
+        var resolver = _services.GetService<ITenantConnectionStringResolver>(typeof(TResolver).Name);
 
         var connectionString = resolver.GetConnectionString(name);
         StorageContext.Database.SetConnectionString(connectionString);

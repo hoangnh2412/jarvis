@@ -67,7 +67,7 @@ public class StorageController : ControllerBase
         using (var scope = _serviceProvider.CreateScope())
         {
             var uow = scope.ServiceProvider.GetService<ISampleUnitOfWork>();
-            var dbContext = uow.GetDbContext("tenant2") as DbContext;
+            var dbContext = uow.GetDbContext<StorageConnectionStringResolver>("tenant2") as DbContext;
             var conn = dbContext.Database.GetConnectionString();
             var users = await GetUsersInternal(uow);
 

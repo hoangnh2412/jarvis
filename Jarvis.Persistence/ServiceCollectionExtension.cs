@@ -39,18 +39,11 @@ public static class ServiceCollectionExtension
 
     private static IServiceCollection AddMultitenancy(this IServiceCollection services)
     {
-        services.AddByName<ITenantIdResolver>()
-            .AddScoped<HeaderTenantIdResolver>()
-            .AddScoped<QueryTenantIdResolver>()
-            .AddScoped<UserTenantIdResolver>();
+        services.AddScopedByName<ITenantIdResolver, HeaderTenantIdResolver>();
+        services.AddScopedByName<ITenantIdResolver, QueryTenantIdResolver>();
+        services.AddScopedByName<ITenantIdResolver, UserTenantIdResolver>();
 
-        // services.AddScoped<HeaderTenantIdResolver>();
-        // services.AddScoped<QueryTenantIdResolver>();
-        // services.AddScoped<UserTenantIdResolver>();
-        // services.AddScoped<Func<string, ITenantIdResolver>>(sp => name => (ITenantIdResolver)sp.GetService(Type.GetType(name)));
-
-        services.AddScoped<ConfigConnectionStringResolver>();
-        services.AddScoped<Func<string, ITenantConnectionStringResolver>>(sp => name => (ITenantConnectionStringResolver)sp.GetService(Type.GetType(name)));
+        services.AddScopedByName<ITenantConnectionStringResolver, ConfigConnectionStringResolver>();
 
         return services;
     }
@@ -67,12 +60,12 @@ public static class ServiceCollectionExtension
         where T : DbContext, IStorageContext
         where TResolver : ITenantConnectionStringResolver
     {
+        InstanceStorage.DbContexts.Add(typeof(T).AssemblyQualifiedName, typeof(TResolver).AssemblyQualifiedName);
         services.AddPooledDbContextFactory<T>((sp, options) =>
         {
             using (var scope = sp.CreateScope())
             {
-                var factory = scope.ServiceProvider.GetService<Func<string, ITenantConnectionStringResolver>>();
-                var resolver = factory.Invoke(typeof(TResolver).AssemblyQualifiedName);
+                var resolver = scope.ServiceProvider.GetService<ITenantConnectionStringResolver>(typeof(TResolver).Name);
                 builder.Invoke(resolver, options);
             }
         });
