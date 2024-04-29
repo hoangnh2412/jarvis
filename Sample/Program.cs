@@ -36,11 +36,8 @@ builder.Services.AddSampleDbContext();
 
 builder.Services.AddRabbitMQ(builder.Configuration);
 
-builder.Services.AddSingleton<IDistributedEventProducer, BaseEventProducer>();
-builder.Services.AddHostedService<SampleHostedService>();
-
-builder.Services.AddSingleton<IEventBus, EventBus>();
-builder.Services.AddTransient<IEvent<SampleEto>, SsmpleEventHandler>();
+// builder.Services.AddHostedService<SampleHostedService>();
+builder.Services.AddTransient<IEvent<SampleEto>, SampleLocalEventHandler>();
 
 var app = builder.Build();
 

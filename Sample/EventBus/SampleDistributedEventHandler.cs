@@ -2,11 +2,11 @@ using Jarvis.Infrastructure.DistributedEvent.RabbitMQ;
 
 namespace Sample.EventBus;
 
-public class SampleWorker : BaseEventConsumer<SampleEto>
+public class SampleDistributedEventHandler : BaseEventConsumer<SampleEto>
 {
-    public SampleWorker(
+    public SampleDistributedEventHandler(
         IRabbitMQConnector connector,
-        ILogger<SampleWorker> logger)
+        ILogger<SampleDistributedEventHandler> logger)
         : base(connector, logger)
     {
     }

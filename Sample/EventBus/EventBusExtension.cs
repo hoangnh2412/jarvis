@@ -18,6 +18,7 @@ public static class ServiceCollectionExtension
             config.VirtualHost = options.VirtualHost;
         });
         services.AddSingleton<IRabbitMQConnector, RabbitMQConnector>();
+        services.AddSingleton<IDistributedEventProducer, BaseEventProducer>();
         return services;
     }
 }

@@ -2,7 +2,7 @@ using Jarvis.Application.Events;
 
 namespace Sample.EventBus;
 
-public class SsmpleEventHandler : IEvent<SampleEto>
+public class SampleLocalEventHandler : IEvent<SampleEto>
 {
     public bool WaitUntilDone => true;
 
