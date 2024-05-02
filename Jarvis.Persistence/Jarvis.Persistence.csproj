@@ -14,9 +14,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DapperExtensions" Version="1.7.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.25" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.5" />
+    <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.25" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.27" />
+    <!-- <PackageReference Include="MongoDB.Driver" Version="2.25.0" /> -->
     <PackageReference Include="StackExchange.Redis" Version="2.7.27" />
   </ItemGroup>
 

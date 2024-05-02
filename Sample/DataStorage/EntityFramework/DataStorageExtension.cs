@@ -1,14 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Jarvis.Persistence;
-using Jarvis.Persistence.DataContexts;
 using Jarvis.Application.MultiTenancy;
 using Jarvis.Shared.DependencyInjection;
 
-namespace Sample.DataStorage;
+namespace Sample.DataStorage.EntityFramework;
 
 public static class ServiceCollectionExtension
 {
-    public static IServiceCollection AddMultiTenancy(this IServiceCollection services)
+    public static IServiceCollection AddEFMultiTenancy(this IServiceCollection services)
     {
         services.AddScopedByName<ITenantIdResolver, HostTenantIdResolver>();
 
@@ -17,7 +16,7 @@ public static class ServiceCollectionExtension
         return services;
     }
 
-    public static IServiceCollection AddTenantDbContext(this IServiceCollection services)
+    public static IServiceCollection AddEFTenantDbContext(this IServiceCollection services)
     {
         services.AddCoreDbContext<TenantDbContext, ConfigConnectionStringResolver>((resolver, options) =>
         {
@@ -27,7 +26,7 @@ public static class ServiceCollectionExtension
         return services;
     }
 
-    public static IServiceCollection AddSampleDbContext(this IServiceCollection services)
+    public static IServiceCollection AddEFSampleDbContext(this IServiceCollection services)
     {
         services.AddCoreDbContext<SampleDbContext, HttpStorageConnectionStringResolver>((resolver, options) =>
         {

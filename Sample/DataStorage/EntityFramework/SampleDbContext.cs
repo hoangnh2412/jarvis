@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Jarvis.Application.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace Sample.DataStorage;
+namespace Sample.DataStorage.EntityFramework;
 
 public class SampleDbContext : DbContext, IStorageContext
 {

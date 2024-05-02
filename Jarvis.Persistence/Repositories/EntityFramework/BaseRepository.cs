@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Domain.Common.Interfaces;
 
-namespace Jarvis.Persistence.Repositories;
+namespace Jarvis.Persistence.Repositories.EntityFramework;
 
 public class BaseRepository<TEntity> : BaseCommandRepository<TEntity>, IRepository<TEntity>
     where TEntity : class, IEntity

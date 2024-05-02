@@ -1,8 +1,7 @@
 using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Application.MultiTenancy;
-using Jarvis.Persistence.DataContexts;
 
-namespace Sample.DataStorage;
+namespace Sample.DataStorage.EntityFramework;
 
 /// <summary>
 /// Use host name to tenant identification

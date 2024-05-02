@@ -1,10 +1,9 @@
-using Jarvis.Persistence.DataContexts;
-using Jarvis.Persistence.Repositories;
+using Jarvis.Persistence.Repositories.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 
-namespace Sample.DataStorage;
+namespace Sample.DataStorage.EntityFramework;
 
-public class TenantUnitOfWork : BaseEFUnitOfWork<TenantDbContext>, ITenantUnitOfWork
+public class TenantUnitOfWork : BaseUnitOfWork<TenantDbContext>, ITenantUnitOfWork
 {
     public TenantUnitOfWork(
         IServiceProvider services,

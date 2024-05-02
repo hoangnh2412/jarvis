@@ -1,6 +1,6 @@
 using Jarvis.Application.Interfaces.Repositories;
 
-namespace Jarvis.Persistence.DataContexts;
+namespace Sample.DataStorage;
 
 public interface ITenantUnitOfWork : IUnitOfWork
 {

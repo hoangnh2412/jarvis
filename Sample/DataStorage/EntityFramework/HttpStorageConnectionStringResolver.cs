@@ -1,10 +1,9 @@
 using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Application.MultiTenancy;
-using Jarvis.Persistence.DataContexts;
 using Jarvis.Persistence.MultiTenancy;
 using Jarvis.Shared.DependencyInjection;
 
-namespace Sample.DataStorage;
+namespace Sample.DataStorage.EntityFramework;
 
 public class HttpStorageConnectionStringResolver : ITenantConnectionStringResolver
 {

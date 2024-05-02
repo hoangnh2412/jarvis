@@ -1,19 +1,18 @@
-using Jarvis.Application.Interfaces;
 using Jarvis.Application.Interfaces.Repositories;
-using Jarvis.Persistence.DataContexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.DataStorage;
+using Sample.DataStorage.EntityFramework;
 
 namespace Sample.Controllers;
 
 [ApiController]
-[Route("storage")]
-public class StorageController : ControllerBase
+[Route("ef")]
+public class EFStorageController : ControllerBase
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public StorageController(IServiceProvider serviceProvider)
+    public EFStorageController(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
@@ -30,8 +29,7 @@ public class StorageController : ControllerBase
 
     [HttpGet("multiple")]
     public async Task<IActionResult> MultipleConnectionAsync(
-        [FromServices] ISampleUnitOfWork uow,
-        [FromServices] IWorkContext workContext
+        [FromServices] ISampleUnitOfWork uow
     )
     {
         var users = await GetUsersInternal(uow);

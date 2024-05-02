@@ -1,9 +1,9 @@
-using Jarvis.Persistence.Repositories;
+using Jarvis.Persistence.Repositories.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 
-namespace Sample.DataStorage;
+namespace Sample.DataStorage.EntityFramework;
 
-public class SampleUnitOfWork : BaseEFUnitOfWork<SampleDbContext>, ISampleUnitOfWork
+public class SampleUnitOfWork : BaseUnitOfWork<SampleDbContext>, ISampleUnitOfWork
 {
     public SampleUnitOfWork(
         IServiceProvider services,

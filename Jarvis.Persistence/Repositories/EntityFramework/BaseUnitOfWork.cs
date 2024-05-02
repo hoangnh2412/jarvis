@@ -7,14 +7,14 @@ using Jarvis.Application.MultiTenancy;
 using Jarvis.Shared.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Jarvis.Persistence.Repositories;
+namespace Jarvis.Persistence.Repositories.EntityFramework;
 
-public abstract class BaseEFUnitOfWork<T> : IUnitOfWork<T> where T : DbContext, IStorageContext
+public abstract class BaseUnitOfWork<T> : IUnitOfWork<T> where T : DbContext, IStorageContext
 {
     private readonly IServiceProvider _services;
-    protected DbContext StorageContext { get; set; }
+    protected DbContext StorageContext { get; }
 
-    public BaseEFUnitOfWork(
+    public BaseUnitOfWork(
         IServiceProvider services,
         IDbContextFactory<T> factory)
     {
