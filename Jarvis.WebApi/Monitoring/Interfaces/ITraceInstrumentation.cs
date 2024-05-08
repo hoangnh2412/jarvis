@@ -4,5 +4,5 @@ namespace Jarvis.WebApi.Monitoring.Interfaces;
 
 public interface ITraceInstrumentation
 {
-    TracerProviderBuilder AddInstrumentation(TracerProviderBuilder builder);
+    TracerProviderBuilder Configure(IServiceProvider serviceProvider, TracerProviderBuilder builder);
 }

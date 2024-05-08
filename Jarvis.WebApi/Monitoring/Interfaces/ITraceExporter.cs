@@ -4,5 +4,5 @@ namespace Jarvis.WebApi.Monitoring.Interfaces;
 
 public interface ITraceExporter
 {
-    TracerProviderBuilder AddExporter(TracerProviderBuilder builder);
+    TracerProviderBuilder Confiture(TracerProviderBuilder builder);
 }

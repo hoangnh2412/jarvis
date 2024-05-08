@@ -4,5 +4,5 @@ namespace Jarvis.WebApi.Monitoring.Interfaces;
 
 public interface IMetricExporter
 {
-    MeterProviderBuilder AddExporter(MeterProviderBuilder builder);
+    MeterProviderBuilder Confiture(MeterProviderBuilder builder);
 }

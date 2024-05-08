@@ -13,7 +13,7 @@ public class UptraceMetricExporter : IMetricExporter
         _options = options;
     }
 
-    public MeterProviderBuilder AddExporter(MeterProviderBuilder builder)
+    public MeterProviderBuilder Confiture(MeterProviderBuilder builder)
     {
         builder.AddOtlpExporter(options =>
         {

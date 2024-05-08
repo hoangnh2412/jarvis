@@ -4,5 +4,5 @@ namespace Jarvis.WebApi.Monitoring.Interfaces;
 
 public interface IMetricInstrumentation
 {
-    MeterProviderBuilder AddInstrumentation(MeterProviderBuilder builder);
+    MeterProviderBuilder Configure(IServiceProvider serviceProvider, MeterProviderBuilder builder);
 }

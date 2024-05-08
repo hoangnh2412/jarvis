@@ -13,7 +13,7 @@ public class OTLPTraceExporter : ITraceExporter
         _options = options;
     }
 
-    public TracerProviderBuilder AddExporter(TracerProviderBuilder builder)
+    public TracerProviderBuilder Confiture(TracerProviderBuilder builder)
     {
         builder.AddOtlpExporter(options =>
         {

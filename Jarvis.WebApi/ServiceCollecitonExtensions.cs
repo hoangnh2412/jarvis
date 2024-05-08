@@ -6,7 +6,6 @@ using Polly.Extensions.Http;
 using Jarvis.Persistence;
 using Jarvis.Application;
 using Jarvis.Application.Interfaces;
-using Jarvis.WebApi.Monitoring;
 using Jarvis.Shared.Options;
 using System.Text.Json.Serialization;
 
@@ -16,14 +15,6 @@ public static class ServiceCollecitonExtensions
 {
     public static IServiceCollection AddCoreDefault(this IServiceCollection services, IConfiguration configuration)
     {
-        var otlpOptions = services.BuildOptionMonitor(configuration);
-        services
-            .AddCoreMonitor(otlpOptions)
-            .AddCoreTrace(otlpOptions)
-            .AddCoreMetric(otlpOptions)
-            .AddCoreLogging(otlpOptions)
-            .AddHealthChecks();
-
         services.AddCoreApplication();
         services.AddCoreWebApi(configuration);
         services.AddCorePersistence(configuration);
