@@ -140,9 +140,9 @@ public abstract class CrudBasicController<TUnitOfWork, TKey, TEntity, TModel, TP
     public virtual async Task<IActionResult> UpdateAsync(
         [FromBody] IEnumerable<TUpdateInput> input)
     {
-        IEnumerable<TModel> model = await _crudService.UpdateBatchAsync(input);
-        if (model == null || model.Equals(default(TModel)))
-            return NotFound();
+        // IEnumerable<TModel> model = await _crudService.UpdateBatchAsync(x => x.Id != null);
+        // if (model == null || model.Equals(default(TModel)))
+        //     return NotFound();
 
         return Ok();
     }
