@@ -19,21 +19,23 @@ public static class ServiceCollectionExtension
 
     public static IServiceCollection AddTenantDbContext(this IServiceCollection services)
     {
+        services.AddScoped<ITenantUnitOfWork, TenantUnitOfWork>();
         services.AddCoreDbContext<TenantDbContext, ConfigConnectionStringResolver>((resolver, options) =>
         {
             options.UseNpgsql(resolver.GetConnectionString(nameof(TenantDbContext)));
         });
-        services.AddScoped<ITenantUnitOfWork, TenantUnitOfWork>();
         return services;
     }
 
     public static IServiceCollection AddSampleDbContext(this IServiceCollection services)
     {
+        services.AddScoped<ISampleUnitOfWork, SampleUnitOfWork>();
+        services.AddSingleton<IDbContextFactory<SampleDbContext>, ScopedDbContextFactory>();
         services.AddCoreDbContext<SampleDbContext, HttpStorageConnectionStringResolver>((resolver, options) =>
         {
             options.UseNpgsql(resolver.GetConnectionString());
         });
-        services.AddScoped<ISampleUnitOfWork, SampleUnitOfWork>();
+
         return services;
     }
 }
