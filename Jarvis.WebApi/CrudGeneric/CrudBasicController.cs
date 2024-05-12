@@ -110,7 +110,7 @@ public abstract class CrudBasicController<TUnitOfWork, TKey, TEntity, TModel, TP
         [FromBody] IEnumerable<TCreateInput> input
     )
     {
-        var model = await _crudService.CreateBatchAsync(input);
+        var model = await _crudService.CreateManyAsync(input);
         if (model.Equals(default(TModel)))
             return Conflict();
 
@@ -143,7 +143,7 @@ public abstract class CrudBasicController<TUnitOfWork, TKey, TEntity, TModel, TP
         // IEnumerable<TModel> model = await _crudService.UpdateBatchAsync(x => x.Id != null);
         // if (model == null || model.Equals(default(TModel)))
         //     return NotFound();
-
+        await Task.Yield();
         return Ok();
     }
 

@@ -24,7 +24,7 @@ public abstract partial class CrudService<TUnitOfWork, TKey, TEntity, TModel, TP
     where TPagingInput : IPaging
     where TCreateInput : ICreateInput<TEntity, TCreateInput>
 {
-    public async Task<IEnumerable<TModel>> CreateBatchAsync(IEnumerable<TCreateInput> input)
+    public async Task<IEnumerable<TModel>> CreateManyAsync(IEnumerable<TCreateInput> input)
     {
         await OnCreateBeginAsync(input);
 
@@ -85,15 +85,18 @@ public abstract partial class CrudService<TUnitOfWork, TKey, TEntity, TModel, TP
 
 
 
-
-    public Task<IEnumerable<TModel>> UpdateBatchAsync(Expression<Func<TEntity, bool>> predicate, bool asNoQuery = false)
+    public Task<TModel> UpdateManyAsync(TKey id, TUpdateInput input, bool asNoQuery = false)
     {
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<TModel>> UpdateBatchAsync(Func<TEntity, bool> predicate, bool asNoQuery = false)
+    public async Task<IEnumerable<TModel>> UpdateBatchAsync(Expression<Func<TEntity, bool>> predicate)
     {
-        throw new NotImplementedException();
+        // var repo = _uow.GetRepository<IRepository<TEntity>>();
+        // await repo.UpdateBatchAsync(predicate, null);
+        await Task.Yield();
+        return null;
+
     }
 
     public virtual Task OnUpdateBeginAsync(IEnumerable<TUpdateInput> input)

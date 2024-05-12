@@ -1,6 +1,4 @@
-using Jarvis.Application.Interfaces;
 using Jarvis.Application.Interfaces.Repositories;
-using Jarvis.Persistence.DataContexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.DataStorage;
@@ -18,90 +16,86 @@ public class StorageBatchController : ControllerBase
         _serviceProvider = serviceProvider;
     }
 
-    [HttpGet("single")]
-    public async Task<IActionResult> SingleConnectionAsync(
-        [FromServices] ITenantUnitOfWork uow
+    [HttpGet("create")]
+    public async Task<IActionResult> CreateAsync(
+        [FromServices] ISampleUnitOfWork uow
     )
     {
-        var repo = uow.GetRepository<IRepository<Tenant>>();
-        var tenants = await repo.GetQuery().ToListAsync();
+        var repo = uow.GetRepository<IRepository<User>>();
 
-        return Ok(tenants);
-    }
-
-    [HttpGet("multiple")]
-    public async Task<IActionResult> MultipleConnectionAsync(
-        [FromServices] ISampleUnitOfWork uow,
-        [FromServices] IWorkContext workContext
-    )
-    {
-        var users = await GetUsersInternal(uow);
-
-        var tasks = new List<Task>();
-        for (int i = 0; i < 5; i++)
+        var users = new List<User>();
+        for (int i = 0; i < 100; i++)
         {
-            tasks.Add(GetUsers());
+            var random = new Random();
+            users.Add(new DataStorage.User
+            {
+                Age = random.Next(1, 50),
+                Name = Guid.NewGuid().ToString("N").ToUpper()
+            });
         }
-        await Task.WhenAll(tasks);
 
+        await repo.InsertBatchAsync(users);
         return Ok(users);
     }
 
-    [HttpGet("switch")]
-    public async Task<IActionResult> SwitchConnectionAsync(
-        [FromServices] IServiceProvider serviceProvider
+    [HttpGet("update")]
+    public async Task<IActionResult> UpdateSelectAsync(
+        [FromServices] ISampleUnitOfWork uow
     )
     {
-        var result = new Dictionary<string, KeyValuePair<string, List<User>>>();
+        var ids = new int[] { 3, 4, 5, 6, 7 };
+        var repo = uow.GetRepository<IRepository<User>>();
 
-        using (var scope = _serviceProvider.CreateScope())
+        var users = await repo.GetQuery().Where(x => ids.Contains(x.Id)).ToListAsync();
+        await repo.UpdateBatchAsync(users, x => new DataStorage.User
         {
-            var uow = scope.ServiceProvider.GetService<ISampleUnitOfWork>();
-            var dbContext = uow.GetDbContext() as DbContext;
+            Name = "Updated 66",
+            Age = 66
+        });
+        return Ok(users);
+    }
 
-            var conn = dbContext.Database.GetConnectionString();
-            var users = await GetUsersInternal(uow);
+    [HttpGet("update-without-select")]
+    public async Task<IActionResult> UpdateWithoutSelectAsync(
+        [FromServices] ISampleUnitOfWork uow
+    )
+    {
+        var ids = new int[] { 3, 4, 5, 6, 7 };
+        var repo = uow.GetRepository<IRepository<User>>();
 
-            result.Add("BeforeChange", new KeyValuePair<string, List<User>>(conn, users));
-        }
-
-        using (var scope = _serviceProvider.CreateScope())
+        var queryable = repo.GetQuery().Where(x => ids.Contains(x.Id) && x.Age < 100);
+        var result = await repo.UpdateBatchAsync(queryable, x => new DataStorage.User
         {
-            var uow = scope.ServiceProvider.GetService<ISampleUnitOfWork>();
-            var dbContext = uow.GetDbContext<StorageConnectionStringResolver>("tenant2") as DbContext;
-            var conn = dbContext.Database.GetConnectionString();
-            var users = await GetUsersInternal(uow);
+            Name = "Updated 3",
+            Age = 33
+        });
 
-            result.Add("Change", new KeyValuePair<string, List<User>>(conn, users));
-        }
-
-        using (var scope = _serviceProvider.CreateScope())
-        {
-            var uow = scope.ServiceProvider.GetService<ISampleUnitOfWork>();
-            var dbContext = uow.GetDbContext() as DbContext;
-
-            var conn = dbContext.Database.GetConnectionString();
-            var users = await GetUsersInternal(uow);
-
-            result.Add("AfterChange", new KeyValuePair<string, List<User>>(conn, users));
-        }
         return Ok(result);
     }
 
-    private async Task<List<User>> GetUsers()
+    [HttpGet("delete")]
+    public async Task<IActionResult> DeleteSelectAsync(
+        [FromServices] ISampleUnitOfWork uow
+    )
     {
-        using (var scope = _serviceProvider.CreateScope())
-        {
-            var uow = scope.ServiceProvider.GetService<ISampleUnitOfWork>();
-            List<User> users = await GetUsersInternal(uow);
-            return users;
-        }
+        var ids = new int[] { 8, 9 };
+        var repo = uow.GetRepository<IRepository<User>>();
+
+        var users = await repo.GetQuery().Where(x => ids.Contains(x.Id)).ToListAsync();
+        await repo.DeleteBatchAsync(users);
+        return Ok(users);
     }
 
-    private static async Task<List<User>> GetUsersInternal(ISampleUnitOfWork uow)
+    [HttpGet("delete-without-select")]
+    public async Task<IActionResult> DeleteWithoutSelectAsync(
+        [FromServices] ISampleUnitOfWork uow
+    )
     {
+        var ids = new int[] { 10, 11 };
         var repo = uow.GetRepository<IRepository<User>>();
-        var users = await repo.GetQuery().ToListAsync();
-        return users;
+
+        var queryable = repo.GetQuery().Where(x => ids.Contains(x.Id));
+        var result = await repo.DeleteBatchAsync(queryable);
+        return Ok(result);
     }
 }
