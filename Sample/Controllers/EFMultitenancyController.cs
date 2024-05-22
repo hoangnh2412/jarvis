@@ -9,11 +9,11 @@ namespace Sample.Controllers;
 
 [ApiController]
 [Route("ef/multitenancy")]
-public class MultitenancyController : ControllerBase
+public class EFMultitenancyController : ControllerBase
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public MultitenancyController(IServiceProvider serviceProvider)
+    public EFMultitenancyController(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }

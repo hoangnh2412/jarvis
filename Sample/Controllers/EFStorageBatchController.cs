@@ -6,12 +6,12 @@ using Sample.DataStorage;
 namespace Sample.Controllers;
 
 [ApiController]
-[Route("storage/batch")]
-public class StorageBatchController : ControllerBase
+[Route("ef/batch")]
+public class EFStorageBatchController : ControllerBase
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public StorageBatchController(IServiceProvider serviceProvider)
+    public EFStorageBatchController(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }

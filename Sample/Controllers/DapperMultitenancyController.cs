@@ -10,11 +10,11 @@ namespace Sample.Controllers;
 
 [ApiController]
 [Route("dapper")]
-public class DapperStorageController : ControllerBase
+public class DapperMultitenancyController : ControllerBase
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public DapperStorageController(IServiceProvider serviceProvider)
+    public DapperMultitenancyController(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
@@ -24,7 +24,7 @@ public class DapperStorageController : ControllerBase
         [FromServices] ITenantUnitOfWork uow
     )
     {
-        
+        await Task.Yield();
         // var repo = uow.GetRepository<IRepository<Tenant>>();
         // var tenants = await repo.GetQuery().ToListAsync();
         // return Ok(tenants);
@@ -53,6 +53,7 @@ public class DapperStorageController : ControllerBase
         [FromServices] IServiceProvider serviceProvider
     )
     {
+        await Task.Yield();
         var result = new Dictionary<string, KeyValuePair<string, List<User>>>();
 
         // using (var scope = _serviceProvider.CreateScope())
@@ -102,6 +103,7 @@ public class DapperStorageController : ControllerBase
 
     private static async Task<List<User>> GetUsersInternal(ISampleUnitOfWork uow)
     {
+        await Task.Yield();
         // var repo = uow.GetRepository<IRepository<User>>();
         // var users = await repo.GetQuery().ToListAsync();
         // return users;
