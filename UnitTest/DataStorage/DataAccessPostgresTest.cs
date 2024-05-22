@@ -3,9 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Persistence;
 using Microsoft.AspNetCore.Http;
-using Jarvis.Persistence.DataContexts;
 using Microsoft.EntityFrameworkCore;
 using Sample.DataStorage;
+using Sample.DataStorage.EntityFramework;
 
 namespace UnitTest.DataStorage;
 
@@ -27,9 +27,9 @@ public class DataAccessPostgresTest : BaseTest
             return accessor;
         });
         services.AddCorePersistence(Configuration);
-        services.AddMultiTenancy();
-        services.AddTenantDbContext();
-        services.AddSampleDbContext();
+        services.AddEFMultiTenancy();
+        services.AddEFTenantDbContext();
+        services.AddEFSampleDbContext();
 
         _serviceProvider = services.BuildServiceProvider();
     }

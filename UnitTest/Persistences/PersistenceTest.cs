@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Jarvis.Persistence.Caching.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Sample.DataStorage;
+using Sample.DataStorage.EntityFramework;
 
 namespace UnitTest.Persistences;
 
@@ -21,7 +22,7 @@ public class PersistenceTest : BaseTest
 
         services.AddSingleton<IConfiguration>(Configuration);
         services.AddCorePersistence(Configuration);
-        services.AddSampleDbContext();
+        services.AddEFSampleDbContext();
 
         var redisOption = new RedisOption();
         Configuration.GetSection("Redis").Bind(redisOption);
