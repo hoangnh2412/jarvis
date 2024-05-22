@@ -1,7 +1,6 @@
-using Jarvis.Application.MultiTenancy;
 using Microsoft.AspNetCore.Http;
 
-namespace Jarvis.Persistence.MultiTenancy;
+namespace Jarvis.Application.MultiTenancy;
 
 /// <summary>
 /// Use header of request to tenant identification

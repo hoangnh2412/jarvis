@@ -4,7 +4,7 @@ using Jarvis.Domain.Common.Interfaces;
 
 namespace Jarvis.Persistence.Repositories;
 
-public class BaseCommandRepository<TEntity> : ICommandRepository<TEntity>
+public partial class BaseCommandRepository<TEntity> : ICommandRepository<TEntity>
     where TEntity : class, IEntity
 {
     protected DbContext StorageContext;

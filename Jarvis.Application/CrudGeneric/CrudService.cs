@@ -21,7 +21,7 @@ namespace Jarvis.Application.CrudGeneric;
 /// <typeparam name="TPagingOutput">Type of output model for method Pagination</typeparam>
 /// <typeparam name="TCreateInput">Type of input model for method Create</typeparam>
 /// <typeparam name="TUpdateInput">Type of input model for method Update</typeparam>
-public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInput, TPagingOutput, TCreateInput, TUpdateInput>
+public abstract partial class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInput, TPagingOutput, TCreateInput, TUpdateInput>
     : ICrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInput, TPagingOutput, TCreateInput, TUpdateInput>
     where TUnitOfWork : IUnitOfWork
     where TEntity : class, IEntity<TKey>, ILogCreatedEntity
@@ -159,13 +159,6 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
         return MapToModel(entity);
     }
 
-    public async Task<IEnumerable<TModel>> CreateBatchAsync(IEnumerable<TCreateInput> input)
-    {
-        // TOOD: Implementing
-        await Task.Yield();
-        return null;
-    }
-
     /// <summary>
     /// Function handle before save
     /// </summary>
@@ -173,11 +166,6 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
     /// <param name="entity"></param>
     /// <returns></returns>
     public virtual Task OnBeforeSaveChangesInsertAsync(TCreateInput input, TEntity entity)
-    {
-        return Task.CompletedTask;
-    }
-
-    public virtual Task OnBeforeSaveChangesInsertAsync(IEnumerable<TCreateInput> input, IEnumerable<TEntity> entities)
     {
         return Task.CompletedTask;
     }
@@ -193,11 +181,6 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
         return Task.CompletedTask;
     }
 
-    public virtual Task OnCreateFinishAsync(IEnumerable<TCreateInput> input, IEnumerable<TEntity> entity)
-    {
-        return Task.CompletedTask;
-    }
-
     /// <summary>
     /// Function handle when save fail
     /// </summary>
@@ -205,11 +188,6 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
     /// <param name="entity"></param>
     /// <returns></returns>
     public virtual Task OnCreateFailAsync(TCreateInput input, TEntity entity)
-    {
-        return Task.CompletedTask;
-    }
-
-    public virtual Task OnCreateFailAsync(IEnumerable<TCreateInput> input, IEnumerable<TEntity> entity)
     {
         return Task.CompletedTask;
     }
@@ -225,27 +203,12 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
         return Task.CompletedTask;
     }
 
-    public virtual Task OnCreateSuccessAsync(IEnumerable<TCreateInput> input, IEnumerable<TEntity> entity)
-    {
-        return Task.CompletedTask;
-    }
-
     /// <summary>
     /// Function handle when creating
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
     public virtual Task OnCreateBeginAsync(TCreateInput input)
-    {
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Function handle when creating
-    /// </summary>
-    /// <param name="input"></param>
-    /// <returns></returns>
-    public virtual Task OnCreateBeginAsync(IEnumerable<TCreateInput> input)
     {
         return Task.CompletedTask;
     }
@@ -345,13 +308,6 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
     //     return MapToModel(entity);
     // }
 
-    public async Task<IEnumerable<TModel>> UpdateBatchAsync(IEnumerable<TUpdateInput> input, bool asNoQuery = false)
-    {
-        // TOOD: Implementing
-        await Task.Yield();
-        return null;
-    }
-
     /// <summary>
     /// Function handle before save
     /// </summary>
@@ -410,11 +366,6 @@ public abstract class CrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInp
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     public virtual Task OnUpdateBeginAsync<T>(T id, TUpdateInput input)
-    {
-        return Task.CompletedTask;
-    }
-
-    public virtual Task OnUpdateBeginAsync(IEnumerable<TUpdateInput> input)
     {
         return Task.CompletedTask;
     }

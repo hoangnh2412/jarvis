@@ -26,7 +26,7 @@ public class OTLPBuilder
         _otelBuilder = _services.AddOpenTelemetry();
     }
 
-    public OTLPBuilder ConfigureResource(IEnumerable<KeyValuePair<string, object>> attributes = null)
+    public OTLPBuilder ConfigureResource(IList<KeyValuePair<string, object>> attributes = null)
     {
         _otelBuilder
             .ConfigureResource(configure =>
@@ -38,16 +38,25 @@ public class OTLPBuilder
                 if (string.IsNullOrEmpty(env))
                     env = "Development";
 
-                attributes.Append(new KeyValuePair<string, object>("deployment.environment", env));
+                attributes.Add(new KeyValuePair<string, object>("deployment.environment", env));
+
+                if (_otlpOption.Attributes != null && _otlpOption.Attributes.Count > 0)
+                {
+                    foreach (var item in _otlpOption.Attributes)
+                    {
+                        attributes.Add(new KeyValuePair<string, object>(item.Key, item.Value));
+                    }
+                }
 
                 configure
                     .AddEnvironmentVariableDetector()
                     .AddTelemetrySdk()
                     .AddAttributes(attributes)
                     .AddService(
-                        serviceName: $"{Assembly.GetEntryAssembly().GetName().Name}_{env}",
-                        serviceVersion: Assembly.GetEntryAssembly().GetName().Version?.ToString() ?? "unknown",
-                        serviceInstanceId: $"{Environment.MachineName}_{env}");
+                        serviceName: string.IsNullOrEmpty(_otlpOption.Name) ? Assembly.GetEntryAssembly().GetName().Name : _otlpOption.Name,
+                        serviceNamespace: string.IsNullOrEmpty(_otlpOption.Namespace) ? Assembly.GetEntryAssembly().GetName().Name : _otlpOption.Namespace,
+                        serviceVersion: string.IsNullOrEmpty(_otlpOption.Version) ? Assembly.GetEntryAssembly().GetName().Version?.ToString() : _otlpOption.Version,
+                        serviceInstanceId: string.IsNullOrEmpty(_otlpOption.InstanceId) ? Environment.MachineName : _otlpOption.InstanceId);
             });
 
         return this;

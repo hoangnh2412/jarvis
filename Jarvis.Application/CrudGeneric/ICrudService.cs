@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Jarvis.Application.DTOs;
 using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Domain.Common.Interfaces;
@@ -65,7 +66,7 @@ public interface ICrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInput, 
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
-    Task<IEnumerable<TModel>> CreateBatchAsync(IEnumerable<TCreateInput> input);
+    Task<IEnumerable<TModel>> CreateManyAsync(IEnumerable<TCreateInput> input);
 
     /// <summary>
     /// Update a item by Key
@@ -82,14 +83,7 @@ public interface ICrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInput, 
     /// <param name="input"></param>
     /// <returns></returns>
     Task<TModel> UpdateAsync(TKey id, TUpdateInput input, bool asNoQuery = false);
-
-    /// <summary>
-    /// Update a item by Id
-    /// </summary>
-    /// <param name="id"></param>
-    /// <param name="input"></param>
-    /// <returns></returns>
-    Task<IEnumerable<TModel>> UpdateBatchAsync(IEnumerable<TUpdateInput> input, bool asNoQuery = false);
+    Task<IEnumerable<TModel>> UpdateBatchAsync(Expression<Func<TEntity, bool>> predicate);
 
     /// <summary>
     /// Delete a item by Id
@@ -105,4 +99,7 @@ public interface ICrudService<TUnitOfWork, TKey, TEntity, TModel, TPagingInput, 
     /// <param name="key"></param>
     /// <returns></returns>
     // Task<TModel> DeleteByKeyAsync(Guid key);
+
+    Task<IEnumerable<TModel>> DeleteBatchAsync(Expression<Func<TEntity, bool>> predicate, bool asNoQuery = false);
+    Task<IEnumerable<TModel>> DeleteBatchAsync(Func<TEntity, bool> predicate, bool asNoQuery = false);
 }

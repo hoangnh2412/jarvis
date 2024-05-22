@@ -47,7 +47,7 @@ public static partial class DbContextExtension
             command.CommandText = query;
             command.CommandType = CommandType.Text;
 
-            dbContext.Database.OpenConnection();
+            dbContext.Database.GetDbConnection().Open();
 
             if (parameters != null)
             {
@@ -83,6 +83,8 @@ public static partial class DbContextExtension
                     }
                 }
             }
+
+            dbContext.Database.GetDbConnection().Close();
         }
         return items;
     }

@@ -5,7 +5,6 @@ using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Application.MultiTenancy;
 using Jarvis.Persistence.Repositories;
 using Jarvis.Shared.Options;
-using Jarvis.Persistence.MultiTenancy;
 using Jarvis.Shared.DependencyInjection;
 
 namespace Jarvis.Persistence;
