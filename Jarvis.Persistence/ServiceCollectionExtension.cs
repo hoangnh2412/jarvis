@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Application.MultiTenancy;
-using Jarvis.Persistence.Repositories;
+using Jarvis.Persistence.Repositories.EntityFramework;
 using Jarvis.Shared.Options;
 using Jarvis.Shared.DependencyInjection;
 

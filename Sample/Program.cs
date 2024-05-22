@@ -5,6 +5,7 @@ using Jarvis.WebApi;
 using Jarvis.WebApi.Monitoring;
 using Sample.DataStorage;
 using Sample.EventBus;
+using Sample.DataStorage.EntityFramework;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,9 +24,9 @@ builder.Services.AddCoreApplication();
 builder.Services.AddCoreWebApi(builder.Configuration);
 builder.Services.AddCorePersistence(builder.Configuration);
 
-builder.Services.AddMultiTenancy();
-builder.Services.AddTenantDbContext();
-builder.Services.AddSampleDbContext();
+builder.Services.AddEFMultiTenancy();
+builder.Services.AddEFTenantDbContext();
+builder.Services.AddEFSampleDbContext();
 
 builder.Services.AddRabbitMQ(builder.Configuration);
 

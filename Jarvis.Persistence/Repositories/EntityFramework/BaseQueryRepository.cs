@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Domain.Common.Interfaces;
 
-namespace Jarvis.Persistence.Repositories;
+namespace Jarvis.Persistence.Repositories.EntityFramework;
 
 public class BaseQueryRepository<TEntity> : IQueryRepository<TEntity>
     where TEntity : class, IEntity

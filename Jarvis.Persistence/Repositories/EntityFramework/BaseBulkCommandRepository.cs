@@ -3,7 +3,7 @@ using Jarvis.Domain.Common.Interfaces;
 using EFCore.BulkExtensions;
 using System.Linq.Expressions;
 
-namespace Jarvis.Persistence.Repositories;
+namespace Jarvis.Persistence.Repositories.EntityFramework;
 
 public partial class BaseCommandRepository<TEntity> : ICommandRepository<TEntity>
     where TEntity : class, IEntity

@@ -1,14 +1,14 @@
 using Jarvis.Application.Interfaces;
 using Jarvis.Application.Interfaces.Repositories;
-using Jarvis.Persistence.DataContexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.DataStorage;
+using Sample.DataStorage.EntityFramework;
 
 namespace Sample.Controllers;
 
 [ApiController]
-[Route("multitenancy")]
+[Route("ef/multitenancy")]
 public class MultitenancyController : ControllerBase
 {
     private readonly IServiceProvider _serviceProvider;
