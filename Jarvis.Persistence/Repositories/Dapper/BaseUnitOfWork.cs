@@ -50,7 +50,12 @@ public abstract class BaseUnitOfWork<T> : IUnitOfWork<T> where T : IStorageConte
 
     public TRepository GetRepository<TRepository>() where TRepository : IRepository
     {
-        var repo = (TRepository)_services.GetService(typeof(TRepository));
+        // var repo = (TRepository)_services.GetService(typeof(TRepository));
+
+        var type = typeof(TRepository);
+        var repoObj = _services.GetService(type);
+
+        var repo = (TRepository)repoObj;
         if (repo != null)
             repo.SetStorageContext(StorageContext);
         return repo;

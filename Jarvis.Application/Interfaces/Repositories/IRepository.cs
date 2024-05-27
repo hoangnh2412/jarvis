@@ -18,3 +18,9 @@ public interface IRepository<TEntity> : IQueryRepository<TEntity>, ICommandRepos
     where TEntity : class, IEntity
 {
 }
+
+public interface IDapperRepository<TEntity> : IRepository
+    where TEntity : class, IEntity
+{
+
+}
