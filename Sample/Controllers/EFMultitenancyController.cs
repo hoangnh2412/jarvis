@@ -23,7 +23,7 @@ public class EFMultitenancyController : ControllerBase
         [FromServices] ITenantUnitOfWork uow
     )
     {
-        var repo = uow.GetRepository<IRepository<Tenant>>();
+        var repo = uow.GetRepository<IEFRepository<Tenant>>();
         var tenants = await repo.GetQuery().ToListAsync();
         return Ok(tenants);
     }
@@ -99,7 +99,7 @@ public class EFMultitenancyController : ControllerBase
 
     private static async Task<List<User>> GetUsersInternal(ISampleUnitOfWork uow)
     {
-        var repo = uow.GetRepository<IRepository<User>>();
+        var repo = uow.GetRepository<IEFRepository<User>>();
         var users = await repo.GetQuery().ToListAsync();
         return users;
     }

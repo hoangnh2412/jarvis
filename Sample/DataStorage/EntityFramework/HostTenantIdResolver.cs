@@ -20,7 +20,7 @@ public class HostTenantIdResolver : ITenantIdResolver
     {
         var hostname = _httpContextAccessor.HttpContext.Request.Host.Value;
         var uow = _httpContextAccessor.HttpContext.RequestServices.GetService<ITenantUnitOfWork>();
-        var repo = uow.GetRepository<IRepository<Tenant>>();
+        var repo = uow.GetRepository<IEFRepository<Tenant>>();
         var tenant = repo.GetQuery().FirstOrDefault(x => x.Name == hostname);
         if (tenant == null)
             return Guid.Empty;

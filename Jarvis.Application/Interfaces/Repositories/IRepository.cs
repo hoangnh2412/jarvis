@@ -14,7 +14,7 @@ public interface IRepository
 /// The interface abstract repositories with read and write operations
 /// </summary>
 /// <typeparam name="TEntity"></typeparam>
-public interface IRepository<TEntity> : IQueryRepository<TEntity>, ICommandRepository<TEntity>
+public interface IEFRepository<TEntity> : IQueryRepository<TEntity>, ICommandRepository<TEntity>
     where TEntity : class, IEntity
 {
 }

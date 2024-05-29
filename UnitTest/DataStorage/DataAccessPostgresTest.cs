@@ -45,7 +45,7 @@ public class DataAccessPostgresTest : BaseTest
     public async Task Test_DataStorage_GenericRepository_CRUD()
     {
         var uow = _serviceProvider.GetService<ISampleUnitOfWork>();
-        var repo = uow.GetRepository<IRepository<User>>();
+        var repo = uow.GetRepository<IEFRepository<User>>();
 
         // List
         var items = await repo.ListAsync();
@@ -68,13 +68,13 @@ public class DataAccessPostgresTest : BaseTest
         try
         {
             var uowTenant = _serviceProvider.GetService<ITenantUnitOfWork>();
-            var repoTenant = uowTenant.GetRepository<IRepository<Tenant>>();
+            var repoTenant = uowTenant.GetRepository<IEFRepository<Tenant>>();
             var tenants = await repoTenant.GetQuery().ToListAsync();
 
             using (var scope = _serviceProvider.CreateScope())
             {
                 var uowApp = scope.ServiceProvider.GetService<ISampleUnitOfWork>();
-                var repoUser = uowApp.GetRepository<IRepository<User>>();
+                var repoUser = uowApp.GetRepository<IEFRepository<User>>();
 
                 var items = await repoUser.ListAsync();
                 Assert.AreNotEqual(0, items.Count);

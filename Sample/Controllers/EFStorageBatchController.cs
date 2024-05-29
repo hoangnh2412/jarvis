@@ -21,7 +21,7 @@ public class EFStorageBatchController : ControllerBase
         [FromServices] ISampleUnitOfWork uow
     )
     {
-        var repo = uow.GetRepository<IRepository<User>>();
+        var repo = uow.GetRepository<IEFRepository<User>>();
 
         var users = new List<User>();
         for (int i = 0; i < 100; i++)
@@ -44,7 +44,7 @@ public class EFStorageBatchController : ControllerBase
     )
     {
         var ids = new int[] { 3, 4, 5, 6, 7 };
-        var repo = uow.GetRepository<IRepository<User>>();
+        var repo = uow.GetRepository<IEFRepository<User>>();
 
         var users = await repo.GetQuery().Where(x => ids.Contains(x.Id)).ToListAsync();
         await repo.UpdateBatchAsync(users, x => new DataStorage.User
@@ -61,7 +61,7 @@ public class EFStorageBatchController : ControllerBase
     )
     {
         var ids = new int[] { 3, 4, 5, 6, 7 };
-        var repo = uow.GetRepository<IRepository<User>>();
+        var repo = uow.GetRepository<IEFRepository<User>>();
 
         var queryable = repo.GetQuery().Where(x => ids.Contains(x.Id) && x.Age < 100);
         var result = await repo.UpdateBatchAsync(queryable, x => new DataStorage.User
@@ -79,7 +79,7 @@ public class EFStorageBatchController : ControllerBase
     )
     {
         var ids = new int[] { 8, 9 };
-        var repo = uow.GetRepository<IRepository<User>>();
+        var repo = uow.GetRepository<IEFRepository<User>>();
 
         var users = await repo.GetQuery().Where(x => ids.Contains(x.Id)).ToListAsync();
         await repo.DeleteBatchAsync(users);
@@ -92,7 +92,7 @@ public class EFStorageBatchController : ControllerBase
     )
     {
         var ids = new int[] { 10, 11 };
-        var repo = uow.GetRepository<IRepository<User>>();
+        var repo = uow.GetRepository<IEFRepository<User>>();
 
         var queryable = repo.GetQuery().Where(x => ids.Contains(x.Id));
         var result = await repo.DeleteBatchAsync(queryable);

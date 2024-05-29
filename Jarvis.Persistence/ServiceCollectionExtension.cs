@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Jarvis.Application.Interfaces.Repositories;
 using Jarvis.Application.MultiTenancy;
-using Jarvis.Persistence.Repositories.EntityFramework;
 using Jarvis.Shared.Options;
 using Jarvis.Shared.DependencyInjection;
 
@@ -21,23 +20,6 @@ public static class ServiceCollectionExtension
         var otlpSection = configuration.GetSection("StorageContext");
         services.Configure<StorageContextOption>(otlpSection);
 
-        services.AddRepositories();
-        services.AddMultitenancy();
-
-        return services;
-    }
-
-    private static IServiceCollection AddRepositories(this IServiceCollection services)
-    {
-        services.AddScoped(typeof(IQueryRepository<>), typeof(BaseQueryRepository<>));
-        services.AddScoped(typeof(ICommandRepository<>), typeof(BaseCommandRepository<>));
-        services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
-
-        return services;
-    }
-
-    private static IServiceCollection AddMultitenancy(this IServiceCollection services)
-    {
         services.AddScopedByName<ITenantIdResolver, HeaderTenantIdResolver>();
         services.AddScopedByName<ITenantIdResolver, QueryTenantIdResolver>();
         services.AddScopedByName<ITenantIdResolver, UserTenantIdResolver>();
@@ -47,6 +29,15 @@ public static class ServiceCollectionExtension
         return services;
     }
 
+    public static IServiceCollection AddEFRepositories(this IServiceCollection services)
+    {
+        services.AddScoped(typeof(IQueryRepository<>), typeof(Jarvis.Persistence.Repositories.EntityFramework.BaseQueryRepository<>));
+        services.AddScoped(typeof(ICommandRepository<>), typeof(Jarvis.Persistence.Repositories.EntityFramework.BaseCommandRepository<>));
+        services.AddScoped(typeof(IEFRepository<>), typeof(Jarvis.Persistence.Repositories.EntityFramework.BaseRepository<>));
+
+        return services;
+    }
+    
     /// <summary>
     /// Add DbContext to DI with dynamic ConnectionString by Resolver
     /// </summary>

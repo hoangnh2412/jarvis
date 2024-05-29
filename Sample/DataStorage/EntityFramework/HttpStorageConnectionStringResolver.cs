@@ -19,7 +19,7 @@ public class HttpStorageConnectionStringResolver : ITenantConnectionStringResolv
         Guid tenantId = GetTenantId(tenantIdOrName);
 
         var uow = _httpContextAccessor.HttpContext.RequestServices.GetService<ITenantUnitOfWork>();
-        var repo = uow.GetRepository<IRepository<Tenant>>();
+        var repo = uow.GetRepository<IEFRepository<Tenant>>();
         var tenant = repo.GetQuery().FirstOrDefault(x => x.Id == tenantId);
         if (tenant == null)
             throw new Exception($"Connection string of tenant {tenantId} not found");

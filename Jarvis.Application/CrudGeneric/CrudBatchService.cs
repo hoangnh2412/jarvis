@@ -28,7 +28,7 @@ public abstract partial class CrudService<TUnitOfWork, TKey, TEntity, TModel, TP
     {
         await OnCreateBeginAsync(input);
 
-        var repo = _uow.GetRepository<IRepository<TEntity>>();
+        var repo = _uow.GetRepository<IEFRepository<TEntity>>();
 
         var entities = new List<TEntity>();
         foreach (var item in input)
