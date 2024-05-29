@@ -4,14 +4,16 @@ namespace Jarvis.Persistence.Caching.Interfaces;
 
 public interface ICachingService : IDistributedCache
 {
-    /// <summary>
-    /// Search cache key by pattern use KEYS command: https://redis.io/commands/keys
-    /// </summary>
-    /// <param name="pattern"></param>
-    /// <returns></returns>
-    Task<List<string>> GetKeysAsync(string pattern, CancellationToken token = default);
+    // /// <summary>
+    // /// Search cache key by pattern use KEYS command: https://redis.io/commands/keys
+    // /// </summary>
+    // /// <param name="pattern"></param>
+    // /// <returns></returns>
+    // Task<List<string>> GetKeysAsync(string pattern, CancellationToken token = default);
 
-    Task KeyExistAsync(string pattern, CancellationToken token = default);
+    // Task KeyExistAsync(string pattern, CancellationToken token = default);
+
+    string Name { get; }
 
     Task<Dictionary<string, string>> HashGetAsync(string key, CancellationToken token = default);
 
@@ -144,6 +146,10 @@ public interface ICachingService : IDistributedCache
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     Task<T> GetAsync<T>(string cache, Func<Task<T>> query, TimeSpan? expireTime = null, CancellationToken token = default);
+
+    Task<T> GetAsync<T>(string cache, CancellationToken token = default);
+
+    Task SetAsync<T>(string cacheKey, T value, TimeSpan? expireTime = null, CancellationToken token = default);
 
     /// <summary>
     /// Get data from Cache use HashTable, if does not exist, query from the database and set result back to Cache

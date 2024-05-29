@@ -5,6 +5,7 @@ using Jarvis.WebApi;
 using Jarvis.WebApi.Monitoring;
 using Sample.EventBus;
 using Sample.DataStorage.EntityFramework;
+using Jarvis.Persistence.Caching;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,7 @@ builder.Services.AddCoreWebApi(builder.Configuration);
 
 builder.Services
     .AddCorePersistence(builder.Configuration)
+    .AddMultiCache(builder.Configuration)
     .AddEFRepositories()
     .AddEFMultiTenancy()
     .AddEFTenantDbContext()

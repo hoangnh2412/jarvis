@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Jarvis.Persistence.Caching;
 using Jarvis.Persistence.Caching.Interfaces;
 using Newtonsoft.Json;
+using Jarvis.Persistence.Caching.Redis;
 
 namespace UnitTest.Caching;
 

@@ -6,78 +6,41 @@ using Newtonsoft.Json;
 using StackExchange.Redis;
 using Jarvis.Persistence.Caching.Interfaces;
 
-namespace Jarvis.Persistence.Caching;
+namespace Jarvis.Persistence.Caching.Redis;
 
 public class RedisCacheService : ICachingService
 {
-    private IConnectionMultiplexer _connection;
-    private IDatabase _database;
-    private readonly RedisCacheOptions _options;
+    private readonly RedisOption _options;
+    public string Name { get; private set; }
 
     public RedisCacheService(
-        IOptions<RedisCacheOptions> optionsAccessor)
+        IOptions<RedisOption> optionsAccessor,
+        string name = "Default")
     {
+        Name = name;
+
         if (optionsAccessor == null)
             throw new ArgumentNullException(nameof(optionsAccessor));
 
         _options = optionsAccessor.Value;
     }
 
-    public async Task<List<string>> GetKeysAsync(string pattern, CancellationToken token = default)
-    {
-        if (pattern == null)
-            throw new ArgumentNullException(nameof(pattern));
-
-        token.ThrowIfCancellationRequested();
-        await ConnectAsync();
-
-        var keys = new List<string>();
-        foreach (var item in _options.ConfigurationOptions.EndPoints)
-        {
-            var server = _connection.GetServer(item);
-            var data = server.Keys(pattern: $"{_options.InstanceName}{pattern}").Select(x => x.ToString());
-
-            foreach (var element in data)
-            {
-                var key = element;
-                if (element.StartsWith(_options.InstanceName))
-                    key = element.Substring(_options.InstanceName.Length, element.Length - _options.InstanceName.Length);
-
-                keys.Add(key);
-            }
-        }
-        return keys;
-    }
-
-    public async Task KeyExistAsync(string pattern, CancellationToken token = default)
-    {
-        if (pattern == null)
-            throw new ArgumentNullException(nameof(pattern));
-
-        token.ThrowIfCancellationRequested();
-
-        // if (!key.StartsWith(_options.InstanceName))
-        //     key = $"{_options.InstanceName}{key}";
-
-        await ConnectAsync();
-    }
-
     public async Task<Dictionary<string, string>> HashGetAsync(string key, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        var data = await _database.HashGetAllAsync(key);
+        var data = await database.HashGetAllAsync(key);
         return data.ToDictionary(x => x.Name.ToString(), x => x.Value.ToString());
     }
 
     public async Task<string> HashGetAsync(string key, string hashField, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        var data = await _database.HashGetAsync(key, hashField);
-        if (data.ToString() == null)
+        var data = await database.HashGetAsync(key, hashField);
+        if (string.IsNullOrEmpty(data.ToString()))
             return default;
 
         return data.ToString();
@@ -86,23 +49,23 @@ public class RedisCacheService : ICachingService
     public async Task<List<T>> HashGetAsync<T>(string key, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        var data = await _database.HashGetAllAsync(key);
+        var data = await database.HashGetAllAsync(key);
         return data.Select(x => JsonConvert.DeserializeObject<T>(x.Value.ToString())).ToList();
     }
 
     public async Task<List<T>> HashGetAsync<T>(string key, string[] hashFields, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        var data = await _database.HashGetAsync(key, hashFields.Select(x => RedisValue.Unbox(x)).ToArray());
+        var data = await database.HashGetAsync(key, hashFields.Select(x => RedisValue.Unbox(x)).ToArray());
         var items = new List<T>();
         foreach (var item in data)
         {
             var element = item.ToString();
-            if (element != null)
+            if (!string.IsNullOrEmpty(element))
                 items.Add(JsonConvert.DeserializeObject<T>(element));
         }
         return items;
@@ -111,14 +74,14 @@ public class RedisCacheService : ICachingService
     public async Task<List<string>> HashGetAsync(string key, string[] hashFields, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        var data = await _database.HashGetAsync(key, hashFields.Select(x => RedisValue.Unbox(x)).ToArray());
+        var data = await database.HashGetAsync(key, hashFields.Select(x => RedisValue.Unbox(x)).ToArray());
         var items = new List<string>();
         foreach (var item in data)
         {
             var element = item.ToString();
-            if (element != null)
+            if (!string.IsNullOrEmpty(element))
                 items.Add(element);
         }
         return items;
@@ -127,10 +90,10 @@ public class RedisCacheService : ICachingService
     public async Task<T> HashGetAsync<T>(string key, string hashField, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        var data = await _database.HashGetAsync(key, hashField);
-        if (data.ToString() == null)
+        var data = await database.HashGetAsync(key, hashField);
+        if (string.IsNullOrEmpty(data.ToString()))
             return default;
 
         return JsonConvert.DeserializeObject<T>(data.ToString());
@@ -139,68 +102,68 @@ public class RedisCacheService : ICachingService
     public async Task HashSetAsync<T>(string key, Dictionary<string, T> data, DistributedCacheEntryOptions options = null, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        await _database.HashSetAsync(key, data.Select(x => new HashEntry(x.Key, JsonConvert.SerializeObject(x.Value))).ToArray());
-        await _database.KeyExpireAsync(key, ParseExpiry(options));
+        await database.HashSetAsync(key, data.Select(x => new HashEntry(x.Key, JsonConvert.SerializeObject(x.Value))).ToArray());
+        await database.KeyExpireAsync(key, ParseExpiry(options));
     }
 
     public async Task HashSetAsync(string key, Dictionary<string, string> data, DistributedCacheEntryOptions options = null, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        await _database.HashSetAsync(key, data.Select(x => new HashEntry(x.Key, x.Value)).ToArray());
-        await _database.KeyExpireAsync(key, ParseExpiry(options));
+        await database.HashSetAsync(key, data.Select(x => new HashEntry(x.Key, x.Value)).ToArray());
+        await database.KeyExpireAsync(key, ParseExpiry(options));
     }
 
     public async Task HashSetAsync(string key, string hashField, string data, DistributedCacheEntryOptions options = null, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        await _database.HashSetAsync(key, hashField, data);
-        await _database.KeyExpireAsync(key, ParseExpiry(options));
+        await database.HashSetAsync(key, hashField, data);
+        await database.KeyExpireAsync(key, ParseExpiry(options));
     }
 
     public async Task HashDeleteAsync(string key, string hashField, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        await _database.HashDeleteAsync(key, hashField);
+        await database.HashDeleteAsync(key, hashField);
     }
 
     public async Task HashDeleteAsync(string key, string[] hashFields, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        await _database.HashDeleteAsync(key, hashFields.Select(x => RedisValue.Unbox(x)).ToArray());
+        await database.HashDeleteAsync(key, hashFields.Select(x => RedisValue.Unbox(x)).ToArray());
     }
 
     public async Task<long> PushAsync(string key, string value, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        return await _database.ListRightPushAsync(key, value);
+        return await database.ListRightPushAsync(key, value);
     }
 
     public async Task<long> PushAsync(string key, string[] values, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        return await _database.ListRightPushAsync(key, values.Select(x => RedisValue.Unbox(x)).ToArray());
+        return await database.ListRightPushAsync(key, values.Select(x => RedisValue.Unbox(x)).ToArray());
     }
 
     public async Task<string> PopAsync(string key, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        return await _database.ListLeftPopAsync(key);
+        return await database.ListLeftPopAsync(key);
     }
 
     public async Task<T> HashGetAsync<T>(string cache, string hashField, Func<Task<T>> query, TimeSpan? expireTime = null, CancellationToken token = default)
@@ -241,10 +204,10 @@ public class RedisCacheService : ICachingService
     public async Task<byte[]> GetAsync(string key, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        string value = await _database.StringGetAsync(key);
-        if (value == null)
+        string value = await database.StringGetAsync(key);
+        if (string.IsNullOrEmpty(value))
             return null;
 
         return Encoding.UTF8.GetBytes(value);
@@ -260,11 +223,11 @@ public class RedisCacheService : ICachingService
 
     public async Task<T> GetAsync<T>(string cache, Func<Task<T>> query, DistributedCacheEntryOptions options = null, CancellationToken token = default)
     {
-        var bytes = await GetAsync(cache, token);
-        if (bytes != null)
-            return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(bytes));
+        var data = await GetAsync<T>(cache, token);
+        if (data != null)
+            return data;
 
-        var data = await query.Invoke();
+        data = await query.Invoke();
         await SetAsync(cache, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(data)), options, token);
         return data;
     }
@@ -277,8 +240,8 @@ public class RedisCacheService : ICachingService
     public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
-        await _database.StringSetAsync(key, Encoding.UTF8.GetString(value), ParseExpiry(options));
+        var database = GetDatabase();
+        await database.StringSetAsync(key, Encoding.UTF8.GetString(value), ParseExpiry(options));
     }
 
     public void Refresh(string key)
@@ -299,28 +262,9 @@ public class RedisCacheService : ICachingService
     public async Task RemoveAsync(string key, CancellationToken token = default)
     {
         key = EnrichKey(key);
-        await ConnectAsync();
+        var database = GetDatabase();
 
-        await _database.KeyDeleteAsync(key);
-    }
-
-    public async Task ExecuteCommandAsync(string key)
-    {
-        await ConnectAsync();
-        // var result = _cache.HashScan(
-        //     key: "Test",
-        //     pattern: "*001*",
-        //     pageSize: 1,
-        //     pageOffset: 0,
-        //     cursor: 5).ToList();
-
-        await _database.HashSetAsync("Test", "20211013002", "bbbb");
-        // var result = _cache.HashScan("Test", "*001*", 1).ToList();
-        // foreach (var item in _options.ConfigurationOptions.EndPoints)
-        // {
-        //     var server = _connection.GetServer(item);
-        //     var data = server.Keys(pattern: $"*001").ToList();
-        // }
+        await database.KeyDeleteAsync(key);
     }
 
     private static TimeSpan? ParseExpiry(DistributedCacheEntryOptions options)
@@ -356,15 +300,38 @@ public class RedisCacheService : ICachingService
         return key;
     }
 
-    private async Task ConnectAsync(CancellationToken token = default(CancellationToken))
+    private IDatabase GetDatabase(CancellationToken token = default(CancellationToken))
     {
         token.ThrowIfCancellationRequested();
 
-        if (_connection != null)
-            return;
+        var connection = RedisConnectionFactory.Connect(new RedisCacheOptions
+        {
+            InstanceName = _options.InstanceName,
+            Configuration = _options.Configuration
+        }, token);
 
-        _connection = await RedisConnector.ConnectAsync(_options, token);
-        _database = RedisConnector.GetDatabase();
+        return connection.GetDatabase();
     }
 
+    public Task ExecuteCommandAsync(string key)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task SetAsync<T>(string cacheKey, T value, TimeSpan? expireTime = null, CancellationToken token = default)
+    {
+        await SetAsync(cacheKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value)), new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = expireTime
+        }, token);
+    }
+
+    public async Task<T> GetAsync<T>(string cache, CancellationToken token = default)
+    {
+        var bytes = await GetAsync(cache, token);
+        if (bytes != null)
+            return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(bytes));
+
+        return default(T);
+    }
 }

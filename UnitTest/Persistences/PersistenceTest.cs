@@ -7,6 +7,7 @@ using Jarvis.Persistence.Caching.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Sample.DataStorage;
 using Sample.DataStorage.EntityFramework;
+using Jarvis.Persistence.Caching.Redis;
 
 namespace UnitTest.Persistences;
 
