@@ -22,7 +22,7 @@ public class EFStorageController : ControllerBase
         [FromServices] ISampleUnitOfWork uow
     )
     {
-        var repo = uow.GetRepository<IRepository<User>>();
+        var repo = uow.GetRepository<IEFRepository<User>>();
         var users = await repo.GetQuery().ToListAsync();
         return Ok(users);
     }
@@ -32,7 +32,7 @@ public class EFStorageController : ControllerBase
         [FromServices] ISampleUnitOfWork uow
     )
     {
-        var repo = uow.GetRepository<IRepository<User>>();
+        var repo = uow.GetRepository<IEFRepository<User>>();
         var users = await repo.InsertAsync(new DataStorage.User
         {
             Name = "sample",
@@ -47,7 +47,7 @@ public class EFStorageController : ControllerBase
         [FromServices] ISampleUnitOfWork uow
     )
     {
-        var repo = uow.GetRepository<IRepository<User>>();
+        var repo = uow.GetRepository<IEFRepository<User>>();
         var user = await repo.GetQuery().FirstOrDefaultAsync(x => x.Id == 1);
 
         user.Name = "updated";
@@ -63,7 +63,7 @@ public class EFStorageController : ControllerBase
         [FromServices] ISampleUnitOfWork uow
     )
     {
-        var repo = uow.GetRepository<IRepository<User>>();
+        var repo = uow.GetRepository<IEFRepository<User>>();
         var user = await repo.GetQuery().FirstOrDefaultAsync(x => x.Id == 2);
 
         await repo.DeleteAsync(user);

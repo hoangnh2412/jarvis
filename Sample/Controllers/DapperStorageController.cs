@@ -1,13 +1,7 @@
-using System.Linq.Expressions;
 using Dapper;
-using Jarvis.Application.Interfaces.Repositories;
-using Jarvis.Persistence.Repositories.Dapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Sample.Application.DTOs;
 using Sample.DataStorage;
-
-using DapperExtensions;
-using Dapper.Contrib.Linq2Dapper;
 
 namespace Sample.Controllers;
 
@@ -22,59 +16,25 @@ public class DapperStorageController : ControllerBase
         _serviceProvider = serviceProvider;
     }
 
-    [HttpGet("read")]
-    public async Task<IActionResult> ReadAsync(
-        [FromServices] ITenantUnitOfWork uow
-    )
-    {
-        var repo = uow.GetRepository<IRepository<Tenant>>();
-        var dbContext = uow.GetDbContext() as DapperDbContext;
-        var connection = dbContext.Connection;
-        var items = await connection.QueryAsync<Tenant>("SELECT * FROM tenants");
-        return Ok("OK");
-    }
-
-    [HttpGet("create")]
-    public async Task<IActionResult> CreateAsync(
+    [HttpGet("basic")]
+    public async Task<IActionResult> BasicAsync(
         [FromServices] ISampleUnitOfWork uow
     )
     {
-        var repo = uow.GetRepository<IRepository<User>>();
-        var users = await repo.InsertAsync(new DataStorage.User
+        var items = await uow.GetConnection().QueryAsync<User>("SELECT * FROM users");
+        return Ok(items);
+    }
+
+    [HttpGet("advance")]
+    public async Task<IActionResult> AdvanceAsync(
+        [FromServices] ISampleUnitOfWork uow
+    )
+    {
+        var items = await uow.GetConnection().QueryAsync<UserTenantDto>("select u.\"Id\", u.\"Name\", u.\"Age\", t.id as TenantId, t.connectionstring from users u join tenants t on u.TenantId = t.Id where u.tenantid = @TenantId", new
         {
-            Name = "sample",
-            Age = 11
+            TenantId = Guid.Parse("f55ba439-9cc0-43fe-ba4f-0939463e6b76"),
+            TenantName = "tenant2"
         });
-        await uow.CommitAsync();
-        return Ok(users);
-    }
-
-    [HttpGet("update")]
-    public async Task<IActionResult> UpdateAsync(
-        [FromServices] ISampleUnitOfWork uow
-    )
-    {
-        var repo = uow.GetRepository<IRepository<User>>();
-        var user = await repo.GetQuery().FirstOrDefaultAsync(x => x.Id == 1);
-
-        user.Name = "updated";
-        user.Age = 12;
-
-        await repo.UpdateAsync(user);
-        await uow.CommitAsync();
-        return Ok(user);
-    }
-
-    [HttpGet("delete")]
-    public async Task<IActionResult> DeleteAsync(
-        [FromServices] ISampleUnitOfWork uow
-    )
-    {
-        var repo = uow.GetRepository<IRepository<User>>();
-        var user = await repo.GetQuery().FirstOrDefaultAsync(x => x.Id == 2);
-
-        await repo.DeleteAsync(user);
-        await uow.CommitAsync();
-        return Ok(user);
+        return Ok(items);
     }
 }

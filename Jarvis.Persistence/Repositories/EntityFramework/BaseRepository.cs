@@ -5,7 +5,7 @@ using Jarvis.Domain.Common.Interfaces;
 
 namespace Jarvis.Persistence.Repositories.EntityFramework;
 
-public class BaseRepository<TEntity> : BaseCommandRepository<TEntity>, IRepository<TEntity>
+public class BaseRepository<TEntity> : BaseCommandRepository<TEntity>, IEFRepository<TEntity>
     where TEntity : class, IEntity
 {
     public IQueryable<TEntity> GetQuery(bool asNoTracking = false)

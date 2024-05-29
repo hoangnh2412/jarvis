@@ -47,7 +47,7 @@ public abstract partial class CrudService<TUnitOfWork, TKey, TEntity, TModel, TP
     /// <returns></returns>
     public virtual async Task<IPaged<TPagingOutput>> PaginationAsync(TPagingInput paging, bool asNoTracking = false)
     {
-        var repo = _uow.GetRepository<IRepository<TEntity>>();
+        var repo = _uow.GetRepository<IEFRepository<TEntity>>();
         var queryable = repo.GetQuery(asNoTracking);
         queryable = PaginationCondition(queryable, paging);
         queryable = PaginationSearch(queryable, paging);
@@ -79,7 +79,7 @@ public abstract partial class CrudService<TUnitOfWork, TKey, TEntity, TModel, TP
     /// <returns></returns>
     public virtual async Task<TModel> GetByIdAsync(TKey id, bool asNoTracking = false)
     {
-        var repo = _uow.GetRepository<IRepository<TEntity>>();
+        var repo = _uow.GetRepository<IEFRepository<TEntity>>();
         var entity = await repo.GetQuery(asNoTracking)
             .QueryById(id)
             .QueryByTenantId(_workContext.TenantId)
@@ -121,7 +121,7 @@ public abstract partial class CrudService<TUnitOfWork, TKey, TEntity, TModel, TP
         if (fieldCode == null)
             return default(TModel);
 
-        var repo = _uow.GetRepository<IRepository<TEntity>>();
+        var repo = _uow.GetRepository<IEFRepository<TEntity>>();
         var entity = await repo.GetQuery(asNoTracking)
             .QueryEqual(fieldCode.Name, code)
             .QueryByTenantId(_workContext.TenantId)
@@ -142,7 +142,7 @@ public abstract partial class CrudService<TUnitOfWork, TKey, TEntity, TModel, TP
     {
         await OnCreateBeginAsync(input);
 
-        var repo = _uow.GetRepository<IRepository<TEntity>>();
+        var repo = _uow.GetRepository<IEFRepository<TEntity>>();
 
         var entity = MapToEntity(input);
 
@@ -232,7 +232,7 @@ public abstract partial class CrudService<TUnitOfWork, TKey, TEntity, TModel, TP
     private async Task<TModel> UpdateInternalAsync(TKey id, TUpdateInput input, Action<TUpdateInput, TEntity> mapping, bool asNoQuery)
     {
         await OnUpdateBeginAsync(id, input);
-        var repo = _uow.GetRepository<IRepository<TEntity>>();
+        var repo = _uow.GetRepository<IEFRepository<TEntity>>();
 
         TEntity entity = null;
         if (asNoQuery)
@@ -379,7 +379,7 @@ public abstract partial class CrudService<TUnitOfWork, TKey, TEntity, TModel, TP
     public virtual async Task<TModel> DeleteByIdAsync(TKey id, bool asNoQuery = true)
     {
         await OnDeleteBeginAsync(id);
-        var repo = _uow.GetRepository<IRepository<TEntity>>();
+        var repo = _uow.GetRepository<IEFRepository<TEntity>>();
 
         TEntity entity = null;
         if (asNoQuery)

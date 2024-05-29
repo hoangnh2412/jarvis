@@ -17,7 +17,7 @@ public class StorageConnectionStringResolver : ITenantConnectionStringResolver
     {
         Guid tenantId = GetTenantId(tenantIdOrName);
 
-        var repo = _uow.GetRepository<IRepository<Tenant>>();
+        var repo = _uow.GetRepository<IEFRepository<Tenant>>();
         var tenant = repo.GetQuery().FirstOrDefault(x => x.Id == tenantId);
         if (tenant == null)
             throw new Exception($"Connection string of tenant {tenantId} not found");
@@ -27,7 +27,7 @@ public class StorageConnectionStringResolver : ITenantConnectionStringResolver
 
     private Guid GetTenantId(string tenantIdOrName)
     {
-        var repo = _uow.GetRepository<IRepository<Tenant>>();
+        var repo = _uow.GetRepository<IEFRepository<Tenant>>();
         var tenant = repo.GetQuery().FirstOrDefault(x => x.Name == tenantIdOrName);
         if (tenant == null)
             return Guid.Empty;

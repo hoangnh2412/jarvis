@@ -28,7 +28,7 @@ public abstract class CrudFullAuditableService<TUnitOfWork, TKey, TEntity, TMode
 
     public override async Task<TModel> GetByIdAsync(TKey id, bool asNoTracking = false)
     {
-        var repo = _uow.GetRepository<IRepository<TEntity>>();
+        var repo = _uow.GetRepository<IEFRepository<TEntity>>();
         var entity = await repo.GetQuery(asNoTracking)
             .FirstOrDefaultAsync(x => x.Id.Equals(id) && x.DeletedId.Equals(default(TKey)));
         return MapToModel(entity);
@@ -46,7 +46,7 @@ public abstract class CrudFullAuditableService<TUnitOfWork, TKey, TEntity, TMode
     {
         await OnTrashBeginAsync();
 
-        var repo = _uow.GetRepository<IRepository<TEntity>>();
+        var repo = _uow.GetRepository<IEFRepository<TEntity>>();
         var entity = await repo.GetQuery().FirstOrDefaultAsync(x => x.Id.Equals(id));
         if (entity == null)
             return 0;

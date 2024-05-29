@@ -38,7 +38,7 @@ public class PersistenceTest : BaseTest
         var users = await cacheService.GetAsync<List<User>>("users", async () =>
         {
             var uow = _serviceProvider.GetService<ISampleUnitOfWork>();
-            var repo = uow.GetRepository<IRepository<User>>();
+            var repo = uow.GetRepository<IEFRepository<User>>();
 
             return await repo.GetQuery().ToListAsync();
         }, TimeSpan.FromMinutes(15));

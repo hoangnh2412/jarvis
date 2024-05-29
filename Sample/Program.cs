@@ -3,10 +3,8 @@ using Jarvis.Application;
 using Jarvis.Persistence;
 using Jarvis.WebApi;
 using Jarvis.WebApi.Monitoring;
-using Sample.DataStorage;
 using Sample.EventBus;
 using Sample.DataStorage.EntityFramework;
-using Sample.DataStorage.Dapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,17 +22,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCoreApplication();
 builder.Services.AddCoreWebApi(builder.Configuration);
 
-// builder.Services
-//     .AddCorePersistence(builder.Configuration)
-//     .AddEFRepositories()
-//     .AddEFMultiTenancy()
-//     .AddEFTenantDbContext()
-//     .AddEFSampleDbContext();
-
 builder.Services
     .AddCorePersistence(builder.Configuration)
-    .AddDapperRepositories()
-    .AddDapperTenantDbContext();
+    .AddEFRepositories()
+    .AddEFMultiTenancy()
+    .AddEFTenantDbContext()
+    .AddEFSampleDbContext();
 
 builder.Services.AddRabbitMQ(builder.Configuration);
 

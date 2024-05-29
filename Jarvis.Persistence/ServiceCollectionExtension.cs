@@ -33,20 +33,11 @@ public static class ServiceCollectionExtension
     {
         services.AddScoped(typeof(IQueryRepository<>), typeof(Jarvis.Persistence.Repositories.EntityFramework.BaseQueryRepository<>));
         services.AddScoped(typeof(ICommandRepository<>), typeof(Jarvis.Persistence.Repositories.EntityFramework.BaseCommandRepository<>));
-        services.AddScoped(typeof(IRepository<>), typeof(Jarvis.Persistence.Repositories.EntityFramework.BaseRepository<>));
+        services.AddScoped(typeof(IEFRepository<>), typeof(Jarvis.Persistence.Repositories.EntityFramework.BaseRepository<>));
 
         return services;
     }
-
-    public static IServiceCollection AddDapperRepositories(this IServiceCollection services)
-    {
-        services.AddScoped(typeof(IQueryRepository<>), typeof(Jarvis.Persistence.Repositories.Dapper.BaseQueryRepository<>));
-        services.AddScoped(typeof(ICommandRepository<>), typeof(Jarvis.Persistence.Repositories.Dapper.BaseCommandRepository<>));
-        services.AddScoped(typeof(IRepository<>), typeof(Jarvis.Persistence.Repositories.Dapper.BaseRepository<>));
-
-        return services;
-    }
-
+    
     /// <summary>
     /// Add DbContext to DI with dynamic ConnectionString by Resolver
     /// </summary>
