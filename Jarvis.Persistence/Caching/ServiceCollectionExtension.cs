@@ -1,67 +1,67 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Jarvis.Persistence.Caching.Interfaces;
+using Jarvis.Persistence.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using Jarvis.Persistence.Caching.Redis;
+using Microsoft.Extensions.Options;
 
 namespace Jarvis.Persistence.Caching;
 
 public static class ServiceCollectionExtension
 {
     /// <summary>
-    /// Add Redis to DI
+    /// Register memory cache
     /// </summary>
     /// <param name="services"></param>
-    /// <param name="redisOption"></param>
-    /// <param name="cacheOptions">Default cache in 15 minutes</param>
-    public static void AddRedisCache(this IServiceCollection services, RedisOption redisOption)
-    {
-        services.AddRedisCache(options =>
-        {
-            options.InstanceName = redisOption.InstanceName;
-            options.ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions
-            {
-                Password = redisOption.Password,
-                ConnectRetry = redisOption.ConnectRetry,
-                AbortOnConnectFail = redisOption.AbortOnConnectFail,
-                ConnectTimeout = redisOption.ConnectTimeout,
-                SyncTimeout = redisOption.SyncTimeout,
-                DefaultDatabase = redisOption.DefaultDatabase,
-            };
-
-            if (redisOption.EndPoints != null)
-            {
-                foreach (var item in redisOption.EndPoints)
-                {
-                    options.ConfigurationOptions.EndPoints.Add(item);
-                }
-            }
-        });
-    }
-
-    public static void AddInMemoryCache(this IServiceCollection services)
+    /// <param name="entryOption"></param>
+    public static void AddInMemoryCache(this IServiceCollection services, CacheEntryOption entryOption = null)
     {
         services.AddDistributedMemoryCache((options) =>
         {
-            options.ExpirationScanFrequency = TimeSpan.FromMinutes(15);
+            options.ExpirationScanFrequency = entryOption == null ? TimeSpan.FromMinutes(15) : TimeSpan.FromSeconds(entryOption.MemoryCacheSeconds);
         });
+
         services.AddSingleton<ICachingService, MemoryCacheService>();
     }
 
-    private static void AddRedisCache(this IServiceCollection services, Action<RedisCacheOptions> redisOption, Action<DistributedCacheEntryOptions> cacheOptions = null)
+    /// <summary>
+    /// Register distributed cache Redis
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="redisOption"></param>
+    /// <param name="name"></param>
+    public static void AddRedisCache(this IServiceCollection services, RedisOption redisOption, string name = null)
     {
-        if (cacheOptions == null)
+        services.AddStackExchangeRedisCache(options =>
         {
-            services.Configure<DistributedCacheEntryOptions>(options =>
+            options.InstanceName = redisOption.InstanceName;
+            options.Configuration = redisOption.Configuration;
+        });
+
+        services.AddSingleton<ICachingService, RedisCacheService>((sp) =>
+        {
+            return new RedisCacheService(Options.Create(redisOption), name);
+        });
+    }
+
+    public static IServiceCollection AddMultiCache(this IServiceCollection services, IConfiguration congifuration)
+    {
+        var cachingOption = new CacheOption();
+        var cachingSection = congifuration.GetSection("Caching");
+        services.Configure<CacheOption>(cachingSection);
+        cachingSection.Bind(cachingOption);
+
+        services.AddInMemoryCache();
+
+        if (cachingOption.Redis != null)
+        {
+            foreach (var item in cachingOption.Redis)
             {
-                options.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15);
-            });
-        }
-        else
-        {
-            services.Configure<DistributedCacheEntryOptions>(cacheOptions);
+                services.AddRedisCache(item.Value, item.Key);
+            }
         }
 
-        services.AddStackExchangeRedisCache(redisOption);
-        services.AddSingleton<ICachingService, RedisCacheService>();
+        services.AddSingleton<IMultiCachingService, MultiCachingService>();
+        return services;
     }
 }

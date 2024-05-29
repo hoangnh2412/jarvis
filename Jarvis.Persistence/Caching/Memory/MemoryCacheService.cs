@@ -6,10 +6,12 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Jarvis.Persistence.Caching.Interfaces;
 
-namespace Jarvis.Persistence.Caching;
+namespace Jarvis.Persistence.Caching.Memory;
 
 public class MemoryCacheService : MemoryDistributedCache, ICachingService
 {
+    public string Name => "Default";
+
     public MemoryCacheService(
         IOptions<MemoryDistributedCacheOptions> optionsAccessor)
         : base(optionsAccessor)
@@ -144,11 +146,11 @@ public class MemoryCacheService : MemoryDistributedCache, ICachingService
 
     public async Task<T> GetAsync<T>(string key, Func<Task<T>> query, DistributedCacheEntryOptions options = null, CancellationToken token = default)
     {
-        var bytes = await GetAsync(key, token);
-        if (bytes != null)
-            return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(bytes));
+        var data = await GetAsync<T>(key, token);
+        if (data != null)
+            return data;
 
-        var data = await query.Invoke();
+        data = await query.Invoke();
         await SetAsync(key, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(data)), options, token);
         return data;
     }
@@ -189,5 +191,22 @@ public class MemoryCacheService : MemoryDistributedCache, ICachingService
         {
             AbsoluteExpirationRelativeToNow = expireTime
         }, token);
+    }
+
+    public async Task SetAsync<T>(string cacheKey, T value, TimeSpan? expireTime = null, CancellationToken token = default)
+    {
+        await SetAsync(cacheKey, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value)), new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = expireTime
+        }, token);
+    }
+
+    public async Task<T> GetAsync<T>(string cache, CancellationToken token = default)
+    {
+        var bytes = await GetAsync(cache, token);
+        if (bytes != null)
+            return JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(bytes));
+
+        return default(T);
     }
 }
