@@ -9,4 +9,9 @@ public static partial class CacheKey
     {
         return $"{cacheKey}:{tenantCode}";
     }
+
+    public static string WithTenantId(this string cacheKey, string tenantId)
+    {
+        return $"{cacheKey}:{tenantId}";
+    }
 }
