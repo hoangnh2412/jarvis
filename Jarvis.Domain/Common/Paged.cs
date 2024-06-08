@@ -4,10 +4,10 @@ namespace Jarvis.Domain.Common;
 
 public class Paged<T> : IPaged<T>
 {
-    public int Size { get; set; } = 10;
-    public int TotalItems { get; set; } = 0;
-    public int Page { get; set; } = 1;
-    public int TotalPages { get; set; } = 0;
-    public string Query { get; set; }
-    public IEnumerable<T> Data { get; set; } = Enumerable.Empty<T>();
+    public virtual int Size { get; set; } = 10;
+    public virtual int TotalItems { get; set; } = 0;
+    public virtual int Page { get; set; } = 1;
+    public virtual int TotalPages { get; set; } = 0;
+    public virtual string Query { get; set; }
+    public virtual IEnumerable<T> Data { get; set; } = Enumerable.Empty<T>();
 }

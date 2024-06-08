@@ -1,8 +1,11 @@
+using Jarvis.Application.Extensions;
 using Jarvis.Application.Interfaces.Repositories;
+using Jarvis.Domain.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.DataStorage;
 using Sample.DataStorage.EntityFramework;
+using Sample.RequestResponseModels;
 
 namespace Sample.Controllers;
 
@@ -19,11 +22,12 @@ public class EFStorageController : ControllerBase
 
     [HttpGet("read")]
     public async Task<IActionResult> ReadAsync(
+        [FromQuery] CustomPaging paging,
         [FromServices] ISampleUnitOfWork uow
     )
     {
         var repo = uow.GetRepository<IEFRepository<User>>();
-        var users = await repo.GetQuery().ToListAsync();
+        CustomPaged<User> users = (Paged<User>)await repo.GetQuery().ToPagedAsync(paging);
         return Ok(users);
     }
 
