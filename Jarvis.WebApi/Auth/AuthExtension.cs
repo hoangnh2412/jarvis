@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Jarvis.Shared.Options;
 using Microsoft.AspNetCore.Authentication;
+using System.Text;
 
 namespace Jarvis.WebApi.Auth;
 
@@ -19,10 +20,38 @@ public static class AuthExtension
 
         var builder = services.AddAuthentication(options =>
         {
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         });
+
+        return builder;
+    }
+
+    public static AuthenticationBuilder AddCoreAuthJWT(this AuthenticationBuilder builder, IConfiguration configuration)
+    {
+        var cognitoSection = configuration.GetSection("Authentication:JWT");
+        JWTOption jwtOption = new JWTOption();
+        cognitoSection.Bind(jwtOption);
+        builder.Services.Configure<JWTOption>(cognitoSection);
+
+        foreach (var schema in jwtOption.Schemas)
+        {
+            builder.AddJwtBearer(schema.Key, options =>
+            {
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = schema.Value.ValidateAudience,
+                    ValidateIssuer = schema.Value.ValidateIssuer,
+                    ValidateActor = schema.Value.ValidateActor,
+                    ValidateLifetime = schema.Value.ValidateLifetime,
+                    ValidateIssuerSigningKey = schema.Value.ValidateIssuerSigningKey,
+                    ClockSkew = TimeSpan.Zero,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(schema.Value.SecretKey))
+                };
+            });
+        }
 
         return builder;
     }
@@ -46,20 +75,6 @@ public static class AuthExtension
 
         return builder;
     }
-
-    // public static IServiceCollection AddCoreAuthorization(this IServiceCollection services, IConfiguration configuration)
-    // {
-    //     services
-    //         .AddAuthorization(options =>
-    //         {
-    //             options.DefaultPolicy = new AuthorizationPolicyBuilder()
-    //                 .RequireAuthenticatedUser()
-    //                 .AddAuthenticationSchemes(cognitoOption.UserPools.Keys.ToArray())
-    //                 .Build();
-    //         });
-
-    //     return services;
-    // }
 
     public static AuthenticationBuilder AddApiKeyInHeader<T>(
         this AuthenticationBuilder builder,

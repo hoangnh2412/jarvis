@@ -2,10 +2,15 @@ namespace Jarvis.Shared.Options;
 
 public class JWTOption
 {
-    public bool ValidateAudience { get; set; }
-    public bool ValidateIssuer { get; set; }
-    public bool ValidateActor { get; set; }
-    public bool ValidateLifetime { get; set; }
-    public bool ValidateIssuerSigningKey { get; set; }
-    public string SecretKey { get; set; }
+    public Dictionary<string, JWTSchemaOption> Schemas { get; set; }
+
+    public class JWTSchemaOption
+    {
+        public bool ValidateAudience { get; set; } = false;
+        public bool ValidateIssuer { get; set; } = false;
+        public bool ValidateActor { get; set; } = false;
+        public bool ValidateLifetime { get; set; } = true;
+        public bool ValidateIssuerSigningKey { get; set; } = true;
+        public string SecretKey { get; set; }
+    }
 }
