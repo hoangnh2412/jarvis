@@ -74,7 +74,15 @@ public static partial class HttpContextExtension
         if (excludePaths == null || excludePaths.Count() == 0)
             return false;
 
-        return excludePaths.Any(x => x == request.Path.Value);
+        return excludePaths.Any(x => x == $"{request.Method} {request.Path.Value}");
+    }
+
+    public static bool IsIgnoreWrapResponse(this HttpRequest request, params string[] ignoreWrapResponses)
+    {
+        if (ignoreWrapResponses == null || ignoreWrapResponses.Count() == 0)
+            return false;
+
+        return ignoreWrapResponses.Any(x => x == $"{request.Method} {request.Path.Value}");
     }
 
     public static bool AllowContentType(this string contentType, params string[] contentTypes)

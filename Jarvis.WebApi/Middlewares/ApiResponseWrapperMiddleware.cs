@@ -10,6 +10,10 @@ using Jarvis.Shared;
 using Jarvis.Shared.Constants;
 using Jarvis.Shared.Enums;
 using Jarvis.Shared.Extensions;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Jarvis.Shared.Options;
+using Microsoft.Extensions.Options;
 
 namespace Jarvis.WebApi.Middlewares;
 public class ApiResponseWrapperMiddleware
@@ -24,25 +28,36 @@ public class ApiResponseWrapperMiddleware
         ContractResolver = new CamelCasePropertyNamesContractResolver()
     };
 
+    private readonly List<string> _excludePaths = new List<string> { "GET /" };
+
+    private readonly List<string> _ignoreWrapResponses = new List<string> { "GET /" };
+
+    private readonly Dictionary<string, string> _responseTypes = new Dictionary<string, string>();
+
+    private List<string> _allowContentTypes = new List<string> { ContentType.Json, ContentType.Xml };
+
     public ApiResponseWrapperMiddleware(
         IStringLocalizer<ApiResponseWrapperMiddleware> localizer,
         ILogger<ApiResponseWrapperMiddleware> logger,
+        IConfiguration configuration,
         RequestDelegate next)
     {
         _localizer = localizer;
         _logger = logger;
         _next = next;
+
+        BuildOptions(configuration);
     }
 
     public async Task InvokeAsync(HttpContext context)
     {
-        if (context.Request.IsSwagger("/swagger") || context.Request.IsExclude())
+        if (context.Request.IsSwagger("/swagger") || context.Request.IsExclude(_excludePaths.ToArray()))
         {
             await _next(context);
             return;
         }
 
-        if (!context.Request.ContentType.AllowContentType(ContentType.Json, ContentType.Xml))
+        if (!context.Request.ContentType.AllowContentType(_allowContentTypes.ToArray()))
         {
             await _next(context);
             return;
@@ -64,13 +79,23 @@ public class ApiResponseWrapperMiddleware
 
                 var responseBody = await HttpContextExtension.ReadResponseBodyStreamAsync(stream);
                 context.Response.Body = originalResponseBodyStream;
-                
-                var response = GenerateResponse(context, responseBody);
-                var json = JsonConvert.SerializeObject(response, JsonOptions);
-                
-                context.Response.ContentType = ContentType.Json;
-                context.Response.ContentLength = Encoding.UTF8.GetByteCount(json);
-                await context.Response.WriteAsync(json);
+
+                var responseContentType = GetResponseContentType(context);
+
+                var responseContent = responseBody;
+                if (!context.Request.IsIgnoreWrapResponse(_ignoreWrapResponses.ToArray()))
+                {
+                    var response = GenerateResponse(context, responseBody);
+
+                    if (responseContentType == ContentType.Xml)
+                        responseContent = XmlExtension.XmlSerialize(response);
+                    else
+                        responseContent = JsonConvert.SerializeObject(response, JsonOptions);
+                }
+
+                context.Response.ContentType = responseContentType;
+                context.Response.ContentLength = Encoding.UTF8.GetByteCount(responseContent);
+                await context.Response.WriteAsync(responseContent);
             }
             catch (Exception ex)
             {
@@ -110,12 +135,43 @@ public class ApiResponseWrapperMiddleware
         }
     }
 
+    private string GetResponseContentType(HttpContext context)
+    {
+        var responseContentType = ContentType.Json;
+        if (_responseTypes.TryGetValue($"{context.Request.Method} {context.Request.Path}", out string responseType))
+            responseContentType = responseType;
+        return responseContentType;
+    }
+
+    private MiddlewareOption BuildOptions(IConfiguration configuration)
+    {
+        var options = new MiddlewareOption();
+        configuration.GetSection($"Middlewares:{nameof(ApiResponseWrapperMiddleware)}").Bind(options);
+
+        if (options.AllowContentTypes != null && options.AllowContentTypes.Count > 0)
+            _allowContentTypes = options.AllowContentTypes;
+
+        foreach (var path in options.Paths)
+        {
+            if (path.Value.TryGetValue("IsExclude", out string isExclude) && bool.Parse(isExclude))
+                _excludePaths.Add(path.Key);
+
+            if (path.Value.TryGetValue("IsIgnoreWrapResponse", out string isIgnoreWrapResponse) && bool.Parse(isIgnoreWrapResponse))
+                _ignoreWrapResponses.Add(path.Key);
+
+            if (path.Value.TryGetValue("ResponseType", out string responseType) && !string.IsNullOrEmpty(responseType))
+                _responseTypes[path.Key] = responseType;
+        }
+
+        return options;
+    }
+
     private BaseResponse<object> GenerateResponse(HttpContext context, string responseBody)
     {
         BaseResponse<object> response;
         if (context.Response.StatusCode == HttpStatusCode.OK.GetHashCode())
         {
-            response = CreateResponseSuccess(responseBody);
+            response = CreateResponseSuccess(context, responseBody);
         }
         else if (context.Response.StatusCode == HttpStatusCode.BadRequest.GetHashCode())
         {
@@ -165,13 +221,19 @@ public class ApiResponseWrapperMiddleware
         return response;
     }
 
-    private BaseResponse<object> CreateResponseSuccess(string responseBody)
+    private BaseResponse<object> CreateResponseSuccess(HttpContext context, string responseBody)
     {
         try
         {
             object data = null;
             if (!string.IsNullOrEmpty(responseBody))
-                data = JsonConvert.DeserializeObject<object>(responseBody);
+            {
+                var responseContentType = GetResponseContentType(context);
+                if (responseContentType == ContentType.Xml)
+                    data = XmlExtension.XmlDeserialize<object>(responseBody);
+                else
+                    data = JsonConvert.DeserializeObject<object>(responseBody);
+            }
 
             return BaseResponse<object>.SuccessMessage(data, _localizer[BaseResponseCode.OK.Name]);
         }

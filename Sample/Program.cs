@@ -6,6 +6,7 @@ using Jarvis.WebApi.Monitoring;
 using Sample.EventBus;
 using Sample.DataStorage.EntityFramework;
 using Jarvis.Persistence.Caching;
+using Jarvis.WebApi.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddCoreApplication();
+builder.Services.AddCoreLocalization(builder.Configuration);
 builder.Services.AddCoreWebApi(builder.Configuration);
 
 builder.Services
@@ -48,6 +50,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseMiddleware<ApiResponseWrapperMiddleware>();
 
 app.MapControllers();
 

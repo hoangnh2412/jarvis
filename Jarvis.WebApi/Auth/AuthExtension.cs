@@ -1,7 +1,5 @@
 using AspNetCore.Authentication.ApiKey;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -26,33 +24,15 @@ public static class AuthExtension
             options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         });
 
-        // builder.AddCoreAuthCognito(() => {
-        //     return new CognitoOption {
-
-        //     }
-        // })
-
         return builder;
     }
 
-    // public static AuthenticationBuilder AddCoreAuthorization(this IServiceCollection services, IConfiguration configuration)
-    // {
-    //     var authSection = configuration.GetSection("Authentication");
-    //     AuthenticationOption authOption = new AuthenticationOption();
-    //     authSection.Bind(authOption);
-    //     services.Configure<AuthenticationOption>(authSection);
-
-    //     return services;
-    // }
-
-    public static AuthenticationBuilder AddCoreAuthCognito(this AuthenticationBuilder builder, Func<CognitoOption> cognitoConfigure)
+    public static AuthenticationBuilder AddCoreAuthCognito(this AuthenticationBuilder builder, IConfiguration configuration)
     {
-        // var cognitoSection = configuration.GetSection("Authentication:Cognito");
-        // CognitoOption cognitoOption = new CognitoOption();
-        // cognitoSection.Bind(cognitoOption);
-        // services.Configure<CognitoOption>(cognitoSection);
-
-        var cognitoOption = cognitoConfigure.Invoke();
+        var cognitoSection = configuration.GetSection("Authentication:Cognito");
+        CognitoOption cognitoOption = new CognitoOption();
+        cognitoSection.Bind(cognitoOption);
+        builder.Services.Configure<CognitoOption>(cognitoSection);
 
         foreach (var userPool in cognitoOption.UserPools)
         {
@@ -67,23 +47,8 @@ public static class AuthExtension
         return builder;
     }
 
-    // public static IServiceCollection AddCoreAuthCognito(this AuthenticationBuilder builder, IConfiguration configuration)
+    // public static IServiceCollection AddCoreAuthorization(this IServiceCollection services, IConfiguration configuration)
     // {
-    //     var cognitoSection = configuration.GetSection("Authentication:Cognito");
-    //     CognitoOption cognitoOption = new CognitoOption();
-    //     cognitoSection.Bind(cognitoOption);
-    //     services.Configure<CognitoOption>(cognitoSection);
-
-    //     foreach (var userPool in cognitoOption.UserPools)
-    //     {
-    //         builder.AddJwtBearer(userPool.Key, options =>
-    //         {
-    //             options.TokenValidationParameters = new TokenValidationParameters { ValidateAudience = false };
-    //             options.Authority = $"{cognitoOption.Endpoint}/{userPool.Value}";
-    //             options.RequireHttpsMetadata = false;
-    //         });
-    //     }
-
     //     services
     //         .AddAuthorization(options =>
     //         {
@@ -96,23 +61,75 @@ public static class AuthExtension
     //     return services;
     // }
 
-    public static IServiceCollection AddAuthApiKey<T>(this IServiceCollection services) where T : class, IApiKeyProvider
+    public static AuthenticationBuilder AddApiKeyInHeader<T>(
+        this AuthenticationBuilder builder,
+        string authenticationScheme = ApiKeyDefaults.AuthenticationScheme,
+        string realm = "Jarvis",
+        string keyName = "X-API-KEY")
+        where T : class, IApiKeyProvider
     {
-        services
-            .AddAuthentication(ApiKeyDefaults.AuthenticationScheme)
-            .AddApiKeyInHeader<T>(options =>
+        builder.AddApiKeyInHeader<T>(
+            authenticationScheme,
+            options =>
             {
-                options.Realm = "Jarvis";
-                options.KeyName = "X-API-KEY";
+                options.Realm = realm;
+                options.KeyName = keyName;
             });
 
-        return services;
+        return builder;
     }
 
-    public static IApplicationBuilder UseCoreAuth(this IApplicationBuilder app)
+    public static AuthenticationBuilder AddApiKeyInQueryParams<T>(
+        this AuthenticationBuilder builder,
+        string authenticationScheme = ApiKeyDefaults.AuthenticationScheme,
+        string realm = "Jarvis",
+        string keyName = "ApiKey")
+        where T : class, IApiKeyProvider
     {
-        app.UseAuthentication();
-        app.UseAuthorization();
-        return app;
+        builder.AddApiKeyInQueryParams<T>(
+            authenticationScheme,
+            options =>
+            {
+                options.Realm = realm;
+                options.KeyName = keyName;
+            });
+
+        return builder;
+    }
+
+    public static AuthenticationBuilder AddApiKeyInRouteValues<T>(
+        this AuthenticationBuilder builder,
+        string authenticationScheme = ApiKeyDefaults.AuthenticationScheme,
+        string realm = "Jarvis",
+        string keyName = "apiKey")
+        where T : class, IApiKeyProvider
+    {
+        builder.AddApiKeyInRouteValues<T>(
+            authenticationScheme,
+            options =>
+            {
+                options.Realm = realm;
+                options.KeyName = keyName;
+            });
+
+        return builder;
+    }
+
+    public static AuthenticationBuilder AddApiKeyInAuthorizationHeader<T>(
+        this AuthenticationBuilder builder,
+        string authenticationScheme = ApiKeyDefaults.AuthenticationScheme,
+        string realm = "Jarvis",
+        string keyName = "X-API-KEY")
+        where T : class, IApiKeyProvider
+    {
+        builder.AddApiKeyInAuthorizationHeader<T>(
+            authenticationScheme,
+            options =>
+            {
+                options.Realm = realm;
+                options.KeyName = keyName;
+            });
+
+        return builder;
     }
 }
