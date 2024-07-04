@@ -20,6 +20,7 @@ public abstract class BaseEventConsumer<T> : BackgroundService, IDistributedEven
     private static readonly ActivitySource ActivitySource = new ActivitySource(Assembly.GetEntryAssembly().GetName().Name);
     private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
     private readonly ILogger<BaseEventConsumer<T>> _logger;
+    public BasicDeliverEventArgs Args { get; set; }
 
     public BaseEventConsumer(
         IRabbitMQConnector connector,
@@ -87,6 +88,8 @@ public abstract class BaseEventConsumer<T> : BackgroundService, IDistributedEven
                     data = (T)Convert.ChangeType(message, typeof(T));
                 else
                     data = JsonConvert.DeserializeObject<T>(message);
+
+                Args = args;
             }
             catch (System.Exception ex)
             {
@@ -97,6 +100,11 @@ public abstract class BaseEventConsumer<T> : BackgroundService, IDistributedEven
         };
         Channel.BasicConsume(DeclareOption.Queue.Name, DeclareOption.AutoAck, consumer);
         return Task.CompletedTask;
+    }
+
+    public void Ack(bool multiple = false)
+    {
+        Channel.BasicAck(deliveryTag: Args.DeliveryTag, multiple);
     }
 
     private IEnumerable<string> ExtractTraceContextFromBasicProperties(IBasicProperties props, string key)
