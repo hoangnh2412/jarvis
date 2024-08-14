@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Jarvis.Domain</PackageId>
+    <Version>1.1.0</Version>
+    <Authors>Hoang Nguyen</Authors>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jarvis.Shared\Jarvis.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

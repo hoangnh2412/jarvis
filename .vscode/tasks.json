@@ -5,9 +5,13 @@
             "label": "build",
             "command": "dotnet",
             "type": "process",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
             "args": [
                 "build",
-                "${workspaceFolder}/JarvisPresentation/JarvisPresentation.csproj",
+                "${workspaceFolder}/Sample/Sample.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +23,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/JarvisPresentation/JarvisPresentation.csproj",
+                "${workspaceFolder}/Sample/Sample.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -32,9 +36,8 @@
             "args": [
                 "watch",
                 "run",
-                "${workspaceFolder}/JarvisPresentation/JarvisPresentation.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
+                "--project",
+                "${workspaceFolder}/Sample/Sample.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
