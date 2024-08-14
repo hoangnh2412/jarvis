@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jarvis.EntityFramework.PostgreSql\Jarvis.EntityFramework.PostgreSql.csproj" />
+    <ProjectReference Include="..\Jarvis.OpenTelemetry\Jarvis.OpenTelemetry.csproj" />
+    <ProjectReference Include="..\Jarvis.Swashbuckle\Jarvis.Swashbuckle.csproj" />
+    <ProjectReference Include="..\Jarvis.Mvc\Jarvis.Mvc.csproj" />
+  </ItemGroup>
+
+</Project>
