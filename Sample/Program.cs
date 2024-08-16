@@ -1,5 +1,3 @@
-using Jarvis.Domain.DataStorages;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

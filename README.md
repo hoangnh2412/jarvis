@@ -1,6 +1,17 @@
 Jarvis is lightweight admin framework
 
-Version 2.0.0
+Version 2.1.0
+
+TODO:
+- Cache
+- Command Query pattern
+- DDD AggregateRoot
+- CRUD Generic
+- Email
+- MinIO
+- Authentication, Authorization
+- Multitenancy, multiple DB
+- Auto document
 
 I. Functions
 ---

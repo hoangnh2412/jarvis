@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace Jarvis.Mvc.Middlewares;
+namespace Jarvis.Mvc.ExceptionHandling;
 
 public class ApiResponseWrapperMiddleware(
     ILogger<ApiResponseWrapperMiddleware> logger,
