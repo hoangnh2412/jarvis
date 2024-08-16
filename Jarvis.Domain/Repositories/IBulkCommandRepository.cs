@@ -28,7 +28,8 @@ public interface IBulkCommandRepository<TEntity> : IRepository
     /// - SQLite has no Copy tool, instead library uses plain SQL combined with UPSERT.
     /// Without SaveChange()
     /// </summary>
-    /// <param name="entities"></param>
+    /// <param name="queryable"></param>
+    /// <param name="updateFactory"></param>
     /// <returns></returns>
     Task<int> UpdateBatchAsync(IQueryable<TEntity> queryable, Expression<Func<TEntity, TEntity>> updateFactory);
     Task UpdateBatchAsync(IEnumerable<TEntity> entities, Expression<Func<TEntity, TEntity>> updateFactory);
@@ -40,7 +41,7 @@ public interface IBulkCommandRepository<TEntity> : IRepository
     /// - SQLite has no Copy tool, instead library uses plain SQL combined with UPSERT.
     /// Without SaveChange()
     /// </summary>
-    /// <param name="entities"></param>
+    /// <param name="queryable"></param>
     /// <returns></returns>
     Task<int> DeleteBatchAsync(IQueryable<TEntity> queryable);
     Task DeleteBatchAsync(IEnumerable<TEntity> entities);

@@ -6,7 +6,7 @@ namespace Jarvis.EntityFramework.DataStorages;
 /// <summary>
 /// Base class for DbContextFactory
 /// </summary>
-/// <typeparam name="TDbContext">The type of the DbContext, must implement <see cref="BaseStorageContext"/></typeparam>
+/// <typeparam name="TDbContext">The type of the DbContext, must implement BaseStorageContext</typeparam>
 public class BaseDbContextFactory<TDbContext> : IDbContextFactory<TDbContext> where TDbContext : BaseStorageContext<TDbContext>
 {
     protected readonly ITenantIdResolver _tenantIdResolver;

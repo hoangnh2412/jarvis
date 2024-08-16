@@ -18,5 +18,5 @@ public class BaseResponseError
     /// <summary>
     /// Error detail in ModelState
     /// </summary>
-    public Dictionary<string, IList<string>> Errors { get; set; } = new Dictionary<string, IList<string>>();
+    public Dictionary<string, IList<string>> Details { get; set; } = new Dictionary<string, IList<string>>();
 }

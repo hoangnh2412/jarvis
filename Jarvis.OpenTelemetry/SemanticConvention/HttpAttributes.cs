@@ -18,7 +18,7 @@ public class HttpAttributes
     public const string RequestSize = "http.request.size";
 
     /// <summary>
-    /// HTTP response headers, <key> being the normalized HTTP Header name (lowercase), the value being the header values. [4]
+    /// HTTP response headers, key tag being the normalized HTTP Header name (lowercase), the value being the header values. [4]
     /// </summary>
     public const string ResponseHeader = "http.response.header.{0}";
 
