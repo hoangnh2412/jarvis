@@ -11,4 +11,8 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Jarvis.Domain\Jarvis.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
