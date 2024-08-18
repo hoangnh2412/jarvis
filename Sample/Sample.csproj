@@ -17,6 +17,8 @@
     <ProjectReference Include="..\Jarvis.OpenTelemetry\Jarvis.OpenTelemetry.csproj" />
     <ProjectReference Include="..\Jarvis.Swashbuckle\Jarvis.Swashbuckle.csproj" />
     <ProjectReference Include="..\Jarvis.Mvc\Jarvis.Mvc.csproj" />
+    <ProjectReference Include="..\Jarvis.Caching.Memory\Jarvis.Caching.Memory.csproj" />
+    <ProjectReference Include="..\Jarvis.Caching.Redis\Jarvis.Caching.Redis.csproj" />
   </ItemGroup>
 
 </Project>
