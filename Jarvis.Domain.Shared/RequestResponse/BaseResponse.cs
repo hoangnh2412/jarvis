@@ -1,3 +1,4 @@
+using System.Net;
 using System.Reflection;
 
 namespace Jarvis.Domain.Shared.RequestResponse;
@@ -6,19 +7,15 @@ namespace Jarvis.Domain.Shared.RequestResponse;
 
 public class BaseResponse
 {
-    public BaseResponse() { }
-
-    public BaseResponse(string requestId, string code, BaseResponseError error = null)
-    {
-        RequestId = requestId;
-        Code = GenerateCode(code);
-        Error = error;
-    }
-
     /// <summary>
     /// Unique request identifier
     /// </summary>
     public string RequestId { get; set; }
+
+    /// <summary>
+    /// Timestamp of request. Timezone UTC
+    /// </summary>
+    public DateTime Timestamp { get; set; }
 
     /// <summary>
     /// Error code. Structure: {NAME}:{XXX}{YY}000
@@ -35,13 +32,23 @@ public class BaseResponse
     /// </summary>
     public BaseResponseError Error { get; set; }
 
-    public static string GenerateCode(string code)
+    public BaseResponse() { }
+
+    public BaseResponse(string requestId, HttpStatusCode httpStatusCode, string code, BaseResponseError error = null)
+    {
+        RequestId = requestId;
+        Timestamp = DateTime.UtcNow;
+        Code = GenerateCode(httpStatusCode, code);
+        Error = error;
+    }
+
+    public static string GenerateCode(HttpStatusCode httpStatusCode, string code)
     {
         var assemblyName = Assembly.GetEntryAssembly().GetName().Name;
         if (code.StartsWith(assemblyName))
             return code;
 
-        return $"{assemblyName}:{code}";
+        return $"{assemblyName}:{httpStatusCode.GetHashCode()}{code}";
     }
 }
 
@@ -57,21 +64,29 @@ public class BaseResponse<T> : BaseResponse
 
     public BaseResponse(
         string requestId,
+        HttpStatusCode httpStatusCode,
         string code,
-        BaseResponseError errors = null)
-        : base(requestId, code, errors)
+        BaseResponseError error = null)
+        : base(requestId, httpStatusCode, code, error)
     {
+        RequestId = requestId;
+        Timestamp = DateTime.UtcNow;
+        Code = GenerateCode(httpStatusCode, code);
+        Error = error;
     }
 
     public BaseResponse(
         string requestId,
+        HttpStatusCode httpStatusCode,
         string code,
         T data,
-        BaseResponseError errors = null)
-        : base(requestId, code, errors)
+        BaseResponseError error = null)
+        : base(requestId, httpStatusCode, code, error)
     {
-        Code = code;
+        RequestId = requestId;
+        Timestamp = DateTime.UtcNow;
+        Code = GenerateCode(httpStatusCode, code);
+        Error = error;
         Data = data;
-        Error = errors;
     }
 }

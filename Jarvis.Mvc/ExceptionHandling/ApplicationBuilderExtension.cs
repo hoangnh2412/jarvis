@@ -1,6 +1,6 @@
+using Jarvis.Mvc.Attributes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,16 +23,15 @@ public static class ApplicationBuilderExtension
         if (!option.IsEnable)
             return app;
 
-        var pathStartWiths = option.Ignores["PathStartWith"];
-        var paths = option.Ignores["Path"];
-        var controllerActions = option.Ignores["ControllerAction"];
+        var pathStartWith = option.Ignores["PathStartWith"];
+        var path = option.Ignores["Path"];
 
         app.UseWhen(httpContext =>
         {
-            if (paths.Contains(httpContext.Request.Path.Value))
+            if (path.Contains(httpContext.Request.Path.Value))
                 return false;
 
-            foreach (var item in pathStartWiths)
+            foreach (var item in pathStartWith)
             {
                 if (httpContext.Request.Path.StartsWithSegments(item))
                     return false;
@@ -42,11 +41,8 @@ public static class ApplicationBuilderExtension
             if (endpoint == null)
                 return true;
 
-            var controllerActionDescriptor = endpoint.Metadata.GetMetadata<ControllerActionDescriptor>();
-            if (controllerActionDescriptor == null)
-                return true;
-
-            if (controllerActions.Contains($"{controllerActionDescriptor.ControllerName}.{controllerActionDescriptor.ActionName}"))
+            var attributes = endpoint.Metadata.OfType<IgnoreMiddlewareAttribute>();
+            if (attributes.Any(x => x.Name == typeof(T).Name))
                 return false;
 
             return true;

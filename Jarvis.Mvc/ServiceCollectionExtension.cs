@@ -19,7 +19,8 @@ public static class ServiceCollectionExtension
             {
                 return new BadRequestObjectResult(new BaseResponse(
                     requestId: actionContext.HttpContext.TraceIdentifier,
-                    code: BaseErrorCode.Default400,
+                    httpStatusCode: System.Net.HttpStatusCode.BadRequest,
+                    code: BaseErrorCode.Default,
                     error: new BaseResponseError
                     {
                         Details = actionContext.ModelState
