@@ -19,7 +19,7 @@ public static class AuthenticationJwtExtension
         if (configureOptions != null)
             return builder.AddJwtBearer(authenticationScheme, displayName, configureOptions);
 
-        var authOption = configuration.GetSection("Authentication:Jwt").Get<AuthenticationJwtOption>();
+        var authOption = configuration.GetSection($"Authentication:Jwt:{authenticationScheme}").Get<AuthenticationJwtOption>();
 
         // Default validator: https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/wiki/ValidatingTokens
         return builder.AddJwtBearer(authenticationScheme, displayName, options =>
