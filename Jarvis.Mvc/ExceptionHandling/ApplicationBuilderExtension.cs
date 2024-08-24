@@ -18,7 +18,7 @@ public static class ApplicationBuilderExtension
             option = configuration.GetSection($"Middlewares:{name}").Get<MiddlewareOption>();
 
         if (option == null)
-            return app;
+            return app.UseMiddleware<T>();
 
         if (!option.IsEnable)
             return app;

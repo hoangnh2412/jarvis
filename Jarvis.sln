@@ -33,6 +33,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Caching.Redis", "Jar
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Common", "Jarvis.Common\Jarvis.Common.csproj", "{FD5900F1-89E2-4D35-8D37-41415D87AD73}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Authentication", "Jarvis.Authentication\Jarvis.Authentication.csproj", "{1456506B-F8EE-4796-AF37-8B0ED2CC47EA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Authentication.Jwt", "Jarvis.Authentication.Jwt\Jarvis.Authentication.Jwt.csproj", "{31C259C7-3356-46C9-A486-1A4229A636A4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -102,5 +106,13 @@ Global
 		{FD5900F1-89E2-4D35-8D37-41415D87AD73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD5900F1-89E2-4D35-8D37-41415D87AD73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD5900F1-89E2-4D35-8D37-41415D87AD73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1456506B-F8EE-4796-AF37-8B0ED2CC47EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1456506B-F8EE-4796-AF37-8B0ED2CC47EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1456506B-F8EE-4796-AF37-8B0ED2CC47EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1456506B-F8EE-4796-AF37-8B0ED2CC47EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31C259C7-3356-46C9-A486-1A4229A636A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31C259C7-3356-46C9-A486-1A4229A636A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31C259C7-3356-46C9-A486-1A4229A636A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31C259C7-3356-46C9-A486-1A4229A636A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

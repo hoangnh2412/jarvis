@@ -7,18 +7,24 @@ namespace Jarvis.OpenTelemetry;
 
 public static class MonitoringExtension
 {
-    public static OTELBuilder AddCoreMonitor(this IServiceCollection services, IConfigurationSection configurationSection)
+    public static OTELBuilder AddCoreMonitor(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        Action<IServiceCollection>? configService = null)
     {
-        var otelOptions = new OTELOption();
-        configurationSection.Bind(otelOptions);
+        var configurationSection = configuration.GetSection("OTEL");
         services.Configure<OTELOption>(configurationSection);
 
+        var otelOptions = configurationSection.Get<OTELOption>() ?? new OTELOption();
+        var builder = new OTELBuilder(services, otelOptions);
+
         services.AddScoped<IAspNetCoreEnrichHttpRequest, HttpEnrichHttpRequest>();
-        // services.AddScoped<IAspNetCoreEnrichHttpRequest, UserEnrichHttpRequest>();
+        services.AddScoped<IAspNetCoreEnrichHttpRequest, UserEnrichHttpRequest>();
 
         services.AddScoped<IAspNetCoreEnrichHttpResponse, HttpEnrichHttpResponse>();
-        // services.AddScoped<IAspNetCoreEnrichHttpResponse, UserEnrichHttpResponse>();
+        services.AddScoped<IAspNetCoreEnrichHttpResponse, UserEnrichHttpResponse>();
 
-        return new OTELBuilder(services, otelOptions);
+        configService?.Invoke(services);
+        return builder;
     }
 }

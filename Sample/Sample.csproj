@@ -19,6 +19,7 @@
     <ProjectReference Include="..\Jarvis.Mvc\Jarvis.Mvc.csproj" />
     <ProjectReference Include="..\Jarvis.Caching.Memory\Jarvis.Caching.Memory.csproj" />
     <ProjectReference Include="..\Jarvis.Caching.Redis\Jarvis.Caching.Redis.csproj" />
+    <ProjectReference Include="..\Jarvis.Authentication.Jwt\Jarvis.Authentication.Jwt.csproj" />
   </ItemGroup>
 
 </Project>

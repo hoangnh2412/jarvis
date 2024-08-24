@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using Jarvis.Domain.Shared.Enums;
 using Jarvis.Domain.Shared.RequestResponse;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +14,7 @@ public static class ServiceCollectionExtension
 {
     public static IMvcBuilder AddBadRequestHandler(this IMvcBuilder services)
     {
-        #nullable disable
+#nullable disable
         services.ConfigureApiBehaviorOptions(options =>
             options.InvalidModelStateResponseFactory = actionContext =>
             {
@@ -49,11 +50,12 @@ public static class ServiceCollectionExtension
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.DefaultIgnoreCondition = jsonOption.IgnoreNull ? JsonIgnoreCondition.WhenWritingNull : JsonIgnoreCondition.Never;
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             })
             .AddNewtonsoftJson(options =>
             {
                 options.SerializerSettings.NullValueHandling = jsonOption.IgnoreNull ? NullValueHandling.Ignore : NullValueHandling.Include;
-                options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
 
         services.AddEndpointsApiExplorer();

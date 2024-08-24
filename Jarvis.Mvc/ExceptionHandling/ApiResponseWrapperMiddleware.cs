@@ -7,16 +7,20 @@ using Jarvis.Domain.Shared.RequestResponse;
 using Jarvis.Mvc.Extensions;
 using Jarvis.OpenTelemetry.SemanticConvention;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace Jarvis.Mvc.ExceptionHandling;
 
 public class ApiResponseWrapperMiddleware(
     ILogger<ApiResponseWrapperMiddleware> logger,
+    IOptions<MvcNewtonsoftJsonOptions> jsonOption,
     RequestDelegate next)
 {
     private readonly ILogger<ApiResponseWrapperMiddleware> _logger = logger;
+    private readonly MvcNewtonsoftJsonOptions _jsonOption = jsonOption.Value;
     private readonly RequestDelegate _next = next;
 
     public async Task InvokeAsync(HttpContext context)
@@ -112,7 +116,7 @@ public class ApiResponseWrapperMiddleware(
         }
     }
 
-    private static (HttpStatusCode, string) GenerateResponseContent(HttpContext context, Exception ex)
+    private (HttpStatusCode, string) GenerateResponseContent(HttpContext context, Exception ex)
     {
         var code = BaseErrorCode.Default;
         var statusCode = HttpStatusCode.InternalServerError;
@@ -126,7 +130,7 @@ public class ApiResponseWrapperMiddleware(
         if (ex is NotFoundException)
             (statusCode, code) = ParseStatusCode<NotFoundException>(ex);
 
-        return (statusCode, JsonConvert.SerializeObject(new BaseResponse(context.TraceIdentifier, statusCode, code)));
+        return (statusCode, JsonConvert.SerializeObject(new BaseResponse(context.TraceIdentifier, statusCode, code), _jsonOption.SerializerSettings));
     }
 
     private static (HttpStatusCode, string) ParseStatusCode<T>(Exception ex) where T : BusinessException
@@ -160,26 +164,31 @@ public class ApiResponseWrapperMiddleware(
         return content;
     }
 
-    private static string ParseSuccessContent(HttpContext context, string content, string defaultCode)
+    private string ParseSuccessContent(HttpContext context, string content, string defaultCode)
     {
         var response = new BaseResponse<object>(context.TraceIdentifier, HttpStatusCode.OK, defaultCode);
 
         if (!string.IsNullOrEmpty(content))
         {
-#pragma warning disable CS8601 // Possible null reference assignment.
-            response.Data = JsonConvert.DeserializeObject<object>(content);
-#pragma warning restore CS8601 // Possible null reference assignment.
+            try
+            {
+                response.Data = JsonConvert.DeserializeObject<object>(content, _jsonOption.SerializerSettings) ?? string.Empty;
+            }
+            catch (Exception)
+            {
+                response.Data = content;
+            }
         }
 
-        return JsonConvert.SerializeObject(response);
+        return JsonConvert.SerializeObject(response, _jsonOption.SerializerSettings);
     }
 
-    private static string ParseErrorContent(HttpContext context, string content, HttpStatusCode httpStatusCode, string defaultCode)
+    private string ParseErrorContent(HttpContext context, string content, HttpStatusCode httpStatusCode, string defaultCode)
     {
         if (string.IsNullOrEmpty(content))
             content = defaultCode;
 
-        return JsonConvert.SerializeObject(new BaseResponse(context.TraceIdentifier, httpStatusCode, content));
+        return JsonConvert.SerializeObject(new BaseResponse(context.TraceIdentifier, httpStatusCode, content), _jsonOption.SerializerSettings);
     }
 
     private string ParseBadRequest(HttpContext context, string content)
@@ -189,7 +198,7 @@ public class ApiResponseWrapperMiddleware(
         try
         {
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-            response = JsonConvert.DeserializeObject<BaseResponse>(content);
+            response = JsonConvert.DeserializeObject<BaseResponse>(content, _jsonOption.SerializerSettings);
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
             if (response == null)
@@ -200,6 +209,6 @@ public class ApiResponseWrapperMiddleware(
             _logger.LogError(ex, "{message}", ex.Message);
         }
 
-        return JsonConvert.SerializeObject(response);
+        return JsonConvert.SerializeObject(response, _jsonOption.SerializerSettings);
     }
 }
