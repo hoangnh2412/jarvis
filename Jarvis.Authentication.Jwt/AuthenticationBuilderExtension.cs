@@ -8,7 +8,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Jarvis.Authentication.Jwt;
 
-public static class AuthenticationJwtExtension
+/// <summary>
+/// Issue: PII
+/// https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/wiki/PII
+/// https://stackoverflow.com/questions/77120928/why-do-i-get-idx20803-error-after-upgrading-to-identitymodel-v7-from-v6
+/// </summary>
+public static class AuthenticationBuilderExtension
 {
     public static AuthenticationBuilder AddCoreJwtBearer(this AuthenticationBuilder builder, IConfiguration configuration, Action<JwtBearerOptions>? configureOptions = null) => builder.AddCoreJwtBearer(configuration, JwtBearerDefaults.AuthenticationScheme, JwtBearerDefaults.AuthenticationScheme, configureOptions);
 

@@ -1,7 +1,8 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
+using Jarvis.Common.Enums;
 using Jarvis.Domain.Shared.Enums;
 using Jarvis.Domain.Shared.RequestResponse;
+using Jarvis.Domain.Shared.Utility;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,12 +51,26 @@ public static class ServiceCollectionExtension
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.DefaultIgnoreCondition = jsonOption.IgnoreNull ? JsonIgnoreCondition.WhenWritingNull : JsonIgnoreCondition.Never;
-                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.PropertyNamingPolicy = jsonOption.NamingPolicy switch
+                {
+                    JsonNamingPolicy.CamelCase => System.Text.Json.JsonNamingPolicy.CamelCase,
+                    JsonNamingPolicy.KebabCaseLower => System.Text.Json.JsonNamingPolicy.KebabCaseLower,
+                    JsonNamingPolicy.KebabCaseUpper => System.Text.Json.JsonNamingPolicy.KebabCaseUpper,
+                    JsonNamingPolicy.SnakeCaseLower => System.Text.Json.JsonNamingPolicy.SnakeCaseLower,
+                    JsonNamingPolicy.SnakeCaseUpper => System.Text.Json.JsonNamingPolicy.SnakeCaseUpper,
+                    _ => System.Text.Json.JsonNamingPolicy.CamelCase,
+                };
             })
             .AddNewtonsoftJson(options =>
             {
                 options.SerializerSettings.NullValueHandling = jsonOption.IgnoreNull ? NullValueHandling.Ignore : NullValueHandling.Include;
-                options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                options.SerializerSettings.ContractResolver = jsonOption.NamingPolicy switch
+                {
+                    JsonNamingPolicy.CamelCase => new CamelCasePropertyNamesContractResolver(),
+                    _ => new DefaultContractResolver(),
+                };
+
+                JsonHelper.JsonOption = options.SerializerSettings;
             });
 
         services.AddEndpointsApiExplorer();
