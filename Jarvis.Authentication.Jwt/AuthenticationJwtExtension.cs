@@ -10,19 +10,19 @@ namespace Jarvis.Authentication.Jwt;
 
 public static class AuthenticationJwtExtension
 {
-    public static AuthenticationBuilder AddCoreJwtBearer(this AuthenticationBuilder builder, IConfiguration configuration, Action<JwtBearerOptions>? configureOptions = null) => builder.AddCoreJwtBearer(configuration, JwtBearerDefaults.AuthenticationScheme, "JWT Bearer", configureOptions);
+    public static AuthenticationBuilder AddCoreJwtBearer(this AuthenticationBuilder builder, IConfiguration configuration, Action<JwtBearerOptions>? configureOptions = null) => builder.AddCoreJwtBearer(configuration, JwtBearerDefaults.AuthenticationScheme, JwtBearerDefaults.AuthenticationScheme, configureOptions);
 
-    public static AuthenticationBuilder AddCoreJwtBearer(this AuthenticationBuilder builder, IConfiguration configuration, string authenticationScheme, Action<JwtBearerOptions>? configureOptions = null) => builder.AddCoreJwtBearer(configuration, authenticationScheme, "JWT Bearer", configureOptions);
+    public static AuthenticationBuilder AddCoreJwtBearer(this AuthenticationBuilder builder, IConfiguration configuration, string authenticationScheme, Action<JwtBearerOptions>? configureOptions = null) => builder.AddCoreJwtBearer(configuration, authenticationScheme, authenticationScheme, configureOptions);
 
     public static AuthenticationBuilder AddCoreJwtBearer(this AuthenticationBuilder builder, IConfiguration configuration, string authenticationScheme, string displayName, Action<JwtBearerOptions>? configureOptions = null)
     {
         if (configureOptions != null)
-            return builder.AddJwtBearer(authenticationScheme, displayName, configureOptions);
+            return builder.AddJwtBearer(authenticationScheme, displayName ?? authenticationScheme, configureOptions);
 
         var authOption = configuration.GetSection($"Authentication:Jwt:{authenticationScheme}").Get<AuthenticationJwtOption>();
 
         // Default validator: https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/wiki/ValidatingTokens
-        return builder.AddJwtBearer(authenticationScheme, displayName, options =>
+        return builder.AddJwtBearer(authenticationScheme, displayName ?? authenticationScheme, options =>
         {
             options.RequireHttpsMetadata = false;
             options.SaveToken = true;
