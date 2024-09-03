@@ -39,6 +39,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Authentication.Jwt",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Authentication.ApiKey", "Jarvis.Authentication.ApiKey\Jarvis.Authentication.ApiKey.csproj", "{A1743070-548E-40B4-907D-B2D4F6D74383}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Emailing", "Jarvis.Emailing\Jarvis.Emailing.csproj", "{8E2E970E-C8E6-45EC-A418-37EE122A0667}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Emailing.Mailkit", "Jarvis.Emailing.Mailkit\Jarvis.Emailing.Mailkit.csproj", "{CA8C4D88-ADC8-4888-884C-BED7D27FCCE7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.BlobStoring", "Jarvis.BlobStoring\Jarvis.BlobStoring.csproj", "{E5CA3F0E-8524-4276-921F-0AD10A464350}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.BlobStoring.FileSystem", "Jarvis.BlobStoring.FileSystem\Jarvis.BlobStoring.FileSystem.csproj", "{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.BlobStoring.MinIO", "Jarvis.BlobStoring.MinIO\Jarvis.BlobStoring.MinIO.csproj", "{A79BA0BB-6C7B-4EFA-AB04-CDDA738F0513}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -120,5 +130,25 @@ Global
 		{A1743070-548E-40B4-907D-B2D4F6D74383}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1743070-548E-40B4-907D-B2D4F6D74383}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1743070-548E-40B4-907D-B2D4F6D74383}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E2E970E-C8E6-45EC-A418-37EE122A0667}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E2E970E-C8E6-45EC-A418-37EE122A0667}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E2E970E-C8E6-45EC-A418-37EE122A0667}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E2E970E-C8E6-45EC-A418-37EE122A0667}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA8C4D88-ADC8-4888-884C-BED7D27FCCE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA8C4D88-ADC8-4888-884C-BED7D27FCCE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA8C4D88-ADC8-4888-884C-BED7D27FCCE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA8C4D88-ADC8-4888-884C-BED7D27FCCE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5CA3F0E-8524-4276-921F-0AD10A464350}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5CA3F0E-8524-4276-921F-0AD10A464350}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5CA3F0E-8524-4276-921F-0AD10A464350}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5CA3F0E-8524-4276-921F-0AD10A464350}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A79BA0BB-6C7B-4EFA-AB04-CDDA738F0513}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A79BA0BB-6C7B-4EFA-AB04-CDDA738F0513}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A79BA0BB-6C7B-4EFA-AB04-CDDA738F0513}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A79BA0BB-6C7B-4EFA-AB04-CDDA738F0513}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
