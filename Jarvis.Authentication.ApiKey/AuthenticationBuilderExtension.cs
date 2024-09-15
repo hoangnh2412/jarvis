@@ -1,6 +1,7 @@
 using AspNetCore.Authentication.ApiKey;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jarvis.Authentication.ApiKey;
 
@@ -15,11 +16,13 @@ public static class AuthenticationBuilderExtension
         if (configureOptions != null)
             return builder.AddApiKeyInHeader<T>(authenticationScheme, displayName ?? authenticationScheme, configureOptions);
 
-        var authOption = configuration.GetSection($"Authentication:ApiKey:{authenticationScheme}").Get<AuthenticationApiKeyOption>();
+        var section = configuration.GetSection($"Authentication:ApiKey:{authenticationScheme}");
+        builder.Services.Configure<AuthenticationApiKeyOption>(authenticationScheme, section);
+        var authOption = section.Get<AuthenticationApiKeyOption>();
 
         return builder.AddApiKeyInHeader<T>(authenticationScheme, displayName ?? authenticationScheme, options =>
         {
-            options.Realm = authOption?.Realm;
+            options.Realm = authenticationScheme;
             options.KeyName = authOption?.KeyName;
         });
     }

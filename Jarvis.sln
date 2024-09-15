@@ -49,6 +49,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.BlobStoring.FileSyst
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.BlobStoring.MinIO", "Jarvis.BlobStoring.MinIO\Jarvis.BlobStoring.MinIO.csproj", "{A79BA0BB-6C7B-4EFA-AB04-CDDA738F0513}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Authentication.Cognito", "Jarvis.Authentication.Cognito\Jarvis.Authentication.Cognito.csproj", "{8914A4B5-FF61-4799-9B86-8252DD0794A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -150,5 +152,9 @@ Global
 		{A79BA0BB-6C7B-4EFA-AB04-CDDA738F0513}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A79BA0BB-6C7B-4EFA-AB04-CDDA738F0513}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A79BA0BB-6C7B-4EFA-AB04-CDDA738F0513}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8914A4B5-FF61-4799-9B86-8252DD0794A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8914A4B5-FF61-4799-9B86-8252DD0794A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8914A4B5-FF61-4799-9B86-8252DD0794A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8914A4B5-FF61-4799-9B86-8252DD0794A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

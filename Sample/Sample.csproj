@@ -24,6 +24,7 @@
     <ProjectReference Include="..\Jarvis.Emailing.Mailkit\Jarvis.Emailing.Mailkit.csproj" />
     <ProjectReference Include="..\Jarvis.BlobStoring.FileSystem\Jarvis.BlobStoring.FileSystem.csproj" />
     <ProjectReference Include="..\Jarvis.BlobStoring.MinIO\Jarvis.BlobStoring.MinIO.csproj" />
+    <ProjectReference Include="..\Jarvis.Authentication.Cognito\Jarvis.Authentication.Cognito.csproj" />
   </ItemGroup>
 
 </Project>
