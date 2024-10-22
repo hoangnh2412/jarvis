@@ -139,6 +139,8 @@ public class OTELBuilder
                 {
                     otp.Endpoint = new Uri(_option.Tracing.Endpoint);
                     otp.Headers = _option.Tracing.Headers;
+                    otp.ExportProcessorType = _option.Tracing.ExportProcessorType;
+                    otp.Protocol = _option.Tracing.Protocol;
                 });
             }
         });
@@ -188,6 +190,8 @@ public class OTELBuilder
                 {
                     otp.Endpoint = new Uri(_option.Metric.Endpoint);
                     otp.Headers = _option.Metric.Headers;
+                    otp.ExportProcessorType = _option.Metric.ExportProcessorType;
+                    otp.Protocol = _option.Metric.Protocol;
                 });
             }
         });
@@ -209,7 +213,7 @@ public class OTELBuilder
             {
                 configure.IncludeFormattedMessage = true;
                 configure.IncludeScopes = true;
-                configure.ParseStateValues = true;
+                configure.ParseStateValues = false;
 
                 logAction?.Invoke(configure);
 
@@ -228,6 +232,8 @@ public class OTELBuilder
                         {
                             otp.Endpoint = new Uri(_option.Logging.Endpoint);
                             otp.Headers = _option.Logging.Headers;
+                            otp.ExportProcessorType = _option.Logging.ExportProcessorType;
+                            otp.Protocol = _option.Logging.Protocol;
                         });
                     }
                 }

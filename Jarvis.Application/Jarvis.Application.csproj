@@ -5,6 +5,10 @@
   </ItemGroup>
 
   <PropertyGroup>
+    <PackageId>Jarvis.Application</PackageId>
+    <Version>1.2.0</Version>
+    <Authors>Hoang Nguyen</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
