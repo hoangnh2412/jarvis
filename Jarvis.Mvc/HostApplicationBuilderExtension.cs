@@ -1,37 +1,35 @@
 ﻿using System.Text.Json.Serialization;
 using Jarvis.Common.Enums;
 using Jarvis.Domain.Shared.Enums;
+using Jarvis.Domain.Shared.ExceptionHandling;
 using Jarvis.Domain.Shared.RequestResponse;
 using Jarvis.Domain.Shared.Utility;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace Jarvis.Mvc;
 
-public static class ServiceCollectionExtension
+public static class HostApplicationBuilderExtension
 {
     public static IMvcBuilder AddBadRequestHandler(this IMvcBuilder services)
     {
-#nullable disable
         services.ConfigureApiBehaviorOptions(options =>
             options.InvalidModelStateResponseFactory = actionContext =>
             {
                 return new BadRequestObjectResult(new BaseResponse(
-                    requestId: actionContext.HttpContext.TraceIdentifier,
-                    httpStatusCode: System.Net.HttpStatusCode.BadRequest,
-                    code: BaseErrorCode.Default,
+                    code: BaseErrorCode.Error,
                     error: new BaseResponseError
                     {
-                        Details = actionContext.ModelState
-                            .Where(x => x.Value != null)
-                            .Select(x => new KeyValuePair<string, IList<string>>(
-                                x.Key,
-                                x.Value?.Errors.Select(y => y.ErrorMessage).ToList())
-                            )
-                            .ToDictionary(x => x.Key, x => x.Value)
+                        Details = actionContext.ModelState.Select(x => new BaseResponseErrorDetail
+                        {
+                            Field = x.Key,
+                            Codes = x.Value?.Errors.Select(y => y.ErrorMessage).ToList(),
+                            SystemMessages = x.Value?.Errors.Select(y => $"{y.ErrorMessage} - {ErrorCodeHelper.GetMessage(y.ErrorMessage)}").ToList(),
+                        }).ToList()
                     }
                 ));
             }
@@ -40,12 +38,12 @@ public static class ServiceCollectionExtension
         return services;
     }
 
-    public static IServiceCollection AddCoreWebApi(this IServiceCollection services, IConfiguration configuration)
+    public static IHostApplicationBuilder AddCoreWebApi(this IHostApplicationBuilder builder)
     {
         var jsonOption = new JsonOption();
-        configuration.GetSection("Json").Bind(jsonOption);
+        builder.Configuration.GetSection("Json").Bind(jsonOption);
 
-        services
+        builder.Services
             .AddControllers()
             .AddBadRequestHandler()
             .AddJsonOptions(options =>
@@ -73,10 +71,9 @@ public static class ServiceCollectionExtension
                 JsonHelper.JsonOption = options.SerializerSettings;
             });
 
-        services.AddEndpointsApiExplorer();
-        services.AddHttpContextAccessor();
-        services.AddHealthChecks();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddHttpContextAccessor();
 
-        return services;
+        return builder;
     }
 }

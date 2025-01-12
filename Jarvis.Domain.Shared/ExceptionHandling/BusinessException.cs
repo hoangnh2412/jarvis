@@ -20,6 +20,8 @@ public class BusinessException : Exception
     /// </summary>
     public string? SystemMessage { get; set; }
 
+    public object? Content { get; set; }
+
     /// <summary>
     /// The http status code response is 422
     /// </summary>
@@ -27,12 +29,24 @@ public class BusinessException : Exception
 
     public BusinessException(
         string code,
-        string? message = null,
         string? systemMessage = null,
         Exception? innerException = null)
-        : base(message, innerException)
+        : base(ErrorCodeHelper.GetMessage(code), innerException)
     {
         HResult = int.Parse(code);
+        Code = code;
+        SystemMessage = systemMessage;
+    }
+
+    public BusinessException(
+        string code,
+        object content,
+        string? systemMessage = null,
+        Exception? innerException = null)
+        : base(ErrorCodeHelper.GetMessage(code), innerException)
+    {
+        HResult = int.Parse(code);
+        Content = content;
         Code = code;
         SystemMessage = systemMessage;
     }

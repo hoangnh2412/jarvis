@@ -5,7 +5,7 @@ namespace Jarvis.Domain.DataStorages;
 /// </summary>
 public interface ITenantIdResolver
 {
-    Guid Resolve();
-    
-    Task<Guid> ResolveAsync();
+    string? GetTenantId();
+
+    Task<string?> GetTenantIdAsync(CancellationToken cancellationToken = default);
 }

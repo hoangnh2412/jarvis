@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Jarvis.Authentication.Cognito;
 
-public class CognitoClient : IAuthClient
+public class CognitoClient : IAuthenticationService
 {
     public AmazonCognitoIdentityProviderClient IdentityProviderClient;
     private readonly AwsOption _awsOption;

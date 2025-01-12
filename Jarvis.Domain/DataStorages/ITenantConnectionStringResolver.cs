@@ -2,7 +2,7 @@ namespace Jarvis.Domain.DataStorages;
 
 public interface ITenantConnectionStringResolver
 {
-    string Resolve(string? name = null);
+    string GetConnectionString(string? name = null);
 
-    Task<string> ResolveAsync(string? name = null);
+    Task<string> GetConnectionStringAsync(string? name = null, CancellationToken cancellationToken = default);
 }

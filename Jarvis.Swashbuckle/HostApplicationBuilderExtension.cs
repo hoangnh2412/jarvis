@@ -3,27 +3,23 @@ using System.Xml;
 using Jarvis.Swashbuckle.Filters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 
 namespace Jarvis.Swashbuckle;
 
 public static class ServiceCollectionExtension
 {
-    public static IServiceCollection AddCoreSwagger(this IServiceCollection services, IConfiguration configuration)
+    public static IHostApplicationBuilder AddCoreSwagger(this IHostApplicationBuilder builder)
     {
-        var isEnableConfig = configuration.GetSection("Swagger:Enable").Value;
-        if (string.IsNullOrEmpty(isEnableConfig))
-            return services;
+        var swaggerSection = builder.Configuration.GetSection("Swagger");
+        var swaggerOption = swaggerSection.Get<SwaggerOption>();
+        if (!swaggerOption!.Enable)
+            return builder;
 
-        if (!bool.Parse(isEnableConfig))
-            return services;
+        builder.Services.Configure<SwaggerOption>(swaggerSection);
 
-        var swaggerSection = configuration.GetSection("Swagger");
-        SwaggerOption swaggerOption = new SwaggerOption();
-        swaggerSection.Bind(swaggerOption);
-        services.Configure<SwaggerOption>(swaggerSection);
-
-        services.AddSwaggerGen(options =>
+        builder.Services.AddSwaggerGen(options =>
         {
             if (swaggerOption.Versions != null && swaggerOption.Versions.Length > 0)
             {
@@ -79,6 +75,6 @@ public static class ServiceCollectionExtension
             }
         });
 
-        return services;
+        return builder;
     }
 }

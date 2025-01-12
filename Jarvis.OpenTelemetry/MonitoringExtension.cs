@@ -7,7 +7,7 @@ namespace Jarvis.OpenTelemetry;
 
 public static class MonitoringExtension
 {
-    public static OTELBuilder AddCoreMonitor(
+    public static OTELBuilder AddTelemetry(
         this IServiceCollection services,
         IConfiguration configuration,
         Action<IServiceCollection>? configService = null)

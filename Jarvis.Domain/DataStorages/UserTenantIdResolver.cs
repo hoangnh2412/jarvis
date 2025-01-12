@@ -5,25 +5,26 @@ using Microsoft.AspNetCore.Http;
 namespace Jarvis.Domain.DataStorages;
 
 public class UserTenantIdResolver(
-    IHttpContextAccessor httpContextAccessor)
+    IHttpContextAccessor httpContextAccessor,
+    string claimName = ClaimTypes.GroupSid)
     : ITenantIdResolver
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-    public Guid Resolve()
+    public string? GetTenantId()
     {
         if (_httpContextAccessor.HttpContext == null)
-            return Guid.Empty;
+            return null;
 
-        var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, ClaimTypes.GroupSid);
+        var claim = ClaimsPrincipalExtension.GetClaim(_httpContextAccessor.HttpContext.User.Claims, claimName);
         if (claim == null || claim.Value == null)
-            return Guid.Empty;
+            return null;
 
-        return Guid.Parse(claim.Value);
+        return claim.Value;
     }
 
-    public Task<Guid> ResolveAsync()
+    public Task<string?> GetTenantIdAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(Resolve());
+        return Task.FromResult(GetTenantId());
     }
 }

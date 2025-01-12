@@ -1,16 +1,13 @@
-using System.Net;
 using System.Reflection;
 
 namespace Jarvis.Domain.Shared.RequestResponse;
 
-#nullable disable
-
 public class BaseResponse
 {
     /// <summary>
-    /// Unique request identifier
+    /// Unique trace identifier
     /// </summary>
-    public string RequestId { get; set; }
+    public string? TraceId { get; set; }
 
     /// <summary>
     /// Timestamp of request. Timezone UTC
@@ -18,37 +15,37 @@ public class BaseResponse
     public DateTime Timestamp { get; set; }
 
     /// <summary>
-    /// Error code. Structure: {NAME}:{XXX}{YY}000
-    /// - NAME: Name of project. Ex: Sample.WebApi
-    /// - XXX: HttpStatusCode of request. Ex: 200, 202, 400, 401, 403, 404, 409, 422, 500
+    /// Error code. Structure: {NAME}:{YY}00000
+    /// - NAME: Name of project. Ex: Sample.User.WebApi
     /// - YY: Identity of resource. Ex: User = 01, ShippingAddress = 02
     /// - 000: Error code, default is 999
+    /// Document reference: https://dev.azure.com/belleai/Common%20Library/_wiki/wikis/Common-Library.wiki/3098/Coding-Convention?anchor=error-code
     /// </summary>
-    public string Code { get; set; }
+    public string? Code { get; set; }
 
     /// <summary>
     /// List of error codees by field in case HttpStatusCode = 400
     /// Sample: { "fieldName": [ "XXXYY001", "XXXYY002" ] }
     /// </summary>
-    public BaseResponseError Error { get; set; }
+    public BaseResponseError? Error { get; set; }
 
     public BaseResponse() { }
 
-    public BaseResponse(string requestId, HttpStatusCode httpStatusCode, string code, BaseResponseError error = null)
+    public BaseResponse(string code, BaseResponseError? error = null)
     {
-        RequestId = requestId;
+        TraceId = System.Diagnostics.Activity.Current!.TraceId.ToString();
         Timestamp = DateTime.UtcNow;
-        Code = GenerateCode(httpStatusCode, code);
+        Code = GenerateCode(code);
         Error = error;
     }
 
-    public static string GenerateCode(HttpStatusCode httpStatusCode, string code)
+    public static string GenerateCode(string code)
     {
-        var assemblyName = Assembly.GetEntryAssembly().GetName().Name;
+        var assemblyName = Assembly.GetEntryAssembly()!.GetName().Name!;
         if (code.StartsWith(assemblyName))
             return code;
 
-        return $"{assemblyName}:{httpStatusCode.GetHashCode()}{code}";
+        return $"{assemblyName}:{code}";
     }
 }
 
@@ -58,34 +55,28 @@ public class BaseResponse<T> : BaseResponse
     /// Response data
     /// </summary>
     /// <value></value>
-    public T Data { get; set; }
+    public T? Data { get; set; }
 
     public BaseResponse() { }
 
     public BaseResponse(
-        string requestId,
-        HttpStatusCode httpStatusCode,
         string code,
-        BaseResponseError error = null)
-        : base(requestId, httpStatusCode, code, error)
+        BaseResponseError? error = null)
+        : base(code, error)
     {
-        RequestId = requestId;
         Timestamp = DateTime.UtcNow;
-        Code = GenerateCode(httpStatusCode, code);
+        Code = GenerateCode(code);
         Error = error;
     }
 
     public BaseResponse(
-        string requestId,
-        HttpStatusCode httpStatusCode,
         string code,
         T data,
-        BaseResponseError error = null)
-        : base(requestId, httpStatusCode, code, error)
+        BaseResponseError? error = null)
+        : base(code, error)
     {
-        RequestId = requestId;
         Timestamp = DateTime.UtcNow;
-        Code = GenerateCode(httpStatusCode, code);
+        Code = GenerateCode(code);
         Error = error;
         Data = data;
     }

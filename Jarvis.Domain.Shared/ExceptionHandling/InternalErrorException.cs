@@ -15,10 +15,9 @@ public class InternalErrorException : BusinessException
 
     public InternalErrorException(
         string code,
-        string? message = null,
         string? systemMessage = null,
         Exception? innerException = null)
-        : base(code, message, systemMessage, innerException)
+        : base(code, ErrorCodeHelper.GetMessage(code), systemMessage, innerException)
     {
         HResult = int.Parse(code);
         Code = code;

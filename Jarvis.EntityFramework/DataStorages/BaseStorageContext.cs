@@ -6,11 +6,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Jarvis.EntityFramework.DataStorages;
 
-public class BaseStorageContext<TDbContext>(
+public abstract class BaseStorageContext<TDbContext>(
     DbContextOptions<TDbContext> options)
-    : DbContext(options), IStorageContext where TDbContext : BaseStorageContext<TDbContext>
+    : DbContext(options), IStorageContext
+    where TDbContext : DbContext
 {
-    protected Guid? TenantId { get; set; }
+    public Guid? TenantId { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -61,8 +62,8 @@ public class BaseStorageContext<TDbContext>(
         }
     }
 
-    internal void SetTenantId(Guid? tenantId)
+    public virtual void SetTenantId(string tenantId)
     {
-        TenantId = tenantId;
+        TenantId = Guid.TryParse(tenantId, out Guid id) ? id : null;
     }
 }

@@ -6,22 +6,16 @@ namespace Jarvis.Domain.DataStorages;
 /// Use query string of request to tenant identification
 /// </summary>
 public class QueryTenantIdResolver(
-    IHttpContextAccessor httpContextAccessor)
+    IHttpContextAccessor httpContextAccessor,
+    string paramName = "tenantId")
     : ITenantIdResolver
 {
-    public static string QueryTenantId = "tenantId";
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-    public Guid Resolve()
-    {
-        if (!Guid.TryParse(_httpContextAccessor.HttpContext?.Request.Query[QueryTenantId].ToString(), out Guid tenantId))
-            return Guid.Empty;
+    public string? GetTenantId() => _httpContextAccessor.HttpContext?.Request.Query[paramName].ToString() ?? null;
 
-        return tenantId;
-    }
-
-    public Task<Guid> ResolveAsync()
+    public Task<string?> GetTenantIdAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(Resolve());
+        return Task.FromResult(GetTenantId());
     }
 }

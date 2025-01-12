@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Jarvis.Domain\Jarvis.Domain.csproj" />
+    <ProjectReference Include="..\Jarvis.Common\Jarvis.Common.csproj" />
   </ItemGroup>
 
 </Project>

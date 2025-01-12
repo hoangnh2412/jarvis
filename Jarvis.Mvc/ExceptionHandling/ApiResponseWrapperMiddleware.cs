@@ -15,12 +15,12 @@ using Newtonsoft.Json;
 namespace Jarvis.Mvc.ExceptionHandling;
 
 public class ApiResponseWrapperMiddleware(
-    ILogger<ApiResponseWrapperMiddleware> logger,
     IOptions<MvcNewtonsoftJsonOptions> jsonOption,
+    ILogger<ApiResponseWrapperMiddleware> logger,
     RequestDelegate next)
 {
-    private readonly ILogger<ApiResponseWrapperMiddleware> _logger = logger;
     private readonly MvcNewtonsoftJsonOptions _jsonOption = jsonOption.Value;
+    private readonly ILogger<ApiResponseWrapperMiddleware> _logger = logger;
     private readonly RequestDelegate _next = next;
 
     public async Task InvokeAsync(HttpContext context)
@@ -28,179 +28,180 @@ public class ApiResponseWrapperMiddleware(
         var requestBody = await context.Request.GetRequestBodyAsync();
         var originalResponseBodyStream = context.Response.Body;
 
-        using (var stream = new MemoryStream())
+        using var stream = new MemoryStream();
+
+        try
         {
-            try
+            context.Response.Body = stream;
+            await _next(context);
+
+            if (context.Response.HasStarted)
+                return;
+
+            var responseBody = await HttpContextExtension.ReadResponseBodyStreamAsync(stream);
+            context.Response.Body = originalResponseBodyStream;
+            context.Response.ContentType = ContentTypes.Json;
+
+            var responseContent = GenerateResponseContent(context, responseBody);
+            context.Response.ContentLength = Encoding.UTF8.GetByteCount(responseContent);
+            await context.Response.WriteAsync(responseContent);
+        }
+        catch (Exception ex)
+        {
+            if (ex is BusinessException businessException)
             {
-                context.Response.Body = stream;
-                await _next(context);
-
-                if (context.Response.HasStarted)
-                    return;
-
-                var responseBody = await HttpContextExtension.ReadResponseBodyStreamAsync(stream);
-                context.Response.Body = originalResponseBodyStream;
-                context.Response.ContentType = ContentTypes.Json;
-
-                var responseContent = GenerateResponseContent(context, responseBody);
-                context.Response.ContentLength = Encoding.UTF8.GetByteCount(responseContent);
-                await context.Response.WriteAsync(responseContent);
-            }
-            catch (Exception ex)
-            {
-                if (context.Response.HasStarted)
-                    return;
-
-                if (ex is BusinessException businessException)
+                if (businessException.InnerException is null)
                 {
-                    if (businessException.InnerException is null)
-                    {
-                        _logger.LogError(businessException, $"{ExceptionAttributes.Source}.{ExceptionAttributes.Type}: [{ExceptionAttributes.Code}] {ExceptionAttributes.Message} - {ExceptionAttributes.SystemMessage}\n{ExceptionAttributes.StackTrace}",
-                            businessException.Source,
-                            businessException.GetType().Name,
-                            businessException.Code,
-                            businessException.Message,
-                            businessException.SystemMessage,
-                            businessException.StackTrace);
-                    }
-                    else
-                    {
-                        _logger.LogError(businessException, $"{ExceptionAttributes.Source}.{ExceptionAttributes.Type}: [{ExceptionAttributes.Code}] {ExceptionAttributes.Message} - {ExceptionAttributes.SystemMessage}\n{ExceptionAttributes.StackTrace}\nInnerException: {ExceptionAttributes.InnerSource}.{ExceptionAttributes.InnerType}: [{ExceptionAttributes.InnerCode}] {ExceptionAttributes.InnerMessage}\n{ExceptionAttributes.InnerStackTrace}",
-                            businessException.Source,
-                            businessException.GetType().Name,
-                            businessException.Code,
-                            businessException.Message,
-                            businessException.SystemMessage,
-                            businessException.StackTrace,
-                            businessException.InnerException.Source,
-                            businessException.InnerException.GetType().Name,
-                            businessException.InnerException.HResult,
-                            businessException.InnerException.Message,
-                            businessException.InnerException.StackTrace);
-                    }
+                    _logger.LogError(businessException, $"{ExceptionAttributes.Source}.{ExceptionAttributes.Type}: [{ExceptionAttributes.Code}] {ExceptionAttributes.Message} - {ExceptionAttributes.SystemMessage}\n{ExceptionAttributes.StackTrace}",
+                        businessException.Source,
+                        businessException.GetType().Name,
+                        businessException.Code,
+                        businessException.Message,
+                        businessException.SystemMessage,
+                        businessException.StackTrace);
                 }
                 else
                 {
-                    if (ex.InnerException is null)
-                    {
-                        _logger.LogError(ex, $"{ExceptionAttributes.Source}.{ExceptionAttributes.Type}: {ExceptionAttributes.Message}\n{ExceptionAttributes.StackTrace}",
-                            ex.Source,
-                            ex.GetType().Name,
-                            ex.Message,
-                            ex.StackTrace);
-                    }
-                    else
-                    {
-                        _logger.LogError(ex, $"{ExceptionAttributes.Source}.{ExceptionAttributes.Type}: {ExceptionAttributes.Message}\n{ExceptionAttributes.StackTrace}\nnInnerException: {ExceptionAttributes.InnerSource}.{ExceptionAttributes.InnerType}: [{ExceptionAttributes.InnerCode}] {ExceptionAttributes.InnerMessage}\n{ExceptionAttributes.InnerStackTrace}",
-                            ex.Source,
-                            ex.GetType().Name,
-                            ex.Message,
-                            ex.StackTrace,
-                            ex.InnerException.Source,
-                            ex.InnerException.GetType().Name,
-                            ex.InnerException.HResult,
-                            ex.InnerException.Message,
-                            ex.InnerException.StackTrace);
-                    }
+                    _logger.LogError(businessException, $"{ExceptionAttributes.Source}.{ExceptionAttributes.Type}: [{ExceptionAttributes.Code}] {ExceptionAttributes.Message} - {ExceptionAttributes.SystemMessage}\n{ExceptionAttributes.StackTrace}\nInnerException: {ExceptionAttributes.InnerSource}.{ExceptionAttributes.InnerType}: [{ExceptionAttributes.InnerCode}] {ExceptionAttributes.InnerMessage}\n{ExceptionAttributes.InnerStackTrace}",
+                        businessException.Source,
+                        businessException.GetType().Name,
+                        businessException.Code,
+                        businessException.Message,
+                        businessException.SystemMessage,
+                        businessException.StackTrace,
+                        businessException.InnerException.Source,
+                        businessException.InnerException.GetType().Name,
+                        businessException.InnerException.HResult,
+                        businessException.InnerException.Message,
+                        businessException.InnerException.StackTrace);
                 }
-
-                var responseContent = GenerateResponseContent(context, ex);
-                context.Response.StatusCode = responseContent.Item1.GetHashCode();
-                context.Response.ContentLength = Encoding.UTF8.GetByteCount(responseContent.Item2);
-                context.Response.ContentType = ContentTypes.Json;
-                await context.Response.WriteAsync(responseContent.Item2);
-
-                stream.Seek(0, SeekOrigin.Begin);
-                await stream.CopyToAsync(originalResponseBodyStream);
             }
+            else
+            {
+                if (ex.InnerException is null)
+                {
+                    _logger.LogError(ex, $"{ExceptionAttributes.Source}.{ExceptionAttributes.Type}: {ExceptionAttributes.Message}\n{ExceptionAttributes.StackTrace}",
+                        ex.Source,
+                        ex.GetType().Name,
+                        ex.Message,
+                        ex.StackTrace);
+                }
+                else
+                {
+                    _logger.LogError(ex, $"{ExceptionAttributes.Source}.{ExceptionAttributes.Type}: {ExceptionAttributes.Message}\n{ExceptionAttributes.StackTrace}\nnInnerException: {ExceptionAttributes.InnerSource}.{ExceptionAttributes.InnerType}: [{ExceptionAttributes.InnerCode}] {ExceptionAttributes.InnerMessage}\n{ExceptionAttributes.InnerStackTrace}",
+                        ex.Source,
+                        ex.GetType().Name,
+                        ex.Message,
+                        ex.StackTrace,
+                        ex.InnerException.Source,
+                        ex.InnerException.GetType().Name,
+                        ex.InnerException.HResult,
+                        ex.InnerException.Message,
+                        ex.InnerException.StackTrace);
+                }
+            }
+
+            if (context.Response.HasStarted)
+                return;
+
+            var responseContent = GenerateResponseContent(context, ex);
+            var responseBody = JsonConvert.SerializeObject(responseContent.Item1, _jsonOption.SerializerSettings);
+            context.Response.StatusCode = responseContent.Item2.GetHashCode();
+            context.Response.ContentLength = Encoding.UTF8.GetByteCount(responseBody);
+            context.Response.ContentType = ContentTypes.Json;
+            await context.Response.WriteAsync(responseBody);
+
+            stream.Seek(0, SeekOrigin.Begin);
+            await stream.CopyToAsync(originalResponseBodyStream);
         }
     }
 
-    private (HttpStatusCode, string) GenerateResponseContent(HttpContext context, Exception ex)
+    private static (BaseResponse, HttpStatusCode) GenerateResponseContent(HttpContext context, Exception ex)
     {
-        var code = BaseErrorCode.Default;
-        var statusCode = HttpStatusCode.InternalServerError;
+        var (response, httpStatusCode) = (new BaseResponse(BaseErrorCode.Error, new BaseResponseError(ex.Message, null)), HttpStatusCode.InternalServerError);
 
         if (ex is BusinessException)
-            (statusCode, code) = ParseStatusCode<BusinessException>(ex);
+            (response, httpStatusCode) = ParseStatusCode<BusinessException>(ex);
 
         if (ex is ConflictException)
-            (statusCode, code) = ParseStatusCode<ConflictException>(ex);
+            (response, httpStatusCode) = ParseStatusCode<ConflictException>(ex);
 
         if (ex is NotFoundException)
-            (statusCode, code) = ParseStatusCode<NotFoundException>(ex);
+            (response, httpStatusCode) = ParseStatusCode<NotFoundException>(ex);
 
-        return (statusCode, JsonConvert.SerializeObject(new BaseResponse(context.TraceIdentifier, statusCode, code), _jsonOption.SerializerSettings));
+        if (ex is BadRequestException)
+            (response, httpStatusCode) = ParseStatusCode<BadRequestException>(ex);
+
+        if (ex is ForbiddenException)
+            (response, httpStatusCode) = ParseStatusCode<ForbiddenException>(ex);
+
+        if (ex is UnauthorizedException)
+            (response, httpStatusCode) = ParseStatusCode<UnauthorizedException>(ex);
+
+        // if (ex is RateLimitedException rlEx)
+        // {
+        //     context.Response.Headers[HeaderConstants.RateLimitLimit] = rlEx.Limit.ToString();
+        //     context.Response.Headers[HeaderConstants.RateLimitReset] = rlEx.RetryAfter.ToString();
+        //     context.Response.Headers[HeaderConstants.RateLimitRemaining] = "0";
+        //     (response, httpStatusCode) = ParseStatusCode<RateLimitedException>(rlEx);
+        // }
+
+        return (response, httpStatusCode);
     }
 
-    private static (HttpStatusCode, string) ParseStatusCode<T>(Exception ex) where T : BusinessException
+    private static (BaseResponse, HttpStatusCode) ParseStatusCode<T>(Exception ex) where T : BusinessException
     {
-        if (ex is not T)
-            return (HttpStatusCode.InternalServerError, BaseErrorCode.Default);
-
         if (ex is T businessException)
-            return (businessException.HttpStatusCode, businessException.Code);
+        {
+            if (businessException.Content == null)
+                return (new BaseResponse(businessException.Code, new BaseResponseError(businessException.Message, businessException.SystemMessage)), businessException.HttpStatusCode);
 
-        return (HttpStatusCode.InternalServerError, BaseErrorCode.Default);
+            return (new BaseResponse<object>(businessException.Code, businessException.Content, new BaseResponseError(businessException.Message, businessException.SystemMessage)), businessException.HttpStatusCode);
+        }
+
+        return (new BaseResponse(BaseErrorCode.Error, new BaseResponseError(ex.Message, null)), HttpStatusCode.InternalServerError);
     }
 
     private string GenerateResponseContent(HttpContext context, string content)
     {
         if (context.Response.StatusCode == HttpStatusCode.OK.GetHashCode())
-            return ParseSuccessContent(context, content, BaseErrorCode.Default);
+            return ParseSuccessContent(context, content);
 
         if (context.Response.StatusCode == HttpStatusCode.BadRequest.GetHashCode())
             return ParseBadRequest(context, content);
 
-        if (context.Response.StatusCode == HttpStatusCode.Unauthorized.GetHashCode())
-            return ParseErrorContent(context, content, HttpStatusCode.Unauthorized, BaseErrorCode.Default);
-
-        if (context.Response.StatusCode == HttpStatusCode.Forbidden.GetHashCode())
-            return ParseErrorContent(context, content, HttpStatusCode.Forbidden, BaseErrorCode.Default);
-
-        if (context.Response.StatusCode == HttpStatusCode.NotFound.GetHashCode())
-            return ParseErrorContent(context, content, HttpStatusCode.NotFound, BaseErrorCode.Default);
+        var statusCodes = new int[] { HttpStatusCode.Unauthorized.GetHashCode(), HttpStatusCode.Forbidden.GetHashCode(), HttpStatusCode.NotFound.GetHashCode() };
+        if (statusCodes.Contains(context.Response.StatusCode))
+            return ParseErrorContent(context, content, BaseErrorCode.Error);
 
         return content;
     }
 
-    private string ParseSuccessContent(HttpContext context, string content, string defaultCode)
+    private string ParseSuccessContent(HttpContext context, string content)
     {
-        var response = new BaseResponse<object>(context.TraceIdentifier, HttpStatusCode.OK, defaultCode);
+        var response = new BaseResponse<object>(BaseErrorCode.OK);
 
         if (!string.IsNullOrEmpty(content))
-        {
-            try
-            {
-                response.Data = JsonConvert.DeserializeObject<object>(content, _jsonOption.SerializerSettings) ?? string.Empty;
-            }
-            catch (Exception)
-            {
-                response.Data = content;
-            }
-        }
+            response.Data = JsonConvert.DeserializeObject<object>(content, _jsonOption.SerializerSettings);
 
         return JsonConvert.SerializeObject(response, _jsonOption.SerializerSettings);
     }
 
-    private string ParseErrorContent(HttpContext context, string content, HttpStatusCode httpStatusCode, string defaultCode)
+    private string ParseErrorContent(HttpContext context, string content, string defaultCode)
     {
         if (string.IsNullOrEmpty(content))
             content = defaultCode;
 
-        return JsonConvert.SerializeObject(new BaseResponse(context.TraceIdentifier, httpStatusCode, content), _jsonOption.SerializerSettings);
+        return JsonConvert.SerializeObject(new BaseResponse(content), _jsonOption.SerializerSettings);
     }
 
     private string ParseBadRequest(HttpContext context, string content)
     {
-        var response = new BaseResponse(context.TraceIdentifier, HttpStatusCode.BadRequest, BaseErrorCode.Default);
+        var response = new BaseResponse(BaseErrorCode.Error);
 
         try
         {
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
             response = JsonConvert.DeserializeObject<BaseResponse>(content, _jsonOption.SerializerSettings);
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-
             if (response == null)
                 _logger.LogError("Cannot deserialize: {content}", content);
         }

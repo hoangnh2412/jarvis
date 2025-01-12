@@ -1,4 +1,3 @@
-using Jarvis.Domain.DataStorages;
 using Jarvis.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,37 +11,35 @@ public abstract class BaseUnitOfWork<T>(
 {
     private readonly IServiceProvider _services = services;
     private readonly IDbContextFactory<T> _factory = factory;
+    protected DbContext? StorageContext { get; set; }
 
-    public IStorageContext GetDbContext() => _factory.CreateDbContext() ?? throw new NullReferenceException($"Can't create DbContext {typeof(T).Name}");
-    private DbContext GetDbContextInternal() => (DbContext)GetDbContext();
-
-    public IStorageContext GetDbContext<TResolver>(string name) where TResolver : ITenantConnectionStringResolver
+    public IStorageContext GetDbContext()
     {
-        var resolver = _services.GetRequiredKeyedService<TResolver>(typeof(TResolver).Name);
+        if (StorageContext == null)
+            StorageContext = Task.Run(() => _factory.CreateDbContextAsync()).GetAwaiter().GetResult();
 
-        var connectionString = resolver.Resolve(name);
-
-        GetDbContextInternal().Database.SetConnectionString(connectionString);
-        return GetDbContext();
+        return (IStorageContext)StorageContext;
     }
 
-    public string GetConnectionString()
+    public async Task<IStorageContext> GetDbContextAsync()
     {
-        return GetDbContextInternal().Database.GetDbConnection().ConnectionString;
+        if (StorageContext == null)
+            StorageContext = await _factory.CreateDbContextAsync();
+
+        return (IStorageContext)StorageContext;
     }
 
     public TRepository GetRepository<TRepository>() where TRepository : IRepository
     {
-        var repo = (TRepository)_services.GetRequiredService(typeof(TRepository));
-        if (repo == null)
-            throw new NullReferenceException($"Service name {typeof(TRepository).Name} can't resolve");
-
+        var repo = (TRepository)_services.GetRequiredService(typeof(TRepository)) ?? throw new NullReferenceException($"Service name {typeof(TRepository).Name} can't resolve");
         repo.SetStorageContext(GetDbContext());
         return repo;
     }
 
     public async Task<int> CommitAsync()
     {
-        return await GetDbContextInternal().SaveChangesAsync();
+        if (StorageContext == null) throw new NullReferenceException(nameof(StorageContext));
+
+        return await StorageContext.SaveChangesAsync();
     }
 }

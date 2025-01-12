@@ -1,14 +1,10 @@
-using Jarvis.Domain.DataStorages;
-
 namespace Jarvis.Domain.Repositories;
 
 public interface IUnitOfWork
 {
     IStorageContext GetDbContext();
 
-    IStorageContext GetDbContext<TResolver>(string name) where TResolver : ITenantConnectionStringResolver;
-
-    string GetConnectionString();
+    Task<IStorageContext> GetDbContextAsync();
 
     TRepository GetRepository<TRepository>() where TRepository : IRepository;
 

@@ -2,11 +2,13 @@
 
 namespace Jarvis.Domain.Shared.ExceptionHandling;
 
-public class ConcurrentUpdateException(
-    string code = BaseErrorCode.ConcurrentUpdateOccurred,
-    string? message = null,
-    string? systemMessage = null,
-    Exception? innerException = null)
-    : ConflictException(code, message, systemMessage, innerException)
+public class ConcurrentUpdateException : ConflictException
 {
+    public ConcurrentUpdateException(
+        string code = BaseErrorCode.ConcurrentUpdateOccurred,
+        string? systemMessage = null,
+        Exception? innerException = null)
+        : base(code, systemMessage, innerException)
+    {
+    }
 }

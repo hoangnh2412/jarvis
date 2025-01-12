@@ -5,4 +5,5 @@ namespace Jarvis.Domain.Repositories;
 /// </summary>
 public interface IStorageContext
 {
+    void SetTenantId(string tenantId);
 }

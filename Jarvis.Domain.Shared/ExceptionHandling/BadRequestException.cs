@@ -3,20 +3,19 @@ using System.Net;
 namespace Jarvis.Domain.Shared.ExceptionHandling;
 
 /// <summary>
-/// The class representing exceptions conflict. <br />
-/// The request will return HttpStatusCode = 409 (Conflict) <br />
+/// The class representing bad request. <br />
+/// The request will return HttpStatusCode = 400 (BadRequest) <br />
 /// Example: <br />
-/// - Action create but the resource is duplicated <br />
-/// - Action update but the new resource is duplicated
+/// - Invalid input <br />
 /// </summary>
-public class ConflictException : BusinessException
+public class BadRequestException : BusinessException
 {
     /// <summary>
-    /// The http status code response is 409
+    /// The http status code response is 400
     /// </summary>
-    public override HttpStatusCode HttpStatusCode { get; } = HttpStatusCode.Conflict;
+    public override HttpStatusCode HttpStatusCode { get; } = HttpStatusCode.BadRequest;
 
-    public ConflictException(
+    public BadRequestException(
         string code,
         string? systemMessage = null,
         Exception? innerException = null)
