@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageId>Jarvis.Application.Contracts</PackageId>
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
     <Authors>Hoang Nguyen</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <TargetFramework>net8.0</TargetFramework>
