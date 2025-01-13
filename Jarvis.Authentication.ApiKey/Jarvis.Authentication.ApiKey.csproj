@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>Jarvis.Authentication.ApiKey</PackageId>
+    <PackageId>Jarvis.Authentications.ApiKey</PackageId>
     <Version>1.0.1</Version>
     <Authors>Hoang Nguyen</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

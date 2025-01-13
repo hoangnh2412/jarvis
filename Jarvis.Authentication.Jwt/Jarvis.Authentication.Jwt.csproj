@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>Jarvis.Authentication.Jwt</PackageId>
+    <PackageId>Jarvis.Authentications.Jwt</PackageId>
     <Version>1.0.1</Version>
     <Authors>Hoang Nguyen</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

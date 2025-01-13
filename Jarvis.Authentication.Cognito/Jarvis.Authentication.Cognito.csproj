@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>Jarvis.Authentication.Cognito</PackageId>
+    <PackageId>Jarvis.Authentications.Cognito</PackageId>
     <Version>1.0.1</Version>
     <Authors>Hoang Nguyen</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
