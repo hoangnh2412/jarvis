@@ -38,7 +38,7 @@ public static class HostApplicationBuilderExtension
         return services;
     }
 
-    public static IHostApplicationBuilder AddCoreWebApi(this IHostApplicationBuilder builder)
+    public static IHostApplicationBuilder AddCoreJson(this IHostApplicationBuilder builder)
     {
         var jsonOption = new JsonOption();
         builder.Configuration.GetSection("Json").Bind(jsonOption);
@@ -71,6 +71,11 @@ public static class HostApplicationBuilderExtension
                 JsonHelper.JsonOption = options.SerializerSettings;
             });
 
+        return builder;
+    }
+
+    public static IHostApplicationBuilder AddCoreWebApi(this IHostApplicationBuilder builder)
+    {
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddHttpContextAccessor();
 

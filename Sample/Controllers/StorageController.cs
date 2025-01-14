@@ -7,7 +7,7 @@ using Sample.Persistence;
 
 namespace Sample.Controllers;
 
-[Route("api/storage")]
+[Route("api/v1/storage")]
 [ApiController]
 public class StorageController(
     ISampleUnitOfWork uow
