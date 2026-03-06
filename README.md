@@ -1,52 +1,20 @@
-Jarvis is lightweight admin framework
+# Melasma AI Demo Guide
 
-Version 2.1.0
+1. Go to https://demo.belle.ai/index and select an AI module.
+2. Upload a corresponding image. You will have the option to add multiple images if
+    you wish (look for the plus sign that will appear after the first image is uploaded).
 
-TODO:
-- Cache
-- Command Query pattern
-- DDD AggregateRoot
-- CRUD Generic
-- Email
-- MinIO
-- Authentication, Authorization
-- Multitenancy, multiple DB
-- Auto document
 
-I. Functions
----
-1. Login (multi-tenant, switch tenant)
-2. Logout
-3. Register
-4. Reset password
-5. Profile
-6. Tenant information
-7. Tenant management (CRUD)
-8. Orgniazation management (CRUD, permission data)
-9. Account management (CRUD, role, lock/unlock)
-10. Role management (CRUD, permission function)
-11. Label management (CRUD)
-12. Setting magagement (RU)
+3. The AI will then analyze the image. The model provides a Melasma Area and
+    Severity Index (MASI) score from clear (0) to very severe (48) for the overall image,
+    and for four segments (chin, right malar, left malar, and forehead) based on AI-
+    predicted heatmaps. This score depends on the degree of pigmentation, the degree
+    of homogeneity, and the affected area.
 
-II. Technology
----
-1. Framework: ASP.NET Core 3.1
-2. ORM: Entity Framework Core 3.1, Dapper
-3. Database: MySQL, MSSQL
-4. Auth: JWT
-5. Cache: Memory, Redis
-6. Message: RabbitMQ
-7. Front-end: AngularJS 1.6 component base (multi-theme, override controller/template/service)
-8. API document: Swagger
-9. Default theme: AdminLTE
-10. RestfulAPI
 
-III. Architecture
----
-1. Design pattern
-- UnitOfWork, Repository pattern
-- Observer pattern
-- Abstract factory pattern
-- Singleton pattern
-- Chain of Responsibility
-2. Dependency Injection base on Microsoft
+4. You have the option to view the image with a heat map.
+5. You may revisit previous analyses via the History tab (located on the sidebar) which
+    automatically saves previous results (yet comments on such analyses must be
+    saved manually by clicking the save button).
+
+

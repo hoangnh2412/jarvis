@@ -23,4 +23,14 @@ public class UserAttributes
     /// Ex: read:message, write:files
     /// </summary>
     public const string Scope = "enduser.scope";
+
+    /// <summary>
+    /// Extended field. defining the username of the User
+    /// </summary>
+    public const string UserName = "enduser.username";
+
+    /// <summary>
+    /// Extended field. defining the username of the User
+    /// </summary>
+    public const string TenantId = "enduser.tenant_id";
 }

@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Jarvis.Domain.Repositories;
 using Jarvis.Domain.Shared.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,8 @@ using Sample.Persistence;
 
 namespace Sample.Controllers;
 
-[Route("api/v1/storage")]
+[ApiVersionNeutral]
+[Route("api/v{version:apiVersion}/storage")]
 [ApiController]
 public class StorageController(
     ISampleUnitOfWork uow

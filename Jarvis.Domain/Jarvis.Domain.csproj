@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Jarvis.Domain.Shared\Jarvis.Domain.Shared.csproj" />
+    <ProjectReference Include="..\Jarvis.OpenTelemetry\Jarvis.OpenTelemetry.csproj" />
   </ItemGroup>
 
 </Project>

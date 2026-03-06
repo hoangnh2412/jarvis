@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace Jarvis.Swashbuckle;
 
@@ -73,8 +74,11 @@ public static class ServiceCollectionExtension
 
                 options.OperationFilter<AuthenticationOperationFilter>(string.Join('|', swaggerOption.SecuritySchemes));
             }
+
+            options.OperationFilter<TraceParentHeaderOperationFilter>();
         });
 
+        builder.Services.AddSwaggerExamplesFromAssemblies(Assembly.GetEntryAssembly());
         return builder;
     }
 }

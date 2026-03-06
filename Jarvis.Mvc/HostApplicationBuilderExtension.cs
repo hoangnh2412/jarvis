@@ -4,6 +4,7 @@ using Jarvis.Domain.Shared.Enums;
 using Jarvis.Domain.Shared.ExceptionHandling;
 using Jarvis.Domain.Shared.RequestResponse;
 using Jarvis.Domain.Shared.Utility;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -79,6 +80,56 @@ public static class HostApplicationBuilderExtension
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddHttpContextAccessor();
 
+        return builder;
+    }
+
+    public static IApplicationBuilder UseCoreCors(this IApplicationBuilder builder)
+    {
+        if (builder.ApplicationServices.GetService(typeof(Dictionary<string, CorsOption>)) is not Dictionary<string, CorsOption> corsOptions)
+            return builder;
+
+        foreach (var c in corsOptions)
+        {
+            builder.UseCors(c.Key);
+        }
+        return builder;
+    }
+
+    public static IHostApplicationBuilder AddCoreCors(this IHostApplicationBuilder builder)
+    {
+        var corsOptions = new Dictionary<string, CorsOption>();
+        builder.Configuration.GetSection("Cors").Bind(corsOptions);
+        builder.Services.AddSingleton(corsOptions);
+        builder.Services.AddCors(options =>
+        {
+            foreach (var cors in corsOptions)
+            {
+                options.AddPolicy(
+                    cors.Key,
+                    policy =>
+                    {
+                        if (cors.Value.AllowedAllOrigins)
+                        {
+                            policy.AllowAnyOrigin().SetIsOriginAllowedToAllowWildcardSubdomains();
+                        }
+                        else
+                        {
+                            policy.WithOrigins(cors.Value.AllowedOrigins).SetIsOriginAllowedToAllowWildcardSubdomains();
+                            policy.AllowCredentials();
+                        }
+
+                        if (cors.Value.AllowedAllHeaders)
+                            policy.AllowAnyHeader();
+                        else
+                            policy.WithHeaders(cors.Value.AllowedHeaders);
+
+                        if (cors.Value.AllowedAllMethods)
+                            policy.AllowAnyMethod();
+                        else
+                            policy.WithMethods(cors.Value.AllowedMethods);
+                    });
+            }
+        });
         return builder;
     }
 }
