@@ -9,6 +9,7 @@ using Asp.Versioning;
 using Jarvis.OpenTelemetry.Interfaces;
 using Jarvis.Domain.Services;
 using Jarvis.Domain;
+using Jarvis.Mvc.ApplicationBuilders;
 
 var builder = WebApplication.CreateBuilder(args);
 

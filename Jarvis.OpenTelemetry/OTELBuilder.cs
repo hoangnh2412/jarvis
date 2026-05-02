@@ -116,12 +116,12 @@ public class OTELBuilder
                 })
                 .AddEntityFrameworkCoreInstrumentation(options =>
                 {
-                    options.SetDbStatementForText = true;
+                    // options.SetDbStatementForText = true;
                 })
                 .AddSqlClientInstrumentation(options =>
                 {
                     options.RecordException = true;
-                    options.SetDbStatementForText = true;
+                    // options.SetDbStatementForText = true;
                 });
 
             instrumentationAction?.Invoke(configure);
