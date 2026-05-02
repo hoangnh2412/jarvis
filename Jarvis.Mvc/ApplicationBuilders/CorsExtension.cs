@@ -35,7 +35,10 @@ public static class CorsExtension
                     else
                         policy.WithMethods(c.Value.AllowedMethods);
 
-                    policy.AllowCredentials();
+                    if (c.Value.AllowCredentials)
+                        policy.AllowCredentials();
+                    else
+                        policy.DisallowCredentials();
                 });
             }
         });
