@@ -1,4 +1,5 @@
 using Sample;
+using Sample.Health;
 using Jarvis.OpenTelemetry;
 using Sample.Persistence;
 using Jarvis.EntityFramework;
@@ -10,6 +11,8 @@ using Jarvis.OpenTelemetry.Interfaces;
 using Jarvis.Domain.Services;
 using Jarvis.Domain;
 using Jarvis.Mvc.ApplicationBuilders;
+using Jarvis.HealthChecks;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +49,10 @@ builder.Services.AddApiVersioning(options =>
 
 // builder.Services.AddHostedService<Worker>();
 
+builder.Services.AddSingleton<IJarvisHealthIntegrationMetricsProvider, SampleHealthIntegrationMetricsProvider>();
+builder.AddJarvisHealthChecks();
+builder.AddSampleReadinessHealthChecks();
+
 var app = builder.Build();
 app.UseCoreSwagger();
 app.UseHttpsRedirection();
@@ -53,8 +60,11 @@ app.UseHttpsRedirection();
 app.UseCoreCors();
 
 app.UseOTEL();
+app.UseJarvisHealthChecksPrometheusExporter();
 app.UseCoreMiddleware<ApiResponseWrapperMiddleware>();
 app.MapControllers();
+app.MapJarvisHealthCheckEndpoints();
 
 app.EnsureMigrateDb<ISampleUnitOfWork>();
+app.Services.GetRequiredService<IStartupCompletionNotifier>().MarkStartupComplete();
 app.Run();

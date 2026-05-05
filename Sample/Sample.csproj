@@ -8,9 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6">
+    <!-- <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" /> -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.15">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
@@ -30,6 +33,7 @@
     <ProjectReference Include="..\Jarvis.Authentication.Cognito\Jarvis.Authentication.Cognito.csproj" />
     <ProjectReference Include="..\Jarvis.EntityFramework\Jarvis.EntityFramework.csproj" />
     <ProjectReference Include="..\Jarvis.Notification.Mailkit\Jarvis.Notification.Mailkit.csproj" />
+    <ProjectReference Include="..\Jarvis.HealthChecks\Jarvis.HealthChecks.csproj" />
   </ItemGroup>
 
 </Project>
