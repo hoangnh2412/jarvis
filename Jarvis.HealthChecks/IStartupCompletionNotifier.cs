@@ -1,3 +1,4 @@
+// Jarvis.HealthChecks — Host calls MarkStartupComplete after heavy startup (migrations, caches) so /health/startup succeeds.
 namespace Jarvis.HealthChecks;
 
 /// <summary>

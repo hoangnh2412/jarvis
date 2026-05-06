@@ -12,7 +12,6 @@ using Jarvis.Domain.Services;
 using Jarvis.Domain;
 using Jarvis.Mvc.ApplicationBuilders;
 using Jarvis.HealthChecks;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,8 +48,15 @@ builder.Services.AddApiVersioning(options =>
 
 // builder.Services.AddHostedService<Worker>();
 
-builder.Services.AddSingleton<IJarvisHealthIntegrationMetricsProvider, SampleHealthIntegrationMetricsProvider>();
-builder.AddJarvisHealthChecks();
+builder.Services.AddHttpClient(SampleDogCeoApiHealthCheck.HttpClientName, client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
+builder.Services.AddHttpClient(SampleArticArtworksApiHealthCheck.HttpClientName, client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
+builder.AddHealthChecks();
 builder.AddSampleReadinessHealthChecks();
 
 var app = builder.Build();
@@ -60,11 +66,9 @@ app.UseHttpsRedirection();
 app.UseCoreCors();
 
 app.UseOTEL();
-app.UseJarvisHealthChecksPrometheusExporter();
 app.UseCoreMiddleware<ApiResponseWrapperMiddleware>();
 app.MapControllers();
-app.MapJarvisHealthCheckEndpoints();
+app.UseHealthChecks();
 
 app.EnsureMigrateDb<ISampleUnitOfWork>();
-app.Services.GetRequiredService<IStartupCompletionNotifier>().MarkStartupComplete();
 app.Run();

@@ -1,3 +1,4 @@
+// Isolated namespace wrapper: calls third-party AddHealthChecksUI + AddInMemoryStorage to avoid extension name collisions.
 using Jarvis.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 

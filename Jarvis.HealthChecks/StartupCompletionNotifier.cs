@@ -1,3 +1,4 @@
+// Jarvis.HealthChecks — Default IStartupCompletionNotifier; register as singleton alongside StartupCompletionHealthCheck.
 namespace Jarvis.HealthChecks;
 
 /// <summary>

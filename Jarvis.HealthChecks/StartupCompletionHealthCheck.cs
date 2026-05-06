@@ -1,3 +1,4 @@
+// Jarvis.HealthChecks — IHealthCheck implementation for tag "startup"; no I/O, only reads IStartupCompletionNotifier.
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Jarvis.HealthChecks;
@@ -15,9 +16,6 @@ internal sealed class StartupCompletionHealthCheck(IStartupCompletionNotifier no
         if (notifier.IsStartupComplete)
             return Task.FromResult(HealthCheckResult.Healthy("startup_complete=true"));
 
-        return Task.FromResult(
-            HealthCheckResult.Unhealthy(
-                "Startup tasks not finished (migrations / warm-up). Delay startupProbe initialDelaySeconds ~30 - 60s in Kubernetes. / " +
-                "Tác vụ startup chưa xong (migration / warm-up). Nên đặt startupProbe initialDelaySeconds ~30 - 60s trên Kubernetes."));
+        return Task.FromResult(HealthCheckResult.Unhealthy("startup_complete=false; startup_tasks_not_finished=true"));
     }
 }

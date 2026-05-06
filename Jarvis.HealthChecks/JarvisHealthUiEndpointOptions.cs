@@ -1,3 +1,4 @@
+// Jarvis.HealthChecks — One named endpoint row for HealthChecks UI (absolute Uri to JSON health, often /health).
 namespace Jarvis.HealthChecks;
 
 /// <summary>

@@ -1,64 +1,102 @@
 using Jarvis.HealthChecks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 
 namespace Sample.Health;
 
 /// <summary>
-/// Sample-only readiness checks (not part of Jarvis.HealthChecks Core defaults).
+/// Sample readiness checks. Connection strings resolve from <c>HealthChecks:Readiness</c> using
+/// <b>full configuration key paths</b> (colon-separated), e.g. <c>ConnectionStrings:SampleDbContext</c> or <c>Cache:DistGroups:Redis:Default:Configuration</c>.
 /// </summary>
 public static class SampleReadinessHealthCheckExtensions
 {
-    private const string SampleSection = "Sample:ReadinessHealthChecks";
+    private const string ReadinessSection = "HealthChecks:Readiness";
 
+    /// <summary>
+    /// Appends readiness checks to the shared <see cref="IHealthChecksBuilder"/> pipeline. Call after
+    /// <c>builder.AddHealthChecks()</c> from Jarvis.HealthChecks. Uses <c>HealthChecks:Readiness</c> for config key paths and
+    /// registers typed HTTP checks for sample external APIs.
+    /// </summary>
+    /// <param name="builder">The web application builder (configuration + services).</param>
+    /// <returns>The same builder for chaining.</returns>
     public static IHostApplicationBuilder AddSampleReadinessHealthChecks(this IHostApplicationBuilder builder)
     {
         var configuration = builder.Configuration;
-        var sample = configuration.GetSection(SampleSection);
-        var pgConnectionStringName = sample.GetValue<string>("NpgsqlConnectionStringName");
-        var redisConnectionString = sample.GetValue<string>("RedisConnectionString");
+        var readiness = configuration.GetSection(ReadinessSection);
 
-        var timeoutSeconds = sample.GetValue("DependencyTimeoutSeconds", 5);
-        var dependencyTimeout = TimeSpan.FromSeconds(Math.Clamp(timeoutSeconds, 1, 120));
-
+        var timeoutSeconds = Math.Clamp(configuration.GetValue("HealthChecks:DefaultTimeoutSeconds", 5), 1, 120);
+        var probeTimeout = TimeSpan.FromSeconds(timeoutSeconds);
         var healthChecks = builder.Services.AddHealthChecks();
 
-        healthChecks.AddJarvisIntegrationMetricsReadinessCheck(dependencyTimeout);
+        TryAddNpgSqlReadiness(healthChecks, configuration, readiness, probeTimeout);
+        TryAddRedisReadiness(healthChecks, configuration, readiness, probeTimeout);
 
-        if (!string.IsNullOrWhiteSpace(pgConnectionStringName))
-        {
-            var name = pgConnectionStringName!;
-            healthChecks.AddNpgSql(
-                sp => sp.GetRequiredService<IConfiguration>().GetConnectionString(name) ?? "",
-                name: "postgresql",
+        builder.Services.TryAddSingleton<SampleDogCeoApiHealthCheck>();
+        builder.Services.TryAddSingleton<SampleArticArtworksApiHealthCheck>();
+        healthChecks
+            .AddCheck<SampleDogCeoApiHealthCheck>(
+                "dog-ceo-api",
                 failureStatus: HealthStatus.Unhealthy,
                 tags: [HealthCheckTags.Readiness],
-                timeout: dependencyTimeout);
-        }
-
-        if (!string.IsNullOrWhiteSpace(redisConnectionString))
-        {
-            healthChecks.AddRedis(
-                redisConnectionString!,
-                name: "redis",
+                timeout: probeTimeout)
+            .AddCheck<SampleArticArtworksApiHealthCheck>(
+                "artic-artworks-api",
                 failureStatus: HealthStatus.Unhealthy,
                 tags: [HealthCheckTags.Readiness],
-                timeout: dependencyTimeout);
-        }
-
-        var diskPaths = sample.GetSection("DiskPaths").Get<List<SampleReadinessDiskPathOptions>>() ?? [];
-        foreach (var disk in diskPaths)
-        {
-            if (string.IsNullOrWhiteSpace(disk.Path))
-                continue;
-            var path = disk.Path;
-            healthChecks.AddDiskStorageHealthCheck(
-                o => o.AddDrive(path, disk.MinimumFreeMegabytes),
-                name: $"disk:{path}",
-                failureStatus: HealthStatus.Degraded,
-                tags: [HealthCheckTags.Readiness],
-                timeout: TimeSpan.FromSeconds(2));
-        }
+                timeout: probeTimeout);
 
         return builder;
+    }
+
+    /// <summary>
+    /// Reads <c>Readiness:Database</c> as a configuration key path and uses <see cref="IConfiguration.this[string]"/> to obtain the PostgreSQL connection string.
+    /// </summary>
+    private static void TryAddNpgSqlReadiness(
+        IHealthChecksBuilder healthChecks,
+        IConfiguration configuration,
+        IConfigurationSection readiness,
+        TimeSpan probeTimeout)
+    {
+        var keyPath = readiness.GetValue<string>("Database");
+        if (string.IsNullOrWhiteSpace(keyPath))
+            return;
+
+        var connectionString = configuration[keyPath.Trim()];
+        if (string.IsNullOrWhiteSpace(connectionString))
+            return;
+
+        healthChecks.AddNpgSql(
+            connectionString,
+            name: "postgresql",
+            failureStatus: HealthStatus.Unhealthy,
+            tags: [HealthCheckTags.Readiness],
+            timeout: probeTimeout);
+    }
+
+    /// <summary>
+    /// Reads <c>Readiness:Redis</c> as a configuration key path and resolves the Redis connection/configuration value the same way.
+    /// </summary>
+    private static void TryAddRedisReadiness(
+        IHealthChecksBuilder healthChecks,
+        IConfiguration configuration,
+        IConfigurationSection readiness,
+        TimeSpan probeTimeout)
+    {
+        var keyPath = readiness.GetValue<string>("Redis");
+        if (string.IsNullOrWhiteSpace(keyPath))
+            return;
+
+        var redisConnection = configuration[keyPath.Trim()];
+        if (string.IsNullOrWhiteSpace(redisConnection))
+            return;
+
+        healthChecks.AddRedis(
+            redisConnection,
+            name: "redis",
+            failureStatus: HealthStatus.Unhealthy,
+            tags: [HealthCheckTags.Readiness],
+            timeout: probeTimeout);
     }
 }

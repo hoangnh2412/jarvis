@@ -1,3 +1,4 @@
+// Jarvis.HealthChecks — HealthChecks UI webhook notification model (failure + restored payloads).
 namespace Jarvis.HealthChecks;
 
 /// <summary>

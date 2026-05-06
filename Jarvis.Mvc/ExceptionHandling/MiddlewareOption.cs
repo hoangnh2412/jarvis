@@ -8,9 +8,13 @@ public class MiddlewareOption
     public bool IsEnable { get; set; } = false;
 
     /// <summary>
-    /// The configuration middleware does not apply the follow rules:
-    /// - PathStartWith: Route start with the paths in the list
-    /// - Path: Route is in the list
+    /// Middleware applies only when request path matches Includes.
+    /// If empty, all paths are considered included.
     /// </summary>
-    public Dictionary<string, string[]> Ignores { get; set; } = new Dictionary<string, string[]>();
+    public string[] Includes { get; set; } = [];
+
+    /// <summary>
+    /// Middleware is skipped when request path matches Excludes.
+    /// </summary>
+    public string[] Excludes { get; set; } = [];
 }

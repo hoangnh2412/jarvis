@@ -1,75 +1,60 @@
 # Jarvis.HealthChecks — Kiến trúc và vận hành
 
-Tài liệu mô tả module **Jarvis.HealthChecks**: luồng đăng ký DI, các endpoint HTTP, phân tách **Core / host**, và gợi ý Kubernetes. Phần tiếng Anh ngắn kèm theo trong ngoặc hoặc đoạn song song.
+Tài liệu mô tả module **Jarvis.HealthChecks**: luồng đăng ký DI, HTTP endpoint, phân tách **Core / host**, cấu hình `HealthChecks:System`, và gợi ý Kubernetes. Đoạn tiếng Anh ngắn kèm trong ngoặc hoặc song song.
+
+Chi tiết thao tác từng bước (thiết lập app, thêm readiness) nằm trong [`healthcheck-skill.md`](healthcheck-skill.md).
 
 ---
 
 ## 1. Vai trò của Core và ứng dụng host
 
-**Jarvis.HealthChecks (Core)** chỉ đăng ký mặc định:
+**Jarvis.HealthChecks (Core)** đăng ký mặc định:
 
-- **Liveness**: tiến trình (CPU/bộ nhớ tùy cấu hình + tùy chọn giới hạn bộ nhớ CLR đã cấp phát).
-- **Startup**: cờ hoàn tất khởi tạo nặng (`IStartupCompletionNotifier`).
-- **Tùy chọn**: HealthChecks **UI** (InMemory), **Prometheus** exporter middleware, publisher log (`IHealthCheckPublisher`).
+- **Liveness**: `process-resources` (CPU/bộ nhớ tiến trình so với ngưỡng cấu hình), cộng thêm các check tùy chọn từ gói **AspNetCore.HealthChecks.System** khi `HealthChecks:System` có giới hạn/đường dẫn hợp lệ, và tùy chọn `process-allocated-memory` khi `ProcessAllocatedMemoryMegabytesCeiling > 0`.
+- **Startup**: `startup-completion` — phụ thuộc `IStartupCompletionNotifier`. Mặc định `HealthChecks:MarkStartupCompleteOnApplicationStarted` = `true`: `UseHealthChecks` gọi `MarkStartupComplete()` khi `ApplicationStarted` (không cần dòng trong `Program.cs`). Đặt `false` nếu phải gọi tay sau bước bất đồng bộ.
+- **Hạ tầng**: `IHealthCheckPublisher` (`HealthStatusPublisher`) ghi log khi có entry không `Healthy`; **HealthChecks UI** (InMemory) và middleware **Prometheus** theo options.
 
-**Readiness** (SQL, Redis, đĩa, metric tích hợp, HTTP phụ thuộc, …) **không** nằm trong Core — do **ứng dụng host** gọi thêm `AddHealthChecks()` và đăng ký check có tag `readiness`.
+**Readiness** (PostgreSQL, Redis, HTTP phụ thuộc, …) **không** do Core đăng ký. Host gọi thêm `AddHealthChecks()` trên cùng `IServiceCollection` (chuỗi `IHealthChecksBuilder` dùng chung) và gắn tag `HealthCheckTags.Readiness`.
 
-*(Jarvis.HealthChecks Core registers only liveness + startup + optional UI/Prometheus/publisher. Readiness checks are owned by the hosting app.)*
+*(Core registers liveness + startup + optional System + UI/Prometheus/publisher. Readiness is host-owned.)*
 
 ```mermaid
 flowchart TB
     subgraph Core["Jarvis.HealthChecks Core"]
-        A[AddJarvisHealthChecks]
+        A["IHostApplicationBuilder.AddHealthChecks()"]
         A --> L[Liveness checks]
         A --> S[Startup check]
-        A --> P[JarvisHealthStatusPublisher]
+        A --> P[HealthStatusPublisher]
         A --> UI[HealthChecks UI optional]
     end
     subgraph Host["Hosting application"]
-        H[AddSampleReadinessHealthChecks / custom]
-        H --> R[Readiness: DB, Redis, disk, integration-metrics, …]
+        H["AddSampleReadinessHealthChecks / custom"]
+        H --> R[Readiness: DB, Redis, HTTP deps, …]
     end
-    Core --> Pipe[Shared IHealthChecksBuilder / same HealthCheckService]
+    Core --> Pipe[Shared IHealthChecksBuilder]
     Host --> Pipe
-    Pipe --> EP[MapJarvisHealthCheckEndpoints]
+    Pipe --> EP["WebApplication.UseHealthChecks()"]
 ```
 
 ---
 
 ## 2. Tags và endpoint HTTP
 
-Các hằng số tag nằm trong `HealthCheckTags` (`liveness`, `readiness`, `startup`, `detailed`, `integration`). Middleware map endpoint theo **predicate trên tag**.
+Các hằng số tag nằm trong `HealthCheckTags`: `liveness`, `readiness`, `startup`. Endpoint map theo **predicate** trên `Tags`.
 
 | Endpoint | Tag lọc | Mục đích / Purpose |
 |----------|---------|-------------------|
-| `GET /health/live` | `liveness` | Probe **sống** — không phụ thuộc DB/MQ bên ngoài trong Core. |
-| `GET /health/ready` | `readiness` | Probe **sẵn sàng traffic** — chỉ có ý nghĩa đầy đủ sau khi host đăng ký readiness. |
+| `GET /health/live` | `liveness` | Probe **sống** — Core không phụ thuộc DB/Redis tại đây. |
+| `GET /health/ready` | `readiness` | Probe **sẵn sàng traffic** — chỉ đầy đủ sau khi host đăng ký readiness. |
 | `GET /health/startup` | `startup` | Probe **khởi động xong** (migration, warm-up…). |
 | `GET /health` | Tất cả | JSON chi tiết (UI.Client); có thể khóa bằng header nếu cấu hình API key. |
+| `GET {PrometheusMetricsPath}` | — | Scrape Prometheus khi `EnablePrometheusMetrics` bật (mặc định `/health/prometheus`). |
 
-Phản hồi tối giản cho `/health/live`, `/health/ready`, `/health/startup`: JSON dạng `{ "status": "Healthy" | "Degraded" | "Unhealthy" }`.
-
-*(Minimal JSON for public probes; detailed `/health` uses UI-compatible writer.)*
-
-```mermaid
-flowchart LR
-    subgraph Probes["Kubernetes / LB"]
-        LP[livenessProbe → /health/live]
-        RP[readinessProbe → /health/ready]
-        SP[startupProbe → /health/startup]
-    end
-    subgraph App["ASP.NET Core app"]
-        LP --> M1[MapHealthChecks predicate liveness]
-        RP --> M2[MapHealthChecks predicate readiness]
-        SP --> M3[MapHealthChecks predicate startup]
-    end
-```
+Phản hồi `/health/live`, `/health/ready`, `/health/startup` dùng `UIResponseWriter`: có **cấu trúc chi tiết theo từng check**, không chỉ `{ "status": "..." }` tối giản.
 
 ---
 
-## 3. Luồng đăng ký trong Core (`AddJarvisHealthChecks`)
-
-*(Registration flow inside Core.)*
+## 3. Luồng đăng ký trong Core (`AddHealthChecks`)
 
 ```mermaid
 sequenceDiagram
@@ -79,71 +64,115 @@ sequenceDiagram
     participant HC as AddHealthChecks
 
     Host->>Opt: BindConfiguration("HealthChecks")
-    Host->>DI: AddMemoryCache()
-    Host->>DI: IStartupCompletionNotifier
-    Host->>DI: ProcessResourceLivenessHealthCheck, StartupCompletionHealthCheck
-    Host->>DI: JarvisHealthStatusPublisher + HealthCheckPublisherOptions.Delay ≈ 10s
+    Host->>DI: AddMemoryCache, IStartupCompletionNotifier, liveness/startup checks (singleton)
+    Host->>DI: HealthStatusPublisher + HealthCheckPublisherOptions.Delay ≈ 10s
     Host->>HC: AddCheck process-resources (tags: liveness)
     Host->>HC: AddCheck startup-completion (tags: startup)
-    opt ProcessAllocatedMemoryMegabytesCeiling greater than 0
-        Host->>HC: AddProcessAllocatedMemoryHealthCheck (tags: liveness)
-    end
+    Host->>HC: RegisterAspNetCoreSystemHealthChecks (optional System package)
     opt Ui.Enabled
-        Host->>DI: HealthChecks UI + AddInMemoryStorage
+        Host->>DI: AddHealthChecksUI + AddInMemoryStorage
     end
 ```
 
-**Ghi chú / Notes:**
+**Ghi chú:**
 
-- **`HealthCheckPublisherOptions.Delay`**: trì hoãn gọi publisher (mặc định ~10 giây nếu chưa cấu hình) để tránh spam log khi health chạy thường xuyên.
-- **`AddMemoryCache()`**: an toàn khi gọi trùng — `AddMemoryCache` dùng `TryAddSingleton` cho `IMemoryCache`.
+- **`HealthCheckPublisherOptions.Delay`**: trì hoãn publisher (mặc định ~10 giây) để giảm spam log.
+- **`DefaultTimeoutSeconds`**: được bind vào `JarvisHealthCheckOptions` nhưng **Core không** dùng cho readiness; host nên đọc giá trị này (hoặc `HealthChecks:DefaultTimeoutSeconds`) khi thêm Npgsql/Redis/HTTP (xem Sample).
 
 ---
 
-## 4. Startup probe và `IStartupCompletionNotifier`
+## 4. Liveness từ `RegisterAspNetCoreSystemHealthChecks` (`HealthCheckServiceExtensions`)
 
-Sau khi hoàn tất tác vụ khởi tạo (ví dụ migrate DB), host gọi **`MarkStartupComplete()`**. Probe `/health/startup` chuyển sang **Healthy**.
+Trong `AddHealthChecks()`, sau `process-resources` và `startup-completion`, Core gọi **`RegisterAspNetCoreSystemHealthChecks`**: đăng ký thêm các check của gói **AspNetCore.HealthChecks.System** (và một check CLR) — **tất cả đều tag `liveness`**, timeout nội bộ **500 ms** mỗi check.
 
-*(Call `MarkStartupComplete()` after heavy startup work so the startup endpoint succeeds.)*
+*(All rows below appear on `GET /health/live` and full `GET /health`.)*
 
-```mermaid
-stateDiagram-v2
-    [*] --> NotComplete: App starting
-    NotComplete --> Complete: MarkStartupComplete()
-    Complete --> [*]: startup probe Healthy
+### 4.1 Điều kiện chung
+
+- **`HealthChecks:ProcessAllocatedMemoryMegabytesCeiling`**: nằm ở **gốc** section `HealthChecks` (không phải `System`).
+- Các key còn lại: **`HealthChecks:System:…`** → class `JarvisHealthCheckSystemOptions`.
+- Với các giới hạn kiểu số: **`0`** = **không** đăng ký check đó.
+- Với danh sách (`DiskDrives`, `MonitorFolders`, `MonitorFiles`): không có phần tử hợp lệ (path rỗng bị lọc) → **không** đăng ký.
+- **`ProcessName`** / **`WindowsServiceName`**: `null` = hành vi mặc định; chuỗi **`""`** (rỗng, property không null) = **tắt hẳn** check tương ứng.
+
+### 4.2 Bảng: tên check, cấu hình, ý nghĩa
+
+| Tên check (trong report) | Key JSON (appsettings) | Điều kiện đăng ký | Mô tả / ý nghĩa |
+|---------------------------|------------------------|-------------------|-----------------|
+| **`process-allocated-memory`** | `HealthChecks:ProcessAllocatedMemoryMegabytesCeiling` | Giá trị **> 0** | Dùng `AddProcessAllocatedMemoryHealthCheck`: so sánh **bộ nhớ đã cấp phát của CLR** (managed heap) với **trần megabyte** đã cấu hình. Bổ sung cho `process-resources` (vốn dùng `GC.GetTotalMemory` và cùng trần làm mẫu số tỷ lệ trong check Jarvis). Đặt `0` để **tắt** check này (không đổi logic `process-resources` ngoài việc mẫu số tỷ lệ — xem `JarvisHealthCheckOptions`). |
+| **`system-private-memory`** | `HealthChecks:System:PrivateMemoryMegabytesMaximum` | **> 0** (mặc định 8192) | Giới hạn **private memory** của tiến trình (byte = MB × 1024²). Vượt trần → **Unhealthy**. |
+| **`system-working-set`** | `HealthChecks:System:WorkingSetMegabytesMaximum` | **> 0** (mặc định 8192) | Giới hạn **working set** (RAM vật lý ước lượng process đang dùng). |
+| **`system-virtual-memory-size`** | `HealthChecks:System:VirtualMemorySizeMegabytesMaximum` | **> 0** (mặc định rất lớn) | Giới hạn **virtual memory size** báo cáo của OS cho process. |
+| **`system-disk-storage`** | `HealthChecks:System:DiskDrives` (mảng) | Ít nhất một phần tử có `Path` không rỗng | Mỗi phần tử: **`Path`** (ổ/mount, ví dụ `/` hoặc `C:\`), **`MinimumFreeMegabytes`**. Đủ dung lượng trống trên từng ổ được khai báo → Healthy. Mặc định code: `/` + 256 MB — **Windows** thường cần đổi `Path` (ví dụ `C:\`). |
+| **`system-folder`** | `HealthChecks:System:MonitorFolders`, `FolderCheckAll` | Danh sách folder sau khi lọc không rỗng (mặc định `["."]`) | Kiểm tra tồn tại/khả năng truy cập thư mục. **`FolderCheckAll`**: nếu `true`, mọi folder trong list phải pass. |
+| **`system-file`** | `HealthChecks:System:MonitorFiles`, `FileCheckAll` | Danh sách file sau khi lọc không rỗng (mặc định `["appsettings.json"]`) | Kiểm tra file tồn tại (đường dẫn tương đối theo working directory). **`FileCheckAll`**: nếu `true`, mọi file phải pass. |
+| **`system-process`** | `HealthChecks:System:ProcessName` | Không bị tắt bằng `""` | **`null`** hoặc whitespace: lấy tên tiến trình hiện tại; **giá trị cụ thể**: tên process (không extension) phải có ít nhất một instance. **`ProcessName` = `""`** (và `!= null`): không đăng ký check. |
+| **`system-windows-service`** | `HealthChecks:System:WindowsServiceName`, `WindowsServiceMachineName` | Chỉ khi **`OperatingSystem.IsWindows()`** và không tắt bằng `""` | **`WindowsServiceName`**: `null` hoặc whitespace → mặc định kiểm dịch vụ **`RpcSs`**; tên khác → service short name. **`WindowsServiceMachineName`**: máy đích (mặc định `.`). Trạng thái phải **Running**. `WindowsServiceName` = `""`: không đăng ký. |
+
+### 4.3 Ví dụ `appsettings` (rút gọn)
+
+```json
+"HealthChecks": {
+  "ProcessAllocatedMemoryMegabytesCeiling": 4096,
+  "System": {
+    "PrivateMemoryMegabytesMaximum": 8192,
+    "WorkingSetMegabytesMaximum": 8192,
+    "VirtualMemorySizeMegabytesMaximum": 1048576,
+    "DiskDrives": [
+      { "Path": "C:\\", "MinimumFreeMegabytes": 256 }
+    ],
+    "MonitorFolders": [ "." ],
+    "FolderCheckAll": false,
+    "MonitorFiles": [ "appsettings.json" ],
+    "FileCheckAll": false,
+    "ProcessName": null,
+    "WindowsServiceName": null,
+    "WindowsServiceMachineName": "."
+  }
+}
 ```
 
+Để **giảm số liveness check** (ví dụ container chỉ cần tối thiểu): đặt các `*MegabytesMaximum` = **0**, `DiskDrives` / `MonitorFolders` / `MonitorFiles` = **[]**, `ProcessName` = **`""`**, và trên Windows `WindowsServiceName` = **`""`**.
+
 ---
 
-## 5. Readiness phía host (ví dụ Sample)
+## 5. Startup probe và `IStartupCompletionNotifier`
 
-Ứng dụng **Sample** dùng `AddSampleReadinessHealthChecks()`:
+`/health/startup` chuyển **Healthy** sau khi **`MarkStartupComplete()`** chạy (gọi nhiều lần vẫn an toàn).
 
-- `AddJarvisIntegrationMetricsReadinessCheck` — metric tích hợp qua `IJarvisHealthIntegrationMetricsProvider`.
-- **PostgreSQL / Redis / đĩa** — cấu hình trong `Sample:ReadinessHealthChecks` (appsettings).
+**Mặc định (Jarvis):** `HealthChecks:MarkStartupCompleteOnApplicationStarted` = **`true`**. `UseHealthChecks` đăng ký `IHostApplicationLifetime.ApplicationStarted` và gọi `MarkStartupComplete()` — không cần thêm dòng trong `Program.cs`. Thứ tự điển hình: code đồng bộ trước `Run()` (ví dụ `EnsureMigrateDb`) vẫn chạy xong trước khi host báo started; callback chạy ngay khi ứng dụng bắt đầu lắng nghe.
 
-*(Second `AddHealthChecks()` chain appends registrations to the same health pipeline.)*
+**Khi đặt `false`:** host tự gọi `GetRequiredService<IStartupCompletionNotifier>().MarkStartupComplete()` sau mọi việc cần chờ (ví dụ khởi tạo bất đồng bộ trong hosted service).
+
+**Lưu ý:** So với gọi tay ngay trước `Run()`, chuyển sang Healthy nhờ `ApplicationStarted` xảy ra **sau** khi server sẵn sàng nhận kết nối — thường **phù hợp** startup probe HTTP vì probe cần endpoint đang lắng nghe.
+
+---
+
+## 6. Readiness phía host (ví dụ Sample)
+
+`AddSampleReadinessHealthChecks()`:
+
+- Đọc **`HealthChecks:Readiness:Database`** / **`Redis`** như **đường dẫn key đầy đủ** trong `IConfiguration` (ví dụ `ConnectionStrings:SampleDbContext`), rồi `configuration[keyPath]`.
+- Đăng ký `IHealthCheck` tùy chỉnh (HTTP tới API mẫu) với tag `readiness`.
 
 ```mermaid
 flowchart TD
-    B[builder.AddJarvisHealthChecks] --> C[Core checks]
-    D[builder.AddSampleReadinessHealthChecks] --> E[Npgsql / Redis / disk / integration-metrics]
-    C --> F[Single HealthCheckService evaluates all]
+    B["builder.AddHealthChecks()"] --> C[Core checks]
+    D["builder.AddSampleReadinessHealthChecks()"] --> E[Npgsql / Redis / HTTP readiness]
+    C --> F[HealthCheckService đánh giá chung]
     E --> F
 ```
 
 ---
 
-## 6. Prometheus và HealthChecks UI
+## 7. Prometheus và HealthChecks UI
 
-- **`UseJarvisHealthChecksPrometheusExporter`**: bật khi `EnablePrometheusMetrics` — endpoint scrape (mặc định path trong options, ví dụ `/health/prometheus`). Có thể song song với OTLP (Jarvis.OpenTelemetry).
-- **`MapHealthChecksUI`**: bật khi `HealthChecks:Ui:Enabled` — SPA dashboard; lịch sử lưu **InMemory** (EF Core in-memory). Cần cấu hình `Endpoints` với **URI tuyệt đối** trỏ tới JSON health (thường `…/health`).
+- **`UseHealthChecks`** (Jarvis): nếu `EnablePrometheusMetrics`, gọi `UseHealthChecksPrometheusExporter` với `PrometheusMetricsPath`.
+- **`MapHealthChecksUI`**: khi `HealthChecks:Ui:Enabled` — SPA dashboard; lịch sử **InMemory**. `Endpoints` cần **URI tuyệt đối** trỏ JSON health (thường `https://localhost:{port}/health`).
 
 ---
 
-## 7. Gợi ý Kubernetes (HTTP)
-
-Tham số điển hình (điều chỉnh theo SLA):
+## 8. Gợi ý Kubernetes (HTTP)
 
 ```yaml
 livenessProbe:
@@ -152,14 +181,12 @@ livenessProbe:
     port: http
   periodSeconds: 10
   failureThreshold: 3
-  successThreshold: 1
 readinessProbe:
   httpGet:
     path: /health/ready
     port: http
   periodSeconds: 5
   failureThreshold: 3
-  successThreshold: 1
 startupProbe:
   httpGet:
     path: /health/startup
@@ -167,33 +194,37 @@ startupProbe:
   initialDelaySeconds: 60
   periodSeconds: 10
   failureThreshold: 3
-  successThreshold: 1
 ```
 
 ---
 
-## 8. `IHealthCheckPublisher`
+## 9. `IHealthCheckPublisher`
 
-**`JarvisHealthStatusPublisher`** nhận **`HealthReport`** định kỳ (sau `Delay`) và ghi **log** cho các entry không `Healthy` — phục vụ giám sát/alert (Azure Monitor, Loki, …). Không thay thế endpoint HTTP probe.
-
-*(Publishers decouple “notify observability” from individual `IHealthCheck` implementations.)*
+**`HealthStatusPublisher`** nhận `HealthReport` định kỳ (sau `Delay`) và ghi log cho entry không `Healthy`. Không thay thế HTTP probe.
 
 ---
 
-## 9. Cấu hình chính (section `HealthChecks`)
+## 10. Cấu hình chính (`HealthChecks`)
 
-Tham khảo `JarvisHealthCheckOptions`: ngưỡng CPU/bộ nhớ liveness, TTL cache liveness, trần MB bộ nhớ CLR, khóa `/health`, Prometheus, mục `Ui`.
+| Nhóm | Class / key | Ý nghĩa |
+|------|-------------|--------|
+| Lõi | `JarvisHealthCheckOptions` | Ngưỡng memory/CPU liveness, cache TTL, CLR ceiling, khóa `/health`, Prometheus, `MarkStartupCompleteOnApplicationStarted`, `Ui`, `System`. |
+| UI | `JarvisHealthCheckUiOptions` | `Enabled`, `UIPath`, `ApiPath`, `Endpoints`, `Webhooks`. |
+| System | `JarvisHealthCheckSystemOptions` | Private/working/virtual memory, disk, folder, file, process, Windows service. |
 
-*(See `JarvisHealthCheckOptions.SectionName` = `"HealthChecks"` in appsettings.)*
+Section name: `JarvisHealthCheckOptions.SectionName` = `"HealthChecks"`.
 
 ---
 
-## 10. Tệp tham chiếu trong repo
+## 11. Tệp tham chiếu trong repo
 
-| Thành phần | File gợi ý |
-|------------|------------|
-| Đăng ký Core | `Jarvis.HealthChecks/JarvisHealthCheckServiceExtensions.cs` |
-| Map endpoint | `Jarvis.HealthChecks/JarvisHealthCheckWebApplicationExtensions.cs` |
-| Metric readiness (opt-in) | `Jarvis.HealthChecks/JarvisIntegrationMetricsHealthCheckExtensions.cs` |
+| Thành phần | File |
+|------------|------|
+| Đăng ký Core (DI) | `Jarvis.HealthChecks/HealthCheckServiceExtensions.cs` |
+| Map HTTP | `Jarvis.HealthChecks/HealthCheckWebApplicationExtensions.cs` |
+| Tags | `Jarvis.HealthChecks/HealthCheckTags.cs` |
+| Liveness tiến trình | `Jarvis.HealthChecks/ProcessResourceLivenessHealthCheck.cs` |
+| Startup | `Jarvis.HealthChecks/IStartupCompletionNotifier.cs`, `StartupCompletionHealthCheck.cs` |
 | UI InMemory | `Jarvis.HealthChecks/HealthChecksUiThirdPartyRegistration.cs` |
 | Ví dụ readiness host | `Sample/Health/SampleReadinessHealthCheckExtensions.cs` |
+| Hướng dẫn thao tác | `docs/healthcheck-skill.md` |

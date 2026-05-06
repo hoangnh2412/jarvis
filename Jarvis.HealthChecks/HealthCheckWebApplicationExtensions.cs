@@ -1,10 +1,10 @@
-using HealthChecks.Prometheus.Metrics;
+// Jarvis.HealthChecks — HTTP mapping: Kubernetes-style probe routes, detailed /health, optional API key gate, UI SPA, Prometheus middleware.
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Jarvis.HealthChecks;
@@ -13,7 +13,7 @@ namespace Jarvis.HealthChecks;
 /// Minimal-hosting endpoint mapping helpers for health routes and Prometheus exporter middleware.
 /// Helper map endpoint cho minimal hosting: route health và middleware Prometheus.
 /// </summary>
-public static class JarvisHealthCheckWebApplicationExtensions
+public static class HealthCheckWebApplicationExtensions
 {
     /// <summary>
     /// Maps <c>/health/live</c>, <c>/health/ready</c> (host-registered readiness checks), <c>/health/startup</c>, detailed <c>/health</c>, optional UI SPA.
@@ -26,40 +26,45 @@ public static class JarvisHealthCheckWebApplicationExtensions
     /// gRPC health requires a separate gRPC health service package if desired.
     /// Gợi ý Kubernetes: probe HTTP, failureThreshold 3, successThreshold 1, startup initialDelay ~60s.
     /// gRPC health cần gói dịch vụ health gRPC riêng nếu dùng.
+    /// When <see cref="JarvisHealthCheckOptions.MarkStartupCompleteOnApplicationStarted"/> is <c>true</c> (default), startup completion is signaled on <see cref="IHostApplicationLifetime.ApplicationStarted"/>.
     /// </remarks>
-    public static WebApplication MapJarvisHealthCheckEndpoints(this WebApplication app)
+    /// <returns>The same <paramref name="app"/> for fluent chaining.</returns>
+    public static WebApplication UseHealthChecks(this WebApplication app)
     {
         var opts = app.Services.GetRequiredService<IOptions<JarvisHealthCheckOptions>>().Value;
 
-        // EN: Liveness — minimal JSON / VI: Liveness — JSON tối giản
+        if (opts.EnablePrometheusMetrics)
+            app.UseHealthChecksPrometheusExporter(opts.PrometheusMetricsPath);
+
+        // EN: Liveness — detailed JSON / VI: Liveness — JSON chi tiết
         app.MapHealthChecks(
                 "/health/live",
                 new HealthCheckOptions
                 {
                     Predicate = r => r.Tags.Contains(HealthCheckTags.Liveness),
-                    ResponseWriter = WriteMinimalJsonAsync,
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
                     AllowCachingResponses = false,
                 })
             .DisableRateLimiting();
 
-        // EN: Readiness — minimal JSON / VI: Readiness — JSON tối giản
+        // EN: Readiness — detailed JSON / VI: Readiness — JSON chi tiết
         app.MapHealthChecks(
                 "/health/ready",
                 new HealthCheckOptions
                 {
                     Predicate = r => r.Tags.Contains(HealthCheckTags.Readiness),
-                    ResponseWriter = WriteMinimalJsonAsync,
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
                     AllowCachingResponses = false,
                 })
             .DisableRateLimiting();
 
-        // EN: Startup — minimal JSON / VI: Startup — JSON tối giản
+        // EN: Startup — detailed JSON / VI: Startup — JSON chi tiết
         app.MapHealthChecks(
                 "/health/startup",
                 new HealthCheckOptions
                 {
                     Predicate = r => r.Tags.Contains(HealthCheckTags.Startup),
-                    ResponseWriter = WriteMinimalJsonAsync,
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
                     AllowCachingResponses = false,
                 })
             .DisableRateLimiting();
@@ -67,7 +72,7 @@ public static class JarvisHealthCheckWebApplicationExtensions
         // EN: Detailed UI-compatible JSON / VI: JSON chi tiết tương thích UI.Client
         var detailed = app.MapHealthChecks(
             "/health",
-            new HealthCheckOptions
+            new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
             {
                 Predicate = _ => true,
                 ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
@@ -102,27 +107,31 @@ public static class JarvisHealthCheckWebApplicationExtensions
             });
         }
 
+        if (opts.MarkStartupCompleteOnApplicationStarted)
+        {
+            var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+            lifetime.ApplicationStarted.Register(() =>
+            {
+                app.Services.GetRequiredService<IStartupCompletionNotifier>().MarkStartupComplete();
+            });
+        }
+
         return app;
     }
 
     /// <summary>
     /// Adds Prometheus pull exporter middleware for health metrics (parallel to OTLP metrics elsewhere).
-    /// Thêm middleware exporter Prometheus (kéo metrics) song song với OTLP nơi khác nếu có.
+    /// Idempotent with respect to <see cref="UseHealthChecks"/> when both enable Prometheus — either path is safe.
     /// </summary>
+    /// <remarks>
+    /// Call after <c>WebApplication</c> is built; honors <see cref="JarvisHealthCheckOptions.EnablePrometheusMetrics"/> and <see cref="JarvisHealthCheckOptions.PrometheusMetricsPath"/>.
+    /// </remarks>
+    /// <returns>The same <paramref name="app"/> for fluent chaining.</returns>
     public static WebApplication UseJarvisHealthChecksPrometheusExporter(this WebApplication app)
     {
         var opts = app.Services.GetRequiredService<IOptions<JarvisHealthCheckOptions>>().Value;
         if (opts.EnablePrometheusMetrics)
             app.UseHealthChecksPrometheusExporter(opts.PrometheusMetricsPath);
         return app;
-    }
-
-    /// <summary>
-    /// EN: Writes {"status":"Healthy|Degraded|Unhealthy"} for public probes / VI: Ghi JSON trạng thái tối giản cho probe công khai.
-    /// </summary>
-    private static Task WriteMinimalJsonAsync(HttpContext httpContext, HealthReport report)
-    {
-        httpContext.Response.ContentType = "application/json; charset=utf-8";
-        return httpContext.Response.WriteAsJsonAsync(new { status = report.Status.ToString() });
     }
 }

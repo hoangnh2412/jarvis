@@ -1,3 +1,4 @@
+// Jarvis.HealthChecks — HealthChecks UI SPA options: paths, poll interval, monitored URIs, webhooks.
 namespace Jarvis.HealthChecks;
 
 /// <summary>

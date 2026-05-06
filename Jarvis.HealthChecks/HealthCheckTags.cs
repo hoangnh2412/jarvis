@@ -1,3 +1,4 @@
+// Jarvis.HealthChecks — Tag strings must match MapHealthChecks predicates in HealthCheckWebApplicationExtensions.
 namespace Jarvis.HealthChecks;
 
 /// <summary>
@@ -14,10 +15,4 @@ public static class HealthCheckTags
 
     /// <summary>Startup probe tag / Tag cho probe startup (khởi động xong).</summary>
     public const string Startup = "startup";
-
-    /// <summary>Detailed report grouping / Nhóm báo cáo chi tiết (endpoint đầy đủ).</summary>
-    public const string Detailed = "detailed";
-
-    /// <summary>Integration metrics grouping / Nhóm metric tích hợp (queue, v.v.).</summary>
-    public const string Integration = "integration";
 }

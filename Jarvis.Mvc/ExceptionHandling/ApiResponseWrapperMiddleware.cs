@@ -109,10 +109,8 @@ public class ApiResponseWrapperMiddleware(
             context.Response.StatusCode = responseContent.Item2.GetHashCode();
             context.Response.ContentLength = Encoding.UTF8.GetByteCount(responseBody);
             context.Response.ContentType = ContentTypes.Json;
+            context.Response.Body = originalResponseBodyStream;
             await context.Response.WriteAsync(responseBody);
-
-            stream.Seek(0, SeekOrigin.Begin);
-            await stream.CopyToAsync(originalResponseBodyStream);
         }
     }
 

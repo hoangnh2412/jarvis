@@ -1,3 +1,4 @@
+// Jarvis.HealthChecks — process-resources liveness: CLR memory ratio vs ceiling, CPU sample vs threshold; short IMemoryCache TTL.
 using System.Diagnostics;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -6,8 +7,9 @@ using Microsoft.Extensions.Options;
 namespace Jarvis.HealthChecks;
 
 /// <summary>
-/// Liveness-only check: memory pressure via <c>GC.GetGCMemoryInfo()</c> and CPU estimate from process times; no network.
-/// Chỉ dùng cho liveness: áp lực bộ nhớ qua <c>GC.GetGCMemoryInfo()</c> và ước lượng CPU từ thời gian tiến trình; không mạng.
+/// Liveness-only check: <c>memory_load</c> = CLR allocated MB (see <c>GC.GetTotalMemory(false)</c>) vs <see cref="JarvisHealthCheckOptions.ProcessAllocatedMemoryMegabytesCeiling"/>;
+/// <c>cpu_load</c> = measured process CPU vs <see cref="JarvisHealthCheckOptions.CpuThresholdPercent"/>; no network.
+/// Chỉ liveness: <c>memory_load</c> = % RAM CLR ước lượng của app so trần MB; <c>cpu_load</c> = % CPU app so trần CPU; không mạng.
 /// </summary>
 internal sealed class ProcessResourceLivenessHealthCheck(
     IOptions<JarvisHealthCheckOptions> options,
@@ -33,29 +35,26 @@ internal sealed class ProcessResourceLivenessHealthCheck(
             return Task.FromResult(cached);
 
         var sw = Stopwatch.StartNew();
-        var memoryStatus = EvaluateMemory(out var memoryPct);
+        var memoryStatus = EvaluateMemory(out var memoryLoadPct, out var allocatedMb);
         if (memoryStatus != HealthStatus.Healthy)
         {
             var fail = HealthCheckResult.Unhealthy(
-                $"memory_load={memoryPct:F1}% (threshold {_options.MemoryThresholdPercent}%); elapsed_ms={sw.Elapsed.TotalMilliseconds:F1} / " +
-                $"tải_bộ_nhớ={memoryPct:F1}% (ngưỡng {_options.MemoryThresholdPercent}%); elapsed_ms={sw.Elapsed.TotalMilliseconds:F1}");
+                $"{FormatMemoryDescription(memoryLoadPct, allocatedMb)} (fail_if_load_percent>={_options.MemoryThresholdPercent}); elapsed_ms={sw.Elapsed.TotalMilliseconds:F1}");
             SetCache(ttl, fail);
             return Task.FromResult(fail);
         }
 
-        var cpuStatus = EvaluateCpu(out var cpuPct);
+        var cpuStatus = EvaluateCpu(out var cpuLoadPct, out var measuredCpuPct);
         if (cpuStatus != HealthStatus.Healthy)
         {
             var fail = HealthCheckResult.Unhealthy(
-                $"cpu={cpuPct:F1}% (threshold {_options.CpuThresholdPercent}%); memory_load={memoryPct:F1}%; elapsed_ms={sw.Elapsed.TotalMilliseconds:F1} / " +
-                $"cpu={cpuPct:F1}% (ngưỡng {_options.CpuThresholdPercent}%); tải_bộ_nhớ={memoryPct:F1}%; elapsed_ms={sw.Elapsed.TotalMilliseconds:F1}");
+                $"{FormatCpuDescription(cpuLoadPct, measuredCpuPct)} (fail_if_measured_cpu_percent>={_options.CpuThresholdPercent}); {FormatMemoryDescription(memoryLoadPct, allocatedMb)}; elapsed_ms={sw.Elapsed.TotalMilliseconds:F1}");
             SetCache(ttl, fail);
             return Task.FromResult(fail);
         }
 
         var ok = HealthCheckResult.Healthy(
-            $"memory_load={memoryPct:F1}%; cpu={cpuPct:F1}%; elapsed_ms={sw.Elapsed.TotalMilliseconds:F1} / " +
-            $"tải_bộ_nhớ={memoryPct:F1}%; cpu={cpuPct:F1}%; elapsed_ms={sw.Elapsed.TotalMilliseconds:F1}");
+            $"{FormatMemoryDescription(memoryLoadPct, allocatedMb)}; {FormatCpuDescription(cpuLoadPct, measuredCpuPct)}; elapsed_ms={sw.Elapsed.TotalMilliseconds:F1}");
         SetCache(ttl, ok);
         return Task.FromResult(ok);
     }
@@ -71,25 +70,34 @@ internal sealed class ProcessResourceLivenessHealthCheck(
     }
 
     /// <summary>
-    /// EN: Compares GC memory load ratio to configured threshold / VI: So sánh tải bộ nhớ GC với ngưỡng cấu hình.
+    /// EN: <c>memory_load</c> = (CLR allocated MB / <see cref="JarvisHealthCheckOptions.ProcessAllocatedMemoryMegabytesCeiling"/>) * 100; skip if ceiling ≤ 0.
+    /// VI: <c>memory_load</c> = (MB CLR ước lượng / trần MB) * 100; bỏ qua nếu trần ≤ 0.
     /// </summary>
-    private HealthStatus EvaluateMemory(out double loadPercent)
+    private HealthStatus EvaluateMemory(out double memoryLoadPercent, out double allocatedMegabytes)
     {
-        loadPercent = 0;
-        var info = GC.GetGCMemoryInfo();
-        if (info.TotalAvailableMemoryBytes <= 0)
+        const double bytesPerMb = 1024d * 1024d;
+        allocatedMegabytes = GC.GetTotalMemory(false) / bytesPerMb;
+        memoryLoadPercent = 0;
+        var ceilingMb = _options.ProcessAllocatedMemoryMegabytesCeiling;
+        if (ceilingMb <= 0)
             return HealthStatus.Healthy;
 
-        loadPercent = 100.0 * info.MemoryLoadBytes / (double)info.TotalAvailableMemoryBytes;
-        return loadPercent >= _options.MemoryThresholdPercent ? HealthStatus.Unhealthy : HealthStatus.Healthy;
+        memoryLoadPercent = 100.0 * allocatedMegabytes / ceilingMb;
+        return memoryLoadPercent >= _options.MemoryThresholdPercent ? HealthStatus.Unhealthy : HealthStatus.Healthy;
     }
 
     /// <summary>
-    /// EN: Approximates CPU% from wall-clock delta and <see cref="Process.TotalProcessorTime"/> / VI: Ước lượng %CPU từ delta thời gian và TotalProcessorTime.
+    /// EN: Measured process CPU% (machine-normalized); <c>cpu_load</c> = (measured / ceiling) * 100. Skip if ceiling ≤ 0.
+    /// VI: CPU% tiến trình đo được; <c>cpu_load</c> = (đo được / trần) * 100. Bỏ qua nếu trần ≤ 0.
     /// </summary>
-    private HealthStatus EvaluateCpu(out double cpuPercent)
+    private HealthStatus EvaluateCpu(out double cpuLoadPercent, out double measuredCpuPercent)
     {
-        cpuPercent = 0;
+        measuredCpuPercent = 0;
+        cpuLoadPercent = 0;
+        var cpuCeiling = _options.CpuThresholdPercent;
+        if (cpuCeiling <= 0)
+            return HealthStatus.Healthy;
+
         var proc = Process.GetCurrentProcess();
         var wallMs = Environment.TickCount64;
         var cpu = proc.TotalProcessorTime;
@@ -113,8 +121,25 @@ internal sealed class ProcessResourceLivenessHealthCheck(
                 return HealthStatus.Healthy;
 
             var processors = Math.Max(1, Environment.ProcessorCount);
-            cpuPercent = 100.0 * cpuDeltaMs / (wallDeltaMs * processors);
-            return cpuPercent >= _options.CpuThresholdPercent ? HealthStatus.Unhealthy : HealthStatus.Healthy;
+            measuredCpuPercent = 100.0 * cpuDeltaMs / (wallDeltaMs * processors);
+            cpuLoadPercent = 100.0 * measuredCpuPercent / cpuCeiling;
+            return measuredCpuPercent >= cpuCeiling ? HealthStatus.Unhealthy : HealthStatus.Healthy;
         }
+    }
+
+    private string FormatMemoryDescription(double memoryLoadPercent, double allocatedMb)
+    {
+        var ceiling = _options.ProcessAllocatedMemoryMegabytesCeiling;
+        return ceiling <= 0
+            ? $"memory_load=n/a (memory_ceiling_mb=0; allocated_mb={allocatedMb:F1})"
+            : $"memory_load={memoryLoadPercent:F1}% (allocated_mb={allocatedMb:F1} / memory_ceiling_mb={ceiling})";
+    }
+
+    private string FormatCpuDescription(double cpuLoadPercent, double measuredCpuPercent)
+    {
+        var ceiling = _options.CpuThresholdPercent;
+        return ceiling <= 0
+            ? $"cpu_load=n/a (cpu_ceiling_percent=0; measured_cpu_percent={measuredCpuPercent:F1})"
+            : $"cpu_load={cpuLoadPercent:F1}% (measured_cpu_percent={measuredCpuPercent:F1} / cpu_ceiling_percent={ceiling})";
     }
 }

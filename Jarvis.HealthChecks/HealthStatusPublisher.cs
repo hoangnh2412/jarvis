@@ -1,3 +1,4 @@
+// Jarvis.HealthChecks — Background publisher invoked by HealthCheckService on a delay; logs unhealthy entries only.
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -7,7 +8,7 @@ namespace Jarvis.HealthChecks;
 /// <see cref="IHealthCheckPublisher"/> that writes Warning/Error logs for non-healthy entries (Azure Monitor, Loki, etc.).
 /// <see cref="IHealthCheckPublisher"/> ghi log Warning/Error cho mục không healthy (Azure Monitor, Loki, v.v.).
 /// </summary>
-internal sealed class JarvisHealthStatusPublisher(ILogger<JarvisHealthStatusPublisher> logger)
+internal sealed class HealthStatusPublisher(ILogger<HealthStatusPublisher> logger)
     : IHealthCheckPublisher
 {
     /// <inheritdoc />
