@@ -9,7 +9,7 @@ using Swashbuckle.AspNetCore.Filters;
 
 namespace Jarvis.Swashbuckle;
 
-public static class ServiceCollectionExtension
+public static class HostApplicationBuilderExtension
 {
     public static IHostApplicationBuilder AddCoreSwagger(this IHostApplicationBuilder builder)
     {
@@ -19,20 +19,32 @@ public static class ServiceCollectionExtension
             return builder;
 
         builder.Services.Configure<SwaggerOption>(swaggerSection);
+        builder.Services.AddTransient<ProducesBaseResponseOperationFilter>();
 
         builder.Services.AddSwaggerGen(options =>
         {
-            if (swaggerOption.Versions != null && swaggerOption.Versions.Length > 0)
+            if (swaggerOption.Versions is { Length: > 0 })
             {
                 foreach (var version in swaggerOption.Versions)
                 {
-                    options.SwaggerDoc(version, new OpenApiInfo { Title = Assembly.GetEntryAssembly()?.GetName().Name, Version = version });
+                    options.SwaggerDoc(version, new OpenApiInfo
+                    {
+                        Title = Assembly.GetEntryAssembly()?.GetName().Name,
+                        Version = version
+                    });
                 }
+
+                options.DocInclusionPredicate((documentName, apiDescription) =>
+                {
+                    if (string.IsNullOrEmpty(apiDescription.GroupName))
+                        return true;
+
+                    return string.Equals(documentName, apiDescription.GroupName, StringComparison.OrdinalIgnoreCase);
+                });
             }
 
-            string rootPath = AppContext.BaseDirectory;
-            var paths = Directory.GetFiles(rootPath, "*.xml");
-            foreach (var path in paths)
+            var rootPath = AppContext.BaseDirectory;
+            foreach (var path in Directory.GetFiles(rootPath, "*.xml"))
             {
                 var xmlDoc = new XmlDocument();
                 xmlDoc.Load(path);
@@ -43,31 +55,37 @@ public static class ServiceCollectionExtension
                 options.IncludeXmlComments(path);
             }
 
-            if (swaggerOption.SecuritySchemes != null && swaggerOption.SecuritySchemes.Length > 0)
+            options.SchemaFilter<BaseResponseSchemaFilter>();
+
+            if (swaggerOption.SecuritySchemes is { Length: > 0 })
             {
+                var apiKeyHeader = string.IsNullOrWhiteSpace(swaggerOption.ApiKeyHeaderName)
+                    ? "X-API-KEY"
+                    : swaggerOption.ApiKeyHeaderName.Trim();
+
                 foreach (var scheme in swaggerOption.SecuritySchemes)
                 {
                     if (scheme == "JWT")
                     {
-                        options.AddSecurityDefinition(scheme, new OpenApiSecurityScheme
+                        options.AddSecurityDefinition("JWT", new OpenApiSecurityScheme
                         {
-                            Description = @"JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below. Example: 'Bearer 12345abcdef'",
+                            Description = "JWT Authorization header (Bearer). Example: `Bearer <token>`",
                             Name = "Authorization",
                             In = ParameterLocation.Header,
-                            Type = SecuritySchemeType.ApiKey,
-                            Scheme = "Bearer"
+                            Type = SecuritySchemeType.Http,
+                            Scheme = "bearer",
+                            BearerFormat = "JWT"
                         });
                     }
 
                     if (scheme == "API_KEY")
                     {
-                        options.AddSecurityDefinition(scheme, new OpenApiSecurityScheme()
+                        options.AddSecurityDefinition("API_KEY", new OpenApiSecurityScheme
                         {
-                            Name = "X-API-KEY",
+                            Name = apiKeyHeader,
                             In = ParameterLocation.Header,
                             Type = SecuritySchemeType.ApiKey,
-                            Description = "Authorization by X-API-KEY inside request's header",
-                            Scheme = "ApiKey"
+                            Description = $"API key sent in the `{apiKeyHeader}` request header.",
                         });
                     }
                 }
@@ -76,6 +94,7 @@ public static class ServiceCollectionExtension
             }
 
             options.OperationFilter<TraceParentHeaderOperationFilter>();
+            options.OperationFilter<ProducesBaseResponseOperationFilter>();
         });
 
         builder.Services.AddSwaggerExamplesFromAssemblies(Assembly.GetEntryAssembly());

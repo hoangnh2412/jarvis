@@ -7,8 +7,10 @@ namespace Sample.Controllers;
 [Route("api/v{version:apiVersion}/tests")]
 public class TestController : ControllerBase
 {
+    /// <summary>Multipart upload. Do not use <c>[FromForm]</c> on <see cref="IFormFile"/> — Swashbuckle cannot generate the operation (see Swashbuckle file-upload docs).</summary>
     [HttpPost("avatar"), MapToApiVersion(1.0)]
-    public IActionResult UpdateAvatar([FromForm] IFormFile file, CancellationToken cancellationToken = default)
+    [Consumes("multipart/form-data")]
+    public IActionResult UpdateAvatar(IFormFile file, CancellationToken cancellationToken = default)
     {
         return Ok(new
         {

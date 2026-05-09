@@ -18,6 +18,12 @@ public static class ErrorCodeHelper
         return string.Empty;
     }
 
+    /// <summary>
+    /// Error codes discovered from all <see cref="IErrorCode"/> implementations (field constant + <see cref="DisplayAttribute.Description"/>).
+    /// </summary>
+    public static IReadOnlyDictionary<string, string> GetErrorCodeCatalog() =>
+        new Dictionary<string, string>(GetAllErrorCodes(), StringComparer.Ordinal);
+
     private static Dictionary<string, string> GetAllErrorCodes()
     {
         if (_errorCodes != null)

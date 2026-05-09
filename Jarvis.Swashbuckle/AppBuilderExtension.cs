@@ -13,9 +13,14 @@ public static class AppBuilderExtension
         if (!swaggerOption.Enable)
             return app;
 
+        var prefix = swaggerOption.Prefix?.Trim().Trim('/') ?? string.Empty;
+        var swaggerRoot = string.IsNullOrEmpty(prefix)
+            ? "swagger"
+            : $"{prefix}/swagger";
+
         app.UseSwagger(options =>
         {
-            options.RouteTemplate = swaggerOption.Prefix + "/swagger/{documentName}/swagger.json";
+            options.RouteTemplate = $"{swaggerRoot}/{{documentName}}/swagger.json";
         });
 
         app.UseSwaggerUI(options =>
@@ -23,17 +28,13 @@ public static class AppBuilderExtension
             if (swaggerOption.Versions == null || swaggerOption.Versions.Length == 0)
                 return;
 
+            options.RoutePrefix = swaggerRoot;
+
+            var appName = Assembly.GetEntryAssembly()?.GetName().Name ?? "API";
             foreach (var version in swaggerOption.Versions)
             {
-                if (string.IsNullOrEmpty(swaggerOption.Prefix))
-                {
-                    options.SwaggerEndpoint($"{swaggerOption.Prefix}/swagger/{version}/swagger.json", $"{Assembly.GetEntryAssembly()?.GetName().Name} API {version}");
-                }
-                else
-                {
-                    options.SwaggerEndpoint($"/{swaggerOption.Prefix}/swagger/{version}/swagger.json", $"{Assembly.GetEntryAssembly()?.GetName().Name} API {version}");
-                    options.RoutePrefix = $"{swaggerOption.Prefix}/swagger";
-                }
+                var jsonPath = $"/{swaggerRoot}/{version}/swagger.json";
+                options.SwaggerEndpoint(jsonPath, $"{appName} {version}");
             }
         });
         return app;

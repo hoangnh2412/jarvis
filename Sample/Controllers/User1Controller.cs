@@ -1,11 +1,17 @@
 using System.Diagnostics;
 using Asp.Versioning;
 using Jarvis.Domain.Repositories;
+using Jarvis.Domain.Shared.Enums;
+using Jarvis.Domain.Shared.ExceptionHandling;
 using Microsoft.AspNetCore.Mvc;
 using Sample.Entities;
+using Sample.ErrorCodes;
+using Sample.Models;
 using Sample.Persistence;
+using Sample.Swagger;
 using Sample.Telemetry;
 using StackExchange.Redis;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace Sample.Controllers;
 
@@ -22,9 +28,13 @@ public class User1Controller(
 
     private const string RedisHitsKey = "sample:demo:users:v1:hits";
 
+    /// <summary>Demo aggregate of PostgreSQL student count and Redis hit counter (v1).</summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>After <c>ApiResponseWrapperMiddleware</c>, JSON is <c>BaseResponse&lt;<see cref="UserV1GetData"/>&gt;</c> with this payload in <c>data</c>.</returns>
     [ApiVersion("1.0")]
     [HttpGet]
-    public async Task<IActionResult> GetV1(CancellationToken cancellationToken)
+    [SwaggerResponseExample(200, typeof(UserV1GetResponseExampleProvider))]
+    public async Task<ActionResult<UserV1GetData>> GetV1(CancellationToken cancellationToken)
     {
         using var activity = ActivitySource.StartActivity("Sample.Users.V1.Get");
         activity?.SetTag("sample.feature", "manual-span");
@@ -74,7 +84,7 @@ public class User1Controller(
             dbOk,
             redisOk);
 
-        return Ok(new
+        return Ok(new UserV1GetData
         {
             Data = "User API v1",
             StudentCount = studentCount,
@@ -82,5 +92,61 @@ public class User1Controller(
             RedisHits = redisHits,
             RedisSucceeded = redisOk
         });
+    }
+
+    /// <summary>
+    /// Demo HTTP 422: <see cref="BusinessException"/> + <see cref="SampleErrorCode"/>. Client đọc <b>code</b> trong JSON (ví dụ <c>Sample:99102</c>).
+    /// </summary>
+    [ApiVersion("1.0")]
+    [HttpGet("demo-422/stale-write")]
+    [SwaggerResponseExample(422, typeof(UserV1422ResponseExampleProvider))]
+    public IActionResult Demo422StaleWrite()
+    {
+        throw new BusinessException(SampleErrorCode.DemoStaleWrite, systemMessage: "RowVersion: expected 3, actual 5");
+    }
+
+    /// <summary>
+    /// Demo HTTP 422: mã <see cref="BaseErrorCode"/> — <c>code</c> trả về dạng <c>Sample:&lt;suffix&gt;</c> (ví dụ captcha).
+    /// </summary>
+    [ApiVersion("1.0")]
+    [HttpGet("demo-422/captcha")]
+    [SwaggerResponseExample(422, typeof(UserV1422ResponseExampleProvider))]
+    public IActionResult Demo422CaptchaRequired()
+    {
+        throw new BusinessException(BaseErrorCode.CaptchaIsRequired, systemMessage: "Captcha token missing on request.");
+    }
+
+    /// <summary>
+    /// Demo HTTP 422: vẫn có <c>code</c>; thêm <c>data</c> khi exception có <c>Content</c> (<c>BaseResponse&lt;object&gt;</c>).
+    /// </summary>
+    [ApiVersion("1.0")]
+    [HttpGet("demo-422/with-content")]
+    [SwaggerResponseExample(422, typeof(UserV1422WithDataResponseExampleProvider))]
+    public IActionResult Demo422WithContent()
+    {
+        throw new BusinessException(
+            SampleErrorCode.DemoCaptchaRequired,
+            content: new { RequiredAction = "verify_captcha", ChallengeUrl = "/captcha/challenge-abc" },
+            systemMessage: "Client should open ChallengeUrl and retry.");
+    }
+
+    /// <summary>
+    /// Demo HTTP 422: hai nhánh <c>throw</c> với mã khác nhau — mỗi response vẫn có <c>code</c> rõ ràng (<c>branch=a</c> → <c>Sample:99103</c>, <c>b</c> → <c>Sample:99104</c>).
+    /// </summary>
+    /// <param name="branch"><c>a</c> hoặc <c>b</c> để đổi mã lỗi trong cùng endpoint.</param>
+    [ApiVersion("1.0")]
+    [HttpGet("demo-422/two-throw-sites")]
+    [SwaggerResponseExample(422, typeof(UserV1422ResponseExampleProvider))]
+    public IActionResult Demo422TwoThrowSites([FromQuery] string branch = "a")
+    {
+        if (string.Equals(branch, "a", StringComparison.OrdinalIgnoreCase))
+            throw new BusinessException(SampleErrorCode.DemoLogicStep001, systemMessage: "Lần A: dừng tại bước kiểm tra nghiệp vụ đầu tiên.");
+
+        if (string.Equals(branch, "b", StringComparison.OrdinalIgnoreCase))
+            throw new BusinessException(SampleErrorCode.DemoLogicStep002, systemMessage: "Lần B: dừng tại bước kiểm tra nghiệp vụ thứ hai.");
+
+        throw new BusinessException(
+            SampleErrorCode.DemoCaptchaRequired,
+            systemMessage: $"Chỉ dùng branch=a hoặc branch=b; nhận được '{branch}'.");
     }
 }

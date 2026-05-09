@@ -15,37 +15,34 @@ public class AuthenticationOperationFilter : IOperationFilter
 
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        var controllerAttrs = context.MethodInfo.ReflectedType?.GetCustomAttributes(true);
+        var controllerAttrs = context.MethodInfo.ReflectedType?.GetCustomAttributes(true) ?? Array.Empty<object>();
         var actionAttrs = context.MethodInfo.GetCustomAttributes(true);
 
-        var scopes = new List<string>();
+        if (actionAttrs.OfType<AllowAnonymousAttribute>().Any())
+            return;
 
-        if (controllerAttrs != null && controllerAttrs.Length > 0)
+        var actionAuthorize = actionAttrs.OfType<AuthorizeAttribute>().ToList();
+        List<AuthorizeAttribute> authorizeSources;
+        if (actionAuthorize.Count > 0)
         {
-#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
-            scopes.AddRange(controllerAttrs.OfType<AuthorizeAttribute>().Select(attr => attr.Policy).Distinct());
-#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+            authorizeSources = actionAuthorize;
+        }
+        else
+        {
+            if (controllerAttrs.OfType<AllowAnonymousAttribute>().Any())
+                return;
+
+            authorizeSources = controllerAttrs.OfType<AuthorizeAttribute>().ToList();
         }
 
-        if (actionAttrs != null && actionAttrs.Length > 0)
-#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
-            scopes.AddRange(actionAttrs.OfType<AuthorizeAttribute>().Select(attr => attr.Policy).Distinct());
-#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
-
-        if (scopes.Count == 0)
+        if (authorizeSources.Count == 0)
             return;
 
-#pragma warning disable CS8604 // Possible null reference argument.
-        var allows = actionAttrs.OfType<AllowAnonymousAttribute>().Distinct().ToList();
-#pragma warning restore CS8604 // Possible null reference argument.
-        if (allows.Count > 0)
-            return;
-
-#pragma warning disable CS8604 // Possible null reference argument.
-        allows = controllerAttrs.OfType<AllowAnonymousAttribute>().Distinct().ToList();
-#pragma warning restore CS8604 // Possible null reference argument.
-        if (allows.Count > 0)
-            return;
+        var scopes = authorizeSources
+            .Select(a => a.Policy)
+            .Where(p => !string.IsNullOrEmpty(p))
+            .Distinct()
+            .ToList();
 
         var requirements = new List<OpenApiSecurityRequirement>();
         foreach (var item in _types)
@@ -58,7 +55,7 @@ public class AuthenticationOperationFilter : IOperationFilter
                     Id = item
                 }
             };
-            requirements.Add(new OpenApiSecurityRequirement()
+            requirements.Add(new OpenApiSecurityRequirement
             {
                 [scheme] = scopes
             });

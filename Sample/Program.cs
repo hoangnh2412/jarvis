@@ -36,7 +36,6 @@ builder.Services
     })
     .ConfigureMetric();
 
-builder.AddCoreSwagger();
 builder.AddCoreJson();
 builder.AddCoreCors();
 builder.AddCoreDomain();
@@ -63,6 +62,8 @@ builder.Services.AddApiVersioning(options =>
     options.GroupNameFormat = "'v'VVV"; // Format: v1, v2
     options.SubstituteApiVersionInUrl = true;
 });
+
+builder.AddCoreSwagger();
 
 // builder.Services.AddHostedService<Worker>();
 
