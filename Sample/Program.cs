@@ -50,7 +50,7 @@ builder.Services.AddKeyedSingleton<IConnectionMultiplexer>("Default", (_, keyedS
 {
     var configuration = _.GetRequiredService<IConfiguration>();
     var redisConfig = configuration["Cache:DistGroups:Redis:Default:Configuration"];
-    return ConnectionMultiplexer.Connect(redisConfig);
+    return ConnectionMultiplexer.Connect(redisConfig!);
 });
 
 builder.Services.AddApiVersioning(options =>
