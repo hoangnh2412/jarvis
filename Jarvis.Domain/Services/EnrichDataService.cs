@@ -1,4 +1,4 @@
-using Jarvis.OpenTelemetry.SemanticConvention;
+using Jarvis.OpenTelemetry.SemanticConventions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 

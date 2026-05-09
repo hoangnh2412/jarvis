@@ -5,7 +5,7 @@ using Jarvis.Domain.Shared.Enums;
 using Jarvis.Domain.Shared.ExceptionHandling;
 using Jarvis.Domain.Shared.RequestResponse;
 using Jarvis.Mvc.Extensions;
-using Jarvis.OpenTelemetry.SemanticConvention;
+using Jarvis.OpenTelemetry.SemanticConventions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
