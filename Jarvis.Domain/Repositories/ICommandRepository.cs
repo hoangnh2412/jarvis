@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using Jarvis.Domain.Entities;
 
 namespace Jarvis.Domain.Repositories;
@@ -36,4 +35,9 @@ public interface ICommandRepository<TEntity> : IRepository
     /// <param name="entities"></param>
     /// <returns></returns>
     Task DeleteManyAsync(IEnumerable<TEntity> entities);
+
+    /// <summary>
+    /// Load a single entity by primary key value(s) (composite keys pass multiple values in order).
+    /// </summary>
+    ValueTask<TEntity?> GetByIdAsync(object[] keyValues, CancellationToken cancellationToken = default);
 }

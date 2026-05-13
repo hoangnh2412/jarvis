@@ -62,8 +62,17 @@ public abstract class BaseStorageContext<TDbContext>(
         }
     }
 
-    public virtual void SetTenantId(string tenantId)
+    public virtual void SetTenantId(string? tenantId)
     {
-        TenantId = Guid.TryParse(tenantId, out Guid id) ? id : null;
+        if (string.IsNullOrWhiteSpace(tenantId))
+        {
+            TenantId = null;
+            return;
+        }
+
+        if (!Guid.TryParse(tenantId, out var id))
+            throw new ArgumentException("Tenant id must be a valid GUID.", nameof(tenantId));
+
+        TenantId = id;
     }
 }

@@ -40,4 +40,13 @@ public class BaseRepository<TEntity> : BaseCommandRepository<TEntity>, IReposito
 
         return await queryable.Where(predicate).ToListAsync();
     }
+
+    public Task<(IReadOnlyList<TEntity> Items, int TotalCount)> PaginationAsync(
+        PagedListRequest paging,
+        Expression<Func<TEntity, bool>>? predicate = null,
+        bool asNoTracking = true,
+        CancellationToken cancellationToken = default)
+    {
+        return PagedListExecutor.ExecuteAsync(GetQuery(asNoTracking), paging, predicate, asNoTracking, cancellationToken);
+    }
 }

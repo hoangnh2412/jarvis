@@ -6,17 +6,23 @@ namespace Jarvis.EntityFramework.Repositories;
 
 public abstract class BaseUnitOfWork<T>(
     IServiceProvider services,
-    IDbContextFactory<T> factory)
+    IDbContextFactory<T> factory,
+    IStorageContextTenantInitializer? tenantInitializer = null)
     : IUnitOfWork<T> where T : DbContext, IStorageContext
 {
     private readonly IServiceProvider _services = services;
     private readonly IDbContextFactory<T> _factory = factory;
+    private readonly IStorageContextTenantInitializer? _tenantInitializer = tenantInitializer;
     protected DbContext? StorageContext { get; set; }
+    private bool _disposed;
 
     public IStorageContext GetDbContext()
     {
         if (StorageContext == null)
-            StorageContext = Task.Run(() => _factory.CreateDbContextAsync()).GetAwaiter().GetResult();
+        {
+            StorageContext = _factory.CreateDbContext();
+            _tenantInitializer?.Initialize((IStorageContext)StorageContext);
+        }
 
         return (IStorageContext)StorageContext;
     }
@@ -24,7 +30,11 @@ public abstract class BaseUnitOfWork<T>(
     public async Task<IStorageContext> GetDbContextAsync()
     {
         if (StorageContext == null)
-            StorageContext = await _factory.CreateDbContextAsync();
+        {
+            StorageContext = await _factory.CreateDbContextAsync().ConfigureAwait(false);
+            if (_tenantInitializer != null)
+                await _tenantInitializer.InitializeAsync((IStorageContext)StorageContext).ConfigureAwait(false);
+        }
 
         return (IStorageContext)StorageContext;
     }
@@ -40,6 +50,27 @@ public abstract class BaseUnitOfWork<T>(
     {
         if (StorageContext == null) throw new NullReferenceException(nameof(StorageContext));
 
-        return await StorageContext.SaveChangesAsync();
+        return await StorageContext.SaveChangesAsync().ConfigureAwait(false);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+        _disposed = true;
+        StorageContext?.Dispose();
+        StorageContext = null;
+        GC.SuppressFinalize(this);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed)
+            return;
+        _disposed = true;
+        if (StorageContext != null)
+            await StorageContext.DisposeAsync().ConfigureAwait(false);
+        StorageContext = null;
+        GC.SuppressFinalize(this);
     }
 }

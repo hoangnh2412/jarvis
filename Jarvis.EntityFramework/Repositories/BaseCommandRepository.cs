@@ -74,4 +74,9 @@ public class BaseCommandRepository<TEntity> : ICommandRepository<TEntity>
         }
         return Task.CompletedTask;
     }
+
+    public ValueTask<TEntity?> GetByIdAsync(object[] keyValues, CancellationToken cancellationToken = default)
+    {
+        return DbSet.FindAsync(keyValues, cancellationToken);
+    }
 }

@@ -1,6 +1,6 @@
 namespace Jarvis.Domain.Repositories;
 
-public interface IUnitOfWork
+public interface IUnitOfWork : IDisposable, IAsyncDisposable
 {
     IStorageContext GetDbContext();
 

@@ -1,3 +1,4 @@
+using Jarvis.Domain.DataStorages;
 using Jarvis.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Sample.Persistence;
@@ -10,16 +11,19 @@ public static class HostApplicationBuilderExtension
     {
         builder.Services.AddScoped<ISampleUnitOfWork, SampleUnitOfWork>();
 
-        // Basic
-        builder.Services.AddCoreDbContext<SampleDbContext>((options, connectionString) => options.UseNpgsql(connectionString));
+        builder.Services.AddKeyedConfigConnectionStringResolver();
 
-        // Advance
-        // builder.Services.AddCoreDbContext<SampleDbContext, HeaderTenantIdResolver, ConfigConnectionStringResolver>(async (options, tenantIdResolver, connectionResolver) =>
-        // {
-        //     var tenantId = await tenantIdResolver.GetTenantIdAsync() ?? nameof(SampleDbContext);
-        //     var connectionString = await connectionResolver.GetConnectionStringAsync(tenantId);
-        //     options.UseNpgsql(connectionString);
-        // });
+        // Tenant from header (switch TTenantIdResolver to QueryTenantIdResolver, HostTenantIdResolver, etc.)
+        builder.Services.AddCoreDbContext<SampleDbContext, HeaderTenantIdResolver, ConfigConnectionStringResolver>((options, tenantIdResolver, connectionResolver) =>
+        {
+            var tenantId = tenantIdResolver.GetTenantId();
+            if (string.IsNullOrEmpty(tenantId))
+                tenantId = nameof(SampleDbContext);
+
+            var connectionString = connectionResolver.GetConnectionString(tenantId);
+            options.UseNpgsql(connectionString);
+        });
+
         return builder;
     }
 }

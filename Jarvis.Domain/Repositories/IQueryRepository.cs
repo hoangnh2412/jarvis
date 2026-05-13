@@ -17,4 +17,13 @@ public interface IQueryRepository<TEntity> : IRepository
     Task<bool> AnyAsync(Expression<Func<TEntity, bool>>? predicate = null, bool asNoTracking = false);
 
     Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null, bool asNoTracking = false);
+
+    /// <summary>
+    /// Paged list with optional expression predicate and optional column projection (<see cref="PagedListRequest.Columns"/>).
+    /// </summary>
+    Task<(IReadOnlyList<TEntity> Items, int TotalCount)> PaginationAsync(
+        PagedListRequest query,
+        Expression<Func<TEntity, bool>>? predicate = null,
+        bool asNoTracking = true,
+        CancellationToken cancellationToken = default);
 }

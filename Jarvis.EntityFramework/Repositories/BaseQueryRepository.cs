@@ -13,6 +13,12 @@ public class BaseQueryRepository<TEntity> : IQueryRepository<TEntity>
     private DbContext StorageContext;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
+#pragma warning disable CS8618 // SetStorageContext initializes Queryable and StorageContext before use.
+    public BaseQueryRepository()
+    {
+    }
+#pragma warning restore CS8618
+
     public void SetStorageContext(IStorageContext storageContext)
     {
         StorageContext = (DbContext)storageContext;
@@ -49,5 +55,14 @@ public class BaseQueryRepository<TEntity> : IQueryRepository<TEntity>
             return await queryable.ToListAsync();
 
         return await queryable.Where(predicate).ToListAsync();
+    }
+
+    public Task<(IReadOnlyList<TEntity> Items, int TotalCount)> PaginationAsync(
+        PagedListRequest paging,
+        Expression<Func<TEntity, bool>>? predicate = null,
+        bool asNoTracking = true,
+        CancellationToken cancellationToken = default)
+    {
+        return PagedListExecutor.ExecuteAsync(GetQuery(asNoTracking), paging, predicate, asNoTracking, cancellationToken);
     }
 }
