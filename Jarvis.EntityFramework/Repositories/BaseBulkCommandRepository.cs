@@ -8,12 +8,16 @@ namespace Jarvis.EntityFramework.Repositories;
 public class BaseBulkCommandRepository<TEntity> : BaseCommandRepository<TEntity>, IBulkCommandRepository<TEntity>
     where TEntity : class, IEntity
 {
-    public async Task InsertBatchAsync(IEnumerable<TEntity> entities)
+    public async Task InsertBatchAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
     {
-        await DbContextBulkExtensions.BulkInsertAsync(StorageContext, entities);
+        await DbContextBulkExtensions.BulkInsertAsync(StorageContext, entities, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
-    public async Task UpdateBatchAsync(IEnumerable<TEntity> entities, Expression<Func<TEntity, TEntity>> updateFactory)
+    public async Task UpdateBatchAsync(
+        IEnumerable<TEntity> entities,
+        Expression<Func<TEntity, TEntity>> updateFactory,
+        CancellationToken cancellationToken = default)
     {
         foreach (var item in entities)
         {
@@ -34,21 +38,26 @@ public class BaseBulkCommandRepository<TEntity> : BaseCommandRepository<TEntity>
             }
         }
 
-        await DbContextBulkExtensions.BulkUpdateAsync(StorageContext, entities);
+        await DbContextBulkExtensions.BulkUpdateAsync(StorageContext, entities, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
-    public async Task<int> UpdateBatchAsync(IQueryable<TEntity> queryable, Expression<Func<TEntity, TEntity>> updateFactory)
+    public async Task<int> UpdateBatchAsync(
+        IQueryable<TEntity> queryable,
+        Expression<Func<TEntity, TEntity>> updateFactory,
+        CancellationToken cancellationToken = default)
     {
-        return await queryable.UpdateFromQueryAsync(updateFactory);
+        return await queryable.UpdateFromQueryAsync(updateFactory, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task DeleteBatchAsync(IEnumerable<TEntity> entities)
+    public async Task DeleteBatchAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
     {
-        await DbContextBulkExtensions.BulkDeleteAsync(StorageContext, entities);
+        await DbContextBulkExtensions.BulkDeleteAsync(StorageContext, entities, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
-    public async Task<int> DeleteBatchAsync(IQueryable<TEntity> queryable)
+    public async Task<int> DeleteBatchAsync(IQueryable<TEntity> queryable, CancellationToken cancellationToken = default)
     {
-        return await BatchDeleteExtensions.DeleteFromQueryAsync(queryable);
+        return await BatchDeleteExtensions.DeleteFromQueryAsync(queryable, cancellationToken).ConfigureAwait(false);
     }
 }

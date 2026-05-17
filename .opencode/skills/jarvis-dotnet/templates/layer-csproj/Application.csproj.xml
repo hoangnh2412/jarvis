@@ -1,0 +1,14 @@
+<!-- Merge into {Product}.Application.csproj -->
+<ItemGroup>
+  <FrameworkReference Include="Microsoft.AspNetCore.App" />
+</ItemGroup>
+<ItemGroup>
+  <PackageReference Include="Jarvis.Application" Version="1.2.1" />
+  <PackageReference Include="Jarvis.Application.Contracts" Version="1.2.1" />
+</ItemGroup>
+<!-- Monorepo Jarvis: -->
+<!--
+<ItemGroup>
+  <ProjectReference Include="{JarvisRoot}/Jarvis.Application/Jarvis.Application.csproj" />
+</ItemGroup>
+-->

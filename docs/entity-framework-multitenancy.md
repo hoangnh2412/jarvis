@@ -6,12 +6,13 @@
 
 - Một (hoặc vài) connection string chung; phân tách dữ liệu bằng cột `TenantId` (`Guid`) trên các entity implement `ITenantEntity`.
 - `BaseStorageContext` áp global query filter `TenantId == context.TenantId` cho các entity đó.
-- Sau mỗi lần `IDbContextFactory` tạo context, `IStorageContextTenantInitializer` (scoped) gọi `SetTenantId` từ `ITenantIdResolver` — chuỗi tenant phải là GUID hợp lệ (không parse được sẽ gây `ArgumentException`).
+- Sau mỗi lần `IDbContextFactory` tạo context, `BaseUnitOfWork` gọi `SetTenantId(Guid?)` từ `ITenantIdResolverFactory` — resolver parse GUID từ header/claim/query/host; giá trị không parse được được bỏ qua.
+- Mặc định dùng **`ITenantIdResolverFactory`**: header (`X-Tenant-Id`) → user claim (`GroupSid`) → query (`tenantId`) → host. Đăng ký: `AddMultitenancy` (trong `AddEntityFramework`) hoặc `AddCoreDbContext<TDb,TConn>` (overload 2 generic).
 
 ### Dedicated database (một tenant — một DB)
 
-- Connection string khác nhau theo tenant (lookup qua `ITenantConnectionStringResolver`, ví dụ key = tenant id).
-- `AddDbContextFactory` cấu hình options theo connection string tại thời điểm tạo factory options (callback có thể dùng scope để resolve tenant/CS).
+- Connection string khác nhau theo tenant (lookup qua `ITenantConnectionStringResolver`, Master DB, hoặc config).
+- Mỗi tenant nên dùng **DbContext instance mới** với connection string tương ứng — không “nhảy” DB trên cùng một context đã query.
 
 ## Đăng ký DI
 
@@ -20,14 +21,46 @@
   - `AddKeyedConfigConnectionStringResolver` — `ConfigConnectionStringResolver` từ `IConfiguration`.
   - `AddKeyedCachingConfigConnectionStringResolver` — bọc config resolver bằng `CachingTenantConnectionStringResolver` (gọi `AddMemoryCache`; **không** dùng chung với `AddKeyedConfigConnectionStringResolver` cùng một key).
 - `AddMultitenancyWithMemoryCache` — `AddMultitenancy` + `AddMemoryCache` khi resolver của bạn cần cache.
-- `AddCoreDbContext<...>` dùng **`AddDbContextFactory`**; đăng ký **`IStorageContextTenantInitializer`** scoped để `BaseUnitOfWork` gọi `SetTenantId` sau khi tạo context. Generic `TConnectionStringResolver` phải khớp keyed service bạn đã đăng ký (ví dụ `ConfigConnectionStringResolver`).
+- `AddCoreDbContext<TDb,TConn>` dùng **`AddDbContextFactory`** + **`TenantDbConnectionInterceptor`**: `configure` chỉ cần provider với connection placeholder; khi mở connection, interceptor resolve tenant qua `ITenantIdResolverFactory` rồi lấy connection string từ keyed `ITenantConnectionStringResolver`.
 
 ## Filter động `field:op:value`
 
-- `IQueryRepository<TEntity>.PageAsync` dùng `PagedListRequest` (page index/size và tùy chọn `Columns` để projection server-side). Filter/sort động có thể bổ sung sau qua `GetQuery()` + `Expression` hoặc lớp application riêng.
+- `IQueryRepository<TEntity>.PaginationAsync` dùng `PagedListRequest` (page index/size và tùy chọn `Columns` để projection server-side). Filter/sort động có thể bổ sung sau qua `GetQuery()` + `Expression` hoặc lớp application riêng.
 - Không thay đổi grammar trong thư viện Jarvis — parser nằm ở implementation của bạn.
 
 ## Unit of work
 
-- `BaseUnitOfWork` dùng `IDbContextFactory.CreateDbContext()` / `CreateDbContextAsync()` (không `Task.Run`), rồi gọi `IStorageContextTenantInitializer` khi có.
+- `BaseUnitOfWork` dùng `IDbContextFactory.CreateDbContextAsync()`, rồi áp `ITenantIdResolverFactory` (`SetTenantId`) khi có. Connection string do interceptor gán khi connection mở.
 - Implement `IDisposable` / `IAsyncDisposable`: dispose context khi scope UoW kết thúc.
+
+## Master DB + batch cập nhật nhiều tenant (dedicated DB)
+
+Tách **Master** và **tenant** DbContext (hai registration / hai UoW). Không dùng chung một UoW cho Master và tenant.
+
+```csharp
+// 1) Đọc danh sách connection string từ Master (context Master riêng)
+var tenants = await masterDb.TenantConnections.ToListAsync(ct);
+
+foreach (var tenant in tenants)
+{
+    // 2) Mỗi tenant: scope DI mới → UoW + context sạch
+    await using var scope = scopeFactory.CreateAsyncScope();
+    var uow = scope.ServiceProvider.GetRequiredService<IAppUnitOfWork>();
+
+    // 3) UoW mới → factory tạo context với connection của tenant (configure trong AddCoreDbContext / resolver theo scope)
+    var repo = await uow.GetRepositoryAsync<IOrderRepository>(ct);
+    await repo.InsertManyAsync(orders, ct);
+    await uow.CommitAsync(ct);
+}
+```
+
+Đăng ký ví dụ:
+
+```csharp
+builder.Services.AddKeyedConfigConnectionStringResolver();
+builder.Services.AddCoreDbContext<AppDbContext, ConfigConnectionStringResolver>(options =>
+    options.UseNpgsql("Host=localhost;Database=placeholder"));
+
+```
+
+Job/background không có HTTP tenant: mỗi job dùng `CreateAsyncScope`, đăng ký `ITenantIdResolver` đọc tenant từ payload job; với shared DB + `ITenantEntity`, có thể gọi `SetTenantId` thủ công trên context sau `GetDbContextAsync`.

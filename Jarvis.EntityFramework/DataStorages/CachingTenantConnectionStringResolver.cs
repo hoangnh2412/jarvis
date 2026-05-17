@@ -16,31 +16,17 @@ public sealed class CachingTenantConnectionStringResolver(
     private readonly IMemoryCache _cache = cache;
     private readonly TimeSpan _slidingExpiration = slidingExpiration ?? TimeSpan.FromMinutes(10);
 
-    public string GetConnectionString(string? name = null)
+    public async Task<string?> GetConnectionStringAsync(string name, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(name))
-            return _inner.GetConnectionString(name);
+        ArgumentNullException.ThrowIfNull(name, nameof(name));
 
-        var key = (object)("Jarvis:ConnStr:" + name);
-        return _cache.GetOrCreate(key, e =>
-        {
-            e.SlidingExpiration = _slidingExpiration;
-            return _inner.GetConnectionString(name);
-        })!;
-    }
-
-    public async Task<string> GetConnectionStringAsync(string? name = null, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrEmpty(name))
-            return await _inner.GetConnectionStringAsync(name, cancellationToken).ConfigureAwait(false);
-
-        var key = (object)("Jarvis:ConnStr:" + name);
-        return (await _cache.GetOrCreateAsync(
+        var key = "Jarvis:ConnStr:" + name;
+        return await _cache.GetOrCreateAsync(
             key,
             async e =>
             {
                 e.SlidingExpiration = _slidingExpiration;
                 return await _inner.GetConnectionStringAsync(name, cancellationToken).ConfigureAwait(false);
-            }).ConfigureAwait(false))!;
+            }).ConfigureAwait(false);
     }
 }

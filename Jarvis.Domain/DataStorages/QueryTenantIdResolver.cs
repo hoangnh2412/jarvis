@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace Jarvis.Domain.DataStorages;
 
@@ -7,15 +8,20 @@ namespace Jarvis.Domain.DataStorages;
 /// </summary>
 public class QueryTenantIdResolver(
     IHttpContextAccessor httpContextAccessor,
-    string paramName = "tenantId")
+    IConfiguration configuration)
     : ITenantIdResolver
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly string _tenantQueryName = configuration.GetValue<string>("TenantQueryName") ?? "tenantId";
 
-    public string? GetTenantId() => _httpContextAccessor.HttpContext?.Request.Query[paramName].ToString() ?? null;
-
-    public Task<string?> GetTenantIdAsync(CancellationToken cancellationToken = default)
+    public Task<Guid?> GetTenantIdAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(GetTenantId());
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (_httpContextAccessor.HttpContext == null)
+            return Task.FromResult<Guid?>(null);
+
+        var raw = _httpContextAccessor.HttpContext.Request.Query[_tenantQueryName].ToString();
+        return Task.FromResult(TenantIdGuidParser.Parse(raw));
     }
 }

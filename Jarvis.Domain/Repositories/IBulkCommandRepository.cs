@@ -17,9 +17,7 @@ public interface IBulkCommandRepository<TEntity> : IRepository
     /// - SQLite has no Copy tool, instead library uses plain SQL combined with UPSERT.
     /// Without SaveChange()
     /// </summary>
-    /// <param name="entities"></param>
-    /// <returns></returns>
-    Task InsertBatchAsync(IEnumerable<TEntity> entities);
+    Task InsertBatchAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// - SQLServer (or AzureSQL) under the hood uses SqlBulkCopy for Insert, Update/Delete = BulkInsert + raw Sql MERGE.
@@ -28,11 +26,15 @@ public interface IBulkCommandRepository<TEntity> : IRepository
     /// - SQLite has no Copy tool, instead library uses plain SQL combined with UPSERT.
     /// Without SaveChange()
     /// </summary>
-    /// <param name="queryable"></param>
-    /// <param name="updateFactory"></param>
-    /// <returns></returns>
-    Task<int> UpdateBatchAsync(IQueryable<TEntity> queryable, Expression<Func<TEntity, TEntity>> updateFactory);
-    Task UpdateBatchAsync(IEnumerable<TEntity> entities, Expression<Func<TEntity, TEntity>> updateFactory);
+    Task<int> UpdateBatchAsync(
+        IQueryable<TEntity> queryable,
+        Expression<Func<TEntity, TEntity>> updateFactory,
+        CancellationToken cancellationToken = default);
+
+    Task UpdateBatchAsync(
+        IEnumerable<TEntity> entities,
+        Expression<Func<TEntity, TEntity>> updateFactory,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// - SQLServer (or AzureSQL) under the hood uses SqlBulkCopy for Insert, Update/Delete = BulkInsert + raw Sql MERGE.
@@ -41,8 +43,7 @@ public interface IBulkCommandRepository<TEntity> : IRepository
     /// - SQLite has no Copy tool, instead library uses plain SQL combined with UPSERT.
     /// Without SaveChange()
     /// </summary>
-    /// <param name="queryable"></param>
-    /// <returns></returns>
-    Task<int> DeleteBatchAsync(IQueryable<TEntity> queryable);
-    Task DeleteBatchAsync(IEnumerable<TEntity> entities);
+    Task<int> DeleteBatchAsync(IQueryable<TEntity> queryable, CancellationToken cancellationToken = default);
+
+    Task DeleteBatchAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 }

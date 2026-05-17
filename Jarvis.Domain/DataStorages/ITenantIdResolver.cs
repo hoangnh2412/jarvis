@@ -1,11 +1,10 @@
 namespace Jarvis.Domain.DataStorages;
 
 /// <summary>
-/// The interface abstract tenant identification
+/// Resolves the current tenant id (<see cref="Guid"/>).
+/// Register with <c>AddKeyedScoped&lt;ITenantIdResolver, T&gt;(nameof(T))</c>.
 /// </summary>
 public interface ITenantIdResolver
 {
-    string? GetTenantId();
-
-    Task<string?> GetTenantIdAsync(CancellationToken cancellationToken = default);
+    Task<Guid?> GetTenantIdAsync(CancellationToken cancellationToken = default);
 }

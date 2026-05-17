@@ -47,8 +47,8 @@ public class User1Controller(
 
         try
         {
-            var repo = unitOfWork.GetRepository<IRepository<Student>>();
-            studentCount = await repo.CountAsync();
+            var repo = await unitOfWork.GetRepositoryAsync<IRepository<Student>>().ConfigureAwait(false);
+            studentCount = await repo.CountAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
             dbOk = true;
             SampleUserV1Metrics.DbQueries.Add(1, new KeyValuePair<string, object?>("outcome", "success"));
         }

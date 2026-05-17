@@ -13,16 +13,9 @@ public static class HostApplicationBuilderExtension
 
         builder.Services.AddKeyedConfigConnectionStringResolver();
 
-        // Tenant from header (switch TTenantIdResolver to QueryTenantIdResolver, HostTenantIdResolver, etc.)
-        builder.Services.AddCoreDbContext<SampleDbContext, HeaderTenantIdResolver, ConfigConnectionStringResolver>((options, tenantIdResolver, connectionResolver) =>
-        {
-            var tenantId = tenantIdResolver.GetTenantId();
-            if (string.IsNullOrEmpty(tenantId))
-                tenantId = nameof(SampleDbContext);
-
-            var connectionString = connectionResolver.GetConnectionString(tenantId);
-            options.UseNpgsql(connectionString);
-        });
+        // Connection string resolved on open via TenantDbConnectionInterceptor + ITenantIdResolverFactory
+        builder.Services.AddCoreDbContext<SampleDbContext, ConfigConnectionStringResolver>(options =>
+            options.UseNpgsql("Host=localhost;Database=placeholder"));
 
         return builder;
     }

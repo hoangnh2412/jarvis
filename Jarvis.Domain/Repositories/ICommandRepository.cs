@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Jarvis.Domain.Entities;
 
 namespace Jarvis.Domain.Repositories;
@@ -9,35 +10,28 @@ namespace Jarvis.Domain.Repositories;
 public interface ICommandRepository<TEntity> : IRepository
     where TEntity : class, IEntity
 {
-    Task<TEntity> InsertAsync(TEntity entity);
+    Task<TEntity> InsertAsync(TEntity entity, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Use many INSERT command. Need SaveChange()
     /// </summary>
-    /// <param name="entities"></param>
-    /// <returns></returns>
-    Task InsertManyAsync(IEnumerable<TEntity> entities);
+    Task InsertManyAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
-    Task<TEntity> UpdateAsync(TEntity entity);
+    Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Use many UPDATE command. Need SaveChange()
     /// </summary>
-    /// <param name="entities"></param>
-    /// <returns></returns>
-    Task UpdateManyAsync(IEnumerable<TEntity> entities);
+    Task UpdateManyAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
-    Task<TEntity> DeleteAsync(TEntity entity);
+    Task<TEntity> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Use many DELETE command. Need SaveChange()
     /// </summary>
-    /// <param name="entities"></param>
-    /// <returns></returns>
-    Task DeleteManyAsync(IEnumerable<TEntity> entities);
+    Task DeleteManyAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Load a single entity by primary key value(s) (composite keys pass multiple values in order).
-    /// </summary>
-    ValueTask<TEntity?> GetByIdAsync(object[] keyValues, CancellationToken cancellationToken = default);
+    Task<TEntity?> GetByIdAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<TEntity>> LoadAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 }

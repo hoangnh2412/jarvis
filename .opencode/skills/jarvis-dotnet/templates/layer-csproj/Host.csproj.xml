@@ -1,0 +1,29 @@
+<!-- Merge into {Product}.Host.csproj -->
+<ItemGroup>
+  <PackageReference Include="Jarvis.Mvc" Version="1.0.0" />
+  <PackageReference Include="Jarvis.Swashbuckle" Version="1.0.1" />
+  <PackageReference Include="Jarvis.HealthChecks" Version="1.0.0" />
+  <PackageReference Include="Jarvis.OpenTelemetry" Version="1.0.1" />
+  <PackageReference Include="Jarvis.Domain" Version="1.1.1" />
+</ItemGroup>
+<ItemGroup>
+  <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
+  <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+</ItemGroup>
+<ItemGroup>
+  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.*" />
+  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.*">
+    <PrivateAssets>all</PrivateAssets>
+    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+  </PackageReference>
+</ItemGroup>
+<!-- Monorepo — thay PackageReference bằng: -->
+<!--
+<ItemGroup>
+  <ProjectReference Include="{JarvisRoot}/Jarvis.Mvc/Jarvis.Mvc.csproj" />
+  <ProjectReference Include="{JarvisRoot}/Jarvis.Swashbuckle/Jarvis.Swashbuckle.csproj" />
+  <ProjectReference Include="{JarvisRoot}/Jarvis.HealthChecks/Jarvis.HealthChecks.csproj" />
+  <ProjectReference Include="{JarvisRoot}/Jarvis.OpenTelemetry/Jarvis.OpenTelemetry.csproj" />
+  <ProjectReference Include="{JarvisRoot}/Jarvis.Domain/Jarvis.Domain.csproj" />
+</ItemGroup>
+-->

@@ -1,68 +1,12 @@
-using System.Linq.Expressions;
 using Jarvis.Domain.Entities;
 using Jarvis.Domain.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace Jarvis.EntityFramework.Repositories;
 
-public class BaseQueryRepository<TEntity> : IQueryRepository<TEntity>
+/// <summary>
+/// Read-only repository (CQRS query side). Uses no-tracking queries from <see cref="EfRepositoryCore{TEntity}"/>.
+/// </summary>
+public class BaseQueryRepository<TEntity> : EfRepositoryCore<TEntity>, IQueryRepository<TEntity>
     where TEntity : class, IEntity
 {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-    private IQueryable<TEntity> Queryable;
-    private DbContext StorageContext;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-
-#pragma warning disable CS8618 // SetStorageContext initializes Queryable and StorageContext before use.
-    public BaseQueryRepository()
-    {
-    }
-#pragma warning restore CS8618
-
-    public void SetStorageContext(IStorageContext storageContext)
-    {
-        StorageContext = (DbContext)storageContext;
-        Queryable = StorageContext.Set<TEntity>();
-    }
-
-    public IQueryable<TEntity> GetQuery(bool asNoTracking = false)
-    {
-        return asNoTracking ? Queryable.AsNoTracking() : Queryable;
-    }
-
-    public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>>? predicate = null, bool asNoTracking = false)
-    {
-        var queryable = GetQuery(asNoTracking);
-        if (predicate == null)
-            return await queryable.AnyAsync();
-
-        return await queryable.AnyAsync(predicate);
-    }
-
-    public async Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null, bool asNoTracking = false)
-    {
-        var queryable = GetQuery(asNoTracking);
-        if (predicate == null)
-            return await queryable.CountAsync();
-
-        return await queryable.CountAsync(predicate);
-    }
-
-    public async Task<ICollection<TEntity>> ListAsync(Expression<Func<TEntity, bool>>? predicate = null, bool asNoTracking = false)
-    {
-        var queryable = GetQuery(asNoTracking);
-        if (predicate == null)
-            return await queryable.ToListAsync();
-
-        return await queryable.Where(predicate).ToListAsync();
-    }
-
-    public Task<(IReadOnlyList<TEntity> Items, int TotalCount)> PaginationAsync(
-        PagedListRequest paging,
-        Expression<Func<TEntity, bool>>? predicate = null,
-        bool asNoTracking = true,
-        CancellationToken cancellationToken = default)
-    {
-        return PagedListExecutor.ExecuteAsync(GetQuery(asNoTracking), paging, predicate, asNoTracking, cancellationToken);
-    }
 }

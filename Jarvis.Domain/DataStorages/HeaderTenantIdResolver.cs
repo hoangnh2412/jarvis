@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace Jarvis.Domain.DataStorages;
 
@@ -7,15 +8,20 @@ namespace Jarvis.Domain.DataStorages;
 /// </summary>
 public class HeaderTenantIdResolver(
     IHttpContextAccessor httpContextAccessor,
-    string headerName = "X-Tenant-Id")
+    IConfiguration configuration)
     : ITenantIdResolver
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly string _tenantHeaderKey = configuration.GetValue<string>("TenantHeaderKey") ?? "X-Tenant-Id";
 
-    public string? GetTenantId() => _httpContextAccessor.HttpContext?.Request.Headers[headerName].ToString() ?? null;
-
-    public Task<string?> GetTenantIdAsync(CancellationToken cancellationToken = default)
+    public Task<Guid?> GetTenantIdAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(GetTenantId());
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (_httpContextAccessor.HttpContext == null)
+            return Task.FromResult<Guid?>(null);
+
+        var raw = _httpContextAccessor.HttpContext.Request.Headers[_tenantHeaderKey].ToString();
+        return Task.FromResult(TenantIdGuidParser.Parse(raw));
     }
 }

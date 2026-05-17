@@ -12,8 +12,7 @@ internal static class PagedListExecutor
         IQueryable<TEntity> rootQuery,
         PagedListRequest paging,
         Expression<Func<TEntity, bool>>? predicate,
-        bool asNoTracking,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
         where TEntity : class, IEntity
     {
         if (paging.PageSize <= 0)
@@ -21,7 +20,7 @@ internal static class PagedListExecutor
         if (paging.PageIndex < 0)
             throw new ArgumentOutOfRangeException(nameof(paging), "PageIndex must be non-negative.");
 
-        var q = asNoTracking ? rootQuery.AsNoTracking() : rootQuery;
+        var q = rootQuery;
         if (predicate != null)
             q = q.Where(predicate);
 

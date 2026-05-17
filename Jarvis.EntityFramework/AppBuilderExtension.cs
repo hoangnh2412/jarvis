@@ -18,7 +18,7 @@ public static class AppBuilderExtension
         using (var scope = builder.ApplicationServices.CreateScope())
         {
             var uow = scope.ServiceProvider.GetRequiredService<T>();
-            var dbContext = uow.GetDbContext() as DbContext;
+            var dbContext = uow.GetDbContextAsync().GetAwaiter().GetResult() as DbContext;
             dbContext?.Database.Migrate();
         }
 

@@ -3,18 +3,17 @@ using Microsoft.AspNetCore.Http;
 namespace Jarvis.Domain.DataStorages;
 
 /// <summary>
-/// Uses the HTTP request host (hostname, without port) for tenant identification.
+/// Uses the HTTP request host when it is a valid <see cref="Guid"/> string.
 /// </summary>
 public class HostTenantIdResolver(IHttpContextAccessor httpContextAccessor) : ITenantIdResolver
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-    public string? GetTenantId()
+    public Task<Guid?> GetTenantIdAsync(CancellationToken cancellationToken = default)
     {
-        var host = _httpContextAccessor.HttpContext?.Request.Host.Host;
-        return string.IsNullOrWhiteSpace(host) ? null : host;
-    }
+        cancellationToken.ThrowIfCancellationRequested();
 
-    public Task<string?> GetTenantIdAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult(GetTenantId());
+        var host = _httpContextAccessor.HttpContext?.Request.Host.Host;
+        return Task.FromResult(TenantIdGuidParser.Parse(host));
+    }
 }

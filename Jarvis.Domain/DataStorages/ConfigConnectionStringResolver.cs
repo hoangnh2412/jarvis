@@ -8,16 +8,9 @@ public class ConfigConnectionStringResolver(
 {
     private readonly IConfiguration _configuration = configuration;
 
-    public string GetConnectionString(string? name = null)
+    public Task<string?> GetConnectionStringAsync(string name, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(name))
-            return string.Empty;
-
-        return _configuration.GetConnectionString(name) ?? string.Empty;
-    }
-
-    public Task<string> GetConnectionStringAsync(string? name = null, CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(GetConnectionString(name));
+        var connectionString = _configuration.GetConnectionString(name);
+        return Task.FromResult(string.IsNullOrWhiteSpace(connectionString) ? null : connectionString);
     }
 }

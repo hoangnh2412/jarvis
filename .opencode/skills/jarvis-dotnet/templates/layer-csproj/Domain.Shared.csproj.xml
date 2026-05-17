@@ -1,0 +1,4 @@
+<!-- Merge into {Product}.Domain.Shared.csproj -->
+<ItemGroup>
+  <PackageReference Include="Jarvis.Domain.Shared" Version="1.0.0" />
+</ItemGroup>

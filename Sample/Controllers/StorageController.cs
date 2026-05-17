@@ -11,34 +11,29 @@ namespace Sample.Controllers;
 [ApiVersionNeutral]
 [Route("api/v{version:apiVersion}/storage")]
 [ApiController]
-public class StorageController(
-    ISampleUnitOfWork uow
-) : ControllerBase
+public class StorageController(ISampleUnitOfWork uow) : ControllerBase
 {
-    private readonly ISampleUnitOfWork _uow = uow;
-    private readonly IRepository<Student> _repo = uow.GetRepository<IRepository<Student>>();
-
     [HttpGet]
-    public async Task<IActionResult> GetAsync(
-        [FromServices] ISampleUnitOfWork uow
-    )
+    public async Task<IActionResult> GetAsync(CancellationToken cancellationToken)
     {
-        var items = await _repo.GetQuery().ToListAsync();
+        var repo = await uow.GetRepositoryAsync<IRepository<Student>>().ConfigureAwait(false);
+        var items = await repo.GetQuery().ToListAsync(cancellationToken).ConfigureAwait(false);
         return Ok(items);
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateAsync(
-        [FromBody] Student student
-    )
+        [FromBody] Student student,
+        CancellationToken cancellationToken)
     {
-        await _repo.InsertAsync(new Student
+        var repo = await uow.GetRepositoryAsync<IRepository<Student>>().ConfigureAwait(false);
+        await repo.InsertAsync(new Student
         {
             Id = Guid.NewGuid(),
             Name = StringExtension.GenerateRandom(10, true, true, true, true),
             Age = Random.Shared.Next(1, 100),
         });
-        await _uow.CommitAsync();
+        await uow.SaveAsync(cancellationToken).ConfigureAwait(false);
         return Ok();
     }
 }

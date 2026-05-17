@@ -1,0 +1,17 @@
+<!-- Merge into {Product}.Infrastructure.csproj -->
+<ItemGroup>
+  <FrameworkReference Include="Microsoft.AspNetCore.App" />
+</ItemGroup>
+<ItemGroup>
+  <PackageReference Include="Jarvis.EntityFramework" Version="1.0.0" />
+</ItemGroup>
+<ItemGroup>
+  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.*" />
+  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.*" />
+</ItemGroup>
+<!-- Monorepo Jarvis: -->
+<!--
+<ItemGroup>
+  <ProjectReference Include="{JarvisRoot}/Jarvis.EntityFramework/Jarvis.EntityFramework.csproj" />
+</ItemGroup>
+-->
