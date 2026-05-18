@@ -40,7 +40,6 @@
     <ProjectReference Include="..\Jarvis.EntityFramework\Jarvis.EntityFramework.csproj" />
     <ProjectReference Include="..\Jarvis.Notification.Mailkit\Jarvis.Notification.Mailkit.csproj" />
     <ProjectReference Include="..\Jarvis.HealthChecks\Jarvis.HealthChecks.csproj" />
-    <ProjectReference Include="..\Jarvis.OpenTelemetry.Instrumentation.StackExchangeRedis\Jarvis.OpenTelemetry.Instrumentation.StackExchangeRedis.csproj" />
   </ItemGroup>
 
 </Project>

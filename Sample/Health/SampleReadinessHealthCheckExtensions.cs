@@ -8,7 +8,7 @@ namespace Sample.Health;
 
 /// <summary>
 /// Sample readiness checks. Connection strings resolve from <c>HealthChecks:Readiness</c> using
-/// <b>full configuration key paths</b> (colon-separated), e.g. <c>ConnectionStrings:SampleDbContext</c> or <c>Cache:DistGroups:Redis:Default:Configuration</c>.
+/// <b>full configuration key paths</b> (colon-separated), e.g. <c>ConnectionStrings:MasterDbContext</c> or <c>Cache:DistGroups:Redis:Default:Configuration</c>.
 /// </summary>
 public static class SampleReadinessHealthCheckExtensions
 {

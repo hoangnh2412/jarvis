@@ -282,3 +282,5 @@ packages/
 Sample/logs/
 
 #Allow
+
+appsettings.*.json

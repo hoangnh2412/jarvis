@@ -1,11 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Jarvis.Domain.DataStorages;
 
 /// <summary>
 /// Default <see cref="ITenantConnectionStringResolverFactory"/>: tenant id from <see cref="ITenantIdResolverFactory"/>,
-/// connection string from keyed <see cref="ITenantConnectionStringResolver"/> (see <c>TenantDbConnectionOptions</c>).
+/// connection string from keyed <see cref="ITenantConnectionStringResolver"/> (key = <c>DbContext</c> type name).
 /// </summary>
 public sealed class TenantConnectionStringResolverFactory(
     ITenantIdResolverFactory tenantIdResolverFactory,

@@ -1,5 +1,6 @@
 using Jarvis.Domain.DataStorages;
 using Jarvis.EntityFramework;
+using Jarvis.EntityFramework.DataStorages;
 using Microsoft.EntityFrameworkCore;
 using Sample.Persistence;
 
@@ -9,13 +10,14 @@ public static class HostApplicationBuilderExtension
 {
     public static IHostApplicationBuilder AddSampleDbContext(this IHostApplicationBuilder builder)
     {
+        builder.Services.AddScoped<IMasterUnitOfWork, MasterUnitOfWork>();
         builder.Services.AddScoped<ISampleUnitOfWork, SampleUnitOfWork>();
 
-        builder.Services.AddKeyedConfigConnectionStringResolver();
+        builder.Services.AddCoreDbContext<MasterDbContext, ConfigConnectionStringResolver>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("MasterDbContext")));
 
-        // Connection string resolved on open via TenantDbConnectionInterceptor + ITenantIdResolverFactory
-        builder.Services.AddCoreDbContext<SampleDbContext, ConfigConnectionStringResolver>(options =>
-            options.UseNpgsql("Host=localhost;Database=placeholder"));
+        builder.Services.AddCoreDbContext<TenantDbContext, DbTenantConnectionStringResolver<MasterDbContext>>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("TenantDbContext")));
 
         return builder;
     }

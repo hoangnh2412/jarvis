@@ -4,14 +4,16 @@ using Sample.Entities;
 
 namespace Sample.Persistence;
 
-public class SampleDbContext(
-    DbContextOptions<SampleDbContext> options)
-    : BaseStorageContext<SampleDbContext>(options)
+public class MasterDbContext(
+    DbContextOptions<MasterDbContext> options)
+    : BaseStorageContext<MasterDbContext>(options)
 {
+    public DbSet<Tenant> Tenants => Set<Tenant>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.ApplyConfiguration(new StudentEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new TenantEntityConfiguration());
     }
 }

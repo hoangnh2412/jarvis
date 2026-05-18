@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Sample.Persistence;
 
-public class SampleUnitOfWork(
+public class MasterUnitOfWork(
     IServiceProvider services,
-    IDbContextFactory<TenantDbContext> factory,
+    IDbContextFactory<MasterDbContext> factory,
     ITenantIdResolverFactory tenantIdResolverFactory)
-    : BaseUnitOfWork<TenantDbContext>(services, factory, tenantIdResolverFactory), ISampleUnitOfWork
+    : BaseUnitOfWork<MasterDbContext>(services, factory, tenantIdResolverFactory), IMasterUnitOfWork
 {
 }

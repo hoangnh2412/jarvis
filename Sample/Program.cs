@@ -97,5 +97,6 @@ app.UseCoreMiddleware<ApiResponseWrapperMiddleware>();
 app.MapControllers();
 app.UseHealthChecks();
 
+app.EnsureMigrateDb<IMasterUnitOfWork>();
 app.EnsureMigrateDb<ISampleUnitOfWork>();
 app.Run();

@@ -2,17 +2,18 @@ using System.Data.Common;
 using Jarvis.Domain.DataStorages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Jarvis.EntityFramework.DataStorages;
 
 /// <summary>
 /// Applies the tenant connection string when a database connection opens via <see cref="ITenantConnectionStringResolverFactory"/>.
+/// Registered as singleton; resolves scoped services per connection via <see cref="IServiceScopeFactory"/>.
 /// </summary>
-public sealed class TenantDbConnectionInterceptor(
-    ITenantConnectionStringResolverFactory connectionStringResolverFactory)
+public sealed class TenantDbConnectionInterceptor(IServiceScopeFactory scopeFactory)
     : DbConnectionInterceptor
 {
-    private readonly ITenantConnectionStringResolverFactory _connectionStringResolverFactory = connectionStringResolverFactory;
+    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
     public override InterceptionResult ConnectionOpening(
         DbConnection connection,
@@ -43,7 +44,11 @@ public sealed class TenantDbConnectionInterceptor(
         if (context == null)
             return;
 
-        var connectionString = await _connectionStringResolverFactory
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var connectionStringResolverFactory = scope.ServiceProvider
+            .GetRequiredService<ITenantConnectionStringResolverFactory>();
+
+        var connectionString = await connectionStringResolverFactory
             .GetConnectionStringAsync(context.GetType(), cancellationToken)
             .ConfigureAwait(false);
 

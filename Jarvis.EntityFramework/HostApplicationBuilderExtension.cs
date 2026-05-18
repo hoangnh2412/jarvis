@@ -3,7 +3,6 @@ using Jarvis.Domain.Repositories;
 using Jarvis.EntityFramework.DataStorages;
 using Jarvis.EntityFramework.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -27,6 +26,7 @@ public static class HostApplicationBuilderExtension
 
     private static IHostApplicationBuilder AddRepositories(this IHostApplicationBuilder builder)
     {
+        builder.Services.TryAddKeyedScoped<ITenantConnectionStringResolver, ConfigConnectionStringResolver>(nameof(ConfigConnectionStringResolver));
         builder.Services.TryAddScoped(typeof(IQueryRepository<>), typeof(BaseQueryRepository<>));
         builder.Services.TryAddScoped(typeof(ICommandRepository<>), typeof(BaseCommandRepository<>));
         builder.Services.TryAddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
@@ -39,41 +39,43 @@ public static class HostApplicationBuilderExtension
     /// </summary>
     private static IHostApplicationBuilder AddMultitenancy(this IHostApplicationBuilder builder)
     {
-        builder.Services.AddKeyedScoped<ITenantIdResolver, HeaderTenantIdResolver>(nameof(HeaderTenantIdResolver));
-        builder.Services.AddKeyedScoped<ITenantIdResolver, QueryTenantIdResolver>(nameof(QueryTenantIdResolver));
-        builder.Services.AddKeyedScoped<ITenantIdResolver, UserTenantIdResolver>(nameof(UserTenantIdResolver));
-        builder.Services.AddKeyedScoped<ITenantIdResolver, HostTenantIdResolver>(nameof(HostTenantIdResolver));
+        builder.Services.TryAddKeyedScoped<ITenantIdResolver, HeaderTenantIdResolver>(nameof(HeaderTenantIdResolver));
+        builder.Services.TryAddKeyedScoped<ITenantIdResolver, QueryTenantIdResolver>(nameof(QueryTenantIdResolver));
+        builder.Services.TryAddKeyedScoped<ITenantIdResolver, UserTenantIdResolver>(nameof(UserTenantIdResolver));
+        builder.Services.TryAddKeyedScoped<ITenantIdResolver, HostTenantIdResolver>(nameof(HostTenantIdResolver));
         builder.Services.TryAddScoped<ITenantIdResolverFactory, TenantIdResolverFactory>();
         return builder;
     }
 
     /// <summary>
-    /// Registers <see cref="ConfigConnectionStringResolver"/> as keyed <see cref="ITenantConnectionStringResolver"/> using the same key as the type name <c>ConfigConnectionStringResolver</c>. Optional convenience for apps that read connection strings from configuration.
+    /// Registers <see cref="IDbContextFactory{TContext}"/> with <see cref="TenantDbConnectionInterceptor"/>,
+    /// keyed <see cref="ITenantConnectionStringResolver"/> for <typeparamref name="TDbContext"/>,
+    /// and <see cref="ITenantConnectionStringResolverFactory"/>.
+    /// Tenant id is resolved via <see cref="ITenantIdResolverFactory"/> (header, user, query, host) when the connection opens.
     /// </summary>
-    public static IServiceCollection AddKeyedConfigConnectionStringResolver(this IServiceCollection services)
-    {
-        services.AddKeyedScoped<ITenantConnectionStringResolver, ConfigConnectionStringResolver>(nameof(ConfigConnectionStringResolver));
-        return services;
-    }
-
-    /// <summary>
-    /// Registers a keyed <see cref="ITenantConnectionStringResolver"/> that caches results from <see cref="ConfigConnectionStringResolver"/> (same key as <see cref="AddKeyedConfigConnectionStringResolver"/>). Calls <c>AddMemoryCache</c> if not already registered. Do not combine with <see cref="AddKeyedConfigConnectionStringResolver"/> for the same key.
-    /// </summary>
-    public static IServiceCollection AddKeyedCachingConfigConnectionStringResolver(
+    /// <typeparam name="TDbContext">Concrete <see cref="DbContext"/> deriving from <see cref="BaseStorageContext{TDbContext}"/>.</typeparam>
+    /// <typeparam name="TConnectionStringResolver">Keyed <see cref="ITenantConnectionStringResolver"/> (key = <typeparamref name="TDbContext"/> type name).</typeparam>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configure">
+    /// Optional provider setup with a placeholder connection string (overwritten by the interceptor), e.g.
+    /// <c>options =&gt; options.UseNpgsql("Host=localhost;Database=placeholder")</c>.
+    /// </param>
+    public static IServiceCollection AddCoreDbContext<TDbContext, TConnectionStringResolver>(
         this IServiceCollection services,
-        TimeSpan? slidingExpiration = null)
+        Action<DbContextOptionsBuilder>? configure = null)
+        where TDbContext : BaseStorageContext<TDbContext>
+        where TConnectionStringResolver : class, ITenantConnectionStringResolver
     {
-        services.AddKeyedSingleton<ITenantConnectionStringResolver>(nameof(ConfigConnectionStringResolver), (sp, _) =>
-            new CachingTenantConnectionStringResolver(
-                new ConfigConnectionStringResolver(sp.GetRequiredService<IConfiguration>()),
-                sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(),
-                slidingExpiration));
-        return services;
+        services.TryAddKeyedScoped<ITenantConnectionStringResolver, TConnectionStringResolver>(typeof(TDbContext).Name);
+        services.TryAddScoped<ITenantConnectionStringResolverFactory, TenantConnectionStringResolverFactory>();
+
+        return services.AddCoreDbContext<TDbContext>(configure);
     }
 
     /// <summary>
     /// Registers <see cref="IDbContextFactory{TContext}"/> with <see cref="TenantDbConnectionInterceptor"/>.
-    /// Tenant id is resolved via <see cref="ITenantIdResolverFactory"/> (header → user → query → host) when the connection opens.
+    /// Requires a keyed <see cref="ITenantConnectionStringResolver"/> registered for <typeparamref name="TDbContext"/> (see the two-type-parameter overload).
+    /// Tenant id is resolved via <see cref="ITenantIdResolverFactory"/> when the connection opens.
     /// </summary>
     /// <typeparam name="TDbContext">Concrete <see cref="DbContext"/> deriving from <see cref="BaseStorageContext{TDbContext}"/>.</typeparam>
     /// <param name="services">The service collection.</param>
@@ -86,7 +88,8 @@ public static class HostApplicationBuilderExtension
         Action<DbContextOptionsBuilder>? configure = null)
         where TDbContext : BaseStorageContext<TDbContext>
     {
-        services.TryAddScoped<TenantDbConnectionInterceptor>();
+        services.TryAddScoped<ITenantConnectionStringResolverFactory, TenantConnectionStringResolverFactory>();
+        services.TryAddSingleton<TenantDbConnectionInterceptor>();
 
         services.AddDbContextFactory<TDbContext>((sp, options) =>
         {
