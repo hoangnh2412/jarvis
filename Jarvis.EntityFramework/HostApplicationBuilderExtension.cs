@@ -68,8 +68,14 @@ public static class HostApplicationBuilderExtension
     {
         services.TryAddKeyedScoped<ITenantConnectionStringResolver, TConnectionStringResolver>(typeof(TDbContext).Name);
         services.TryAddScoped<ITenantConnectionStringResolverFactory, TenantConnectionStringResolverFactory>();
+        services.TryAddSingleton<TenantDbConnectionInterceptor>();
 
-        return services.AddCoreDbContext<TDbContext>(configure);
+        services.AddDbContextFactory<TDbContext>((sp, options) =>
+        {
+            configure?.Invoke(options);
+            options.AddInterceptors(sp.GetRequiredService<TenantDbConnectionInterceptor>());
+        });
+        return services;
     }
 
     /// <summary>
@@ -88,13 +94,12 @@ public static class HostApplicationBuilderExtension
         Action<DbContextOptionsBuilder>? configure = null)
         where TDbContext : BaseStorageContext<TDbContext>
     {
+        services.TryAddKeyedScoped<ITenantConnectionStringResolver, ConfigConnectionStringResolver>(typeof(TDbContext).Name);
         services.TryAddScoped<ITenantConnectionStringResolverFactory, TenantConnectionStringResolverFactory>();
-        services.TryAddSingleton<TenantDbConnectionInterceptor>();
 
         services.AddDbContextFactory<TDbContext>((sp, options) =>
         {
             configure?.Invoke(options);
-            options.AddInterceptors(sp.GetRequiredService<TenantDbConnectionInterceptor>());
         });
 
         return services;

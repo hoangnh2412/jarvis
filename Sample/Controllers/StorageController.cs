@@ -33,7 +33,7 @@ public class StorageController(ISampleUnitOfWork uow) : ControllerBase
             Name = StringExtension.GenerateRandom(10, true, true, true, true),
             Age = Random.Shared.Next(1, 100),
         });
-        await uow.SaveAsync(cancellationToken).ConfigureAwait(false);
+        await uow.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return Ok();
     }
 }

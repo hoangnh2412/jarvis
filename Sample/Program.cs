@@ -67,16 +67,16 @@ builder.AddCoreSwagger();
 
 // builder.Services.AddHostedService<Worker>();
 
-builder.Services.AddHttpClient(SampleDogCeoApiHealthCheck.HttpClientName, client =>
-{
-    client.Timeout = TimeSpan.FromSeconds(5);
-});
-builder.Services.AddHttpClient(SampleArticArtworksApiHealthCheck.HttpClientName, client =>
-{
-    client.Timeout = TimeSpan.FromSeconds(5);
-});
-builder.AddHealthChecks();
-builder.AddSampleReadinessHealthChecks();
+// builder.Services.AddHttpClient(SampleDogCeoApiHealthCheck.HttpClientName, client =>
+// {
+//     client.Timeout = TimeSpan.FromSeconds(5);
+// });
+// builder.Services.AddHttpClient(SampleArticArtworksApiHealthCheck.HttpClientName, client =>
+// {
+//     client.Timeout = TimeSpan.FromSeconds(5);
+// });
+// builder.AddHealthChecks();
+// builder.AddSampleReadinessHealthChecks();
 
 var app = builder.Build();
 app.UseCoreSwagger();
@@ -95,7 +95,7 @@ app.UseSerilogRequestLogging();
 app.UseJarvisOpenTelemetry();
 app.UseCoreMiddleware<ApiResponseWrapperMiddleware>();
 app.MapControllers();
-app.UseHealthChecks();
+// app.UseHealthChecks();
 
 app.EnsureMigrateDb<IMasterUnitOfWork>();
 app.EnsureMigrateDb<ISampleUnitOfWork>();

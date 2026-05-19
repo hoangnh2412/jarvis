@@ -12,7 +12,7 @@ public interface IUnitOfWork : IDisposable, IAsyncDisposable
     Task<TRepository> GetRepositoryAsync<TRepository>(CancellationToken cancellationToken = default)
         where TRepository : IRepository;
 
-    Task<int> SaveAsync(CancellationToken cancellationToken = default);
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     Task<TTransaction> BeginTransactionAsync<TTransaction>(IsolationLevel isolation = IsolationLevel.ReadCommitted, CancellationToken cancellationToken = default);
 

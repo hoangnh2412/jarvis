@@ -3,6 +3,7 @@ using Jarvis.EntityFramework;
 using Jarvis.EntityFramework.DataStorages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sample.Entities;
 using Sample.Multitenancy;
 using Sample.Persistence;
 
@@ -20,11 +21,11 @@ public static class HostApplicationBuilderExtension
         builder.Services.AddScoped<ISampleUnitOfWork, SampleUnitOfWork>();
         builder.Services.AddScoped<TenantEfTestService>();
 
-        builder.Services.AddCoreDbContext<MasterDbContext, ConfigConnectionStringResolver>(options =>
+        builder.Services.AddCoreDbContext<MasterDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("MasterDbContext")));
 
-        builder.Services.AddCoreDbContext<TenantDbContext, DbTenantConnectionStringResolver<MasterDbContext>>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("TenantDbContext")));
+        builder.Services.AddCoreDbContext<TenantDbContext, DbTenantConnectionStringResolver<MasterDbContext, Tenant>>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("TenantDbContext")!));
 
         return builder;
     }

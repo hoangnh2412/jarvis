@@ -35,7 +35,7 @@ public abstract class BaseUnitOfWork<T>(
         return repo;
     }
 
-    public async Task<int> SaveAsync(CancellationToken cancellationToken = default)
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var dbContext = await EnsureDbContextAsync(cancellationToken).ConfigureAwait(false);
         return await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

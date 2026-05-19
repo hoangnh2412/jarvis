@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using Jarvis.Domain.DataStorages;
+using Jarvis.Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.Entities;
@@ -12,28 +13,78 @@ namespace Sample.Controllers;
 /// Demo EF multitenancy: HTTP header vs background job.
 /// </summary>
 [ApiController]
-[Route("api/v{version:apiVersion}/tests/ef")]
+[Route("api/v{version:apiVersion}/tests/ef-multitenancy")]
 public class MultitenancyEfTestController(
-    ISampleUnitOfWork unitOfWork,
-    IMasterUnitOfWork masterUnitOfWork,
-    ITenantIdResolverFactory tenantIdResolverFactory,
-    ITenantConnectionStringResolverFactory connectionStringFactory,
+    // ITenantIdResolverFactory tenantIdResolverFactory,
+    // ITenantConnectionStringResolverFactory connectionStringFactory,
     TenantEfTestService tenantEfTestService) : ControllerBase
 {
     /// <summary>
+    /// Lists tenants from Master DB (connection string registry).
+    /// </summary>
+    [HttpGet("http/master")]
+    [MapToApiVersion(2.0)]
+    public async Task<ActionResult<IReadOnlyList<object>>> ListMasterTenantsAsync(
+        [FromServices] IMasterUnitOfWork uowMaster,
+        CancellationToken cancellationToken)
+    {
+        var repoTenant = await uowMaster.GetRepositoryAsync<IRepository<Tenant>>(cancellationToken);
+        var beforeGet = await repoTenant
+            .GetQuery()
+            .ToListAsync(cancellationToken);
+
+        var tenant = await repoTenant.GetByIdAsync(x => x.Id == Guid.Parse("dd348565-5d31-46bb-aef7-aa7f0c4a1866"), cancellationToken);
+        if (tenant == null)
+        {
+            tenant = await repoTenant.InsertAsync(new Tenant
+            {
+                Id = Guid.Parse("dd348565-5d31-46bb-aef7-aa7f0c4a1866"),
+                ConnectionString = Guid.NewGuid().ToString()
+            }, cancellationToken);
+        }
+        else
+        {
+            tenant.ConnectionString = Guid.NewGuid().ToString();
+        }
+
+        await uowMaster.SaveChangesAsync(cancellationToken);
+
+        var afterGet = await repoTenant
+            .GetQuery()
+            .ToListAsync(cancellationToken);
+
+        return Ok(new
+        {
+            Before = beforeGet,
+            Tenant = tenant,
+            After = afterGet
+        });
+    }
+
+    /// <summary>
     /// Case 1: send <c>X-Tenant-Id: {tenant-guid}</c>. Interceptor resolves connection from Master.Tenant when tenant exists.
     /// </summary>
-    [HttpGet("http-tenant")]
+    [HttpGet("http/master-tenant")]
     [MapToApiVersion(2.0)]
-    public async Task<ActionResult<TenantEfTestResult>> GetWithHeaderAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult<TenantEfTestResult>> QueryMasterDbAsync(
+        [FromServices] IMasterUnitOfWork uowMaster,
+        [FromServices] ISampleUnitOfWork uowTenant,
+        CancellationToken cancellationToken)
     {
-        var result = await TenantEfTestService.RunHttpRequestAsync(
-            unitOfWork,
-            tenantIdResolverFactory,
-            connectionStringFactory,
-            cancellationToken).ConfigureAwait(false);
+        var repoTenant = await uowMaster.GetRepositoryAsync<IRepository<Tenant>>(cancellationToken);
+        var tenants = await repoTenant.GetQuery().ToListAsync(cancellationToken: cancellationToken);
 
-        return Ok(result);
+        var repoStudent = await uowTenant.GetRepositoryAsync<IRepository<Student>>(cancellationToken);
+        var beforeGet = await repoStudent.GetQuery().ToListAsync(cancellationToken: cancellationToken);
+
+        var afterGet = await repoStudent.GetQuery().ToListAsync(cancellationToken: cancellationToken);
+
+        return Ok(new
+        {
+            Tenants = tenants,
+            Before = beforeGet,
+            After = afterGet
+        });
     }
 
     /// <summary>
@@ -50,46 +101,5 @@ public class MultitenancyEfTestController(
             .ConfigureAwait(false);
 
         return Ok(result);
-    }
-
-    /// <summary>
-    /// Lists tenants from Master DB (connection string registry).
-    /// </summary>
-    [HttpGet("master/tenants")]
-    [MapToApiVersion(2.0)]
-    public async Task<ActionResult<IReadOnlyList<object>>> ListMasterTenantsAsync(CancellationToken cancellationToken)
-    {
-        var masterContext = (MasterDbContext)await masterUnitOfWork.GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var tenants = await masterContext.Tenants
-            .AsNoTracking()
-            .Select(t => new
-            {
-                t.Id,
-                ConnectionStringPreview = ConnectionStringHelper.Mask(t.ConnectionString)
-            })
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        return Ok(tenants);
-    }
-
-    /// <summary>
-    /// Seeds a tenant row in Master (for local testing).
-    /// </summary>
-    [HttpPost("master/tenants")]
-    [MapToApiVersion(2.0)]
-    public async Task<ActionResult<object>> SeedMasterTenantAsync(
-        [FromBody] Tenant seed,
-        CancellationToken cancellationToken)
-    {
-        var masterContext = (MasterDbContext)await masterUnitOfWork.GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-        masterContext.Tenants.Add(seed);
-        await masterUnitOfWork.SaveAsync(cancellationToken).ConfigureAwait(false);
-
-        return Ok(new
-        {
-            seed.Id,
-            ConnectionStringPreview = ConnectionStringHelper.Mask(seed.ConnectionString)
-        });
     }
 }

@@ -4,7 +4,8 @@ namespace Jarvis.Domain.DataStorages;
 
 /// <summary>
 /// Default <see cref="ITenantConnectionStringResolverFactory"/>: tenant id from <see cref="ITenantIdResolverFactory"/>,
-/// connection string from keyed <see cref="ITenantConnectionStringResolver"/> (key = <c>DbContext</c> type name).
+/// connection string from keyed <see cref="ITenantConnectionStringResolver"/> (key = <c>DbContext</c> type name):
+/// no tenant → <c>ConnectionStrings:{DbContextName}</c>; with tenant → connection name = tenant <see cref="Guid"/>.
 /// </summary>
 public sealed class TenantConnectionStringResolverFactory(
     ITenantIdResolverFactory tenantIdResolverFactory,
@@ -18,17 +19,12 @@ public sealed class TenantConnectionStringResolverFactory(
     {
         ArgumentNullException.ThrowIfNull(dbContextType);
 
+        ITenantConnectionStringResolver resolver = _serviceProvider.GetRequiredKeyedService<ITenantConnectionStringResolver>(nameof(ConfigConnectionStringResolver));
         var tenantId = await _tenantIdResolverFactory.GetTenantIdAsync(cancellationToken).ConfigureAwait(false);
+        if (tenantId is null)
+            return await resolver.GetConnectionStringAsync(dbContextType.Name, cancellationToken).ConfigureAwait(false);
 
-        var connectionName = tenantId?.ToString();
-        if (string.IsNullOrEmpty(connectionName))
-            connectionName = dbContextType.Name;
-
-        var resolver = _serviceProvider.GetRequiredKeyedService<ITenantConnectionStringResolver>(dbContextType.Name);
-
-        var connectionString = await resolver.GetConnectionStringAsync(connectionName, cancellationToken)
-            .ConfigureAwait(false);
-
-        return string.IsNullOrWhiteSpace(connectionString) ? null : connectionString;
+        resolver = _serviceProvider.GetRequiredKeyedService<ITenantConnectionStringResolver>(dbContextType.Name);
+        return await resolver.GetConnectionStringAsync(tenantId.Value.ToString(), cancellationToken).ConfigureAwait(false);
     }
 }
