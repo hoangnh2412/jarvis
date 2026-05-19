@@ -76,11 +76,11 @@ Bảng đầy đủ version: xem csproj repo Jarvis hoặc [workflows/init.md](w
 
 ## Modules (atomic)
 
-| Module | Path | Skill con |
+| Module | Path | Doc con / skill chuyên sâu |
 |---|---|---|
 | Foundation | [modules/foundation/SKILL.md](modules/foundation/SKILL.md) | — |
 | Application | [modules/application/SKILL.md](modules/application/SKILL.md) | — |
-| Entity Framework | [modules/entityframework/SKILL.md](modules/entityframework/SKILL.md) | — |
+| Entity Framework | [modules/entityframework/SKILL.md](modules/entityframework/SKILL.md) | [setup](modules/entityframework/setup.md) · [single-db](modules/entityframework/single-db.md) · [separate-tenant-db](modules/entityframework/separate-tenant-db.md) · [hybrid](modules/entityframework/hybrid.md) · [custom-di](modules/entityframework/custom-di.md) |
 | Caching | [modules/caching/SKILL.md](modules/caching/SKILL.md) | — |
 | Authentication | [modules/authentication/SKILL.md](modules/authentication/SKILL.md) | — |
 | Blob storing | [modules/blob-storing/SKILL.md](modules/blob-storing/SKILL.md) | — |

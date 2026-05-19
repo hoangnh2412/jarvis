@@ -45,10 +45,11 @@ Copy snippet từ `modules/<module>/SKILL.md` vào `Program.cs` đúng vị trí
 
 Thêm section appsettings theo module (xem từng SKILL).
 
-## Bước 5 — Skill con (nếu có)
+## Bước 5 — Doc con / skill chuyên sâu (nếu có)
 
-| Module | Skill chuyên sâu |
+| Module | Đọc thêm |
 |---|---|
+| Entity Framework | [setup.md](../modules/entityframework/setup.md) + mô hình DB: [single-db](../modules/entityframework/single-db.md) / [separate-tenant-db](../modules/entityframework/separate-tenant-db.md) / [hybrid](../modules/entityframework/hybrid.md) / [custom-di](../modules/entityframework/custom-di.md) |
 | OpenTelemetry | [telemetry-dotnet](../../telemetry-dotnet/SKILL.md) |
 | HealthChecks | [healthcheck-dotnet](../../healthcheck-dotnet/SKILL.md) |
 
