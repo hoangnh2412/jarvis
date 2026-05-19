@@ -15,17 +15,6 @@ public sealed class TenantDbConnectionInterceptor(IServiceScopeFactory scopeFact
 {
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
-    public override InterceptionResult ConnectionOpening(
-        DbConnection connection,
-        ConnectionEventData eventData,
-        InterceptionResult result)
-    {
-        ApplyConnectionStringAsync(connection, eventData.Context, CancellationToken.None)
-            .GetAwaiter()
-            .GetResult();
-        return base.ConnectionOpening(connection, eventData, result);
-    }
-
     public override async ValueTask<InterceptionResult> ConnectionOpeningAsync(
         DbConnection connection,
         ConnectionEventData eventData,

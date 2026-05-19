@@ -63,4 +63,30 @@ public abstract class BaseStorageContext<TDbContext>(
     }
 
     public virtual void SetTenantId(Guid? tenantId) => TenantId = tenantId;
+
+    public override int SaveChanges()
+    {
+        TenantScopedContextValidation.EnsureTenantIdForSave(this);
+        return base.SaveChanges();
+    }
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        TenantScopedContextValidation.EnsureTenantIdForSave(this);
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        TenantScopedContextValidation.EnsureTenantIdForSave(this);
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
+    {
+        TenantScopedContextValidation.EnsureTenantIdForSave(this);
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
 }

@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Sample.Entities;
 
-public class Tenant : BaseTenantEntity
+public class Tenant : BaseEntity<Guid>, ITenantManagementEntity
 {
-    // public required string ConnectionString { get; set; }
+    public required string ConnectionString { get; set; }
 }
 
 public class TenantEntityConfiguration : IEntityTypeConfiguration<Tenant>

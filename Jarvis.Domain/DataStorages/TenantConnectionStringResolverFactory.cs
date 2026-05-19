@@ -3,15 +3,18 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jarvis.Domain.DataStorages;
 
 /// <summary>
-/// Default <see cref="ITenantConnectionStringResolverFactory"/>: tenant id from <see cref="ITenantIdResolverFactory"/>,
-/// connection string from keyed <see cref="ITenantConnectionStringResolver"/> (key = <c>DbContext</c> type name):
+/// Default <see cref="ITenantConnectionStringResolverFactory"/>: tenant id from
+/// <see cref="ICurrentTenantAccessor"/> then <see cref="ITenantIdResolverFactory"/>, connection string from keyed
+/// <see cref="ITenantConnectionStringResolver"/> (key = <c>DbContext</c> type name):
 /// no tenant → <c>ConnectionStrings:{DbContextName}</c>; with tenant → connection name = tenant <see cref="Guid"/>.
 /// </summary>
 public sealed class TenantConnectionStringResolverFactory(
+    ICurrentTenantAccessor currentTenantAccessor,
     ITenantIdResolverFactory tenantIdResolverFactory,
     IServiceProvider serviceProvider)
     : ITenantConnectionStringResolverFactory
 {
+    private readonly ICurrentTenantAccessor _currentTenantAccessor = currentTenantAccessor;
     private readonly ITenantIdResolverFactory _tenantIdResolverFactory = tenantIdResolverFactory;
     private readonly IServiceProvider _serviceProvider = serviceProvider;
 
@@ -19,8 +22,10 @@ public sealed class TenantConnectionStringResolverFactory(
     {
         ArgumentNullException.ThrowIfNull(dbContextType);
 
+        Guid? tenantId = _currentTenantAccessor.TenantId;
+        if (!tenantId.HasValue)
+            tenantId = await _tenantIdResolverFactory.GetTenantIdAsync(cancellationToken).ConfigureAwait(false);
 
-        var tenantId = await _tenantIdResolverFactory.GetTenantIdAsync(cancellationToken).ConfigureAwait(false);
         if (tenantId is null)
         {
             var configResolver = _serviceProvider.GetRequiredKeyedService<ITenantConnectionStringResolver>(nameof(ConfigConnectionStringResolver));

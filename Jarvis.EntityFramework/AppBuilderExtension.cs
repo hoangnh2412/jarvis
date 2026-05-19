@@ -1,4 +1,5 @@
 using Jarvis.Domain.Repositories;
+using Jarvis.EntityFramework.DataStorages;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,10 +17,11 @@ public static class AppBuilderExtension
             return builder;
 
         using (var scope = builder.ApplicationServices.CreateScope())
+        using (TenantScopedContextValidation.BeginSuppressScope())
         {
             var uow = scope.ServiceProvider.GetRequiredService<T>();
             var dbContext = uow.GetDbContextAsync().GetAwaiter().GetResult() as DbContext;
-            dbContext?.Database.Migrate();
+            dbContext?.Database.MigrateAsync().GetAwaiter().GetResult();
         }
 
         return builder;

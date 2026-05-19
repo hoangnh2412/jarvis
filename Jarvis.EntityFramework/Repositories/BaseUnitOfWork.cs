@@ -51,8 +51,7 @@ public abstract class BaseUnitOfWork<T>(
     public async Task<TRepository> GetRepositoryAsync<TRepository>(CancellationToken cancellationToken = default)
         where TRepository : IRepository
     {
-        var repo = (TRepository)_services.GetRequiredService(typeof(TRepository))
-            ?? throw new NullReferenceException($"Service name {typeof(TRepository).Name} can't resolve");
+        var repo = (TRepository)_services.GetRequiredService(typeof(TRepository)) ?? throw new InvalidOperationException($"Repository '{typeof(TRepository).Name}' is not registered.");
         var context = await GetDbContextAsync(cancellationToken).ConfigureAwait(false);
         repo.SetStorageContext(context);
         return repo;
@@ -136,7 +135,7 @@ public abstract class BaseUnitOfWork<T>(
 
     private async Task<DbContext> EnsureDbContextAsync(CancellationToken cancellationToken)
     {
-        var tenantId = await ResolveTenantIdAsync(cancellationToken).ConfigureAwait(false);
+        var tenantId = _switchedTenantId ?? await _tenantIdResolverFactory.GetTenantIdAsync(cancellationToken).ConfigureAwait(false);
 
         if (StorageContext != null && _contextTenantId == tenantId)
         {
@@ -155,17 +154,6 @@ public abstract class BaseUnitOfWork<T>(
         _contextTenantId = tenantId;
         ApplyTenantId(tenantId);
         return StorageContext;
-    }
-
-    private async Task<Guid?> ResolveTenantIdAsync(CancellationToken cancellationToken)
-    {
-        if (_switchedTenantId.HasValue)
-            return _switchedTenantId;
-
-        if (_currentTenantAccessor.TenantId.HasValue)
-            return _currentTenantAccessor.TenantId;
-
-        return await _tenantIdResolverFactory.GetTenantIdAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private void ApplyTenantId(Guid? tenantId)

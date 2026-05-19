@@ -3,24 +3,18 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Jarvis.Domain.DataStorages;
 
 /// <summary>
-/// Default <see cref="ITenantIdResolverFactory"/> implementation. Resolves the current tenant by trying
-/// <see cref="ICurrentTenantAccessor"/> first, then keyed <see cref="ITenantIdResolver"/> services in order:
+/// Default <see cref="ITenantIdResolverFactory"/>: keyed <see cref="ITenantIdResolver"/> in order —
 /// <see cref="HeaderTenantIdResolver"/> → <see cref="UserTenantIdResolver"/> → <see cref="QueryTenantIdResolver"/> →
 /// <see cref="HostTenantIdResolver"/>.
+/// Does not read <see cref="ICurrentTenantAccessor"/> (UoW and HTTP-only resolution).
+/// Connection opening reads the accessor first in <see cref="TenantConnectionStringResolverFactory"/>.
 /// </summary>
-public class TenantIdResolverFactory(
-    IServiceProvider serviceProvider,
-    ICurrentTenantAccessor currentTenantAccessor)
-    : ITenantIdResolverFactory
+public class TenantIdResolverFactory(IServiceProvider serviceProvider) : ITenantIdResolverFactory
 {
     private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private readonly ICurrentTenantAccessor _currentTenantAccessor = currentTenantAccessor;
 
     public virtual async Task<Guid?> GetTenantIdAsync(CancellationToken cancellationToken = default)
     {
-        if (_currentTenantAccessor.TenantId.HasValue)
-            return _currentTenantAccessor.TenantId;
-
         var tenantId = await TryResolveAsync(nameof(HeaderTenantIdResolver), cancellationToken).ConfigureAwait(false);
         if (tenantId.HasValue)
             return tenantId;

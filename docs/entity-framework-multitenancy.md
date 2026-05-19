@@ -30,8 +30,15 @@
 
 ## Unit of work
 
-- `BaseUnitOfWork` dùng `IDbContextFactory.CreateDbContextAsync()`, rồi áp `ITenantIdResolverFactory` (`SetTenantId`) khi có. Connection string do interceptor gán khi connection mở.
-- Implement `IDisposable` / `IAsyncDisposable`: dispose context khi scope UoW kết thúc.
+- `BaseUnitOfWork` dùng `IDbContextFactory.CreateDbContextAsync()`, rồi `SetTenantId` khi có tenant. Thứ tự resolve **trên từng UoW**: `_switchedTenantId` (sau `SwitchDbContextAsync`) → `ITenantIdResolverFactory` (header/claim/query/host). **Không** đọc `ICurrentTenantAccessor` trong UoW (tránh tenant UoW switch làm Master UoW nhận nhầm tenant trong cùng request).
+- `ICurrentTenantAccessor` chỉ được set trong `SwitchDbContextAsync` và đọc khi **mở connection** (interceptor / `TenantConnectionStringResolverFactory`), không dùng khi UoW gọi `SetTenantId`.
+- Implement `IDisposable` / `IAsyncDisposable`: dispose context và restore accessor scope khi UoW kết thúc.
+
+### `SwitchDbContextAsync`
+
+- Pin tenant trên UoW (`_switchedTenantId`) và `ICurrentTenantAccessor` (cho interceptor); dispose DbContext đã cache nếu tenant đổi.
+- **Sau `SwitchDbContextAsync` phải gọi lại `GetRepositoryAsync`** — repository lấy trước đó vẫn giữ `IStorageContext` cũ, có thể đọc/ghi nhầm DB tenant.
+- Thứ tự đúng: `SwitchDbContextAsync(tenantId)` → `GetRepositoryAsync` / `GetDbContextAsync` → query hoặc `SaveChangesAsync`.
 
 ## Master DB + batch cập nhật nhiều tenant (dedicated DB)
 
@@ -63,4 +70,4 @@ builder.Services.AddCoreDbContext<AppDbContext, ConfigConnectionStringResolver>(
 
 ```
 
-Job/background không có HTTP tenant: mỗi job dùng `CreateAsyncScope`, gọi `SwitchDbContextAsync(tenantId)` rồi `GetRepositoryAsync` / `GetDbContextAsync` (context được tạo lazy khi cần).
+Job/background không có HTTP tenant: mỗi job dùng `CreateAsyncScope`, gọi `SwitchDbContextAsync(tenantId)`, rồi **`GetRepositoryAsync` lại** (không tái sử dụng repository từ trước switch).

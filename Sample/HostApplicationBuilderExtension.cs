@@ -1,4 +1,3 @@
-using Jarvis.Domain.DataStorages;
 using Jarvis.EntityFramework;
 using Jarvis.EntityFramework.DataStorages;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +17,7 @@ public static class HostApplicationBuilderExtension
             options.UseNpgsql(builder.Configuration.GetConnectionString("MasterDbContext")));
 
         builder.Services.AddCoreDbContext<TenantDbContext, DbTenantConnectionStringResolver<MasterDbContext, Tenant>>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("TenantDbContext")!));
+            options.UseNpgsql(builder.Configuration.GetConnectionString("TenantDbContext")));
 
         return builder;
     }
