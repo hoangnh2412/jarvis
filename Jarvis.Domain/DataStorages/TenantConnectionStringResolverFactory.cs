@@ -19,12 +19,26 @@ public sealed class TenantConnectionStringResolverFactory(
     {
         ArgumentNullException.ThrowIfNull(dbContextType);
 
-        ITenantConnectionStringResolver resolver = _serviceProvider.GetRequiredKeyedService<ITenantConnectionStringResolver>(nameof(ConfigConnectionStringResolver));
+
         var tenantId = await _tenantIdResolverFactory.GetTenantIdAsync(cancellationToken).ConfigureAwait(false);
         if (tenantId is null)
-            return await resolver.GetConnectionStringAsync(dbContextType.Name, cancellationToken).ConfigureAwait(false);
+        {
+            var configResolver = _serviceProvider.GetRequiredKeyedService<ITenantConnectionStringResolver>(nameof(ConfigConnectionStringResolver));
+            return await configResolver.GetConnectionStringAsync(dbContextType.Name, cancellationToken).ConfigureAwait(false);
+        }
 
-        resolver = _serviceProvider.GetRequiredKeyedService<ITenantConnectionStringResolver>(dbContextType.Name);
-        return await resolver.GetConnectionStringAsync(tenantId.Value.ToString(), cancellationToken).ConfigureAwait(false);
+        var tenantResolver = _serviceProvider.GetRequiredKeyedService<ITenantConnectionStringResolver>(dbContextType.Name);
+        var connectionString = await tenantResolver
+            .GetConnectionStringAsync(tenantId.Value.ToString(), cancellationToken)
+            .ConfigureAwait(false);
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException(
+                $"No connection string resolved for tenant '{tenantId}' and DbContext '{dbContextType.Name}'. " +
+                "Register the tenant in the master database or use AddCoreDbContext<TDb, TConnectionStringResolver> for dedicated databases.");
+        }
+
+        return connectionString;
     }
 }

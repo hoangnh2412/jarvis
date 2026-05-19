@@ -10,19 +10,42 @@ namespace Jarvis.EntityFramework.Repositories;
 public abstract class BaseUnitOfWork<T>(
     IServiceProvider services,
     IDbContextFactory<T> factory,
-    ITenantIdResolverFactory tenantIdResolverFactory)
+    ITenantIdResolverFactory tenantIdResolverFactory,
+    ICurrentTenantAccessor currentTenantAccessor)
     : IUnitOfWork<T> where T : DbContext, IStorageContext
 {
     private readonly IServiceProvider _services = services;
     private readonly IDbContextFactory<T> _factory = factory;
     private readonly ITenantIdResolverFactory _tenantIdResolverFactory = tenantIdResolverFactory;
+    private readonly ICurrentTenantAccessor _currentTenantAccessor = currentTenantAccessor;
     protected DbContext? StorageContext { get; private set; }
+    private Guid? _switchedTenantId;
+    private Guid? _contextTenantId;
+    private IDisposable? _tenantScope;
     private bool _disposed;
 
     public async Task<IStorageContext> GetDbContextAsync(CancellationToken cancellationToken = default)
     {
         await EnsureDbContextAsync(cancellationToken).ConfigureAwait(false);
         return (IStorageContext)StorageContext!;
+    }
+
+    public async Task SwitchDbContextAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        if (tenantId == Guid.Empty)
+            throw new ArgumentException("TenantId is required.", nameof(tenantId));
+
+        cancellationToken.ThrowIfCancellationRequested();
+        _switchedTenantId = tenantId;
+        _tenantScope?.Dispose();
+        _tenantScope = _currentTenantAccessor.BeginScope(tenantId);
+
+        if (StorageContext != null && _contextTenantId != tenantId)
+        {
+            await StorageContext.DisposeAsync().ConfigureAwait(false);
+            StorageContext = null;
+            _contextTenantId = null;
+        }
     }
 
     public async Task<TRepository> GetRepositoryAsync<TRepository>(CancellationToken cancellationToken = default)
@@ -80,10 +103,14 @@ public abstract class BaseUnitOfWork<T>(
         if (_disposed)
             return;
         _disposed = true;
+        _tenantScope?.Dispose();
+        _tenantScope = null;
+        _switchedTenantId = null;
         if (StorageContext != null)
         {
             StorageContext.Dispose();
             StorageContext = null;
+            _contextTenantId = null;
         }
 
         GC.SuppressFinalize(this);
@@ -94,10 +121,14 @@ public abstract class BaseUnitOfWork<T>(
         if (_disposed)
             return;
         _disposed = true;
+        _tenantScope?.Dispose();
+        _tenantScope = null;
+        _switchedTenantId = null;
         if (StorageContext != null)
         {
             await StorageContext.DisposeAsync().ConfigureAwait(false);
             StorageContext = null;
+            _contextTenantId = null;
         }
 
         GC.SuppressFinalize(this);
@@ -105,13 +136,43 @@ public abstract class BaseUnitOfWork<T>(
 
     private async Task<DbContext> EnsureDbContextAsync(CancellationToken cancellationToken)
     {
-        if (StorageContext != null)
+        var tenantId = await ResolveTenantIdAsync(cancellationToken).ConfigureAwait(false);
+
+        if (StorageContext != null && _contextTenantId == tenantId)
+        {
+            ApplyTenantId(tenantId);
             return StorageContext;
+        }
+
+        if (StorageContext != null)
+        {
+            await StorageContext.DisposeAsync().ConfigureAwait(false);
+            StorageContext = null;
+            _contextTenantId = null;
+        }
 
         StorageContext = await _factory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var tenantId = await _tenantIdResolverFactory.GetTenantIdAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-        if (tenantId.HasValue)
-            ((IStorageContext)StorageContext).SetTenantId(tenantId);
+        _contextTenantId = tenantId;
+        ApplyTenantId(tenantId);
         return StorageContext;
+    }
+
+    private async Task<Guid?> ResolveTenantIdAsync(CancellationToken cancellationToken)
+    {
+        if (_switchedTenantId.HasValue)
+            return _switchedTenantId;
+
+        if (_currentTenantAccessor.TenantId.HasValue)
+            return _currentTenantAccessor.TenantId;
+
+        return await _tenantIdResolverFactory.GetTenantIdAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private void ApplyTenantId(Guid? tenantId)
+    {
+        if (StorageContext == null || !tenantId.HasValue)
+            return;
+
+        ((IStorageContext)StorageContext).SetTenantId(tenantId);
     }
 }

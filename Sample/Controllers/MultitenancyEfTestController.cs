@@ -9,22 +9,13 @@ using Sample.Persistence;
 
 namespace Sample.Controllers;
 
-/// <summary>
-/// Demo EF multitenancy: HTTP header vs background job.
-/// </summary>
 [ApiController]
 [Route("api/v{version:apiVersion}/tests/ef-multitenancy")]
-public class MultitenancyEfTestController(
-    // ITenantIdResolverFactory tenantIdResolverFactory,
-    // ITenantConnectionStringResolverFactory connectionStringFactory,
-    TenantEfTestService tenantEfTestService) : ControllerBase
+public class MultitenancyEfTestController : ControllerBase
 {
-    /// <summary>
-    /// Lists tenants from Master DB (connection string registry).
-    /// </summary>
     [HttpGet("http/master")]
     [MapToApiVersion(2.0)]
-    public async Task<ActionResult<IReadOnlyList<object>>> ListMasterTenantsAsync(
+    public async Task<IActionResult> ListMasterTenantsAsync(
         [FromServices] IMasterUnitOfWork uowMaster,
         CancellationToken cancellationToken)
     {
@@ -39,12 +30,12 @@ public class MultitenancyEfTestController(
             tenant = await repoTenant.InsertAsync(new Tenant
             {
                 Id = Guid.Parse("dd348565-5d31-46bb-aef7-aa7f0c4a1866"),
-                ConnectionString = Guid.NewGuid().ToString()
+                ConnectionString = "Test Tenant " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
             }, cancellationToken);
         }
         else
         {
-            tenant.ConnectionString = Guid.NewGuid().ToString();
+            tenant.ConnectionString = "Test Tenant " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         }
 
         await uowMaster.SaveChangesAsync(cancellationToken);
@@ -61,21 +52,42 @@ public class MultitenancyEfTestController(
         });
     }
 
-    /// <summary>
-    /// Case 1: send <c>X-Tenant-Id: {tenant-guid}</c>. Interceptor resolves connection from Master.Tenant when tenant exists.
-    /// </summary>
     [HttpGet("http/master-tenant")]
     [MapToApiVersion(2.0)]
-    public async Task<ActionResult<TenantEfTestResult>> QueryMasterDbAsync(
+    public async Task<IActionResult> QueryMasterDbAsync(
         [FromServices] IMasterUnitOfWork uowMaster,
         [FromServices] ISampleUnitOfWork uowTenant,
+        [FromServices] ITenantIdResolverFactory tenantIdResolverFactory,
         CancellationToken cancellationToken)
     {
+        var tenantId = await tenantIdResolverFactory.GetTenantIdAsync(cancellationToken).ConfigureAwait(false);
+        if (!tenantId.HasValue)
+            throw new Exception("Send header X-Tenant-Id with the tenant Guid registered in Master.Tenant.");
+
+        await uowTenant.SwitchDbContextAsync(tenantId.Value, cancellationToken).ConfigureAwait(false);
+
         var repoTenant = await uowMaster.GetRepositoryAsync<IRepository<Tenant>>(cancellationToken);
         var tenants = await repoTenant.GetQuery().ToListAsync(cancellationToken: cancellationToken);
 
         var repoStudent = await uowTenant.GetRepositoryAsync<IRepository<Student>>(cancellationToken);
         var beforeGet = await repoStudent.GetQuery().ToListAsync(cancellationToken: cancellationToken);
+
+        var studentId = Guid.Parse("006a88c9-0286-47b0-ac87-91e53c0bf2ba");
+        var student = await repoStudent.GetByIdAsync(x => x.Id == studentId, cancellationToken);
+        if (student == null)
+        {
+            student = await repoStudent.InsertAsync(new Student
+            {
+                Id = studentId,
+                Name = "Test Student",
+                TenantId = tenantId.Value,
+            }, cancellationToken);
+        }
+        else
+        {
+            student.Name = "Test Student " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+        await uowTenant.SaveChangesAsync(cancellationToken);
 
         var afterGet = await repoStudent.GetQuery().ToListAsync(cancellationToken: cancellationToken);
 
@@ -83,21 +95,37 @@ public class MultitenancyEfTestController(
         {
             Tenants = tenants,
             Before = beforeGet,
+            Student = student,
             After = afterGet
         });
     }
 
-    /// <summary>
-    /// Case 2: simulate background job with explicit tenant id (no HTTP context).
-    /// </summary>
-    [HttpPost("background-job")]
+    [HttpGet("job/master-tenant")]
     [MapToApiVersion(2.0)]
-    public async Task<ActionResult<TenantEfTestResult>> RunBackgroundJobAsync(
-        [FromBody] BackgroundJobTenantRequest request,
+    public async Task<IActionResult> RunBackgroundJobWithTenantIdAsync(
+        [FromServices] IServiceScopeFactory scopeFactory,
+        [FromServices] MultitenancyEfJobRunner jobRunner,
+        [FromHeader(Name = "X-Tenant-Id")] Guid tenantId,
         CancellationToken cancellationToken)
     {
-        var result = await tenantEfTestService
-            .RunBackgroundJobAsync(request.TenantId, cancellationToken)
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var result = await jobRunner
+            .RunMasterTenantWithTenantIdAsync(scope.ServiceProvider, tenantId, cancellationToken)
+            .ConfigureAwait(false);
+
+        return Ok(result);
+    }
+
+    [HttpGet("job/master")]
+    [MapToApiVersion(2.0)]
+    public async Task<IActionResult> RunBackgroundJobWithoutTenantIdAsync(
+        [FromServices] IServiceScopeFactory scopeFactory,
+        [FromServices] MultitenancyEfJobRunner jobRunner,
+        CancellationToken cancellationToken)
+    {
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var result = await jobRunner
+            .RunMasterWithoutTenantAsync(scope.ServiceProvider, cancellationToken)
             .ConfigureAwait(false);
 
         return Ok(result);

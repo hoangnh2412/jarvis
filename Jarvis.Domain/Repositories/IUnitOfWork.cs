@@ -1,4 +1,5 @@
 using System.Data;
+using Jarvis.Domain.DataStorages;
 
 namespace Jarvis.Domain.Repositories;
 
@@ -8,6 +9,13 @@ namespace Jarvis.Domain.Repositories;
 public interface IUnitOfWork : IDisposable, IAsyncDisposable
 {
     Task<IStorageContext> GetDbContextAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Switches tenant for this unit of work (pinned on UoW + ambient <see cref="ICurrentTenantAccessor"/>)
+    /// and drops the cached context when the tenant changes.
+    /// Does not create a <see cref="IStorageContext"/> — call <see cref="GetRepositoryAsync{TRepository}"/> or <see cref="GetDbContextAsync"/> afterward.
+    /// </summary>
+    Task SwitchDbContextAsync(Guid tenantId, CancellationToken cancellationToken = default);
 
     Task<TRepository> GetRepositoryAsync<TRepository>(CancellationToken cancellationToken = default)
         where TRepository : IRepository;

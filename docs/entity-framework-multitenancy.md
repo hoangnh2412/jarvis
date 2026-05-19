@@ -63,4 +63,4 @@ builder.Services.AddCoreDbContext<AppDbContext, ConfigConnectionStringResolver>(
 
 ```
 
-Job/background không có HTTP tenant: mỗi job dùng `CreateAsyncScope`, đăng ký `ITenantIdResolver` đọc tenant từ payload job; với shared DB + `ITenantEntity`, có thể gọi `SetTenantId` thủ công trên context sau `GetDbContextAsync`.
+Job/background không có HTTP tenant: mỗi job dùng `CreateAsyncScope`, gọi `SwitchDbContextAsync(tenantId)` rồi `GetRepositoryAsync` / `GetDbContextAsync` (context được tạo lazy khi cần).

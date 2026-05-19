@@ -55,12 +55,12 @@ public abstract class EfRepositoryCore<TEntity>
         return await queryable.Where(predicate).ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public Task<(IReadOnlyList<TEntity> Items, int TotalCount)> PaginationAsync(
+    public async Task<(IReadOnlyList<TEntity> Items, int TotalCount)> PaginationAsync(
         PagedListRequest paging,
         Expression<Func<TEntity, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        return PagedListExecutor.ExecuteAsync(GetQuery(), paging, predicate, cancellationToken);
+        return await PagedListExecutor.ExecuteAsync(GetQuery(), paging, predicate, cancellationToken);
     }
 
     public async Task<TEntity> InsertAsync(TEntity entity, CancellationToken cancellationToken = default)
@@ -98,11 +98,11 @@ public abstract class EfRepositoryCore<TEntity>
         return Task.CompletedTask;
     }
 
-    public Task<TEntity?> GetByIdAsync(
+    public async Task<TEntity?> GetByIdAsync(
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default)
     {
-        return DbSet.FirstOrDefaultAsync(predicate, cancellationToken);
+        return await DbSet.FirstOrDefaultAsync(predicate, cancellationToken);
     }
 
     public async Task<IEnumerable<TEntity>> LoadAsync(

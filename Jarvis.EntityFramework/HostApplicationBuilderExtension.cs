@@ -43,15 +43,17 @@ public static class HostApplicationBuilderExtension
         builder.Services.TryAddKeyedScoped<ITenantIdResolver, QueryTenantIdResolver>(nameof(QueryTenantIdResolver));
         builder.Services.TryAddKeyedScoped<ITenantIdResolver, UserTenantIdResolver>(nameof(UserTenantIdResolver));
         builder.Services.TryAddKeyedScoped<ITenantIdResolver, HostTenantIdResolver>(nameof(HostTenantIdResolver));
+        builder.Services.TryAddSingleton<ICurrentTenantAccessor, CurrentTenantAccessor>();
         builder.Services.TryAddScoped<ITenantIdResolverFactory, TenantIdResolverFactory>();
         return builder;
     }
 
     /// <summary>
-    /// Registers <see cref="IDbContextFactory{TContext}"/> with <see cref="TenantDbConnectionInterceptor"/>,
-    /// keyed <see cref="ITenantConnectionStringResolver"/> for <typeparamref name="TDbContext"/>,
-    /// and <see cref="ITenantConnectionStringResolverFactory"/>.
-    /// Tenant id is resolved via <see cref="ITenantIdResolverFactory"/> (header, user, query, host) when the connection opens.
+    /// Registers <see cref="IDbContextFactory{TContext}"/> for dedicated per-tenant databases.
+    /// Adds <see cref="TenantDbConnectionInterceptor"/>, which resolves the connection string when the connection opens
+    /// (<see cref="ITenantIdResolverFactory"/> + keyed <see cref="ITenantConnectionStringResolver"/> for
+    /// <typeparamref name="TDbContext"/> via <see cref="ITenantConnectionStringResolverFactory"/>).
+    /// Registers <typeparamref name="TConnectionStringResolver"/> as the keyed resolver (key = <typeparamref name="TDbContext"/> type name).
     /// </summary>
     /// <typeparam name="TDbContext">Concrete <see cref="DbContext"/> deriving from <see cref="BaseStorageContext{TDbContext}"/>.</typeparam>
     /// <typeparam name="TConnectionStringResolver">Keyed <see cref="ITenantConnectionStringResolver"/> (key = <typeparamref name="TDbContext"/> type name).</typeparam>
@@ -79,15 +81,19 @@ public static class HostApplicationBuilderExtension
     }
 
     /// <summary>
-    /// Registers <see cref="IDbContextFactory{TContext}"/> with <see cref="TenantDbConnectionInterceptor"/>.
-    /// Requires a keyed <see cref="ITenantConnectionStringResolver"/> registered for <typeparamref name="TDbContext"/> (see the two-type-parameter overload).
-    /// Tenant id is resolved via <see cref="ITenantIdResolverFactory"/> when the connection opens.
+    /// Registers <see cref="IDbContextFactory{TContext}"/> with a fixed connection string from <paramref name="configure"/>
+    /// (shared database or master database). Does not add <see cref="TenantDbConnectionInterceptor"/> — the connection string
+    /// is taken only from <paramref name="configure"/>, not rewritten per tenant when the connection opens.
+    /// Registers keyed <see cref="ConfigConnectionStringResolver"/> for <typeparamref name="TDbContext"/> and
+    /// <see cref="ITenantConnectionStringResolverFactory"/> (used when other APIs resolve connection strings by DbContext name).
+    /// Global query filters: <c>BaseUnitOfWork</c> sets tenant id on the context via <see cref="ITenantIdResolverFactory"/>.
+    /// For per-tenant dedicated databases, use <see cref="AddCoreDbContext{TDbContext, TConnectionStringResolver}"/>.
     /// </summary>
     /// <typeparam name="TDbContext">Concrete <see cref="DbContext"/> deriving from <see cref="BaseStorageContext{TDbContext}"/>.</typeparam>
     /// <param name="services">The service collection.</param>
     /// <param name="configure">
-    /// Optional provider setup with a placeholder connection string (overwritten by the interceptor), e.g.
-    /// <c>options =&gt; options.UseNpgsql("Host=localhost;Database=placeholder")</c>.
+    /// Provider setup with the real connection string, e.g.
+    /// <c>options =&gt; options.UseNpgsql(configuration.GetConnectionString("MasterDbContext"))</c>.
     /// </param>
     public static IServiceCollection AddCoreDbContext<TDbContext>(
         this IServiceCollection services,

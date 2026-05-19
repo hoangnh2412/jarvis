@@ -1,5 +1,6 @@
 using Sample;
 using Sample.Health;
+using Sample.Multitenancy;
 using Sample.Persistence;
 using Sample.Telemetry;
 using Jarvis.EntityFramework;
@@ -43,6 +44,7 @@ builder.AddCoreDomain();
 builder.AddCoreWebApi();
 builder.AddEntityFramework();
 builder.AddSampleDbContext();
+builder.Services.AddMultitenancyEfTestHostedService();
 
 // Redis (StackExchange) for Sample demos — same config shape as Cache:DistGroups:Redis:Default.
 builder.Services.AddKeyedSingleton<IConnectionMultiplexer>("Default", (_, keyedService) =>

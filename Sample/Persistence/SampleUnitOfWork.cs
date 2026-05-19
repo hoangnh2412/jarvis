@@ -8,7 +8,8 @@ namespace Sample.Persistence;
 public class SampleUnitOfWork(
     IServiceProvider services,
     IDbContextFactory<TenantDbContext> factory,
-    ITenantIdResolverFactory tenantIdResolverFactory)
-    : BaseUnitOfWork<TenantDbContext>(services, factory, tenantIdResolverFactory), ISampleUnitOfWork
+    ITenantIdResolverFactory tenantIdResolverFactory,
+    ICurrentTenantAccessor currentTenantAccessor)
+    : BaseUnitOfWork<TenantDbContext>(services, factory, tenantIdResolverFactory, currentTenantAccessor), ISampleUnitOfWork
 {
 }
