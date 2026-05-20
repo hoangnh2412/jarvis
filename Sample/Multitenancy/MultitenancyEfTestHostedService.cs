@@ -1,3 +1,5 @@
+using Jarvis.OpenTelemetry.HostedServices;
+
 namespace Sample.Multitenancy;
 
 /// <summary>
@@ -6,59 +8,45 @@ namespace Sample.Multitenancy;
 public sealed class MultitenancyEfTestHostedService(
     IServiceScopeFactory scopeFactory,
     ILogger<MultitenancyEfTestHostedService> logger)
-    : BackgroundService
+    : BaseWorker(scopeFactory, logger)
 {
     private static readonly TimeSpan StartupDelay = TimeSpan.FromSeconds(5);
-    private static readonly TimeSpan Interval = TimeSpan.FromSeconds(60);
     private static readonly Guid TestTenantId = MultitenancyEfJobRunner.MasterTenantRegistryId;
 
-    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
-    private readonly ILogger<MultitenancyEfTestHostedService> _logger = logger;
+    /// <summary>Every minute (replaces the previous 60s fixed delay loop).</summary>
+    protected override string CronExpression => "* * * * *";
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.Delay(StartupDelay, stoppingToken).ConfigureAwait(false);
 
-        _logger.LogInformation(
-            "Multitenancy EF test hosted service started. Interval={IntervalSeconds}s, TenantId={TenantId}",
-            Interval.TotalSeconds,
+        logger.LogInformation(
+            "Multitenancy EF test hosted service started. Cron={CronExpression}, TenantId={TenantId}",
+            CronExpression,
             TestTenantId);
 
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
-            {
-                await RunOnceAsync(stoppingToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Multitenancy EF test job failed");
-            }
-
-            await Task.Delay(Interval, stoppingToken).ConfigureAwait(false);
-        }
+        await base.ExecuteAsync(stoppingToken).ConfigureAwait(false);
     }
 
-    private async Task RunOnceAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteJobAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken)
     {
-        await using var scope = _scopeFactory.CreateAsyncScope();
-        var runner = scope.ServiceProvider.GetRequiredService<MultitenancyEfJobRunner>();
+        var runner = serviceProvider.GetRequiredService<MultitenancyEfJobRunner>();
 
         var masterResult = await runner
-            .RunMasterWithoutTenantAsync(scope.ServiceProvider, cancellationToken)
+            .RunMasterWithoutTenantAsync(serviceProvider, cancellationToken)
             .ConfigureAwait(false);
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "Job [master]: tenant {TenantId}, rows before={BeforeCount} after={AfterCount}",
             masterResult.TenantId,
             masterResult.BeforeCount,
             masterResult.AfterCount);
 
         var tenantResult = await runner
-            .RunMasterTenantWithTenantIdAsync(scope.ServiceProvider, Guid.Parse("238c06f2-aa2a-406f-bb94-d1646211f741"), cancellationToken)
+            .RunMasterTenantWithTenantIdAsync(serviceProvider, Guid.Parse("238c06f2-aa2a-406f-bb94-d1646211f741"), cancellationToken)
             .ConfigureAwait(false);
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "Job [master-tenant]: tenant={TenantId}, students before={BeforeCount} after={AfterCount}, student={StudentName}",
             tenantResult.TenantId,
             tenantResult.BeforeCount,
