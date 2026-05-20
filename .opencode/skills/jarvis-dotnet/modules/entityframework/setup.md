@@ -16,7 +16,7 @@
 | `TenantDbConnectionInterceptor` | EF | Ghi connection lúc mở (overload 2 generic) |
 | `ITenantManagementEntity` | Domain | Registry Master: `Id`, `ConnectionString` |
 
-`AddEntityFramework()` → repository + keyed `ITenantIdResolver` + `ICurrentTenantAccessor`. Host gọi `AddCoreDbContext` theo mô hình.
+`AddJarvisCaching()` rồi `AddEntityFramework()` → repository + tenant resolvers. Mọi `ITenantConnectionStringResolver` được bọc cache (`Cache:Items:ConnectionString`, `conn:{dbid}`); memory/Redis qua `MemSeconds` / `DistributedSeconds`. Inner resolver = fallback tùy host (config, DB, API, …).
 
 ## Luồng resolve tenant
 

@@ -36,7 +36,7 @@ builder.Services
     {
         options
             .AddEntityFrameworkCoreInstrumentation()
-            .AddJarvisCachingRedisInstrumentation("Default")
+            .AddJarvisCachingDistributedRedisInstrumentation(builder.Configuration)
             .AddJarvisCachingMemoryInvalidationRedisInstrumentation();
     })
     .ConfigureMetric();
@@ -44,15 +44,13 @@ builder.Services
 builder.AddCoreJson();
 builder.AddCoreCors();
 builder.AddCoreDomain();
-
 builder.AddCoreWebApi();
+
+builder.AddJarvisCaching().UseRedisDistributedCache().UseRedisMemoryCacheInvalidation();
+
 builder.AddEntityFramework();
 builder.AddSampleDbContext();
-builder.Services.AddMultitenancyEfTestHostedService();
-
-builder.AddJarvisCaching()
-    .UseRedisDistributedCache()
-    .UseRedisMemoryCacheInvalidation();
+builder.AddMultitenancyEfTestHostedService();
 
 // Redis (StackExchange) for Sample demos — same config shape as Cache:DistributedGroups:Redis:Default.
 builder.Services.AddKeyedSingleton<IConnectionMultiplexer>("Default", (_, keyedService) =>

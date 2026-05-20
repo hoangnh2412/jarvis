@@ -17,10 +17,9 @@
 ## Đăng ký DI
 
 - `AddMultitenancy` chỉ đăng ký keyed **`ITenantIdResolver`** (Header, Query, User, Host). **Không** đăng ký `ITenantConnectionStringResolver` — app tự chọn nguồn connection string (config, header, custom).
-- Tuỳ chọn Jarvis:
-  - `AddKeyedConfigConnectionStringResolver` — `ConfigConnectionStringResolver` từ `IConfiguration`.
-  - `AddKeyedCachingConfigConnectionStringResolver` — bọc config resolver bằng `CachingTenantConnectionStringResolver` (gọi `AddMemoryCache`; **không** dùng chung với `AddKeyedConfigConnectionStringResolver` cùng một key).
-- `AddMultitenancyWithMemoryCache` — `AddMultitenancy` + `AddMemoryCache` khi resolver của bạn cần cache.
+- **Cache mặc định:** Mọi `ITenantConnectionStringResolver` đăng ký qua `AddCoreDbContext` / `AddEntityFramework` được bọc `CachingTenantConnectionStringResolver` (`ICacheService`). Cần `AddJarvisCaching()` trước `AddEntityFramework()`.
+- **Memory vs Redis:** Chỉ cấu hình trong `Cache:Items` (vd. `ConnectionString`: `MemSeconds`, `DistributedSeconds`, `DistributedGroup`) — không đăng ký DI riêng cho từng tầng.
+- **Fallback (miss):** Implement `ITenantConnectionStringResolver` — config, EF master, HTTP API, MinIO, …; Jarvis không giới hạn nguồn.
 - `AddCoreDbContext<TDb,TConn>` dùng **`AddDbContextFactory`** + **`TenantDbConnectionInterceptor`**: `configure` chỉ cần provider với connection placeholder; khi mở connection, interceptor resolve tenant qua `ITenantIdResolverFactory` rồi lấy connection string từ keyed `ITenantConnectionStringResolver`.
 
 ## Filter động `field:op:value`
@@ -64,10 +63,10 @@ foreach (var tenant in tenants)
 Đăng ký ví dụ:
 
 ```csharp
-builder.Services.AddKeyedConfigConnectionStringResolver();
+builder.AddJarvisCaching();
+builder.AddEntityFramework();
 builder.Services.AddCoreDbContext<AppDbContext, ConfigConnectionStringResolver>(options =>
     options.UseNpgsql("Host=localhost;Database=placeholder"));
-
 ```
 
 Job/background không có HTTP tenant: mỗi job dùng `CreateAsyncScope`, gọi `SwitchDbContextAsync(tenantId)`, rồi **`GetRepositoryAsync` lại** (không tái sử dụng repository từ trước switch).

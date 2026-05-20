@@ -220,9 +220,11 @@ using Jarvis.Caching.Redis.Extensions;
 
 .ConfigureTrace(options =>
 {
-    options.AddRedisInstrumentation("Default"); // app/demo Redis
+    // Mọi cluster trong Cache:DistributedGroups:Redis (cùng connection với UseRedisDistributedCache)
+    options.AddJarvisCachingDistributedRedisInstrumentation(builder.Configuration);
     options.AddJarvisCachingMemoryInvalidationRedisInstrumentation();
-    // hoặc: options.AddJarvisCachingRedisInstrumentation("MyOtherRedisKey");
+    // Tuỳ chọn: keyed multiplexer riêng (app/demo)
+    // options.AddJarvisCachingRedisInstrumentation("Default");
 })
 ```
 

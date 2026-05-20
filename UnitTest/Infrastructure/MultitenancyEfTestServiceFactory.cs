@@ -1,3 +1,4 @@
+using Jarvis.Caching.Extensions;
 using Jarvis.Domain.DataStorages;
 using Jarvis.Domain.Repositories;
 using Jarvis.EntityFramework;
@@ -22,6 +23,14 @@ internal static class MultitenancyEfTestServiceFactory
     {
         var root = sharedRoot ?? new InMemoryDatabaseRoot();
         var builder = Host.CreateApplicationBuilder();
+        builder.AddJarvisCaching(o =>
+        {
+            o.Items["ConnectionString"] = new Jarvis.Caching.CacheEntryOption
+            {
+                Key = "conn:{dbid}",
+                MemSeconds = 3600,
+            };
+        });
         builder.AddEntityFramework();
 
         var services = builder.Services;

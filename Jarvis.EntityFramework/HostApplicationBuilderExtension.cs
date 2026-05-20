@@ -3,6 +3,8 @@ using Jarvis.Domain.Repositories;
 using Jarvis.EntityFramework.DataStorages;
 using Jarvis.EntityFramework.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Jarvis.Caching;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -26,12 +28,42 @@ public static class HostApplicationBuilderExtension
 
     private static IHostApplicationBuilder AddRepositories(this IHostApplicationBuilder builder)
     {
-        builder.Services.TryAddKeyedScoped<ITenantConnectionStringResolver, ConfigConnectionStringResolver>(nameof(ConfigConnectionStringResolver));
+        RegisterCachedConnectionStringResolver(
+            builder.Services,
+            nameof(ConfigConnectionStringResolver),
+            sp => new ConfigConnectionStringResolver(sp.GetRequiredService<IConfiguration>()));
+
         builder.Services.TryAddScoped(typeof(IQueryRepository<>), typeof(BaseQueryRepository<>));
         builder.Services.TryAddScoped(typeof(ICommandRepository<>), typeof(BaseCommandRepository<>));
         builder.Services.TryAddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
 
         return builder;
+    }
+
+    /// <summary>
+    /// Keyed <see cref="ITenantConnectionStringResolver"/> wrapped with <see cref="CachingTenantConnectionStringResolver"/>.
+    /// Requires <c>AddJarvisCaching</c> before <c>AddEntityFramework</c>. Cache tiers: <c>Cache:Items</c> (memory / distributed via config).
+    /// </summary>
+    private static void RegisterCachedConnectionStringResolver(
+        IServiceCollection services,
+        string serviceKey,
+        Func<IServiceProvider, ITenantConnectionStringResolver> createInner,
+        string cacheItemName = CachingTenantConnectionStringResolver.DefaultCacheItemName,
+        string parameterName = CachingTenantConnectionStringResolver.DefaultParameterName)
+    {
+        services.RemoveAllKeyed<ITenantConnectionStringResolver>(serviceKey);
+        services.AddKeyedScoped<ITenantConnectionStringResolver>(serviceKey, (sp, _) =>
+        {
+            var cacheService = sp.GetService<ICacheService>()
+                ?? throw new InvalidOperationException(
+                    "ICacheService is not registered. Call AddJarvisCaching() before AddEntityFramework().");
+
+            return new CachingTenantConnectionStringResolver(
+                createInner(sp),
+                cacheService,
+                cacheItemName,
+                parameterName);
+        });
     }
 
     /// <summary>
@@ -53,10 +85,10 @@ public static class HostApplicationBuilderExtension
     /// Adds <see cref="TenantDbConnectionInterceptor"/>, which resolves the connection string when the connection opens
     /// (<see cref="ITenantIdResolverFactory"/> + keyed <see cref="ITenantConnectionStringResolver"/> for
     /// <typeparamref name="TDbContext"/> via <see cref="ITenantConnectionStringResolverFactory"/>).
-    /// Registers <typeparamref name="TConnectionStringResolver"/> as the keyed resolver (key = <typeparamref name="TDbContext"/> type name).
+    /// Registers <typeparamref name="TConnectionStringResolver"/> as the inner fallback (DB, config, API, …); exposed keyed resolver is always cached.
     /// </summary>
     /// <typeparam name="TDbContext">Concrete <see cref="DbContext"/> deriving from <see cref="BaseStorageContext{TDbContext}"/>.</typeparam>
-    /// <typeparam name="TConnectionStringResolver">Keyed <see cref="ITenantConnectionStringResolver"/> (key = <typeparamref name="TDbContext"/> type name).</typeparam>
+    /// <typeparam name="TConnectionStringResolver">Inner <see cref="ITenantConnectionStringResolver"/> invoked on cache miss.</typeparam>
     /// <param name="services">The service collection.</param>
     /// <param name="configure">
     /// Optional provider setup with a placeholder connection string (overwritten by the interceptor), e.g.
@@ -68,7 +100,11 @@ public static class HostApplicationBuilderExtension
         where TDbContext : BaseStorageContext<TDbContext>
         where TConnectionStringResolver : class, ITenantConnectionStringResolver
     {
-        services.TryAddKeyedScoped<ITenantConnectionStringResolver, TConnectionStringResolver>(typeof(TDbContext).Name);
+        services.TryAddScoped<TConnectionStringResolver>();
+        RegisterCachedConnectionStringResolver(
+            services,
+            typeof(TDbContext).Name,
+            sp => sp.GetRequiredService<TConnectionStringResolver>());
         services.TryAddScoped<ITenantConnectionStringResolverFactory, TenantConnectionStringResolverFactory>();
         services.TryAddSingleton<TenantDbConnectionInterceptor>();
 
@@ -100,7 +136,10 @@ public static class HostApplicationBuilderExtension
         Action<DbContextOptionsBuilder>? configure = null)
         where TDbContext : BaseStorageContext<TDbContext>
     {
-        services.TryAddKeyedScoped<ITenantConnectionStringResolver, ConfigConnectionStringResolver>(typeof(TDbContext).Name);
+        RegisterCachedConnectionStringResolver(
+            services,
+            typeof(TDbContext).Name,
+            sp => new ConfigConnectionStringResolver(sp.GetRequiredService<IConfiguration>()));
         services.TryAddScoped<ITenantConnectionStringResolverFactory, TenantConnectionStringResolverFactory>();
 
         services.AddDbContextFactory<TDbContext>((sp, options) =>

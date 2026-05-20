@@ -1,6 +1,7 @@
 using {Product}.Domain.DependencyInjection;
 using {Product}.Domain.Repositories;
 using {Product}.Infrastructure.Persistence;
+using Jarvis.Caching.Extensions;
 using Jarvis.Domain.DataStorages;
 using Jarvis.EntityFramework;
 using Jarvis.EntityFramework.DataStorages;
@@ -15,13 +16,13 @@ public static class InfrastructureLayerExtension
   public static IHostApplicationBuilder AddInfrastructureLayer(this IHostApplicationBuilder builder)
   {
     builder.AddDomainLayer();
+    builder.AddJarvisCaching();
     builder.AddEntityFramework();
 
     builder.Services.AddScoped<IAppUnitOfWork, AppUnitOfWork>();
-    builder.Services.AddKeyedConfigConnectionStringResolver();
 
-    builder.Services.AddCoreDbContext<AppDbContext, ConfigConnectionStringResolver>(
-      (options, connectionString) => options.UseNpgsql(connectionString));
+    builder.Services.AddCoreDbContext<AppDbContext, ConfigConnectionStringResolver>(options =>
+      options.UseNpgsql("Host=localhost;Database=placeholder"));
 
     return builder;
   }
