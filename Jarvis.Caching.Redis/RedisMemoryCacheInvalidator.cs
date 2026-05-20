@@ -5,54 +5,63 @@ using StackExchange.Redis;
 
 namespace Jarvis.Caching.Redis;
 
-public class RedisMemoryCacheInvalidator(
-    string configuration,
+/// <summary>
+/// Subscribes to cross-node memory cache invalidation messages and removes entries on peer instances.
+/// </summary>
+public sealed class RedisMemoryCacheInvalidationSubscriber(
+    IConnectionMultiplexer connectionMultiplexer,
     IMemoryCache memoryCache,
-    ILogger<RedisMemoryCacheInvalidator> logger)
-    : BackgroundService, IMemoryCacheInvalidator
+    ILogger<RedisMemoryCacheInvalidationSubscriber> logger)
+    : BackgroundService, IMemoryCacheInvalidationSubscriber
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new();
+
+    private readonly IConnectionMultiplexer _muxer = connectionMultiplexer;
     private readonly IMemoryCache _memCache = memoryCache;
-    private IConnectionMultiplexer? _muxer;
-    private readonly string _configuration = configuration;
-    private readonly ILogger<RedisMemoryCacheInvalidator> _logger = logger;
+    private readonly ILogger<RedisMemoryCacheInvalidationSubscriber> _logger = logger;
 
     public async Task RemoveAsync(MemoryCacheInvalidationInfo info, CancellationToken cancellationToken = default)
     {
-        if (info.MachineName != Environment.MachineName)
-        {
-            await _memCache.RemoveAsync(info.Key, cancellationToken);
-        }
+        cancellationToken.ThrowIfCancellationRequested();
+        if (string.Equals(info.MachineName, Environment.MachineName, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        await _memCache.RemoveAsync(info.Key, cancellationToken).ConfigureAwait(false);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _muxer ??= await RedisConnectionManager.GetInstance().CreateAsync(_configuration);
-        await _muxer.GetSubscriber().SubscribeAsync(RedisChannel.Literal(MemoryCacheInvalidationInfo.MemoryCacheInvalidationChannel), async (channel, message) =>
-        {
-            try
-            {
-                var msg = message.ToString();
-                if (string.IsNullOrEmpty(msg))
-                    return;
+        await _muxer.GetSubscriber()
+            .SubscribeAsync(RedisChannel.Literal(MemoryCacheInvalidationDefaults.RedisChannel),
+                async (_, message) =>
+                {
+                    if (stoppingToken.IsCancellationRequested)
+                        return;
 
-                var info = JsonSerializer.Deserialize<MemoryCacheInvalidationInfo>(msg);
-                if (info == null)
-                    return;
+                    try
+                    {
+                        var msg = message.ToString();
+                        if (string.IsNullOrEmpty(msg))
+                            return;
 
-                await RemoveAsync(info);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error trying to invalidate mem-cache with key {key}", message);
-            }
-        });
+                        var info = JsonSerializer.Deserialize<MemoryCacheInvalidationInfo>(msg, SerializerOptions);
+                        if (info is null)
+                            return;
+
+                        await RemoveAsync(info, stoppingToken).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to invalidate memory cache for message {Message}", message);
+                    }
+                })
+            .ConfigureAwait(false);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        if (_muxer == null)
-            return;
-
-        await _muxer.GetSubscriber().UnsubscribeAsync(RedisChannel.Literal(MemoryCacheInvalidationInfo.MemoryCacheInvalidationChannel));
+        await _muxer.GetSubscriber()
+            .UnsubscribeAsync(RedisChannel.Literal(MemoryCacheInvalidationDefaults.RedisChannel))
+            .ConfigureAwait(false);
     }
 }

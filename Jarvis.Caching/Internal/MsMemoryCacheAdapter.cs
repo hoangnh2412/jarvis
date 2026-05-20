@@ -1,17 +1,17 @@
-﻿
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Jarvis.Caching.Memory;
+namespace Jarvis.Caching.Internal;
 
-public class MemoryCache(
-    Microsoft.Extensions.Caching.Memory.IMemoryCache cache)
-    : IMemoryCache
+internal sealed class MsMemoryCacheAdapter(Microsoft.Extensions.Caching.Memory.IMemoryCache cache) : IMemoryCache
 {
     private readonly Microsoft.Extensions.Caching.Memory.IMemoryCache _cache = cache;
 
-    public Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
+    public Task<CacheValue<T>> TryGetAsync<T>(string key, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_cache.Get<T>(key));
+        if (_cache.TryGetValue(key, out T? value))
+            return Task.FromResult(CacheValue<T>.Hit(value));
+
+        return Task.FromResult(CacheValue<T>.Miss());
     }
 
     public Task RemoveAsync(string key, CancellationToken cancellationToken = default)
@@ -22,10 +22,10 @@ public class MemoryCache(
 
     public Task SetAsync<T>(string key, T data, TimeSpan? expires = null, CancellationToken cancellationToken = default)
     {
-        if (expires == null)
+        if (expires is null)
             return Task.CompletedTask;
 
-        _cache.Set(key, data, new MemoryCacheEntryOptions()
+        _cache.Set(key, data, new MemoryCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = expires.Value
         });

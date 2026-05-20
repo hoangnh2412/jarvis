@@ -17,6 +17,9 @@ using Jarvis.HealthChecks;
 using Serilog;
 using StackExchange.Redis;
 using OpenTelemetry.Trace;
+using Jarvis.Caching.Extensions;
+using Jarvis.Caching.Redis;
+using Jarvis.Caching.Redis.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +36,8 @@ builder.Services
     {
         options
             .AddEntityFrameworkCoreInstrumentation()
-            .AddRedisInstrumentation("Default");
+            .AddJarvisCachingRedisInstrumentation("Default")
+            .AddJarvisCachingMemoryInvalidationRedisInstrumentation();
     })
     .ConfigureMetric();
 
@@ -46,11 +50,15 @@ builder.AddEntityFramework();
 builder.AddSampleDbContext();
 builder.Services.AddMultitenancyEfTestHostedService();
 
-// Redis (StackExchange) for Sample demos — same config shape as Cache:DistGroups:Redis:Default.
+builder.AddJarvisCaching()
+    .UseRedisDistributedCache()
+    .UseRedisMemoryCacheInvalidation();
+
+// Redis (StackExchange) for Sample demos — same config shape as Cache:DistributedGroups:Redis:Default.
 builder.Services.AddKeyedSingleton<IConnectionMultiplexer>("Default", (_, keyedService) =>
 {
     var configuration = _.GetRequiredService<IConfiguration>();
-    var redisConfig = configuration["Cache:DistGroups:Redis:Default:Configuration"];
+    var redisConfig = configuration["Cache:DistributedGroups:Redis:Default:Configuration"];
     return ConnectionMultiplexer.Connect(redisConfig!);
 });
 

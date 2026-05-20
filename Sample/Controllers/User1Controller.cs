@@ -68,7 +68,7 @@ public class User1Controller(
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Demo Redis failed (ensure Redis at Cache:DistGroups:Redis:Default:Configuration).");
+            logger.LogWarning(ex, "Demo Redis failed (ensure Redis at Cache:DistributedGroups:Redis:Default:Configuration).");
             SampleUserV1Metrics.RedisOperations.Add(1, new KeyValuePair<string, object?>("op", "error"));
         }
         finally

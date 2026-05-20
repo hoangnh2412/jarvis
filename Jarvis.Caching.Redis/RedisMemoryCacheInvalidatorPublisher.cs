@@ -1,22 +1,21 @@
-using Newtonsoft.Json;
+using System.Text.Json;
 using StackExchange.Redis;
 
 namespace Jarvis.Caching.Redis;
 
-public class RedisMemoryCacheInvalidatorPublisher : IMemoryCacheInvalidatorPublisher
+public sealed class RedisMemoryCacheInvalidationPublisher(IConnectionMultiplexer connectionMultiplexer)
+    : IMemoryCacheInvalidationPublisher
 {
-    private readonly string _configuration;
-    public RedisMemoryCacheInvalidatorPublisher(string configuration)
-    {
-        _configuration = configuration;
-    }
+    private static readonly JsonSerializerOptions SerializerOptions = new();
 
-    public async Task PublishAsync(MemoryCacheInvalidationInfo info)
-    {
-        var muxer = await RedisConnectionManager.GetInstance().CreateAsync(_configuration);
-        if (muxer == null)
-            return;
+    private readonly IConnectionMultiplexer _muxer = connectionMultiplexer;
 
-        await muxer.GetSubscriber().PublishAsync(RedisChannel.Literal(MemoryCacheInvalidationInfo.MemoryCacheInvalidationChannel), JsonConvert.SerializeObject(info));
+    public async Task PublishAsync(MemoryCacheInvalidationInfo info, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var payload = JsonSerializer.Serialize(info, SerializerOptions);
+        await _muxer.GetSubscriber()
+            .PublishAsync(RedisChannel.Literal(MemoryCacheInvalidationDefaults.RedisChannel), payload)
+            .ConfigureAwait(false);
     }
 }

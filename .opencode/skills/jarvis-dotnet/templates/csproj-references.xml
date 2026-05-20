@@ -16,7 +16,6 @@
   <ProjectReference Include="..\Jarvis.OpenTelemetry.Instrumentation.StackExchangeRedis\Jarvis.OpenTelemetry.Instrumentation.StackExchangeRedis.csproj" />
 
   <!-- Caching -->
-  <ProjectReference Include="..\Jarvis.Caching.Memory\Jarvis.Caching.Memory.csproj" />
   <ProjectReference Include="..\Jarvis.Caching.Redis\Jarvis.Caching.Redis.csproj" />
 
   <!-- Authentication -->

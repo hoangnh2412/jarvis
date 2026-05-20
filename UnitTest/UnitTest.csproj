@@ -23,6 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jarvis.Caching\Jarvis.Caching.csproj" />
+    <ProjectReference Include="..\Jarvis.Caching.Redis\Jarvis.Caching.Redis.csproj" />
     <ProjectReference Include="..\Jarvis.Domain\Jarvis.Domain.csproj" />
     <ProjectReference Include="..\Jarvis.EntityFramework\Jarvis.EntityFramework.csproj" />
     <ProjectReference Include="..\Sample\Sample.csproj" />

@@ -1,90 +1,51 @@
+using System.Collections.Concurrent;
 using StackExchange.Redis;
 
 namespace Jarvis.Caching.Redis;
 
 public interface IRedisConnectionManager
 {
-    IConnectionMultiplexer Create(string configuration);
+    IConnectionMultiplexer Create(RedisConnectionPurpose purpose, string configuration);
 
-    Task<IConnectionMultiplexer> CreateAsync(string configuration);
+    Task<IConnectionMultiplexer> CreateAsync(RedisConnectionPurpose purpose, string configuration);
 
-    IConnectionMultiplexer GetConnection(string configuration);
-
+    IConnectionMultiplexer GetConnection(RedisConnectionPurpose purpose, string configuration);
 }
 
-public class RedisConnectionManager : IRedisConnectionManager
+public sealed class RedisConnectionManager : IRedisConnectionManager
 {
-    private readonly Dictionary<string, IConnectionMultiplexer> Connections = new();
-    private readonly static object syncLock = new();
-    private readonly static SemaphoreSlim semaphoreSlim = new(1, 1);
-    private readonly static object singletonLock = new();
-    private static IRedisConnectionManager? singleton;
+    private readonly ConcurrentDictionary<string, Lazy<IConnectionMultiplexer>> _connections = new(StringComparer.Ordinal);
 
-    public static IRedisConnectionManager GetInstance()
+    public static IRedisConnectionManager Instance { get; } = new RedisConnectionManager();
+
+    public static IRedisConnectionManager GetInstance() => Instance;
+
+    public IConnectionMultiplexer Create(RedisConnectionPurpose purpose, string configuration)
     {
-        if (singleton == null)
-        {
-            lock (singletonLock)
+        ArgumentNullException.ThrowIfNull(configuration);
+        return _connections.GetOrAdd(BuildKey(purpose, configuration), static key =>
+            new Lazy<IConnectionMultiplexer>(() =>
             {
-                if (singleton == null)
-                {
-                    singleton = new RedisConnectionManager();
-                    return singleton;
-                }
-            }
-        }
-        return singleton;
+                var config = key[(key.IndexOf('\0', StringComparison.Ordinal) + 1)..];
+                return ConnectionMultiplexer.Connect(config);
+            })).Value;
     }
 
-    public IConnectionMultiplexer Create(string configuration)
+    public Task<IConnectionMultiplexer> CreateAsync(RedisConnectionPurpose purpose, string configuration)
     {
-        ArgumentNullException.ThrowIfNull(configuration, nameof(configuration));
-        if (!Connections.ContainsKey(configuration))
-        {
-            lock (syncLock)
-            {
-                if (!Connections.ContainsKey(configuration))
-                {
-                    var muxer = ConnectionMultiplexer.Connect(configuration);
-                    Connections.Add(configuration, muxer);
-                    return muxer;
-                }
-            }
-        }
-        return Connections[configuration];
+        return Task.FromResult(Create(purpose, configuration));
     }
 
-    public async Task<IConnectionMultiplexer> CreateAsync(string configuration)
+    public IConnectionMultiplexer GetConnection(RedisConnectionPurpose purpose, string configuration)
     {
-        ArgumentNullException.ThrowIfNull(configuration, nameof(configuration));
-        if (!Connections.ContainsKey(configuration))
-        {
-            await semaphoreSlim.WaitAsync();
-            try
-            {
-                if (!Connections.ContainsKey(configuration))
-                {
-                    var muxer = ConnectionMultiplexer.Connect(configuration);
-                    Connections.Add(configuration, muxer);
-                    return muxer;
-                }
-            }
-            finally
-            {
-                semaphoreSlim.Release();
-            }
-        }
-        return Connections[configuration];
+        ArgumentNullException.ThrowIfNull(configuration);
+        if (_connections.TryGetValue(BuildKey(purpose, configuration), out var lazy))
+            return lazy.Value;
+
+        throw new InvalidOperationException(
+            $"No Redis connection registered for purpose '{purpose}' and configuration '{configuration}'. Call Create or CreateAsync first.");
     }
 
-    public IConnectionMultiplexer GetConnection(string configuration)
-    {
-        Connections.TryGetValue(configuration, out var connectionMultiplexer);
-
-        if (connectionMultiplexer is null)
-            throw new NullReferenceException(nameof(connectionMultiplexer));
-
-        return connectionMultiplexer;
-    }
-
+    internal static string BuildKey(RedisConnectionPurpose purpose, string configuration) =>
+        $"{purpose}\0{configuration}";
 }

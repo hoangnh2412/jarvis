@@ -8,7 +8,7 @@ public class CacheParam
     public Dictionary<string, string> Params { get; internal set; } = new Dictionary<string, string>();
     public bool HasParams => Params is not null and { Count: > 0 };
     public bool MemExpiresSet => MemoryExpiresIn is not null && !MemoryExpiresIn.Equals(TimeSpan.Zero);
-    public bool DistExpiresSet => DistributedExpiresIn is not null && !DistributedExpiresIn.Equals(TimeSpan.Zero);
+    public bool DistributedExpiresSet => DistributedExpiresIn is not null && !DistributedExpiresIn.Equals(TimeSpan.Zero);
 
     public static CacheParam Create(string name) => new CacheParam().WithName(name);
 
@@ -25,7 +25,7 @@ public class CacheParam
         return this;
     }
 
-    public CacheParam DistExpires(TimeSpan expire)
+    public CacheParam DistributedExpires(TimeSpan expire)
     {
         DistributedExpiresIn = expire;
         return this;

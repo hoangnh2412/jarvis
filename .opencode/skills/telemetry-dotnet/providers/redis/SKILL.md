@@ -44,3 +44,21 @@ builder.Services
     });
 })
 ```
+
+**Jarvis caching — invalidation connection riêng:**
+
+Memory invalidation dùng `MemoryCacheInvalidationDefaults.ConnectionServiceKey` (không trùng `DistributedGroups`).
+
+```csharp
+builder.AddJarvisCaching()
+    .UseRedisDistributedCache()
+    .UseRedisMemoryCacheInvalidation(); // đọc Cache:MemoryInvalidation:Redis:Configuration
+
+.ConfigureTrace(options =>
+{
+    options.AddRedisInstrumentation("Default");
+    options.AddJarvisCachingMemoryInvalidationRedisInstrumentation();
+})
+```
+
+Mỗi `AddRedisInstrumentation(keyedName)` chỉ instrument đúng multiplexer đó — thêm connection mới không ảnh hưởng connection cũ.

@@ -1,44 +1,40 @@
+using Jarvis.Caching.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Jarvis.Caching.Redis;
 
 public static class CachingBuilderExtension
 {
-    public static CachingBuilder UseDistributedRedisCache(this CachingBuilder builder)
+    public static JarvisCachingBuilder UseRedisDistributedCache(this JarvisCachingBuilder builder)
     {
-        if (!builder.Config.DistGroups.ContainsKey("Redis"))
-            throw new InvalidOperationException("Can't use distributed redis cache, no configuration found!");
+        if (!builder.OptionsSnapshot.DistributedGroups.ContainsKey("Redis"))
+            throw new InvalidOperationException("Cache:DistributedGroups:Redis is required for UseRedisDistributedCache.");
 
-        var redisSection = builder.Config.DistGroups["Redis"];
-        foreach (var group in redisSection)
-        {
-            builder.AddDistCache(
-                $"Redis:{group.Key}",
-                new RedisCache(
-                    RedisConnectionManager.GetInstance().Create(group.Value["Configuration"]),
-                    group.Value["InstanceName"]
-                )
-            );
-        }
+        builder.HostBuilder.Services.AddSingleton<IConfigureOptions<DistributedCacheRegistry>>(
+            _ => new ConfigureRedisDistributedCaches(builder.OptionsSnapshot));
+
         return builder;
     }
 
-    public static CachingBuilder UseRedisMemCacheInvalidation(this CachingBuilder builder, string configuration)
+    /// <summary>
+    /// Registers a dedicated Redis pub/sub connection for cross-node memory invalidation
+    /// (<see cref="MemoryCacheInvalidationDefaults.ConnectionServiceKey"/>), separate from distributed cache clusters.
+    /// </summary>
+    /// <param name="configuration">
+    /// StackExchange.Redis configuration string. When null, uses
+    /// <c>Cache:MemoryInvalidation:Redis:Configuration</c>.
+    /// </param>
+    public static JarvisCachingBuilder UseRedisMemoryCacheInvalidation(
+        this JarvisCachingBuilder builder,
+        string? configuration = null)
     {
-        builder.Services.AddSingleton<IMemoryCacheInvalidatorPublisher>(sp =>
-        {
-            return new RedisMemoryCacheInvalidatorPublisher(configuration);
-        });
+        var resolved = RedisMemoryCacheInvalidationRegistration.ResolveConfiguration(
+            builder.HostBuilder.Configuration,
+            builder.OptionsSnapshot,
+            configuration);
 
-        builder.Services.AddHostedService(sp =>
-        {
-            return new RedisMemoryCacheInvalidator(
-                configuration,
-                sp.GetRequiredService<IMemoryCache>(),
-                sp.GetRequiredService<ILogger<RedisMemoryCacheInvalidator>>()
-            );
-        });
+        RedisMemoryCacheInvalidationRegistration.Register(builder.HostBuilder.Services, resolved);
         return builder;
     }
 }
