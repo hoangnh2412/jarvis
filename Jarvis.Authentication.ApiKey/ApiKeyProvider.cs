@@ -7,34 +7,82 @@ namespace Jarvis.Authentication.ApiKey;
 public class ApiKeyProvider : IApiKeyProvider
 {
     private readonly IOptionsFactory<AuthenticationApiKeyOption> _options;
-    private readonly ILogger<IApiKeyProvider> _logger;
+    private readonly IOptions<ApiKeyProviderOptions> _providerOptions;
+    private readonly ILogger<ApiKeyProvider> _logger;
 
     public ApiKeyProvider(
         IOptionsFactory<AuthenticationApiKeyOption> options,
-        ILogger<IApiKeyProvider> logger)
+        IOptions<ApiKeyProviderOptions> providerOptions,
+        ILogger<ApiKeyProvider> logger)
     {
         _options = options;
+        _providerOptions = providerOptions;
         _logger = logger;
     }
 
-    public virtual async Task<IApiKey?> ProvideAsync(string key)
+    public virtual Task<IApiKey?> ProvideAsync(string key)
     {
-        await Task.Yield();
+        if (string.IsNullOrWhiteSpace(key))
+            return Task.FromResult<IApiKey?>(null);
 
-        var splited = key.Split(":");
-        if (splited.Length != 2)
+        if (TryParseRealmKey(key, out var realm, out var secret))
+            return Task.FromResult(ValidateRealmKey(realm, secret, key));
+
+        return Task.FromResult(ValidateSingleKey(key));
+    }
+
+    private IApiKey? ValidateSingleKey(string key)
+    {
+        var schemeName = _providerOptions.Value.DefaultSchemeName;
+        var option = _options.Create(schemeName);
+
+        if (option.Mode == ApiKeyMode.RealmKey)
         {
-            _logger.LogError($"API KEY do not contains REALM");
+            _logger.LogDebug("API key rejected: scheme {Scheme} expects RealmKey format.", schemeName);
             return null;
         }
 
-        var realm = splited[0];
-        var apikey = splited[1];
+        if (!option.KeySet.Contains(key))
+            return null;
 
-        var options = _options.Create(realm);
-        if (options.Keys.Contains(apikey))
-            return new ApiKeyModel(key, realm, null);
+        return new ApiKeyModel(key, schemeName, null);
+    }
 
-        return null;
+    private IApiKey? ValidateRealmKey(string realm, string secret, string rawKey)
+    {
+        var option = _options.Create(realm);
+        if (option.Keys.Length == 0 && string.IsNullOrEmpty(option.KeyName))
+        {
+            _logger.LogDebug("API key realm {Realm} is not configured.", realm);
+            return null;
+        }
+
+        if (option.Mode == ApiKeyMode.SingleKey)
+        {
+            if (!option.KeySet.Contains(rawKey))
+                return null;
+
+            return new ApiKeyModel(rawKey, realm, null);
+        }
+
+        if (!option.KeySet.Contains(secret))
+            return null;
+
+        return new ApiKeyModel(rawKey, realm, null);
+    }
+
+    private static bool TryParseRealmKey(string key, out string realm, out string secret)
+    {
+        var index = key.IndexOf(':');
+        if (index <= 0 || index >= key.Length - 1)
+        {
+            realm = string.Empty;
+            secret = string.Empty;
+            return false;
+        }
+
+        realm = key[..index];
+        secret = key[(index + 1)..];
+        return true;
     }
 }

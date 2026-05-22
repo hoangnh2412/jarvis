@@ -1,4 +1,5 @@
 using Sample;
+using Sample.Extensions;
 using Sample.Health;
 using Sample.Multitenancy;
 using Sample.Persistence;
@@ -71,6 +72,8 @@ builder.Services.AddApiVersioning(options =>
     options.SubstituteApiVersionInUrl = true;
 });
 
+builder.AddSampleAuthentication();
+
 builder.AddCoreSwagger();
 
 // builder.Services.AddHostedService<Worker>();
@@ -91,6 +94,8 @@ app.UseCoreSwagger();
 app.UseHttpsRedirection();
 
 app.UseCoreCors();
+
+app.UseAuthentication();
 
 // Demo headers for OTEL trace enrichment (request: send x-demo-request; response: x-demo-response).
 app.UseMiddleware<SampleOtlpDemoHeadersMiddleware>();
