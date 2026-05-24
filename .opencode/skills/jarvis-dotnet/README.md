@@ -44,7 +44,7 @@ Dùng skill jarvis-dotnet init — gắn Jarvis vào solution MyApp có sẵn.
 ### 3. Thêm module cụ thể
 
 ```text
-@.opencode/skills/jarvis-dotnet/modules/authentication/SKILL.md
+@.opencode/skills/authentication-dotnet/providers/jwt/SKILL.md
 
 Thêm JWT vào MyApp.Host.
 ```
@@ -97,7 +97,7 @@ Cài Jarvis vào solution MyApp:
 ```text
 @.opencode/skills/jarvis-dotnet/workflows/add.md
 
-Thêm xác thực JWT vào MyApp.Host theo modules/authentication/SKILL.md
+Thêm xác thực JWT vào MyApp.Host theo authentication-dotnet/providers/jwt/SKILL.md
 ```
 
 ```text
@@ -126,7 +126,7 @@ Theo workflow đã chọn:
 
 1. **Scaffold** — tạo repo `{product}-backend`, 5 project + 2 test, layer extensions, copy [templates/layers/](./templates/layers/), cài package Jarvis, `dotnet build`
 2. **Init** — thêm package theo layer, tạo `*LayerExtension.cs`, cập nhật `Program.cs` (`AddHostLayer` / `UseHostLayer`)
-3. **Add** — đọc `modules/<module>/SKILL.md` hoặc skill độc lập (`caching-dotnet`, `entityframework-dotnet`, `telemetry-dotnet`, …), thêm package + DI + appsettings
+3. **Add** — [templates/SKILLS.md](./templates/SKILLS.md) + skill `*-dotnet`, thêm package + DI + appsettings
 
 **Output bắt buộc (scaffold):**
 
@@ -153,22 +153,22 @@ Chi tiết cấu trúc: [reference/solution-structure.md](./reference/solution-s
 dotnet run --project src/{Product}.Host
 ```
 
-## Modules Jarvis (atomic)
+## Modules Jarvis (skill độc lập)
 
-Chỉ mở module cần dùng — [workflows/add.md](./workflows/add.md):
+Chỉ mở skill cần dùng — [workflows/add.md](./workflows/add.md):
 
-| Module | SKILL | Ghi chú develop |
-|--------|-------|-----------------|
-| Foundation | [modules/foundation/SKILL.md](./modules/foundation/SKILL.md) | Json, CORS, WebApi, middleware |
-| Application | [modules/application/SKILL.md](./modules/application/SKILL.md) | CQRS dispatcher |
-| Entity Framework | — | [entityframework-dotnet](../entityframework-dotnet/README.md) · **Caching trước EF** |
-| Caching | — | [caching-dotnet](../caching-dotnet/README.md) |
-| Authentication | [modules/authentication/SKILL.md](./modules/authentication/SKILL.md) | JWT, API Key, Cognito |
-| Blob storing | — | [blobstoring-dotnet](../blobstoring-dotnet/README.md) |
-| Notification | [modules/notification/SKILL.md](./modules/notification/SKILL.md) | SMTP Mailkit |
-| Swashbuckle | — | [swashbuckle-dotnet](../swashbuckle-dotnet/README.md) |
-| OpenTelemetry | — | [telemetry-dotnet](../telemetry-dotnet/README.md) · [SKILL.md](../telemetry-dotnet/SKILL.md) |
-| Health checks | — | [healthcheck-dotnet](../healthcheck-dotnet/README.md) · [SKILL.md](../healthcheck-dotnet/SKILL.md) |
+| Module | Skill | Ghi chú |
+|--------|-------|---------|
+| Foundation | [foundation-dotnet](../foundation-dotnet/README.md) | Json, CORS, WebApi, middleware |
+| Application | [application-dotnet](../application-dotnet/README.md) | CQRS dispatcher |
+| Authentication | [authentication-dotnet](../authentication-dotnet/README.md) | JWT, API Key, Cognito |
+| Notification | [notification-dotnet](../notification-dotnet/README.md) | SMTP Mailkit |
+| Entity Framework | [entityframework-dotnet](../entityframework-dotnet/README.md) | **Caching trước EF** |
+| Caching | [caching-dotnet](../caching-dotnet/README.md) | |
+| Blob storing | [blobstoring-dotnet](../blobstoring-dotnet/README.md) | |
+| Swashbuckle | [swashbuckle-dotnet](../swashbuckle-dotnet/README.md) | |
+| OpenTelemetry | [telemetry-dotnet](../telemetry-dotnet/README.md) | |
+| Health checks | [healthcheck-dotnet](../healthcheck-dotnet/README.md) | |
 
 ## Catalog package (NuGet, develop)
 

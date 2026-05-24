@@ -1,4 +1,6 @@
 <!-- Merge into {Product}.Infrastructure.csproj -->
+<!-- Skills: caching-dotnet, entityframework-dotnet, blobstoring-dotnet, notification-dotnet (tùy chọn) -->
+<!-- Map: jarvis-dotnet/templates/SKILLS.md -->
 <ItemGroup>
   <FrameworkReference Include="Microsoft.AspNetCore.App" />
 </ItemGroup>

@@ -36,3 +36,5 @@ builder.Services.AddAuthentication()
 ```
 
 Implement `IApiKeyProvider` trong host.
+
+Chi tiết auth: [authentication-dotnet/providers/api-key/SKILL.md](../../../authentication-dotnet/providers/api-key/SKILL.md).

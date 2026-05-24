@@ -106,14 +106,14 @@ Copy từ `templates/layers/` → đúng project (đổi namespace `{Product}`):
 | `layers/AppUnitOfWork.cs` | `{Product}.Infrastructure/Persistence/` |
 | `layers/EnrichTraceService.cs` | `{Product}.Host/Services/` |
 | `layers/EnrichLogService.cs` | `{Product}.Host/Services/` |
-| `templates/docs-README.md` | repo `README.md` |
-| `templates/docs-Architecture.md` | `docs/Architecture.md` |
 | `layers/HostLayerExtension.cs` | `{Product}.Host` |
 | `layers/Program.cs` | `{Product}.Host` (thay file mặc định) |
 | `layers/PingController.cs` | `{Product}.Host/Controllers/` |
 | `layers/appsettings.json` | `{Product}.Host` |
-| `layers/appsettings.Development.json` | `{Product}.Host` |
 | `layers/launchSettings.json` | `{Product}.Host/Properties/` |
+| `templates/SKILLS.md` | Tham chiếu agent — **không** copy vào product repo (hoặc link trong `docs/Architecture.md`) |
+| `templates/docs-README.md` | repo `README.md` |
+| `templates/docs-Architecture.md` | `docs/Architecture.md` |
 
 ## Bước 6 — Program.cs (composition root)
 
@@ -141,7 +141,16 @@ dotnet run --project "${PRODUCT}.Host"
 
 ## Bước 8 — Sau scaffold
 
-- Thêm entity vào `Domain/Entities/`
-- Thêm handler vào `Application/Features/`
-- Đăng ký handler trong `ApplicationLayerExtension`
-- Readiness: skill [healthcheck-dotnet](../../healthcheck-dotnet/SKILL.md)
+**Bản đồ module:** [templates/SKILLS.md](../templates/SKILLS.md) — mọi mở rộng qua skill `*-dotnet` trong `.opencode/skills/`.
+
+| Việc | Skill |
+|------|-------|
+| Entity / handler | Code product + [application-dotnet](../../application-dotnet/workflows/add.md) |
+| JWT / API Key | [authentication-dotnet](../../authentication-dotnet/README.md) |
+| Redis cache | [caching-dotnet](../../caching-dotnet/workflows/add.md) |
+| EF pattern | [entityframework-dotnet](../../entityframework-dotnet/README.md) |
+| Readiness PostgreSQL | [healthcheck-dotnet](../../healthcheck-dotnet/SKILL.md) |
+| Blob / email | [blobstoring-dotnet](../../blobstoring-dotnet/README.md), [notification-dotnet](../../notification-dotnet/README.md) |
+
+- Thêm entity → `Domain/Entities/`
+- Thêm handler → `Application/Features/` + đăng ký `ApplicationLayerExtension`

@@ -87,6 +87,8 @@ builder.AddCoreDbContext<AppDbContext, ...>(...);
 
 Chi tiết multitenancy + batch job: [entityframework-dotnet/README.md](../../entityframework-dotnet/README.md).
 
+Bản đồ scaffold → skill: [templates/SKILLS.md](../templates/SKILLS.md).
+
 ## Background worker + OTEL
 
 Cron job kế thừa `Jarvis.OpenTelemetry.HostedServices.BaseWorker` — mỗi tick có trace và log scope riêng. Tham chiếu: `Sample/Multitenancy/MultitenancyEfTestHostedService.cs`.

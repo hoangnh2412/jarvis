@@ -43,6 +43,7 @@ Chi tiết folder, DI convention, Jarvis mapping: [reference/solution-structure.
 
 | Tài nguyên | Path |
 |---|---|
+| Bản đồ scaffold → skill | [templates/SKILLS.md](templates/SKILLS.md) |
 | Cây thư mục | [templates/solution-tree.txt](templates/solution-tree.txt) |
 | Layer extensions + Host | [templates/layers/](templates/layers/) |
 | csproj Jarvis refs | [templates/layer-csproj/](templates/layer-csproj/) |
@@ -90,18 +91,20 @@ Skill chuyên sâu: [entityframework-dotnet](../entityframework-dotnet/README.md
 
 ## Modules (atomic)
 
-| Module | Path | Doc con / skill chuyên sâu |
-|---|---|---|
-| Foundation | [modules/foundation/SKILL.md](modules/foundation/SKILL.md) | — |
-| Application | [modules/application/SKILL.md](modules/application/SKILL.md) | — |
-| Entity Framework | — | [entityframework-dotnet](../entityframework-dotnet/README.md) |
-| Caching | — | [caching-dotnet](../caching-dotnet/README.md) |
-| Authentication | [modules/authentication/SKILL.md](modules/authentication/SKILL.md) | — |
-| Blob storing | — | [blobstoring-dotnet](../blobstoring-dotnet/README.md) |
-| Notification | [modules/notification/SKILL.md](modules/notification/SKILL.md) | — |
-| Swashbuckle | — | [swashbuckle-dotnet](../swashbuckle-dotnet/README.md) |
-| OpenTelemetry | — | [telemetry-dotnet](../telemetry-dotnet/README.md) · [SKILL.md](../telemetry-dotnet/SKILL.md) |
-| Health checks | — | [healthcheck-dotnet](../healthcheck-dotnet/README.md) · [SKILL.md](../healthcheck-dotnet/SKILL.md) |
+| Module | Skill chuyên sâu |
+|---|---|
+| Foundation | [foundation-dotnet](../foundation-dotnet/README.md) |
+| Application | [application-dotnet](../application-dotnet/README.md) |
+| Authentication | [authentication-dotnet](../authentication-dotnet/README.md) |
+| Notification | [notification-dotnet](../notification-dotnet/README.md) |
+| Entity Framework | [entityframework-dotnet](../entityframework-dotnet/README.md) |
+| Caching | [caching-dotnet](../caching-dotnet/README.md) |
+| Blob storing | [blobstoring-dotnet](../blobstoring-dotnet/README.md) |
+| Swashbuckle | [swashbuckle-dotnet](../swashbuckle-dotnet/README.md) |
+| OpenTelemetry | [telemetry-dotnet](../telemetry-dotnet/README.md) |
+| Health checks | [healthcheck-dotnet](../healthcheck-dotnet/README.md) |
+
+Mở rộng module: dùng [templates/SKILLS.md](templates/SKILLS.md) và skill `*-dotnet` trong `.opencode/skills/`.
 
 ## F5 sau scaffold
 

@@ -32,7 +32,7 @@ Thực hiện theo thứ tự sau mỗi lần review:
 3. **Review theo checklist**
    * Duyệt **toàn bộ** các mục trong checklist bên dưới; với mỗi mục, tự hỏi PR có chạm pattern/rủi ro tương ứng không.
    * Chỉ ghi issue khi có **execution path cụ thể** trong phạm vi review; không bịa issue để “lấp” checklist.
-   * Khi solution theo kiến trúc phân lớp Jarvis: bổ sung kiểm tra cấu trúc/DI/layer theo skill `jarvis-dotnet` (reference, không thay checklist C# chung).
+   * Khi solution theo Jarvis hoặc package `Jarvis.*`: duyệt thêm mục **Jarvis framework** bên dưới (không thay checklist C# chung).
 
 4. **Kết luận**
    * Phân loại issue vào đúng bucket (xem mục **Phân loại output**).
@@ -111,6 +111,55 @@ Validation & Domain:
 * date/time range
 * timezone consistency
 * localization/culture issue
+
+## Jarvis framework (khi PR chạm `Jarvis.*` / layer extension)
+
+Bản đồ skill: [jarvis-dotnet/templates/SKILLS.md](../jarvis-dotnet/templates/SKILLS.md). Chỉ flag issue có path trong diff.
+
+### Layer & composition
+
+* `Program.cs` / Host mỏng — logic DI nằm `*LayerExtension`, không reference Infrastructure implementation từ Domain/Application.
+* Application không reference Infrastructure; Host → Application + Infrastructure.
+* Scaffold/add module qua skill `*-dotnet` trong `.opencode/skills/` — không nhân đôi logic trong repo product.
+
+### DI & thứ tự đăng ký
+
+* **`AddJarvisCaching()` trước `AddEntityFramework()`** — thiếu → EF connection resolver cache sai ([caching-dotnet](../caching-dotnet/SKILL.md), [entityframework-dotnet](../entityframework-dotnet/SKILL.md)).
+* `AddCoreDbContext` sau `AddEntityFramework`; overload 2 generic khi per-tenant connection.
+* `AddJarvisOpenTelemetry(..., configureServices)` **trước** `Build()`; plug-in trong callback, không sau `Build()` ([telemetry-dotnet](../telemetry-dotnet/SKILL.md)).
+
+### Multitenancy & UoW (EF)
+
+* Sau `SwitchDbContextAsync` → **`GetRepositoryAsync` lại** — repository cũ giữ DbContext/tenant sai ([entityframework-dotnet](../entityframework-dotnet/README.md)).
+* UoW `SetTenantId`: `_switchedTenantId` / `ITenantIdResolverFactory` — **không** đọc `ICurrentTenantAccessor` nhầm scope.
+* Batch Master + tenant: scope/UoW **riêng** mỗi tenant — không một UoW cho Master và tenant.
+* Job/background: `CreateAsyncScope` → `SwitchDbContextAsync` → repo lại khi không có HTTP tenant.
+
+### OpenTelemetry
+
+* `ITraceInstrumentation` / `IMetricInstrumentation` / `ILoggingExporter` / exporter plug-in: **Singleton** — Scoped gây lỗi hoặc state không an toàn khi build provider.
+* `app.UseJarvisOpenTelemetry()` khi dùng `IEnrichTraceService` / `IEnrichLogService`.
+* `HttpTraceEnrichment`: **allowlist** header — không capture cookie/token/PII lên span.
+* OTLP secret/headers: env hoặc secret store — không commit appsettings.
+* Sampling / `ExcludedPathPrefixes` hợp lý với traffic (không `AlwaysOn` mù quáng trên prod lớn).
+
+### Authentication & API
+
+* `UseAuthentication()` → `UseAuthorization()` **trước** `MapControllers`.
+* PackageId `Jarvis.Authentications.*` (có **s**) khớp reference.
+* API Key: `IApiKeyProvider`; keys không hard-code trong repo ([authentication-dotnet](../authentication-dotnet/README.md)).
+* Swagger `SecuritySchemes` khớp scheme runtime ([swashbuckle-dotnet](../swashbuckle-dotnet/README.md)).
+
+### Caching & Redis
+
+* `GetOrSetAsync` / `RemoveAsync` sau write — cache-aside đúng; `null` loader không ghi cache.
+* Redis trace: `IConnectionMultiplexer` đăng ký **trước** instrumentation ([telemetry-dotnet/providers/redis](../telemetry-dotnet/providers/redis/SKILL.md)).
+
+### Khác
+
+* SMTP / connection string / API keys trong config — placeholder + secret ngoài repo ([notification-dotnet](../notification-dotnet/README.md)).
+* Health: readiness vs liveness — không nhầm dependency ([healthcheck-dotnet](../healthcheck-dotnet/README.md)).
+* `ApiResponseWrapper` `Includes` khớp route API thực tế ([foundation-dotnet](../foundation-dotnet/README.md)).
 
 Security:
 

@@ -32,7 +32,7 @@ builder.Services.AddAuthentication()
     .AddCoreJwtBearer(builder.Configuration);
 ```
 
-Chi tiết auth: [jarvis-dotnet/modules/authentication/SKILL.md](../../jarvis-dotnet/modules/authentication/SKILL.md).
+Chi tiết auth: [authentication-dotnet/providers/jwt/SKILL.md](../../../authentication-dotnet/providers/jwt/SKILL.md).
 
 ## Pipeline
 

@@ -42,4 +42,4 @@ builder.Services.AddApiVersioning(/* … */).AddApiExplorer(/* … */);
 ## Liên quan
 
 - [jarvis-dotnet/README.md](../jarvis-dotnet/README.md) — scaffold Host
-- [authentication module via jarvis-dotnet](../jarvis-dotnet/modules/authentication/SKILL.md) — JWT/API Key runtime
+- [authentication-dotnet](../authentication-dotnet/README.md) — JWT/API Key runtime

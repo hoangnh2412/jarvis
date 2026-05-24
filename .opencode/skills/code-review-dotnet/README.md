@@ -79,11 +79,13 @@ Base: main
 
 ### Solution dùng kiến trúc Jarvis
 
-Skill vẫn là review C# chung. Nếu repo theo layer Jarvis, agent tự bổ sung kiểm tra cấu trúc/DI theo [jarvis-dotnet](../jarvis-dotnet/SKILL.md) — bạn có thể nhắc thêm trong prompt:
+Skill vẫn là review C# chung. Nếu repo dùng Jarvis, agent duyệt thêm checklist **Jarvis framework** trong [SKILL.md](./SKILL.md) (caching trước EF, OTEL plug-in singleton, `SwitchDbContextAsync` + repo lại, PII trên span, …).
 
 ```text
-Review PR theo code-review-dotnet; solution theo Jarvis layered architecture
+Review PR theo code-review-dotnet; solution Jarvis — kiểm tra DI multitenancy và OTEL
 ```
+
+Bản đồ module: [jarvis-dotnet/templates/SKILLS.md](../jarvis-dotnet/templates/SKILLS.md).
 
 ## Agent sẽ làm gì
 
@@ -136,8 +138,10 @@ Agent ghi **Need more context** và nêu cần thêm (base branch, danh sách fi
 
 | File | Nội dung |
 |------|----------|
-| [SKILL.md](./SKILL.md) | Quy tắc đầy đủ, checklist, workflow, format output |
-| [jarvis-dotnet/SKILL.md](../jarvis-dotnet/SKILL.md) | Reference kiến trúc layer khi repo dùng Jarvis (optional) |
+| [SKILL.md](./SKILL.md) | Quy tắc đầy đủ, checklist C# + **Jarvis framework**, workflow, format |
+| [jarvis-dotnet/SKILL.md](../jarvis-dotnet/SKILL.md) | Scaffold / solution structure |
+| [jarvis-dotnet/templates/SKILLS.md](../jarvis-dotnet/templates/SKILLS.md) | Bản đồ skill `*-dotnet` |
+| [entityframework-dotnet](../entityframework-dotnet/README.md) · [caching-dotnet](../caching-dotnet/README.md) · [telemetry-dotnet](../telemetry-dotnet/README.md) | Chi tiết khi review chạm EF / cache / OTEL |
 
 ## Lưu ý
 

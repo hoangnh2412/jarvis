@@ -39,7 +39,7 @@ app.UseHostLayer();
 
 ## Module tùy chọn
 
-Xem [add.md](add.md) và `modules/*/SKILL.md`.
+Xem [add.md](add.md) và [templates/SKILLS.md](../templates/SKILLS.md) — skill `*-dotnet` trong `.opencode/skills/`.
 
 ## Validate
 

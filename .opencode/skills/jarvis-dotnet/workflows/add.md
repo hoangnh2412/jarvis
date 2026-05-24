@@ -6,7 +6,7 @@
 
 ```text
 - [ ] 1. Xác định module (entityframework | authentication | caching | …)
-- [ ] 2. Đọc modules/<module>/SKILL.md
+- [ ] 2. Đọc skill `*-dotnet` (bảng [templates/SKILLS.md](../templates/SKILLS.md))
 - [ ] 3. Thêm ProjectReference / PackageReference
 - [ ] 4. Đăng ký extension trong Program.cs
 - [ ] 5. Thêm section appsettings
@@ -15,9 +15,12 @@
 
 ## Bước 1 — Chọn module
 
-| Loại | Đọc |
+| Module | Skill |
 |------|-----|
-| Module trong `jarvis-dotnet/modules/` | `modules/<tên>/SKILL.md` |
+| Foundation | [foundation-dotnet/SKILL.md](../../foundation-dotnet/SKILL.md) |
+| Application | [application-dotnet/SKILL.md](../../application-dotnet/SKILL.md) |
+| Authentication | [authentication-dotnet/SKILL.md](../../authentication-dotnet/SKILL.md) |
+| Notification | [notification-dotnet/SKILL.md](../../notification-dotnet/SKILL.md) |
 | Caching | [caching-dotnet/SKILL.md](../../caching-dotnet/SKILL.md) |
 | Entity Framework | [entityframework-dotnet/SKILL.md](../../entityframework-dotnet/SKILL.md) |
 | Swashbuckle | [swashbuckle-dotnet/SKILL.md](../../swashbuckle-dotnet/SKILL.md) |
@@ -39,7 +42,7 @@ Hoặc ProjectReference tới `Jarvis.Authentication.Jwt`.
 
 ## Bước 3 — Registration
 
-Copy snippet từ `modules/<module>/SKILL.md` vào `Program.cs` đúng vị trí:
+Copy snippet từ skill `*-dotnet` (workflow hoặc provider) vào `Program.cs` đúng vị trí:
 
 | Module | Thường đăng ký khi |
 |---|---|
@@ -54,16 +57,9 @@ Copy snippet từ `modules/<module>/SKILL.md` vào `Program.cs` đúng vị trí
 
 Thêm section appsettings theo module (xem từng SKILL).
 
-## Bước 5 — Doc con / skill chuyên sâu (nếu có)
+## Bước 5 — Skill chuyên sâu
 
-| Module | Đọc thêm |
-|---|---|
-| Entity Framework | [entityframework-dotnet](../../entityframework-dotnet/README.md) |
-| Caching | [caching-dotnet](../../caching-dotnet/README.md) |
-| Swashbuckle | [swashbuckle-dotnet](../../swashbuckle-dotnet/README.md) |
-| Blob storing | [blobstoring-dotnet](../../blobstoring-dotnet/README.md) |
-| OpenTelemetry | [telemetry-dotnet/README.md](../../telemetry-dotnet/README.md) · [workflows/add.md](../../telemetry-dotnet/workflows/add.md) |
-| HealthChecks | [healthcheck-dotnet/README.md](../../healthcheck-dotnet/README.md) · [workflows/add.md](../../healthcheck-dotnet/workflows/add.md) |
+Mỗi module có `workflows/init.md` / `workflows/add.md` và `providers/` riêng — xem README skill tương ứng trong [.opencode/README.md](../../../README.md).
 
 ## Anti-patterns
 

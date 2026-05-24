@@ -9,13 +9,13 @@ Chuẩn tạo skill trong `.opencode/skills/<tên-skill>/` cho framework Jarvis.
 
 ## 1. Khi nào tạo skill riêng
 
-| Tạo skill `*-dotnet` riêng | Giữ trong `jarvis-dotnet/modules/` |
-|----------------------------|-------------------------------------|
-| Module Jarvis có workflow init/add phức tạp | Module nhỏ, chỉ vài dòng bootstrap |
-| Nhiều biến thể (providers, patterns) | Chưa cần tách — link từ orchestrator |
-| Agent cần discover qua `description` (health, OTEL, EF, cache) | Chỉ dùng khi scaffold/add toàn solution |
+| Tạo skill `*-dotnet` riêng trong `.opencode/skills/` | Chỉ trong `jarvis-dotnet` (scaffold, templates, catalog) |
+|------------------------------------------------------|--------------------------------------------------------|
+| Module Jarvis có workflow init/add phức tạp | Orchestrator solution — `jarvis-dotnet` |
+| Nhiều biến thể (providers, patterns) | Link từ `jarvis-dotnet/templates/SKILLS.md` |
+| Agent cần discover qua `description` (health, OTEL, EF, cache) | Skill độc lập, không thư mục `modules/` con |
 
-Ví dụ skill độc lập: `healthcheck-dotnet`, `caching-dotnet`, `telemetry-dotnet`, `entityframework-dotnet`, `swashbuckle-dotnet`.
+Ví dụ skill độc lập: `foundation-dotnet`, `application-dotnet`, `authentication-dotnet`, `notification-dotnet`, `healthcheck-dotnet`, `caching-dotnet`, `telemetry-dotnet`, `entityframework-dotnet`, `swashbuckle-dotnet`.
 
 ---
 
@@ -318,14 +318,14 @@ Orchestrator trỏ: `patterns/` + `reference/setup.md` thay vì bảng providers
 Trong `jarvis-dotnet/SKILL.md` — bảng Modules:
 
 ```markdown
-| Module | Path trong jarvis-dotnet | Skill chuyên sâu |
-|--------|--------------------------|------------------|
-| Health checks | — | [healthcheck-dotnet](../healthcheck-dotnet/README.md) |
-| Caching | — | [caching-dotnet](../caching-dotnet/README.md) |
-| Authentication | modules/authentication/SKILL.md | — |
+| Module | Skill chuyên sâu |
+|--------|-------------------|
+| Health checks | [healthcheck-dotnet](../.opencode/skills/healthcheck-dotnet/README.md) |
+| Caching | [caching-dotnet](../.opencode/skills/caching-dotnet/README.md) |
+| Authentication | [authentication-dotnet](../.opencode/skills/authentication-dotnet/README.md) |
 ```
 
-**Không** duplicate: sau khi tách skill độc lập, xóa `jarvis-dotnet/modules/<module>/` và chỉ giữ link.
+Mọi module: skill `*-dotnet` trong `.opencode/skills/` — hub [.opencode/README.md](../.opencode/README.md).
 
 ---
 
