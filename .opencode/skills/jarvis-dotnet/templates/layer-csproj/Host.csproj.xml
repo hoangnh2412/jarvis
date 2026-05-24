@@ -1,6 +1,6 @@
 <!-- Merge into {Product}.Host.csproj -->
 <ItemGroup>
-  <PackageReference Include="Jarvis.Mvc" Version="1.0.0" />
+  <PackageReference Include="Jarvis.Mvc" Version="1.1.0" />
   <PackageReference Include="Jarvis.Swashbuckle" Version="1.0.1" />
   <PackageReference Include="Jarvis.HealthChecks" Version="1.0.0" />
   <PackageReference Include="Jarvis.OpenTelemetry" Version="1.0.1" />

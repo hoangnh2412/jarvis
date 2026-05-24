@@ -4,6 +4,7 @@
 </ItemGroup>
 <ItemGroup>
   <PackageReference Include="Jarvis.EntityFramework" Version="1.0.0" />
+  <PackageReference Include="Jarvis.Caching" Version="1.1.0" />
 </ItemGroup>
 <ItemGroup>
   <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.*" />

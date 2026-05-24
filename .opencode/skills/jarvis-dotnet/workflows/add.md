@@ -15,7 +15,15 @@
 
 ## Bước 1 — Chọn module
 
-Đọc **chỉ** file atomic tương ứng trong `modules/`.
+| Loại | Đọc |
+|------|-----|
+| Module trong `jarvis-dotnet/modules/` | `modules/<tên>/SKILL.md` |
+| Caching | [caching-dotnet/SKILL.md](../../caching-dotnet/SKILL.md) |
+| Entity Framework | [entityframework-dotnet/SKILL.md](../../entityframework-dotnet/SKILL.md) |
+| Swashbuckle | [swashbuckle-dotnet/SKILL.md](../../swashbuckle-dotnet/SKILL.md) |
+| Blob storing | [blobstoring-dotnet/SKILL.md](../../blobstoring-dotnet/SKILL.md) |
+| OpenTelemetry | [telemetry-dotnet/SKILL.md](../../telemetry-dotnet/SKILL.md) |
+| Health checks | [healthcheck-dotnet/SKILL.md](../../healthcheck-dotnet/SKILL.md) |
 
 Không thêm package không dùng (giảm dependency surface).
 
@@ -35,7 +43,8 @@ Copy snippet từ `modules/<module>/SKILL.md` vào `Program.cs` đúng vị trí
 
 | Module | Thường đăng ký khi |
 |---|---|
-| EntityFramework | `builder.AddEntityFramework()` trước DbContext |
+| Caching | **`AddJarvisCaching()` trước EntityFramework** (Infrastructure) |
+| EntityFramework | sau `AddJarvisCaching()` |
 | Authentication | `builder.Services.AddAuthentication()` chain |
 | OpenTelemetry | đầu `Program.cs`, trước `Build()` |
 | HealthChecks | trước `Build()`, `UseHealthChecks()` cuối pipeline |
@@ -49,9 +58,12 @@ Thêm section appsettings theo module (xem từng SKILL).
 
 | Module | Đọc thêm |
 |---|---|
-| Entity Framework | [setup.md](../modules/entityframework/setup.md) + mô hình DB: [single-db](../modules/entityframework/single-db.md) / [separate-tenant-db](../modules/entityframework/separate-tenant-db.md) / [hybrid](../modules/entityframework/hybrid.md) / [custom-di](../modules/entityframework/custom-di.md) |
-| OpenTelemetry | [telemetry-dotnet](../../telemetry-dotnet/SKILL.md) |
-| HealthChecks | [healthcheck-dotnet](../../healthcheck-dotnet/SKILL.md) |
+| Entity Framework | [entityframework-dotnet](../../entityframework-dotnet/README.md) |
+| Caching | [caching-dotnet](../../caching-dotnet/README.md) |
+| Swashbuckle | [swashbuckle-dotnet](../../swashbuckle-dotnet/README.md) |
+| Blob storing | [blobstoring-dotnet](../../blobstoring-dotnet/README.md) |
+| OpenTelemetry | [telemetry-dotnet/README.md](../../telemetry-dotnet/README.md) · [workflows/add.md](../../telemetry-dotnet/workflows/add.md) |
+| HealthChecks | [healthcheck-dotnet/README.md](../../healthcheck-dotnet/README.md) · [workflows/add.md](../../healthcheck-dotnet/workflows/add.md) |
 
 ## Anti-patterns
 

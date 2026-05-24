@@ -59,20 +59,34 @@ Chi tiết folder, DI convention, Jarvis mapping: [reference/solution-structure.
 
 ## Catalog package (NuGet)
 
-| Module | PackageId | Layer thường gặp |
-|---|---|---|
-| Domain shared | `Jarvis.Domain.Shared` | Domain.Shared |
-| Domain | `Jarvis.Domain` | Host (enricher) |
-| Application | `Jarvis.Application` | Application |
-| Entity Framework | `Jarvis.EntityFramework` | Infrastructure |
-| MVC | `Jarvis.Mvc` | Host |
-| Swashbuckle | `Jarvis.Swashbuckle` | Host |
-| Health checks | `Jarvis.HealthChecks` | Host |
-| OpenTelemetry | `Jarvis.OpenTelemetry` | Host |
-| Authentication | `Jarvis.Authentications.*` | Host |
-| Caching | `Jarvis.Caching.*` | Infrastructure |
+Phiên bản tham chiếu từ repo Jarvis (`develop`):
 
-Bảng đầy đủ version: xem csproj repo Jarvis hoặc [workflows/init.md](workflows/init.md).
+| Module | PackageId | Version | Layer |
+|---|---|---|---|
+| Domain shared | `Jarvis.Domain.Shared` | 1.0.0 | Domain.Shared |
+| Domain | `Jarvis.Domain` | 1.1.1 | Host (enricher) |
+| Application | `Jarvis.Application` | 1.2.1 | Application |
+| Application contracts | `Jarvis.Application.Contracts` | 1.2.1 | Application |
+| Entity Framework | `Jarvis.EntityFramework` | 1.0.0 | Infrastructure |
+| Caching | `Jarvis.Caching` | 1.1.0 | Infrastructure (**bắt buộc trước EF**) |
+| Caching Redis | `Jarvis.Caching.Redis` | 1.1.0 | Infrastructure (tùy chọn) |
+| MVC | `Jarvis.Mvc` | 1.1.0 | Host |
+| Swashbuckle | `Jarvis.Swashbuckle` | 1.0.1 | Host |
+| Health checks | `Jarvis.HealthChecks` | 1.0.0 | Host |
+| OpenTelemetry | `Jarvis.OpenTelemetry` | 1.0.1 | Host |
+| Authentication | `Jarvis.Authentications.*` | 1.0.1 | Host |
+
+Bảng đầy đủ / monorepo ProjectReference: [workflows/init.md](workflows/init.md), csproj repo Jarvis.
+
+## Quy tắc DI (develop)
+
+| Thứ tự | Lý do |
+|---|---|
+| `AddJarvisCaching()` → `AddEntityFramework()` | EF bọc `ITenantConnectionStringResolver` qua `ICacheService` |
+| `AddCoreDbContext` sau `AddEntityFramework` | Multitenancy + interceptor |
+| `AddJarvisOpenTelemetry` trước `Build()` | Plug-in trong callback `configureServices` |
+
+Skill chuyên sâu: [entityframework-dotnet](../entityframework-dotnet/README.md) · [caching-dotnet](../caching-dotnet/README.md) · [telemetry-dotnet](../telemetry-dotnet/README.md)
 
 ## Modules (atomic)
 
@@ -80,14 +94,14 @@ Bảng đầy đủ version: xem csproj repo Jarvis hoặc [workflows/init.md](w
 |---|---|---|
 | Foundation | [modules/foundation/SKILL.md](modules/foundation/SKILL.md) | — |
 | Application | [modules/application/SKILL.md](modules/application/SKILL.md) | — |
-| Entity Framework | [modules/entityframework/SKILL.md](modules/entityframework/SKILL.md) | [setup](modules/entityframework/setup.md) · [single-db](modules/entityframework/single-db.md) · [separate-tenant-db](modules/entityframework/separate-tenant-db.md) · [hybrid](modules/entityframework/hybrid.md) · [custom-di](modules/entityframework/custom-di.md) |
-| Caching | [modules/caching/SKILL.md](modules/caching/SKILL.md) | — |
+| Entity Framework | — | [entityframework-dotnet](../entityframework-dotnet/README.md) |
+| Caching | — | [caching-dotnet](../caching-dotnet/README.md) |
 | Authentication | [modules/authentication/SKILL.md](modules/authentication/SKILL.md) | — |
-| Blob storing | [modules/blob-storing/SKILL.md](modules/blob-storing/SKILL.md) | — |
+| Blob storing | — | [blobstoring-dotnet](../blobstoring-dotnet/README.md) |
 | Notification | [modules/notification/SKILL.md](modules/notification/SKILL.md) | — |
-| Swashbuckle | [modules/swashbuckle/SKILL.md](modules/swashbuckle/SKILL.md) | — |
-| OpenTelemetry | [modules/opentelemetry/SKILL.md](modules/opentelemetry/SKILL.md) | [telemetry-dotnet](../telemetry-dotnet/SKILL.md) |
-| Health checks | [modules/healthchecks/SKILL.md](modules/healthchecks/SKILL.md) | [healthcheck-dotnet](../healthcheck-dotnet/SKILL.md) |
+| Swashbuckle | — | [swashbuckle-dotnet](../swashbuckle-dotnet/README.md) |
+| OpenTelemetry | — | [telemetry-dotnet](../telemetry-dotnet/README.md) · [SKILL.md](../telemetry-dotnet/SKILL.md) |
+| Health checks | — | [healthcheck-dotnet](../healthcheck-dotnet/README.md) · [SKILL.md](../healthcheck-dotnet/SKILL.md) |
 
 ## F5 sau scaffold
 

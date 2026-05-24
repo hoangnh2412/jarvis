@@ -74,7 +74,7 @@ dotnet add "../tests/${PRODUCT}.Application.Tests" reference "${PRODUCT}.Applica
 
 **Host** — xem [templates/layer-csproj/Host.csproj.xml](../templates/layer-csproj/Host.csproj.xml).
 
-**Infrastructure** — [templates/layer-csproj/Infrastructure.csproj.xml](../templates/layer-csproj/Infrastructure.csproj.xml).
+**Infrastructure** — [templates/layer-csproj/Infrastructure.csproj.xml](../templates/layer-csproj/Infrastructure.csproj.xml) (`Jarvis.EntityFramework` + **`Jarvis.Caching`** — bắt buộc cho EF).
 
 **Application** — [templates/layer-csproj/Application.csproj.xml](../templates/layer-csproj/Application.csproj.xml).
 
