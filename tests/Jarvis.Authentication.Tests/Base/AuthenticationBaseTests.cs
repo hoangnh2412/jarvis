@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Jarvis.Authentication.Tests.Base;
 
+/// <summary>Test <see cref="AddJarvisAuthentication"/> — bind root options và default scheme.</summary>
 public class AuthenticationBaseTests
 {
     [Fact]

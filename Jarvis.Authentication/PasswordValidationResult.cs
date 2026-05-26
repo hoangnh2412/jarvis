@@ -1,5 +1,6 @@
 namespace Jarvis.Authentication;
 
+/// <summary>Kết quả validate mật khẩu — dùng bởi <see cref="IPasswordPolicyValidator"/>.</summary>
 public sealed class PasswordValidationResult
 {
     public bool Succeeded { get; init; }

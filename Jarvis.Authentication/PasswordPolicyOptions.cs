@@ -1,7 +1,16 @@
 namespace Jarvis.Authentication;
 
+/// <summary>
+/// Options chính sách độ mạnh mật khẩu — bind từ <c>Authentication:PasswordPolicy</c>.
+/// </summary>
+/// <remarks>
+/// <para><b>Chức năng:</b> quy định độ dài tối thiểu, yêu cầu ký tự và số lần nhập sai tối đa.</para>
+/// <para><b>Khi nào dùng:</b> flow đăng ký/đổi mật khẩu gọi <see cref="IPasswordPolicyValidator"/>.
+/// Override validator nếu cần rule phức tạp hơn (history, dictionary check).</para>
+/// </remarks>
 public class PasswordPolicyOptions
 {
+    /// <summary>Độ dài tối thiểu. Mặc định 8.</summary>
     public int MinLength { get; set; } = 8;
 
     public bool RequireDigit { get; set; }
@@ -12,5 +21,6 @@ public class PasswordPolicyOptions
 
     public bool RequireNonAlphanumeric { get; set; }
 
+    /// <summary>Số lần nhập sai tối đa trước khi lock — hook cho identity flow (chưa enforce trong validator mặc định).</summary>
     public int MaxFailedAttempts { get; set; }
 }

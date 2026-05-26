@@ -1,8 +1,15 @@
-using System.Security.Claims;
 using Microsoft.Extensions.Options;
 
 namespace Jarvis.Authentication.Basic;
 
+/// <summary>
+/// Validator mặc định — so khớp username/password với <see cref="AuthenticationBasicOption.Users"/> trong config.
+/// </summary>
+/// <remarks>
+/// <para><b>Chức năng:</b> tra user theo scheme, so password, trả claims Name + Roles.</para>
+/// <para><b>Khi nào dùng:</b> đăng ký tự động qua <c>AddCoreBasic(configuration)</c> không generic.
+/// Cần nguồn credential khác → <c>AddCoreBasic(configuration, lookup)</c> hoặc <c>AddCoreBasic&lt;T&gt;</c>.</para>
+/// </remarks>
 public sealed class ConfigBasicCredentialValidator(IOptionsMonitor<AuthenticationBasicOption> options) : IBasicCredentialValidator
 {
     public Task<BasicValidationResult?> ValidateAsync(
@@ -15,17 +22,6 @@ public sealed class ConfigBasicCredentialValidator(IOptionsMonitor<Authenticatio
         if (!scheme.Users.TryGetValue(username, out var user))
             return Task.FromResult<BasicValidationResult?>(null);
 
-        if (!string.Equals(user.Password, password, StringComparison.Ordinal))
-            return Task.FromResult<BasicValidationResult?>(null);
-
-        var claims = new List<Claim> { new(ClaimTypes.Name, username) };
-        foreach (var role in user.Roles)
-            claims.Add(new Claim(ClaimTypes.Role, role));
-
-        return Task.FromResult<BasicValidationResult?>(new BasicValidationResult
-        {
-            Username = username,
-            Claims = claims
-        });
+        return Task.FromResult(BasicCredentialValidation.Validate(username, password, user));
     }
 }

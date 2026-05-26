@@ -36,6 +36,43 @@ namespace Sample.Migrations.Master
 
                     b.ToTable("Tenant", (string)null);
                 });
+
+            modelBuilder.Entity("Sample.Entities.BasicAuthUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string[]>("Roles")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("BasicAuthUser", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            Password = "samplepass",
+                            Roles = new[] { "user", "admin" },
+                            Username = "sampleuser"
+                        });
+                });
 #pragma warning restore 612, 618
         }
     }

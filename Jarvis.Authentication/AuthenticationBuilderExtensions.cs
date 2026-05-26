@@ -3,8 +3,20 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jarvis.Authentication;
 
+/// <summary>
+/// Extension đăng ký policy scheme <c>Composite</c> — forward request sang ApiKey, Basic hoặc Bearer theo header.
+/// </summary>
 public static class AuthenticationBuilderExtensions
 {
+    /// <summary>
+    /// Thêm scheme <see cref="JarvisAuthenticationSchemes.Composite"/> với forward selector theo header request.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Chức năng:</b> một endpoint chấp nhận nhiều loại credential — ưu tiên ApiKey header,
+    /// sau đó Basic (nếu bật), cuối cùng Bearer JWT.</para>
+    /// <para><b>Khi nào dùng:</b> host bật đồng thời ≥ 2 scheme (Jwt + ApiKey, hoặc thêm Basic).
+    /// Đặt <c>DefaultAuthenticateScheme</c> = <c>Composite</c> trong config root.</para>
+    /// </remarks>
     public static AuthenticationBuilder AddJarvisCompositeScheme(
         this AuthenticationBuilder builder,
         string apiKeyHeaderName = "X-API-KEY",

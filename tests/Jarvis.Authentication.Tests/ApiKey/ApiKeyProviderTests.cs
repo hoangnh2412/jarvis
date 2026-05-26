@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Jarvis.Authentication.Tests.ApiKey;
 
+/// <summary>Unit test cho <see cref="ApiKeyProvider"/> — cover SingleKey/RealmKey và multi-realm config.</summary>
 public class ApiKeyProviderTests
 {
     private static ApiKeyProvider CreateProvider(IConfiguration configuration, string scheme = "Default")

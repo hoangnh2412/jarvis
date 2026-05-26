@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Jarvis.Authentication.Tests.Integration;
 
+/// <summary>Integration test end-to-end — request HTTP qua <see cref="AuthenticationTestServer"/>.</summary>
 public class AuthenticationIntegrationTests
 {
     [Fact]

@@ -7,6 +7,9 @@ using Microsoft.Extensions.Options;
 
 namespace Jarvis.Authentication.Basic;
 
+/// <summary>
+/// Authentication handler xử lý header <c>Authorization: Basic</c> và delegate validate sang <see cref="IBasicCredentialValidator"/>.
+/// </summary>
 public sealed class JarvisBasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     private readonly IBasicCredentialValidator _validator;

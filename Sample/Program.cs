@@ -1,4 +1,5 @@
 using Sample;
+using Sample.Authentication;
 using Sample.Extensions;
 using Sample.Health;
 using Sample.Multitenancy;
@@ -90,6 +91,7 @@ builder.AddCoreSwagger();
 // builder.AddSampleReadinessHealthChecks();
 
 var app = builder.Build();
+SampleBasicAuthDbLookup.Configure(app.Services);
 app.UseCoreSwagger();
 app.UseHttpsRedirection();
 

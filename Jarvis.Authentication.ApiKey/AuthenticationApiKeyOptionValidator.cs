@@ -2,6 +2,9 @@ using Microsoft.Extensions.Options;
 
 namespace Jarvis.Authentication.ApiKey;
 
+/// <summary>
+/// Validate <see cref="AuthenticationApiKeyOption"/> lúc startup — đảm bảo <c>KeyName</c> và <c>Keys</c> hợp lệ.
+/// </summary>
 public sealed class AuthenticationApiKeyOptionValidator : IValidateOptions<AuthenticationApiKeyOption>
 {
     public ValidateOptionsResult Validate(string? name, AuthenticationApiKeyOption options)

@@ -2,6 +2,9 @@ using Microsoft.Extensions.Options;
 
 namespace Jarvis.Authentication;
 
+/// <summary>
+/// Validator mặc định — áp dụng <see cref="PasswordPolicyOptions"/> từ <see cref="AuthenticationRootOptions"/>.
+/// </summary>
 public sealed class DefaultPasswordPolicyValidator(IOptions<AuthenticationRootOptions> rootOptions) : IPasswordPolicyValidator
 {
     public Task<PasswordValidationResult> ValidateAsync(string password, CancellationToken cancellationToken = default)

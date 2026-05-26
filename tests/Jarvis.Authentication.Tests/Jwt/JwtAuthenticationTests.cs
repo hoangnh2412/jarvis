@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Jarvis.Authentication.Tests.Jwt;
 
+/// <summary>Unit/integration test JWT Bearer — symmetric key và token validation.</summary>
 public class JwtAuthenticationTests
 {
     [Fact]

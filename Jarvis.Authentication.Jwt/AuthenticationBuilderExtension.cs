@@ -10,14 +10,29 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Jarvis.Authentication.Jwt;
 
+/// <summary>
+/// Extension đăng ký scheme JWT Bearer vào ASP.NET Core Authentication pipeline.
+/// </summary>
 public static class AuthenticationBuilderExtension
 {
+    /// <summary>
+    /// Đăng ký JwtBearer với scheme mặc định <c>Bearer</c>, bind config từ <c>Authentication:Jwt:Bearer</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Khi nào dùng:</b> API nhận token OAuth/JWT qua header <c>Authorization: Bearer</c>, một scheme duy nhất.</para>
+    /// </remarks>
     public static AuthenticationBuilder AddCoreJwtBearer(
         this AuthenticationBuilder builder,
         IConfiguration configuration,
         Action<JwtBearerOptions>? configureOptions = null) =>
         builder.AddCoreJwtBearer(configuration, JwtBearerDefaults.AuthenticationScheme, configureOptions);
 
+    /// <summary>
+    /// Đăng ký JwtBearer với tên scheme tùy chỉnh — bind <c>Authentication:Jwt:{authenticationScheme}</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Khi nào dùng:</b> nhiều JWT authority hoặc scheme name khác <c>Bearer</c> (ví dụ validate token từ OpenIddict nội bộ).</para>
+    /// </remarks>
     public static AuthenticationBuilder AddCoreJwtBearer(
         this AuthenticationBuilder builder,
         IConfiguration configuration,
@@ -25,6 +40,18 @@ public static class AuthenticationBuilderExtension
         Action<JwtBearerOptions>? configureOptions = null) =>
         builder.AddCoreJwtBearer(configuration, authenticationScheme, authenticationScheme, configureOptions);
 
+    /// <summary>
+    /// Overload đầy đủ: đăng ký JwtBearer, bind config và map sang <see cref="JwtBearerOptions"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Khi <paramref name="configureOptions"/> là <c>null</c> (khuyến nghị):</b></para>
+    /// <list type="bullet">
+    /// <item>Bind <c>Authentication:Jwt:{authenticationScheme}</c> vào <see cref="AuthenticationJwtOption"/>.</item>
+    /// <item>Có <c>Authority</c> → dùng metadata OIDC; không có → dùng <c>IssuerSigningKeys</c> symmetric.</item>
+    /// <item>Validate options lúc startup.</item>
+    /// </list>
+    /// <para><b>Khi truyền <paramref name="configureOptions"/>:</b> cấu hình JwtBearer hoàn toàn bằng code — dùng test/prototype.</para>
+    /// </remarks>
     public static AuthenticationBuilder AddCoreJwtBearer(
         this AuthenticationBuilder builder,
         IConfiguration configuration,
@@ -51,6 +78,9 @@ public static class AuthenticationBuilderExtension
         });
     }
 
+    /// <summary>
+    /// Map <see cref="AuthenticationJwtOption"/> sang <see cref="JwtBearerOptions"/> và <see cref="TokenValidationParameters"/>.
+    /// </summary>
     public static void ConfigureJwtBearer(JwtBearerOptions options, AuthenticationJwtOption authOption, IServiceCollection _)
     {
         options.RequireHttpsMetadata = authOption.RequireHttpsMetadata ?? true;
@@ -86,6 +116,7 @@ public static class AuthenticationBuilderExtension
         };
     }
 
+    /// <summary>Giới hạn thời gian sống token tối đa theo <see cref="AuthenticationJwtOption.MaxExpireMinutes"/>.</summary>
     private static bool ValidateMaxLifetime(
         DateTime? notBefore,
         DateTime? expires,

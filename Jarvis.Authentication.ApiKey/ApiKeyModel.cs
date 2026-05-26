@@ -3,6 +3,9 @@ using AspNetCore.Authentication.ApiKey;
 
 namespace Jarvis.Authentication.ApiKey;
 
+/// <summary>
+/// Model kết quả xác thực API key — implement <c>IApiKey</c> cho middleware AspNetCore.Authentication.ApiKey.
+/// </summary>
 public class ApiKeyModel(
     string key,
     string? owner,

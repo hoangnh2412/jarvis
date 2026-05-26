@@ -2,6 +2,9 @@ using Microsoft.Extensions.Options;
 
 namespace Jarvis.Authentication.Jwt;
 
+/// <summary>
+/// Validate <see cref="AuthenticationJwtOption"/> lúc startup — yêu cầu Authority hoặc IssuerSigningKeys hợp lệ.
+/// </summary>
 public sealed class AuthenticationJwtOptionValidator : IValidateOptions<AuthenticationJwtOption>
 {
     public ValidateOptionsResult Validate(string? name, AuthenticationJwtOption options)

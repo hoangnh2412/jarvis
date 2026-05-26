@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Jarvis.Authentication.Basic;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 namespace Jarvis.Authentication.Tests.Basic;
 
+/// <summary>Integration test HTTP Basic Authentication qua TestServer.</summary>
 public class BasicAuthenticationTests
 {
     [Fact]
@@ -92,6 +94,53 @@ public class BasicAuthenticationTests
         var sp = services.BuildServiceProvider();
 
         Assert.IsType<ConfigBasicCredentialValidator>(sp.GetRequiredService<IBasicCredentialValidator>());
+    }
+
+    [Fact]
+    public async Task BASIC_U_02_Delegate_lookup_validates_credentials()
+    {
+        BasicCredentialLookupAsync lookup = (scheme, username, _) =>
+            Task.FromResult<BasicUserCredential?>(
+                username == "dbuser"
+                    ? new BasicUserCredential { Password = "dbpass", Roles = ["admin"] }
+                    : null);
+
+        var validator = new DelegateBasicCredentialValidator(lookup);
+
+        var valid = await validator.ValidateAsync("Basic", "dbuser", "dbpass");
+        Assert.NotNull(valid);
+        Assert.Equal("dbuser", valid!.Username);
+        Assert.Contains(valid.Claims, c => c.Type == ClaimTypes.Role && c.Value == "admin");
+
+        var invalid = await validator.ValidateAsync("Basic", "dbuser", "wrong");
+        Assert.Null(invalid);
+    }
+
+    [Fact]
+    public void BASIC_U_03_Delegate_path_allows_empty_config_users()
+    {
+        var validator = new AuthenticationBasicOptionValidator(requireUsers: false);
+        var result = validator.Validate("Basic", new AuthenticationBasicOption());
+        Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public void BASIC_I_04_AddCoreBasic_delegate_registers_validator()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Authentication:Basic:Default:Realm"] = "Test",
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddJarvisAuthentication(config, auth =>
+            auth.AddCoreBasic(config, (_, _, _) => Task.FromResult<BasicUserCredential?>(null)));
+
+        var sp = services.BuildServiceProvider();
+        Assert.IsType<DelegateBasicCredentialValidator>(sp.GetRequiredService<IBasicCredentialValidator>());
     }
 
     private static async Task AssertAuthenticatedAsync(HttpResponseMessage response, bool expected, string? expectedName = null)

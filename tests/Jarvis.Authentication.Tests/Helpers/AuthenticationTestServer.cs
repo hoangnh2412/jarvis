@@ -14,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Jarvis.Authentication.Tests.Helpers;
 
+/// <summary>Test host in-memory với pipeline authentication Jarvis và endpoint probe.</summary>
 public sealed class AuthenticationTestServer : IAsyncDisposable
 {
     private readonly IHost _host;

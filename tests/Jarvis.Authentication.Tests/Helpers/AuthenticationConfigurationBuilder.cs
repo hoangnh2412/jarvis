@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Jarvis.Authentication.Tests.Helpers;
 
+/// <summary>Builder tạo <see cref="IConfiguration"/> in-memory cho unit/integration test authentication.</summary>
 internal static class AuthenticationConfigurationBuilder
 {
     public static IConfiguration BuildApiKeyConfig(
