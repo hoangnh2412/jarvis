@@ -11,9 +11,9 @@
             },
             "args": [
                 "build",
-                "${workspaceFolder}/Sample/Sample.csproj",
+                "${workspaceFolder}/Jarvis.sln",
                 "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
             "problemMatcher": "$msCompile"
         },
@@ -23,9 +23,9 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/Sample/Sample.csproj",
+                "${workspaceFolder}/Jarvis.sln",
                 "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
             "problemMatcher": "$msCompile"
         },
@@ -37,7 +37,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/Sample/Sample.csproj"
+                "${workspaceFolder}/Jarvis.sln"
             ],
             "problemMatcher": "$msCompile"
         }

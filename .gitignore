@@ -278,4 +278,9 @@ obj/
 #Nuget packages folder
 packages/
 
+# Serilog rolling files (Sample)
+Sample/logs/
+
 #Allow
+
+appsettings.*.json

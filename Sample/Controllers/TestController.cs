@@ -1,73 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Jarvis.Application.ExceptionHandling;
-using Jarvis.Shared.Constants;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Sample.Controllers;
 
 [ApiController]
-[Route("test")]
+[Route("api/v{version:apiVersion}/tests")]
 public class TestController : ControllerBase
 {
-    [HttpGet("file/text")]
-    public IActionResult FileText()
-    {
-        var bytes = Encoding.UTF8.GetBytes("hahaha");
-        return new FileContentResult(bytes, ContentType.Text);
-    }
-
-    [HttpGet("file/xml")]
-    public IActionResult FileXml()
-    {
-        var bytes = Encoding.UTF8.GetBytes("<tag1>hahaha</tag1>");
-        return new FileContentResult(bytes, ContentType.Xml);
-    }
-
-    [HttpGet("content/xml/not-wrap")]
-    public IActionResult ContentNotWrapXml()
-    {
-        return Ok("<tag1>hahaha</tag1>");
-    }
-
-    [HttpGet("content/json/not-wrap")]
-    public IActionResult ContentNotWrapJson()
+    /// <summary>Multipart upload. Do not use <c>[FromForm]</c> on <see cref="IFormFile"/> — Swashbuckle cannot generate the operation (see Swashbuckle file-upload docs).</summary>
+    [HttpPost("avatar"), MapToApiVersion(1.0)]
+    [Consumes("multipart/form-data")]
+    public IActionResult UpdateAvatar(IFormFile file, CancellationToken cancellationToken = default)
     {
         return Ok(new
         {
-            Field1 = "haha",
-            Field2 = "hehe"
+            FileName = file.FileName
         });
-    }
-
-    [HttpGet("content/json/wrap-json")]
-    public IActionResult ContentJsonWrapJson()
-    {
-        return Ok(new
-        {
-            Field1 = "haha",
-            Field2 = "hehe"
-        });
-    }
-
-    [HttpGet("content/text")]
-    public IActionResult String()
-    {
-        return Ok("hahaha");
-    }
-
-    [HttpGet("content/boolean")]
-    public IActionResult Boolean()
-    {
-        return Ok(true);
-    }
-
-    [HttpGet("exception")]
-    public IActionResult Exception()
-    {
-        throw new BusinessException(9999, "Something when wrong");
     }
 }
