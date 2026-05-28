@@ -4,6 +4,26 @@ Review branch **`refactor-blob-storing`** so với **`develop`** theo [code-revi
 
 **Phạm vi review:** toàn bộ source hiện tại (không chỉ diff PR).
 
+**Branch hiện tại:** `refactor-blob-storing` (base `develop`)
+
+| Commit | Ghi chú |
+|--------|---------|
+| `3f65b2a7` | Refactor register BlobStoring |
+| `346ac266` | Merge `develop` |
+| `28c406c4` | rename refactoring rules |
+| `96bea985` | CT trên API, async rename, xóa `FileSystemOption`, registry |
+
+**Thay đổi chính trên branch:** `AddCoreBlobStoring` + `BlobStoringBuilder` + `BlobStoringProviderRegistry`; gộp FileSystem vào `Jarvis.BlobStoring`; thêm `Jarvis.BlobStoring.AwsS3`; refactor `MinioBlobStoringService`; skills `.opencode/skills/blobstoring-dotnet/`.
+
+**Skill tham chiếu (cùng pattern [caching redis-distributed](../.opencode/skills/caching-dotnet/providers/redis-distributed/SKILL.md)):**
+
+| Provider | Skill |
+|----------|-------|
+| Orchestrator | [blobstoring-dotnet/SKILL.md](../.opencode/skills/blobstoring-dotnet/SKILL.md) |
+| FileSystem | [providers/filesystem/SKILL.md](../.opencode/skills/blobstoring-dotnet/providers/filesystem/SKILL.md) |
+| MinIO | [providers/minio/SKILL.md](../.opencode/skills/blobstoring-dotnet/providers/minio/SKILL.md) |
+| AwsS3 | [providers/awss3/SKILL.md](../.opencode/skills/blobstoring-dotnet/providers/awss3/SKILL.md) |
+
 ---
 
 ## Mục tiêu nghiệp vụ
@@ -109,6 +129,120 @@ None — `BlobStoringProviderRegistry.ResolveDefaultProviderKey` đã validate `
 
 ---
 
+## Hướng dẫn host (branch `refactor-blob-storing`)
+
+Pattern giống `AddJarvisCaching().UseRedisDistributedCache()`: core bind config + `Use*` đăng ký provider keyed.
+
+### appsettings
+
+`Sample/appsettings.json` — FileSystem là default rõ ràng (tránh auto-select MinIO khi có config MinIO nhưng chưa gọi `UseMinIO`):
+
+```json
+{
+  "BlobStoring": {
+    "DefaultProvider": "FileSystem",
+    "FileSystem": {
+      "RootPath": "",
+      "SubPath": "",
+      "AutoSelectPriority": 10
+    },
+    "MinIO": {
+      "Endpoint": "",
+      "AccessKey": "",
+      "SecretKey": "",
+      "UseSsl": false,
+      "AutoSelectPriority": 30
+    },
+    "AwsS3": {
+      "Region": "",
+      "BucketName": "",
+      "AccessKey": "",
+      "SecretKey": "",
+      "AutoSelectPriority": 20
+    }
+  }
+}
+```
+
+| Key | Ý nghĩa |
+|-----|---------|
+| `DefaultProvider` | `"FileSystem"` / `"MinIO"` / `"AwsS3"` — phải khớp provider đã `Use*`; sai → `InvalidOperationException` |
+| `DefaultProvider` rỗng | Provider đã đăng ký có `AutoSelectPriority` cao nhất thắng |
+| `FileSystem:RootPath` rỗng | `{ContentRoot}/wwwroot/blobs` (PostConfigure) |
+| `MinIO:Endpoint` rỗng | Không auto-select MinIO; `UseMinIO()` vẫn yêu cầu endpoint khi gọi |
+
+Secrets: User Secrets / env — không commit `AccessKey` / `SecretKey`.
+
+### Registration
+
+**FileSystem only** (Sample `Program.cs`):
+
+```csharp
+using Jarvis.BlobStoring.Extensions;
+
+builder.AddCoreBlobStoring();
+```
+
+`AddCoreBlobStoring()` → bind `BlobStoring`, registry, factory `IBlobStoringService` mặc định, tự `UseFileSystem()`.
+
+**Override FileSystem path:**
+
+```csharp
+using Jarvis.BlobStoring;
+using Jarvis.BlobStoring.Extensions;
+
+builder.AddCoreBlobStoring(o => o.DefaultProvider = nameof(BlobStoringType.FileSystem))
+    .UseFileSystem(fs =>
+    {
+        fs.RootPath = @"D:\uploads";
+        fs.SubPath = "tenant-1";
+    });
+```
+
+**MinIO** — cần `Jarvis.BlobStoring.MinIO`:
+
+```csharp
+using Jarvis.BlobStoring.Extensions;
+using Jarvis.BlobStoring.MinIO.Extensions;
+
+builder.AddCoreBlobStoring(o => o.DefaultProvider = nameof(BlobStoringType.MinIO))
+    .UseMinIO();
+```
+
+**AwsS3** — cần `Jarvis.BlobStoring.AwsS3`:
+
+```csharp
+using Jarvis.BlobStoring.Extensions;
+using Jarvis.BlobStoring.AwsS3.Extensions;
+
+builder.AddCoreBlobStoring()
+    .UseAwsS3();
+```
+
+**Keyed resolve** (cùng lúc nhiều backend):
+
+```csharp
+public sealed class DocumentService(
+    IBlobStoringService blobs,
+    [FromKeyedServices("MinIO")] IBlobStoringService minio)
+{
+    public Task<string> PresignAsync(string key)
+        => minio.ViewAsync("documents", key, expireTime: 1800);
+}
+```
+
+### Packages (host)
+
+| PackageId | Khi nào |
+|-----------|---------|
+| `Jarvis.BlobStoring` | Luôn — core + FileSystem |
+| `Jarvis.BlobStoring.MinIO` | Gọi `UseMinIO()` |
+| `Jarvis.BlobStoring.AwsS3` | Gọi `UseAwsS3()` |
+
+Sample hiện reference `Jarvis.BlobStoring` + `Jarvis.BlobStoring.MinIO`, chỉ gọi `AddCoreBlobStoring()` (FileSystem).
+
+---
+
 ## Kiến trúc hiện tại
 
 ### Options & DI
@@ -120,18 +254,19 @@ None — `BlobStoringProviderRegistry.ResolveDefaultProviderKey` đã validate `
 | `MinIOBlobStoringOption` | `BlobStoring:MinIO` | `UseMinIO(configure?)` — package MinIO |
 | `AwsS3BlobOptions` | `BlobStoring:AwsS3` | `UseAwsS3(configure?)` — package AwsS3 |
 
-Default `IBlobStoringService`:
+Default `IBlobStoringService` (factory sau `AddCoreBlobStoring`):
 
 ```csharp
-services.TryAddSingleton(sp =>
+builder.Services.TryAddSingleton(sp =>
 {
-    var full = Path.GetFullPath(Path.Combine(root, bucket, fileName));
-    var rootFull = Path.GetFullPath(root);
-    if (!full.StartsWith(rootFull, StringComparison.OrdinalIgnoreCase))
-        throw new InvalidOperationException("Invalid blob path.");
-    return full;
-}
+    var options = sp.GetRequiredService<IOptions<JarvisBlobStoringOptions>>().Value;
+    var registry = sp.GetRequiredService<BlobStoringProviderRegistry>();
+    var key = registry.ResolveDefaultProviderKey(options.DefaultProvider);
+    return sp.GetRequiredKeyedService<IBlobStoringService>(key);
+});
 ```
+
+Keyed keys: `"FileSystem"`, `"MinIO"`, `"AwsS3"` (`nameof(BlobStoringType.*)`).
 
 ### Cấu trúc project
 
@@ -150,34 +285,17 @@ Jarvis.BlobStoring.AwsS3/   AwsS3BlobStoringService, UseAwsS3
 
 **Đã xóa:** project `Jarvis.BlobStoring.FileSystem` (gộp vào core).
 
-### Host mẫu
-
-```csharp
-// FileSystem only
-builder.AddCoreBlobStoring();
-
-// Override FileSystem path
-builder.AddCoreBlobStoring(o => o.DefaultProvider = nameof(BlobStoringType.FileSystem))
-    .UseFileSystem(fs =>
-    {
-        fs.RootPath = @"D:\uploads";
-        fs.SubPath = "tenant-1";
-    });
-
-// MinIO
-builder.AddCoreBlobStoring(o => o.DefaultProvider = nameof(BlobStoringType.MinIO))
-    .UseMinIO(minio => { minio.Endpoint = "localhost:9000"; /* … */ });
-```
-
 ### `IBlobStoringService` (contract)
 
+Mọi method có `CancellationToken cancellationToken = default`. Chi tiết: [iblob-api.md](../.opencode/skills/blobstoring-dotnet/reference/iblob-api.md).
+
 ```csharp
-Task UploadAsync(string bucket, string fileName, byte[] bytes);
-Task<byte[]> DownloadAsync(string bucket, string fileName);
-Task DeleteAsync(string bucket, string fileName);
-Task DeletesAsync(string bucket, IEnumerable<string> fileNames);
-Task<string> ViewAsync(string bucket, string fileName, int expireTime = 1800); // seconds
-Task<IReadOnlyList<string>> GetFileNamesAsync(string bucket, string? prefix = null);
+Task UploadAsync(string bucket, string fileName, byte[] bytes, CancellationToken cancellationToken = default);
+Task<byte[]> DownloadAsync(string bucket, string fileName, CancellationToken cancellationToken = default);
+Task DeleteAsync(string bucket, string fileName, CancellationToken cancellationToken = default);
+Task DeletesAsync(string bucket, IEnumerable<string> fileNames, CancellationToken cancellationToken = default);
+Task<string> ViewAsync(string bucket, string fileName, int expireTime = 1800, CancellationToken cancellationToken = default);
+Task<IReadOnlyList<string>> GetFileNamesAsync(string bucket, string? prefix = null, CancellationToken cancellationToken = default);
 ```
 
 | Method | FileSystem | MinIO | AwsS3 |
@@ -198,6 +316,13 @@ Task<IReadOnlyList<string>> GetFileNamesAsync(string bucket, string? prefix = nu
 | `TryAdd*` keyed providers | `DefaultProvider` / priority trong appsettings |
 
 Pattern tham chiếu: `Jarvis.Caching` (`AddJarvisCaching` + `UseRedisDistributedCache`).
+
+| Caching (Redis) | BlobStoring (branch này) |
+|-----------------|----------------------------|
+| `Cache:DistributedGroups:Redis:Default` | `BlobStoring:FileSystem` / `MinIO` / `AwsS3` |
+| `AddJarvisCaching().UseRedisDistributedCache()` | `AddCoreBlobStoring().UseFileSystem()` (auto) / `.UseMinIO()` / `.UseAwsS3()` |
+| `DefaultDistributedGroup` + priority | `DefaultProvider` + `AutoSelectPriority` |
+| Keyed `IConnectionMultiplexer` (host) | Keyed `IBlobStoringService` (`"MinIO"`, …) |
 
 ---
 
@@ -224,7 +349,8 @@ Pattern tham chiếu: `Jarvis.Caching` (`AddJarvisCaching` + `UseRedisDistribute
 
 ### Phase D — API evolution (chưa làm)
 
-- [ ] `CancellationToken` + stream-based upload/download
+- [x] `CancellationToken` trên `IBlobStoringService`
+- [ ] Stream-based upload/download
 - [x] Validate `DefaultProvider` / keyed resolve (`BlobStoringProviderRegistry`)
 - [x] MinIO `DeletesAsync` error aggregation
 - [ ] Health readiness bucket (host)
@@ -252,4 +378,4 @@ Pattern tham chiếu: `Jarvis.Caching` (`AddJarvisCaching` + `UseRedisDistribute
 
 ---
 
-*Cập nhật: 2026-05-21 — review theo `code-review-dotnet` trên branch `refactor-blob-storing` vs `develop`.*
+*Cập nhật: 2026-05-20 — branch `refactor-blob-storing`; appsettings/registration theo `blobstoring-dotnet` + pattern `caching-dotnet/providers/redis-distributed`.*
