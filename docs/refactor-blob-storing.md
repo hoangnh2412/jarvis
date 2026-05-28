@@ -1,6 +1,6 @@
 # Refactor Jarvis.BlobStoring — Code Review & Kế hoạch
 
-Tài liệu review toàn bộ `Jarvis.BlobStoring`, `Jarvis.BlobStoring.FileSystem`, `Jarvis.BlobStoring.MinIO`, `Jarvis.BlobStoring.AwsS3` theo [code-review skill](../.opencode/skills/code-review/SKILL.md) và mindset [CodeBaseSkill.md](../CodeBaseSkill.md).
+Tài liệu review toàn bộ `Jarvis.BlobStoring`, `Jarvis.BlobStoring.FileSystem`, `Jarvis.BlobStoring.MinIO`, `Jarvis.BlobStoring.AwsS3` theo [code-review skill](../.opencode/skills/code-review/SKILL.md) và mindset [refactoring-rules.md](./refactoring-rules.md).
 
 **Phạm vi review:** toàn bộ source hiện tại (không chỉ diff PR).
 
@@ -188,7 +188,7 @@ static string ResolveSafePath(string root, string bucket, string fileName)
 
 ## Best Practices & Improvements
 
-- **File header comment (EN)** cho mỗi file theo `CodeBaseSkill.md` §2.
+- **File header comment (EN)** cho mỗi file theo `refactoring-rules.md` §2.
 - **`sealed`** cho implementation; **`virtual`** chỉ khi host cần override (MinIO/FileSystem đã có `virtual` — giữ nếu document là extension point host).
 - **Bilingual XML** trên options (`MinIOBlobStoringOption`, `FileSystemOption`) — đơn vị, sentinel disable.
 - **`ConfigureAwait(false)`** trong toàn bộ library async (MinIO chưa nhất quán).
@@ -209,7 +209,7 @@ static string ResolveSafePath(string root, string bucket, string fileName)
 
 ---
 
-## Đối chiếu CodeBaseSkill.md
+## Đối chiếu refactoring-rules.md
 
 ### Core vs Host-owned
 
@@ -309,7 +309,7 @@ Jarvis.BlobStoring.AwsS3/
 3. Else nếu `AwsS3` có credential/region hợp lệ (rule document trong XML) → S3.
 4. Else → **`TryAddSingleton<IBlobStoringService, FileSystemBlobStoringService>`** (default không keyed) **và** keyed `"FileSystem"` cho multi-provider.
 
-Sentinel (theo CodeBaseSkill):
+Sentinel (theo [refactoring-rules.md](./refactoring-rules.md)):
 
 - `Endpoint == ""` → coi MinIO **tắt**, không đăng ký MinIO package logic.
 - Tương tự S3 khi thiếu region/bucket.
