@@ -1,3 +1,7 @@
+// Scaffold Host — mở rộng: jarvis-dotnet/templates/SKILLS.md
+//   telemetry-dotnet | foundation-dotnet | swashbuckle-dotnet | healthcheck-dotnet
+//   authentication-dotnet (chưa wire) | notification-dotnet (chưa wire)
+
 using {Product}.Application.DependencyInjection;
 using {Product}.Infrastructure.DependencyInjection;
 using {Product}.Host.Services;

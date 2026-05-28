@@ -10,11 +10,17 @@
 | Infrastructure | EF Core, repository implementation, external adapters |
 | Host | Composition root, controllers, middleware pipeline |
 
-## Jarvis integration
+## Jarvis integration (scaffold mặc định)
 
-- **Application:** `Jarvis.Application` (CQRS dispatchers)
-- **Infrastructure:** `Jarvis.EntityFramework` (DbContext factory, UoW, multitenancy)
-- **Host:** `Jarvis.Mvc`, `Jarvis.Swashbuckle`, `Jarvis.HealthChecks`, `Jarvis.OpenTelemetry`
+| Layer | Package / API | Skill mở rộng (repo Jarvis `.opencode/skills/`) |
+|-------|----------------|--------------------------------------------------|
+| Application | `Jarvis.Application` — CQRS | `application-dotnet` |
+| Infrastructure | `Jarvis.Caching` → `Jarvis.EntityFramework` | `caching-dotnet`, `entityframework-dotnet` |
+| Host | Mvc, Swashbuckle, HealthChecks, OpenTelemetry | `foundation-dotnet`, `swashbuckle-dotnet`, `healthcheck-dotnet`, `telemetry-dotnet` |
+
+Chưa có trong scaffold — thêm khi cần: `authentication-dotnet`, `notification-dotnet`, `blobstoring-dotnet`.
+
+Bản đồ đầy đủ: skill `jarvis-dotnet` → `templates/SKILLS.md`.
 
 ## DI entry points
 

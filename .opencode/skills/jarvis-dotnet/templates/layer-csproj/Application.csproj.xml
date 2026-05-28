@@ -1,4 +1,5 @@
 <!-- Merge into {Product}.Application.csproj -->
+<!-- Skill: application-dotnet — jarvis-dotnet/templates/SKILLS.md -->
 <ItemGroup>
   <FrameworkReference Include="Microsoft.AspNetCore.App" />
 </ItemGroup>

@@ -43,8 +43,8 @@ Khung scaffold cho repo mới. Ranh giới Clean Architecture / DDD chi tiết: 
 | Domain.Shared | `Jarvis.Domain.Shared` (tùy chọn — error/response base) |
 | Domain | *(không bắt buộc Jarvis — giữ domain thuần)* |
 | Application | `Jarvis.Application`, `Jarvis.Application.Contracts` |
-| Infrastructure | `Jarvis.EntityFramework`, `Jarvis.Caching.*`, `Jarvis.BlobStoring.*`, `Jarvis.Notification.*` |
-| Host | `Jarvis.Mvc`, `Jarvis.Swashbuckle`, `Jarvis.HealthChecks`, `Jarvis.OpenTelemetry`, `Jarvis.Authentication.*` |
+| Infrastructure | `Jarvis.EntityFramework`, `Jarvis.Caching` (bắt buộc trước EF), `Jarvis.Caching.Redis`, `Jarvis.BlobStoring.*`, `Jarvis.Notification.*` |
+| Host | `Jarvis.Mvc`, `Jarvis.Swashbuckle`, `Jarvis.HealthChecks`, `Jarvis.OpenTelemetry`, `Jarvis.Domain`, `Jarvis.Authentications.*` |
 
 ## DI convention
 
@@ -75,4 +75,20 @@ app.UseHostLayer();
 | Q6 | Integration test DB? | `Infrastructure.Tests` |
 | Q7 | Exceptions shared? | `Domain.Shared/Exceptions/` |
 
-Scaffold mặc định skill: **một context**, **Web API Controllers**, **không MediatR**, **PostgreSQL**, **Swagger + OTEL + HealthChecks** tối thiểu.
+Scaffold mặc định skill: **một context**, **Web API Controllers**, **không MediatR**, **PostgreSQL**, **Swagger + OTEL + HealthChecks** tối thiểu, **`AddJarvisCaching()` trước `AddEntityFramework()`** (cache connection string resolver).
+
+## Thứ tự DI quan trọng (Infrastructure)
+
+```csharp
+builder.AddJarvisCaching();   // bắt buộc trước EF (develop: CachingTenantConnectionStringResolver)
+builder.AddEntityFramework();
+builder.AddCoreDbContext<AppDbContext, ...>(...);
+```
+
+Chi tiết multitenancy + batch job: [entityframework-dotnet/README.md](../../entityframework-dotnet/README.md).
+
+Bản đồ scaffold → skill: [templates/SKILLS.md](../templates/SKILLS.md).
+
+## Background worker + OTEL
+
+Cron job kế thừa `Jarvis.OpenTelemetry.HostedServices.BaseWorker` — mỗi tick có trace và log scope riêng. Tham chiếu: `Sample/Multitenancy/MultitenancyEfTestHostedService.cs`.

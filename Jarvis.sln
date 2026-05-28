@@ -35,8 +35,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Authentication.ApiKe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.BlobStoring", "Jarvis.BlobStoring\Jarvis.BlobStoring.csproj", "{E5CA3F0E-8524-4276-921F-0AD10A464350}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.BlobStoring.FileSystem", "Jarvis.BlobStoring.FileSystem\Jarvis.BlobStoring.FileSystem.csproj", "{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.BlobStoring.MinIO", "Jarvis.BlobStoring.MinIO\Jarvis.BlobStoring.MinIO.csproj", "{A79BA0BB-6C7B-4EFA-AB04-CDDA738F0513}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.Authentication.Cognito", "Jarvis.Authentication.Cognito\Jarvis.Authentication.Cognito.csproj", "{8914A4B5-FF61-4799-9B86-8252DD0794A8}"
@@ -259,18 +257,6 @@ Global
 		{E5CA3F0E-8524-4276-921F-0AD10A464350}.Release|x64.Build.0 = Release|Any CPU
 		{E5CA3F0E-8524-4276-921F-0AD10A464350}.Release|x86.ActiveCfg = Release|Any CPU
 		{E5CA3F0E-8524-4276-921F-0AD10A464350}.Release|x86.Build.0 = Release|Any CPU
-		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Debug|x64.Build.0 = Debug|Any CPU
-		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Debug|x86.Build.0 = Debug|Any CPU
-		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Release|x64.ActiveCfg = Release|Any CPU
-		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Release|x64.Build.0 = Release|Any CPU
-		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Release|x86.ActiveCfg = Release|Any CPU
-		{EF0C15B4-B72D-46F2-8333-211A6C2F7FF3}.Release|x86.Build.0 = Release|Any CPU
 		{A79BA0BB-6C7B-4EFA-AB04-CDDA738F0513}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A79BA0BB-6C7B-4EFA-AB04-CDDA738F0513}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A79BA0BB-6C7B-4EFA-AB04-CDDA738F0513}.Debug|x64.ActiveCfg = Debug|Any CPU

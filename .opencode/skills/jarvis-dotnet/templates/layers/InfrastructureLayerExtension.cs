@@ -1,3 +1,7 @@
+// Scaffold Infrastructure — mở rộng: jarvis-dotnet/templates/SKILLS.md
+//   caching-dotnet (AddJarvisCaching trước EF) | entityframework-dotnet (patterns/)
+//   blobstoring-dotnet | notification-dotnet (thường Host hoặc Infrastructure)
+
 using {Product}.Domain.DependencyInjection;
 using {Product}.Domain.Repositories;
 using {Product}.Infrastructure.Persistence;

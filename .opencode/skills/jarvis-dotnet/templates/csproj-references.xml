@@ -4,7 +4,6 @@
 <ItemGroup>
   <!-- Persistence -->
   <ProjectReference Include="..\Jarvis.EntityFramework\Jarvis.EntityFramework.csproj" />
-  <ProjectReference Include="..\Jarvis.EntityFramework.PostgreSql\Jarvis.EntityFramework.PostgreSql.csproj" />
 
   <!-- Web & API -->
   <ProjectReference Include="..\Jarvis.Mvc\Jarvis.Mvc.csproj" />
@@ -24,7 +23,7 @@
   <ProjectReference Include="..\Jarvis.Authentication.Cognito\Jarvis.Authentication.Cognito.csproj" />
 
   <!-- Blob -->
-  <ProjectReference Include="..\Jarvis.BlobStoring.FileSystem\Jarvis.BlobStoring.FileSystem.csproj" />
+  <ProjectReference Include="..\Jarvis.BlobStoring\Jarvis.BlobStoring.csproj" />
   <ProjectReference Include="..\Jarvis.BlobStoring.MinIO\Jarvis.BlobStoring.MinIO.csproj" />
 
   <!-- Notification -->
