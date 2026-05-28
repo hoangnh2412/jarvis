@@ -17,11 +17,13 @@
 
 ## Map Jarvis → layer
 
-| Layer product | Jarvis packages |
+| Layer product | Jarvis packages (version develop) |
 |---|---|
-| Application | `Jarvis.Application` |
-| Infrastructure | `Jarvis.EntityFramework` |
-| Host | `Jarvis.Mvc`, `Jarvis.Swashbuckle`, `Jarvis.HealthChecks`, `Jarvis.OpenTelemetry`, `Jarvis.Domain` |
+| Application | `Jarvis.Application` 1.2.1, `Jarvis.Application.Contracts` 1.2.1 |
+| Infrastructure | `Jarvis.EntityFramework` 1.0.0, **`Jarvis.Caching` 1.1.0** (trước EF) |
+| Host | `Jarvis.Mvc` 1.1.0, `Jarvis.Swashbuckle` 1.0.1, `Jarvis.HealthChecks` 1.0.0, `Jarvis.OpenTelemetry` 1.0.1, `Jarvis.Domain` 1.1.1 |
+
+**Thứ tự Infrastructure:** `AddJarvisCaching()` → `AddEntityFramework()` → `AddCoreDbContext(...)`.
 
 Chi tiết csproj: [templates/layer-csproj/](../templates/layer-csproj/).
 
@@ -37,7 +39,7 @@ app.UseHostLayer();
 
 ## Module tùy chọn
 
-Xem [add.md](add.md) và `modules/*/SKILL.md`.
+Xem [add.md](add.md) và [templates/SKILLS.md](../templates/SKILLS.md) — skill `*-dotnet` trong `.opencode/skills/`.
 
 ## Validate
 

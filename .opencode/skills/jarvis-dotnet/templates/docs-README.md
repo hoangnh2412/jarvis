@@ -24,3 +24,19 @@ src/
 
 - `/health/live` — liveness
 - `/health/ready` — readiness (cần DB khi bật PostgreSQL check)
+
+## Mở rộng Jarvis (OpenCode)
+
+Scaffold chỉ wire tối thiểu. Thêm module qua skill trong repo framework Jarvis:
+
+`@.opencode/skills/<tên-skill>/workflows/init.md` hoặc `providers/...`
+
+| Skill | Ví dụ |
+|-------|--------|
+| `authentication-dotnet` | JWT, API Key |
+| `caching-dotnet` | Redis distributed |
+| `entityframework-dotnet` | Đổi pattern multitenancy |
+| `blobstoring-dotnet` | MinIO / FileSystem |
+| `notification-dotnet` | SMTP Mailkit |
+
+Danh sách: `jarvis-dotnet/templates/SKILLS.md` (trong repo Jarvis).

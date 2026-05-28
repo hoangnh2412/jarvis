@@ -10,7 +10,7 @@ metadata:
 
 Skill điều phối gắn `Jarvis.OpenTelemetry` vào ASP.NET Core minimal hosting.
 
-Kiến trúc module: [docs/opentelemetry.md](../../../docs/opentelemetry.md).
+Kiến trúc & hướng dẫn: [README.md](README.md).
 
 ## Khi nào dùng workflow nào
 
@@ -64,6 +64,10 @@ Chỉ đọc provider cần dùng:
 - Thay đổi `Program.cs`
 - `appsettings.json` section `OTEL` (khi đổi config)
 - Checklist: OTLP endpoint/env, sampling, allowlist header, plug-in singleton
+
+## Background worker
+
+Kế thừa `Jarvis.OpenTelemetry.HostedServices.BaseWorker` — cron + trace/log scope mỗi tick. Chi tiết: [README.md](README.md#background-worker-cron).
 
 ## Checklist production
 

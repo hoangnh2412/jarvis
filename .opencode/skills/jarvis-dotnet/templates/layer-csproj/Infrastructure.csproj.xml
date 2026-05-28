@@ -1,9 +1,12 @@
 <!-- Merge into {Product}.Infrastructure.csproj -->
+<!-- Skills: caching-dotnet, entityframework-dotnet, blobstoring-dotnet, notification-dotnet (tùy chọn) -->
+<!-- Map: jarvis-dotnet/templates/SKILLS.md -->
 <ItemGroup>
   <FrameworkReference Include="Microsoft.AspNetCore.App" />
 </ItemGroup>
 <ItemGroup>
   <PackageReference Include="Jarvis.EntityFramework" Version="1.0.0" />
+  <PackageReference Include="Jarvis.Caching" Version="1.1.0" />
 </ItemGroup>
 <ItemGroup>
   <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.*" />

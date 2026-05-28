@@ -16,7 +16,7 @@
 
 ## Bước 1 — Phân tích
 
-1. Đọc [docs/opentelemetry.md](../../../docs/opentelemetry.md) và `Program.cs`.
+1. Đọc [README.md](../README.md) và `Program.cs`.
 2. Xác định signals cần bật: trace, metric, log.
 3. Collector OTLP endpoint (config hoặc `OTEL_EXPORTER_OTLP_*`).
 4. Sampling, `ExcludedPathPrefixes`, header allowlist.

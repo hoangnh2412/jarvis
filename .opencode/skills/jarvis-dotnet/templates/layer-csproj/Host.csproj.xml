@@ -1,6 +1,8 @@
 <!-- Merge into {Product}.Host.csproj -->
+<!-- Skills: foundation-dotnet, swashbuckle-dotnet, healthcheck-dotnet, telemetry-dotnet, authentication-dotnet (tùy chọn) -->
+<!-- Map: jarvis-dotnet/templates/SKILLS.md -->
 <ItemGroup>
-  <PackageReference Include="Jarvis.Mvc" Version="1.0.0" />
+  <PackageReference Include="Jarvis.Mvc" Version="1.1.0" />
   <PackageReference Include="Jarvis.Swashbuckle" Version="1.0.1" />
   <PackageReference Include="Jarvis.HealthChecks" Version="1.0.0" />
   <PackageReference Include="Jarvis.OpenTelemetry" Version="1.0.1" />
