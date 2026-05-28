@@ -23,6 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jarvis.BlobStoring\Jarvis.BlobStoring.csproj" />
+    <ProjectReference Include="..\Jarvis.BlobStoring.AwsS3\Jarvis.BlobStoring.AwsS3.csproj" />
+    <ProjectReference Include="..\Jarvis.BlobStoring.MinIO\Jarvis.BlobStoring.MinIO.csproj" />
     <ProjectReference Include="..\Jarvis.Caching\Jarvis.Caching.csproj" />
     <ProjectReference Include="..\Jarvis.Caching.Redis\Jarvis.Caching.Redis.csproj" />
     <ProjectReference Include="..\Jarvis.Domain\Jarvis.Domain.csproj" />

@@ -33,7 +33,7 @@
     <ProjectReference Include="..\Jarvis.Caching.Redis\Jarvis.Caching.Redis.csproj" />
     <ProjectReference Include="..\Jarvis.Authentication.Jwt\Jarvis.Authentication.Jwt.csproj" />
     <ProjectReference Include="..\Jarvis.Authentication.ApiKey\Jarvis.Authentication.ApiKey.csproj" />
-    <ProjectReference Include="..\Jarvis.BlobStoring.FileSystem\Jarvis.BlobStoring.FileSystem.csproj" />
+    <ProjectReference Include="..\Jarvis.BlobStoring\Jarvis.BlobStoring.csproj" />
     <ProjectReference Include="..\Jarvis.BlobStoring.MinIO\Jarvis.BlobStoring.MinIO.csproj" />
     <ProjectReference Include="..\Jarvis.Authentication.Cognito\Jarvis.Authentication.Cognito.csproj" />
     <ProjectReference Include="..\Jarvis.EntityFramework\Jarvis.EntityFramework.csproj" />

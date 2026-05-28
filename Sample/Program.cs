@@ -17,6 +17,7 @@ using Jarvis.HealthChecks;
 using Serilog;
 using StackExchange.Redis;
 using OpenTelemetry.Trace;
+using Jarvis.BlobStoring.Extensions;
 using Jarvis.Caching.Extensions;
 using Jarvis.Caching.Redis;
 using Jarvis.Caching.Redis.Extensions;
@@ -46,7 +47,11 @@ builder.AddCoreCors();
 builder.AddCoreDomain();
 builder.AddCoreWebApi();
 
-builder.AddJarvisCaching().UseRedisDistributedCache().UseRedisMemoryCacheInvalidation();
+builder.AddJarvisCaching()
+    .UseRedisDistributedCache()
+    .UseRedisMemoryCacheInvalidation();
+
+builder.AddCoreBlobStoring();
 
 builder.AddEntityFramework();
 builder.AddSampleDbContext();
