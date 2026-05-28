@@ -9,6 +9,8 @@ namespace Jarvis.BlobStoring.AwsS3;
 
 public class AwsS3BlobStoringService : IBlobStoringService, IDisposable
 {
+    private const int MaxDeleteObjectsPerRequest = 1000;
+
     private readonly AwsS3BlobOptions _options;
     private readonly Lazy<IAmazonS3> _client;
     private readonly ILogger<AwsS3BlobStoringService> _logger;
@@ -47,7 +49,11 @@ public class AwsS3BlobStoringService : IBlobStoringService, IDisposable
     private string ResolveBucket(string bucket) =>
         string.IsNullOrWhiteSpace(bucket) ? _defaultBucket : bucket;
 
-    public virtual async Task UploadAsync(string bucket, string fileName, byte[] bytes)
+    public virtual async Task UploadAsync(
+        string bucket,
+        string fileName,
+        byte[] bytes,
+        CancellationToken cancellationToken = default)
     {
         var resolvedBucket = ResolveBucket(bucket);
         _logger.LogDebug(
@@ -63,10 +69,13 @@ public class AwsS3BlobStoringService : IBlobStoringService, IDisposable
             Key = fileName,
             InputStream = stream
         };
-        await Client.PutObjectAsync(request).ConfigureAwait(false);
+        await Client.PutObjectAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
-    public virtual async Task<byte[]> DownloadAsync(string bucket, string fileName)
+    public virtual async Task<byte[]> DownloadAsync(
+        string bucket,
+        string fileName,
+        CancellationToken cancellationToken = default)
     {
         var resolvedBucket = ResolveBucket(bucket);
         _logger.LogDebug("Downloading {FileName} from S3 bucket {Bucket}", fileName, resolvedBucket);
@@ -76,9 +85,9 @@ public class AwsS3BlobStoringService : IBlobStoringService, IDisposable
             BucketName = resolvedBucket,
             Key = fileName
         };
-        using var response = await Client.GetObjectAsync(request).ConfigureAwait(false);
+        using var response = await Client.GetObjectAsync(request, cancellationToken).ConfigureAwait(false);
         using var memory = new MemoryStream();
-        await response.ResponseStream.CopyToAsync(memory).ConfigureAwait(false);
+        await response.ResponseStream.CopyToAsync(memory, cancellationToken).ConfigureAwait(false);
 
         var result = memory.ToArray();
         _logger.LogDebug(
@@ -89,7 +98,10 @@ public class AwsS3BlobStoringService : IBlobStoringService, IDisposable
         return result;
     }
 
-    public virtual async Task DeleteAsync(string bucket, string fileName)
+    public virtual async Task DeleteAsync(
+        string bucket,
+        string fileName,
+        CancellationToken cancellationToken = default)
     {
         var resolvedBucket = ResolveBucket(bucket);
         _logger.LogDebug("Deleting {FileName} from S3 bucket {Bucket}", fileName, resolvedBucket);
@@ -99,24 +111,59 @@ public class AwsS3BlobStoringService : IBlobStoringService, IDisposable
             BucketName = resolvedBucket,
             Key = fileName
         };
-        await Client.DeleteObjectAsync(request).ConfigureAwait(false);
+        await Client.DeleteObjectAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
-    public virtual async Task DeletesAsync(string bucket, IEnumerable<string> fileNames)
+    public virtual async Task DeletesAsync(
+        string bucket,
+        IEnumerable<string> fileNames,
+        CancellationToken cancellationToken = default)
     {
-        var names = fileNames.ToList();
+        var names = fileNames.Where(static n => !string.IsNullOrWhiteSpace(n)).ToList();
+        if (names.Count == 0)
+            return;
+
         var resolvedBucket = ResolveBucket(bucket);
         _logger.LogDebug(
             "Deleting {Count} object(s) from S3 bucket {Bucket}",
             names.Count,
             resolvedBucket);
 
-        foreach (var fileName in names)
-            await DeleteAsync(bucket, fileName).ConfigureAwait(false);
+        for (var offset = 0; offset < names.Count; offset += MaxDeleteObjectsPerRequest)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var chunk = names.Skip(offset).Take(MaxDeleteObjectsPerRequest).ToList();
+            var request = new DeleteObjectsRequest
+            {
+                BucketName = resolvedBucket,
+                Objects = chunk.ConvertAll(key => new KeyVersion { Key = key })
+            };
+
+            var response = await Client.DeleteObjectsAsync(request, cancellationToken).ConfigureAwait(false);
+            if (response.DeleteErrors is not { Count: > 0 } errors)
+                continue;
+
+            var failed = string.Join(", ", errors.Select(static e => $"{e.Key}: {e.Message}"));
+            _logger.LogError(
+                "S3 batch delete failed for {FailedCount} object(s) in bucket {Bucket}: {FailedObjects}",
+                errors.Count,
+                resolvedBucket,
+                failed);
+
+            throw new InvalidOperationException(
+                $"Failed to delete {errors.Count} object(s) from S3 bucket '{resolvedBucket}': {failed}");
+        }
     }
 
-    public virtual Task<string> ViewAsync(string bucket, string fileName, int expireTime = 1800)
+    public virtual Task<string> ViewAsync(
+        string bucket,
+        string fileName,
+        int expireTime = 1800,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var resolvedBucket = ResolveBucket(bucket);
         _logger.LogDebug(
             "Creating presigned URL for {FileName} in S3 bucket {Bucket}, expireSeconds={ExpireSeconds}",
@@ -133,10 +180,10 @@ public class AwsS3BlobStoringService : IBlobStoringService, IDisposable
         return Task.FromResult(Client.GetPreSignedURL(request));
     }
 
-    public virtual IEnumerable<string> GetFileNames(string bucket, string? prefix = null) =>
-        GetFileNamesAsync(bucket, prefix).GetAwaiter().GetResult();
-
-    public virtual async Task<IReadOnlyList<string>> GetFileNamesAsync(string bucket, string? prefix = null)
+    public virtual async Task<IReadOnlyList<string>> GetFileNamesAsync(
+        string bucket,
+        string? prefix = null,
+        CancellationToken cancellationToken = default)
     {
         var resolvedBucket = ResolveBucket(bucket);
         _logger.LogDebug(
@@ -154,7 +201,8 @@ public class AwsS3BlobStoringService : IBlobStoringService, IDisposable
         ListObjectsV2Response response;
         do
         {
-            response = await Client.ListObjectsV2Async(request).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            response = await Client.ListObjectsV2Async(request, cancellationToken).ConfigureAwait(false);
             names.AddRange(response.S3Objects.Select(o => o.Key));
             request.ContinuationToken = response.NextContinuationToken;
         } while (response.IsTruncated);

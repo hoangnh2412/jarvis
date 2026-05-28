@@ -42,19 +42,30 @@ public class MinioBlobStoringService : IBlobStoringService, IDisposable
         return builder.Build();
     }
 
-    public virtual async Task DeleteAsync(string bucket, string fileName)
+    public virtual async Task DeleteAsync(
+        string bucket,
+        string fileName,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         _logger.LogDebug("Deleting {FileName} from MinIO bucket {Bucket}", fileName, bucket);
 
         var args = new RemoveObjectArgs()
             .WithBucket(bucket)
             .WithObject(fileName);
-        await Client.RemoveObjectAsync(args).ConfigureAwait(false);
+        await Client.RemoveObjectAsync(args, cancellationToken).ConfigureAwait(false);
     }
 
-    public virtual async Task DeletesAsync(string bucket, IEnumerable<string> fileNames)
+    public virtual async Task DeletesAsync(
+        string bucket,
+        IEnumerable<string> fileNames,
+        CancellationToken cancellationToken = default)
     {
-        var names = fileNames.ToList();
+        cancellationToken.ThrowIfCancellationRequested();
+        var names = fileNames.Where(static n => !string.IsNullOrWhiteSpace(n)).ToList();
+        if (names.Count == 0)
+            return;
+
         _logger.LogDebug(
             "Deleting {Count} object(s) from MinIO bucket {Bucket}",
             names.Count,
@@ -63,24 +74,45 @@ public class MinioBlobStoringService : IBlobStoringService, IDisposable
         var args = new RemoveObjectsArgs()
             .WithBucket(bucket)
             .WithObjects(names);
-        await Client.RemoveObjectsAsync(args).ConfigureAwait(false);
+
+        var deleteErrors = await Client.RemoveObjectsAsync(args, cancellationToken).ConfigureAwait(false);
+        if (deleteErrors.Count == 0)
+            return;
+
+        var failed = string.Join(", ", deleteErrors.Select(static e => $"{e.Key}: {e.Message}"));
+        _logger.LogError(
+            "MinIO batch delete failed for {FailedCount} object(s) in bucket {Bucket}: {FailedObjects}",
+            deleteErrors.Count,
+            bucket,
+            failed);
+
+        throw new InvalidOperationException(
+            $"Failed to delete {deleteErrors.Count} object(s) from MinIO bucket '{bucket}': {failed}");
     }
 
-    public virtual async Task<byte[]> DownloadAsync(string bucket, string fileName)
+    public virtual async Task<byte[]> DownloadAsync(
+        string bucket,
+        string fileName,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         _logger.LogDebug("Downloading {FileName} from MinIO bucket {Bucket}", fileName, bucket);
 
         var argsStat = new StatObjectArgs()
             .WithBucket(bucket)
             .WithObject(fileName);
-        await Client.StatObjectAsync(argsStat).ConfigureAwait(false);
+        await Client.StatObjectAsync(argsStat, cancellationToken).ConfigureAwait(false);
 
         using var memoryStream = new MemoryStream();
         var argsGet = new GetObjectArgs()
             .WithBucket(bucket)
             .WithObject(fileName)
-            .WithCallbackStream(stream => stream.CopyTo(memoryStream));
-        await Client.GetObjectAsync(argsGet).ConfigureAwait(false);
+            .WithCallbackStream(stream =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                stream.CopyTo(memoryStream);
+            });
+        await Client.GetObjectAsync(argsGet, cancellationToken).ConfigureAwait(false);
 
         var bytes = memoryStream.ToArray();
         _logger.LogDebug(
@@ -91,8 +123,13 @@ public class MinioBlobStoringService : IBlobStoringService, IDisposable
         return bytes;
     }
 
-    public virtual async Task<string> ViewAsync(string bucket, string fileName, int expireTime = 1800)
+    public virtual async Task<string> ViewAsync(
+        string bucket,
+        string fileName,
+        int expireTime = 1800,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         _logger.LogDebug(
             "Creating presigned URL for {FileName} in MinIO bucket {Bucket}, expireSeconds={ExpireSeconds}",
             fileName,
@@ -102,15 +139,19 @@ public class MinioBlobStoringService : IBlobStoringService, IDisposable
         var args = new PresignedGetObjectArgs()
             .WithBucket(bucket)
             .WithObject(fileName)
-            .WithExpiry(expireTime * 60);
+            .WithExpiry(expireTime);
         return await Client.PresignedGetObjectAsync(args).ConfigureAwait(false);
     }
 
-    public virtual async Task UploadAsync(string bucket, string fileName, byte[] bytes)
+    public virtual async Task UploadAsync(
+        string bucket,
+        string fileName,
+        byte[] bytes,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            await PutObjectAsync(bucket, fileName, bytes).ConfigureAwait(false);
+            await PutObjectAsync(bucket, fileName, bytes, cancellationToken).ConfigureAwait(false);
         }
         catch (ConnectionException ex)
         {
@@ -119,7 +160,7 @@ public class MinioBlobStoringService : IBlobStoringService, IDisposable
                 "MinIO connection failed for upload {FileName} to bucket {Bucket}, retrying with bucket creation",
                 fileName,
                 bucket);
-            await ReUploadAsync(bucket, fileName, bytes).ConfigureAwait(false);
+            await ReUploadAsync(bucket, fileName, bytes, cancellationToken).ConfigureAwait(false);
         }
         catch (UnexpectedMinioException ex) when (ex.ServerMessage == "The specified bucket does not exist")
         {
@@ -128,7 +169,7 @@ public class MinioBlobStoringService : IBlobStoringService, IDisposable
                 "MinIO bucket {Bucket} does not exist for {FileName}, creating bucket and retrying upload",
                 bucket,
                 fileName);
-            await ReUploadAsync(bucket, fileName, bytes).ConfigureAwait(false);
+            await ReUploadAsync(bucket, fileName, bytes, cancellationToken).ConfigureAwait(false);
         }
         catch (BucketNotFoundException ex)
         {
@@ -137,12 +178,17 @@ public class MinioBlobStoringService : IBlobStoringService, IDisposable
                 "MinIO bucket {Bucket} not found for {FileName}, creating bucket and retrying upload",
                 bucket,
                 fileName);
-            await ReUploadAsync(bucket, fileName, bytes).ConfigureAwait(false);
+            await ReUploadAsync(bucket, fileName, bytes, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    private async Task PutObjectAsync(string bucket, string fileName, byte[] bytes)
+    private async Task PutObjectAsync(
+        string bucket,
+        string fileName,
+        byte[] bytes,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         _logger.LogDebug(
             "Uploading {FileName} to MinIO bucket {Bucket}, {ByteCount} bytes",
             fileName,
@@ -156,23 +202,29 @@ public class MinioBlobStoringService : IBlobStoringService, IDisposable
             .WithObjectSize(stream.Length)
             .WithStreamData(stream)
             .WithContentType("application/octet-stream");
-        await Client.PutObjectAsync(args).ConfigureAwait(false);
+        await Client.PutObjectAsync(args, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task ReUploadAsync(string bucket, string fileName, byte[] bytes)
+    private async Task ReUploadAsync(
+        string bucket,
+        string fileName,
+        byte[] bytes,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         _logger.LogInformation("Creating MinIO bucket {Bucket}", bucket);
 
         var args = new MakeBucketArgs().WithBucket(bucket);
-        await Client.MakeBucketAsync(args).ConfigureAwait(false);
-        await PutObjectAsync(bucket, fileName, bytes).ConfigureAwait(false);
+        await Client.MakeBucketAsync(args, cancellationToken).ConfigureAwait(false);
+        await PutObjectAsync(bucket, fileName, bytes, cancellationToken).ConfigureAwait(false);
     }
 
-    public virtual IEnumerable<string> GetFileNames(string bucket, string? prefix = null) =>
-        GetFileNamesAsync(bucket, prefix).GetAwaiter().GetResult();
-
-    public virtual async Task<IReadOnlyList<string>> GetFileNamesAsync(string bucket, string? prefix = null)
+    public virtual async Task<IReadOnlyList<string>> GetFileNamesAsync(
+        string bucket,
+        string? prefix = null,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         _logger.LogDebug(
             "Listing objects in MinIO bucket {Bucket}, prefix={Prefix}",
             bucket,
@@ -184,9 +236,12 @@ public class MinioBlobStoringService : IBlobStoringService, IDisposable
             .WithPrefix(prefix)
             .WithRecursive(true);
 
-        var observable = Client.ListObjectsEnumAsync(args);
+        var observable = Client.ListObjectsEnumAsync(args, cancellationToken);
         await foreach (var item in observable.ConfigureAwait(false))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
             fileNames.Add(item.Key);
+        }
 
         _logger.LogDebug(
             "Listed {Count} object(s) in MinIO bucket {Bucket}, prefix={Prefix}",

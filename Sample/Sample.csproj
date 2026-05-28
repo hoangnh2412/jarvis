@@ -26,7 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Jarvis.EntityFramework.PostgreSql\Jarvis.EntityFramework.PostgreSql.csproj" />
     <ProjectReference Include="..\Jarvis.OpenTelemetry\Jarvis.OpenTelemetry.csproj" />
     <ProjectReference Include="..\Jarvis.Swashbuckle\Jarvis.Swashbuckle.csproj" />
     <ProjectReference Include="..\Jarvis.Mvc\Jarvis.Mvc.csproj" />

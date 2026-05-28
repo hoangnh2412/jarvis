@@ -10,16 +10,19 @@ namespace Jarvis.BlobStoring.Extensions;
 
 public static class FileSystemBlobStoringExtensions
 {
-    public static BlobStoringBuilder UseFileSystem(this BlobStoringBuilder builder)
+    public static BlobStoringBuilder UseFileSystem(
+        this BlobStoringBuilder builder,
+        Action<FileSystemBlobOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
         var section = $"{JarvisBlobStoringOptions.SectionName}:FileSystem";
-        var snapshot = new FileSystemOption();
+        var snapshot = new FileSystemBlobOptions();
         builder.HostBuilder.Configuration.GetSection(section).Bind(snapshot);
+        configure?.Invoke(snapshot);
 
         builder.HostBuilder.Services
-            .AddOptions<FileSystemOption>()
+            .AddOptions<FileSystemBlobOptions>()
             .BindConfiguration(section)
             .PostConfigure(options =>
             {
@@ -30,12 +33,17 @@ public static class FileSystemBlobStoringExtensions
                         "blobs");
             });
 
+        if (configure is not null)
+            builder.HostBuilder.Services.Configure(configure);
+
         builder.HostBuilder.Services.TryAddKeyedSingleton<IBlobStoringService, FileSystemBlobStoringService>(
             nameof(BlobStoringType.FileSystem));
 
         builder.HostBuilder.Services
             .GetOrAddProviderRegistry()
-            .Register(nameof(BlobStoringType.FileSystem), FileSystemBlobStoringDefaults.ResolveAutoSelectPriority(snapshot));
+            .Register(
+                nameof(BlobStoringType.FileSystem),
+                FileSystemBlobStoringDefaults.ResolveAutoSelectPriority(snapshot));
 
         return builder;
     }

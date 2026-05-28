@@ -1,4 +1,5 @@
 // Jarvis.BlobStoring — Local disk IBlobStoringService implementation.
+using Jarvis.BlobStoring.Configuration;
 using Jarvis.BlobStoring.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -6,15 +7,16 @@ using Microsoft.Extensions.Options;
 namespace Jarvis.BlobStoring.FileSystem;
 
 public class FileSystemBlobStoringService(
-    IOptions<FileSystemOption> options,
+    IOptions<FileSystemBlobOptions> options,
     ILogger<FileSystemBlobStoringService> logger)
     : IBlobStoringService
 {
-    private readonly FileSystemOption _options = options.Value;
+    private readonly FileSystemBlobOptions _options = options.Value;
     private readonly ILogger<FileSystemBlobStoringService> _logger = logger;
 
-    public virtual Task DeleteAsync(string bucket, string fileName)
+    public virtual Task DeleteAsync(string bucket, string fileName, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         _logger.LogDebug("Deleting {FileName} from file system bucket {Bucket}", fileName, bucket);
 
         var path = BlobPathHelper.Combine(_options.RootPath, _options.SubPath, bucket, fileName);
@@ -25,7 +27,10 @@ public class FileSystemBlobStoringService(
         return Task.CompletedTask;
     }
 
-    public virtual Task DeletesAsync(string bucket, IEnumerable<string> fileNames)
+    public virtual Task DeletesAsync(
+        string bucket,
+        IEnumerable<string> fileNames,
+        CancellationToken cancellationToken = default)
     {
         var names = fileNames.ToList();
         _logger.LogDebug(
@@ -35,6 +40,8 @@ public class FileSystemBlobStoringService(
 
         foreach (var name in names)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var path = BlobPathHelper.Combine(_options.RootPath, _options.SubPath, bucket, name);
 
             if (File.Exists(path))
@@ -44,12 +51,15 @@ public class FileSystemBlobStoringService(
         return Task.CompletedTask;
     }
 
-    public virtual async Task<byte[]> DownloadAsync(string bucket, string fileName)
+    public virtual async Task<byte[]> DownloadAsync(
+        string bucket,
+        string fileName,
+        CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Downloading {FileName} from file system bucket {Bucket}", fileName, bucket);
 
         var path = BlobPathHelper.Combine(_options.RootPath, _options.SubPath, bucket, fileName);
-        var bytes = await File.ReadAllBytesAsync(path).ConfigureAwait(false);
+        var bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
 
         _logger.LogDebug(
             "Downloaded {FileName} from file system bucket {Bucket}, {ByteCount} bytes",
@@ -59,7 +69,11 @@ public class FileSystemBlobStoringService(
         return bytes;
     }
 
-    public virtual async Task UploadAsync(string bucket, string fileName, byte[] bytes)
+    public virtual async Task UploadAsync(
+        string bucket,
+        string fileName,
+        byte[] bytes,
+        CancellationToken cancellationToken = default)
     {
         _logger.LogDebug(
             "Uploading {FileName} to file system bucket {Bucket}, {ByteCount} bytes",
@@ -72,11 +86,16 @@ public class FileSystemBlobStoringService(
         if (!string.IsNullOrEmpty(directory))
             Directory.CreateDirectory(directory);
 
-        await File.WriteAllBytesAsync(path, bytes).ConfigureAwait(false);
+        await File.WriteAllBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
     }
 
-    public virtual Task<string> ViewAsync(string bucket, string fileName, int expireTime = 1800)
+    public virtual Task<string> ViewAsync(
+        string bucket,
+        string fileName,
+        int expireTime = 1800,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         _logger.LogDebug(
             "ViewAsync not supported for file system; returning empty URL for {FileName} in bucket {Bucket}",
             fileName,
@@ -84,8 +103,12 @@ public class FileSystemBlobStoringService(
         return Task.FromResult(string.Empty);
     }
 
-    public virtual IEnumerable<string> GetFileNames(string bucket, string? prefix = null)
+    public virtual Task<IReadOnlyList<string>> GetFileNamesAsync(
+        string bucket,
+        string? prefix = null,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         _logger.LogDebug(
             "Listing files in file system bucket {Bucket}, prefix={Prefix}",
             bucket,
@@ -93,13 +116,15 @@ public class FileSystemBlobStoringService(
 
         var directory = BlobPathHelper.Combine(_options.RootPath, _options.SubPath, bucket, string.Empty);
         if (!Directory.Exists(directory))
-            return [];
+            return Task.FromResult<IReadOnlyList<string>>([]);
 
         var searchPattern = string.IsNullOrEmpty(prefix) ? "*" : $"{prefix}*";
-        var names = Directory
-            .EnumerateFiles(directory, searchPattern, SearchOption.AllDirectories)
-            .Select(f => Path.GetRelativePath(directory, f).Replace('\\', '/'))
-            .ToList();
+        var names = new List<string>();
+        foreach (var file in Directory.EnumerateFiles(directory, searchPattern, SearchOption.AllDirectories))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            names.Add(Path.GetRelativePath(directory, file).Replace('\\', '/'));
+        }
 
         _logger.LogDebug(
             "Listed {Count} file(s) in file system bucket {Bucket}, prefix={Prefix}",
@@ -107,6 +132,6 @@ public class FileSystemBlobStoringService(
             bucket,
             prefix ?? string.Empty);
 
-        return names;
+        return Task.FromResult<IReadOnlyList<string>>(names);
     }
 }

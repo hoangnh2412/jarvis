@@ -42,4 +42,18 @@ public class BlobStoringProviderRegistryTests
 
         Assert.Equal(nameof(BlobStoringType.FileSystem), registry.ResolveDefaultProviderKey(null));
     }
+
+    [Fact]
+    public void ResolveDefaultProviderKey_Throws_When_Explicit_Provider_Not_Registered()
+    {
+        var registry = new BlobStoringProviderRegistry();
+        registry.Register(nameof(BlobStoringType.FileSystem), 10);
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            registry.ResolveDefaultProviderKey(nameof(BlobStoringType.MinIO)));
+
+        Assert.Contains(nameof(BlobStoringType.MinIO), ex.Message, StringComparison.Ordinal);
+        Assert.Contains(nameof(BlobStoringType.FileSystem), ex.Message, StringComparison.Ordinal);
+        Assert.Contains("UseMinIO", ex.Message, StringComparison.Ordinal);
+    }
 }

@@ -16,16 +16,32 @@ public sealed class BlobStoringProviderRegistry
         _providers.Add(new BlobStoringProviderRegistration(providerKey, autoSelectPriority));
     }
 
+    public bool IsRegistered(string providerKey) =>
+        _providers.Exists(p => p.ProviderKey == providerKey);
+
     public string ResolveDefaultProviderKey(string? defaultProvider)
     {
         if (!string.IsNullOrWhiteSpace(defaultProvider))
+        {
+            if (!IsRegistered(defaultProvider))
+            {
+                var registered = _providers.Count == 0
+                    ? "(none)"
+                    : string.Join(", ", _providers.Select(static p => p.ProviderKey));
+                throw new InvalidOperationException(
+                    $"BlobStoring:DefaultProvider '{defaultProvider}' is not registered. " +
+                    $"Registered providers: {registered}. " +
+                    $"Call the matching extension on BlobStoringBuilder (e.g. UseMinIO, UseAwsS3) or fix DefaultProvider.");
+            }
+
             return defaultProvider;
+        }
 
         if (_providers.Count == 0)
             return nameof(BlobStoringType.FileSystem);
 
         return _providers
-            .OrderByDescending(p => p.AutoSelectPriority)
+            .OrderByDescending(static p => p.AutoSelectPriority)
             .First()
             .ProviderKey;
     }

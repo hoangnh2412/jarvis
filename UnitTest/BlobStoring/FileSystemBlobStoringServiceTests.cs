@@ -1,3 +1,4 @@
+using Jarvis.BlobStoring.Configuration;
 using Jarvis.BlobStoring.FileSystem;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -14,7 +15,7 @@ public class FileSystemBlobStoringServiceTests : IDisposable
         _root = Path.Combine(Path.GetTempPath(), "jarvis-blob-test", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_root);
         _service = new FileSystemBlobStoringService(
-            Options.Create(new FileSystemOption
+            Options.Create(new FileSystemBlobOptions
             {
                 RootPath = _root,
                 SubPath = string.Empty

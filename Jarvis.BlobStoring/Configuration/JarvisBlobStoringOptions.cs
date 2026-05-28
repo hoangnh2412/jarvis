@@ -14,6 +14,4 @@ public class JarvisBlobStoringOptions
     /// (e.g. FileSystem, MinIO, AwsS3). Empty = highest-priority registered provider.
     /// </summary>
     public string DefaultProvider { get; set; } = string.Empty;
-
-    public FileSystemBlobOptions FileSystem { get; set; } = new();
 }

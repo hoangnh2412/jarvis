@@ -30,7 +30,7 @@ Thêm AwsS3 vào project đã có AddCoreBlobStoring + FileSystem.
 - Entry: `AddCoreBlobStoring()` → `UseFileSystem()`; thêm `.UseMinIO()` / `.UseAwsS3()` khi cần
 - Key DI: `"FileSystem"`, `"MinIO"`, `"AwsS3"`
 - Inject mặc định: `IBlobStoringService`; keyed: `[FromKeyedServices("MinIO")]`
-- API: `UploadAsync`, `DownloadAsync`, `DeleteAsync`, `ViewAsync`, `GetFileNames`
+- API: `UploadAsync`, `DownloadAsync`, `DeleteAsync`, `ViewAsync`, `GetFileNamesAsync`
 
 ## Providers
 

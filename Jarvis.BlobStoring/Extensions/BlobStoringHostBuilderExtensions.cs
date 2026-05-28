@@ -47,19 +47,21 @@ public static class BlobStoringHostBuilderExtensions
     /// public class FileService(IBlobStoringService blobs) { }
     /// </code>
     /// </example>
-    /// <para><b>Override options in code (<paramref name="configure"/>)</b></para>
+    /// <para><b>Override FileSystem in code</b> — dùng <c>UseFileSystem</c> (không qua <paramref name="configure"/>)</para>
     /// <example>
     /// <code>
     /// using Jarvis.BlobStoring;
+    /// using Jarvis.BlobStoring.Extensions;
     ///
-    /// builder.AddBlobStoring(options =>
-    /// {
-    ///     options.DefaultProvider = nameof(BlobStoringType.FileSystem);
-    ///     options.FileSystem.RootPath = @"D:\uploads";
-    ///     options.FileSystem.SubPath = "tenant-1";
-    /// });
+    /// builder.AddCoreBlobStoring(o => o.DefaultProvider = nameof(BlobStoringType.FileSystem))
+    ///     .UseFileSystem(fs =>
+    ///     {
+    ///         fs.RootPath = @"D:\uploads";
+    ///         fs.SubPath = "tenant-1";
+    ///     });
     /// </code>
     /// </example>
+    /// <para><paramref name="configure"/> chỉ áp dụng cho <see cref="JarvisBlobStoringOptions"/> (vd. <c>DefaultProvider</c>).</para>
     /// <para><b>MinIO (reference Jarvis.BlobStoring.MinIO)</b></para>
     /// <example>
     /// <code>

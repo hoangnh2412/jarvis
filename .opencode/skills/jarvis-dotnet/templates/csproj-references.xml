@@ -4,7 +4,6 @@
 <ItemGroup>
   <!-- Persistence -->
   <ProjectReference Include="..\Jarvis.EntityFramework\Jarvis.EntityFramework.csproj" />
-  <ProjectReference Include="..\Jarvis.EntityFramework.PostgreSql\Jarvis.EntityFramework.PostgreSql.csproj" />
 
   <!-- Web & API -->
   <ProjectReference Include="..\Jarvis.Mvc\Jarvis.Mvc.csproj" />

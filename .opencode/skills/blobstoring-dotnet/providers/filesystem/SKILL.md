@@ -30,16 +30,17 @@ Path vật lý: `{RootPath}/{SubPath}/{bucket}/{fileName}`.
 ## Registration
 
 ```csharp
+using Jarvis.BlobStoring;
 using Jarvis.BlobStoring.Extensions;
 
 builder.AddCoreBlobStoring();
-// hoặc tùy chỉnh:
-builder.AddCoreBlobStoring(o =>
-{
-    o.DefaultProvider = nameof(BlobStoringType.FileSystem);
-    o.FileSystem.RootPath = @"D:\uploads";
-    o.FileSystem.SubPath = "tenant-1";
-});
+// hoặc tùy chỉnh RootPath/SubPath:
+builder.AddCoreBlobStoring()
+    .UseFileSystem(fs =>
+    {
+        fs.RootPath = @"D:\uploads";
+        fs.SubPath = "tenant-1";
+    });
 ```
 
 Keyed resolve:
@@ -51,7 +52,7 @@ Keyed resolve:
 ## Lưu ý
 
 - `ViewAsync` trả chuỗi rỗng — không presigned URL.
-- `GetFileNames` liệt kê file dưới bucket (recursive).
+- `GetFileNamesAsync` liệt kê file dưới bucket (recursive).
 - Process cần quyền ghi `RootPath`.
 
 ## Validate

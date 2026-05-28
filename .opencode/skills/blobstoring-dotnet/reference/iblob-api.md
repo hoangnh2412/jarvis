@@ -1,19 +1,19 @@
 # IBlobStoringService — API
 
 ```csharp
-Task UploadAsync(string bucket, string fileName, byte[] bytes);
-Task<byte[]> DownloadAsync(string bucket, string fileName);
-Task DeleteAsync(string bucket, string fileName);
-Task DeletesAsync(string bucket, IEnumerable<string> fileNames);
-Task<string> ViewAsync(string bucket, string fileName, int expireTime = 1800);
-IEnumerable<string> GetFileNames(string bucket, string? prefix = null);
+Task UploadAsync(string bucket, string fileName, byte[] bytes, CancellationToken cancellationToken = default);
+Task<byte[]> DownloadAsync(string bucket, string fileName, CancellationToken cancellationToken = default);
+Task DeleteAsync(string bucket, string fileName, CancellationToken cancellationToken = default);
+Task DeletesAsync(string bucket, IEnumerable<string> fileNames, CancellationToken cancellationToken = default);
+Task<string> ViewAsync(string bucket, string fileName, int expireTime = 1800, CancellationToken cancellationToken = default);
+Task<IReadOnlyList<string>> GetFileNamesAsync(string bucket, string? prefix = null, CancellationToken cancellationToken = default);
 ```
 
 | Method | FileSystem | MinIO | AwsS3 |
 |--------|------------|-------|-------|
 | Upload / Download / Delete | ✅ | ✅ | ✅ |
 | ViewAsync (presigned) | `""` | ✅ | ✅ |
-| GetFileNames | ✅ | ✅ | ✅ |
+| GetFileNamesAsync | ✅ | ✅ | ✅ |
 
 **bucket** — thư mục logic (FS) hoặc tên bucket object storage.  
 **fileName** — path tương đối trong bucket (vd. `tenantId/doc.pdf`).

@@ -45,7 +45,7 @@ Hướng dẫn người dùng: [README.md](README.md). API: [reference/iblob-api
 | MinIO | `MinioBlobStoringService` | `BlobStoring:MinIO` (`MinIOBlobStoringOption`) |
 | AwsS3 | `AwsS3BlobStoringService` | `BlobStoring:AwsS3` (`AwsS3BlobOptions`) |
 
-Core `JarvisBlobStoringOptions`: `DefaultProvider` + `FileSystem`. MinIO/S3 options và `Use*` nằm package vệ tinh.
+Core `JarvisBlobStoringOptions`: chỉ `DefaultProvider`. FileSystem/MinIO/S3 options và `Use*` tương ứng (`FileSystemBlobOptions`, …).
 
 ## Providers (atomic)
 
