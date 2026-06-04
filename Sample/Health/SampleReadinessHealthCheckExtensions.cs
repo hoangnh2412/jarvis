@@ -26,8 +26,7 @@ public static class SampleReadinessHealthCheckExtensions
         var configuration = builder.Configuration;
         var readiness = configuration.GetSection(ReadinessSection);
 
-        var timeoutSeconds = Math.Clamp(configuration.GetValue("HealthChecks:DefaultTimeoutSeconds", 5), 1, 120);
-        var probeTimeout = TimeSpan.FromSeconds(timeoutSeconds);
+        var probeTimeout = configuration.GetDefaultReadinessProbeTimeout();
         var healthChecks = builder.Services.AddHealthChecks();
 
         TryAddNpgSqlReadiness(healthChecks, configuration, readiness, probeTimeout);
