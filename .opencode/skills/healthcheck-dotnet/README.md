@@ -8,6 +8,7 @@ Skill tích hợp **Jarvis.HealthChecks** — liveness, startup, readiness. Agen
 |------------|----------|
 | Chưa có healthcheck Jarvis | [workflows/init.md](./workflows/init.md) |
 | Thêm PostgreSQL, Redis, … | [workflows/add.md](./workflows/add.md) + [providers/](./providers/) |
+| Bật HealthChecks UI dashboard | [workflows/ui.md](./workflows/ui.md) |
 
 Scaffold `jarvis-dotnet` đã có `/health/live` tối thiểu — dùng skill này khi cần **readiness** dependency.
 
@@ -27,6 +28,7 @@ Thêm readiness PostgreSQL cho MyApp.Host. ConnectionStrings:MainDb.
 | `/health/ready` | Readiness — DB, Redis, … |
 | `/health/startup` | Startup probe |
 | `/health` | Aggregate |
+| `/healthchecks-ui` | Dashboard (khi `Ui.Enabled`) |
 
 ## Quy tắc
 
