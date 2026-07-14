@@ -8,22 +8,22 @@ using Microsoft.Extensions.Options;
 namespace Jarvis.Authentication.Basic;
 
 /// <summary>
-/// Authentication handler xử lý header <c>Authorization: Basic</c> và delegate validate sang <see cref="IBasicCredentialValidator"/>.
+/// Handler xử lý <c>Authorization: Basic</c> — ủy xác thực cho <see cref="IBasicCredentialProvider"/>.
 /// </summary>
 public sealed class JarvisBasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
-    private readonly IBasicCredentialValidator _validator;
+    private readonly IBasicCredentialProvider _credentialProvider;
     private readonly IOptionsMonitor<AuthenticationBasicOption> _basicOptions;
 
     public JarvisBasicAuthenticationHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        IBasicCredentialValidator validator,
+        IBasicCredentialProvider credentialProvider,
         IOptionsMonitor<AuthenticationBasicOption> basicOptions)
         : base(options, logger, encoder)
     {
-        _validator = validator;
+        _credentialProvider = credentialProvider;
         _basicOptions = basicOptions;
     }
 
@@ -54,7 +54,8 @@ public sealed class JarvisBasicAuthenticationHandler : AuthenticationHandler<Aut
         var username = userPass[..separatorIndex];
         var password = userPass[(separatorIndex + 1)..];
 
-        var validation = await _validator.ValidateAsync(Scheme.Name, username, password, Context.RequestAborted);
+        var validation = await _credentialProvider.AuthenticateAsync(
+            Scheme.Name, username, password, Context.RequestAborted);
         if (validation is null)
             return AuthenticateResult.Fail("Invalid username or password.");
 

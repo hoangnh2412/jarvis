@@ -2,9 +2,15 @@ using System.Security.Claims;
 
 namespace Jarvis.Authentication.Basic;
 
-internal static class BasicCredentialValidation
+/// <summary>Kết quả validate credential Basic — chứa username và claims gán cho principal.</summary>
+public sealed class BasicValidationResult
 {
-    internal static BasicValidationResult? Validate(string username, string password, BasicUserCredential credential)
+    public required string Username { get; init; }
+
+    public IReadOnlyList<Claim> Claims { get; init; } = [];
+
+    /// <summary>So khớp password plain-text và build claims — dùng từ provider đọc config.</summary>
+    public static BasicValidationResult? Validate(string username, string password, IBasicUserCredential credential)
     {
         if (string.IsNullOrEmpty(credential.Password))
             return null;

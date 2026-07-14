@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <InternalsVisibleTo>Jarvis.Authentication.Tests</InternalsVisibleTo>
+    <InternalsVisibleTo>UnitTest</InternalsVisibleTo>
     <PackageId>Jarvis.Authentications.ApiKey</PackageId>
     <Version>1.0.1</Version>
     <Authors>Hoang Nguyen</Authors>

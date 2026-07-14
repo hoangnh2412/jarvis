@@ -1,22 +1,17 @@
 using Microsoft.Extensions.Configuration;
 
-namespace Jarvis.Authentication.Tests.Helpers;
+namespace UnitTest.Authentication.Helpers;
 
-/// <summary>Builder tạo <see cref="IConfiguration"/> in-memory cho unit/integration test authentication.</summary>
+/// <summary>Builder tạo <see cref="IConfiguration"/> in-memory cho test authentication.</summary>
 internal static class AuthenticationConfigurationBuilder
 {
-    public static IConfiguration BuildApiKeyConfig(
-        string scheme = "Default",
-        string mode = "SingleKey",
-        params string[] keys) =>
+    public static IConfiguration BuildApiKeyConfig(string realm = "Default", string key = "secret") =>
         new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Authentication:Type"] = "ApiKey",
-                ["Authentication:ApiKey:" + scheme + ":KeyName"] = "X-API-KEY",
-                ["Authentication:ApiKey:" + scheme + ":Mode"] = mode,
-                ["Authentication:ApiKey:" + scheme + ":Keys:0"] = keys.Length > 0 ? keys[0] : null,
-                ["Authentication:ApiKey:" + scheme + ":Keys:1"] = keys.Length > 1 ? keys[1] : null,
+                ["Authentication:ApiKey:" + realm + ":KeyName"] = "X-API-KEY",
+                ["Authentication:ApiKey:" + realm + ":Key"] = key,
             })
             .Build();
 

@@ -1,7 +1,7 @@
 namespace Jarvis.Authentication.Basic;
 
-/// <summary>Thông tin đăng nhập của một user trong <see cref="AuthenticationBasicOption.Users"/>.</summary>
-public class BasicUserCredential
+/// <summary>Implementation mặc định — bind từ <see cref="AuthenticationBasicOption.Users"/>.</summary>
+public sealed class BasicUserCredential : IBasicUserCredential
 {
     /// <summary>Mật khẩu so khớp trực tiếp (plain text trong config — chỉ dùng dev/test).</summary>
     public string Password { get; set; } = string.Empty;

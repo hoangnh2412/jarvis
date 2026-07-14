@@ -12,11 +12,14 @@ public class MasterDbContext(
 
     public DbSet<BasicAuthUser> BasicAuthUsers => Set<BasicAuthUser>();
 
+    public DbSet<ApiKeyCredential> ApiKeyCredentials => Set<ApiKeyCredential>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfiguration(new TenantEntityConfiguration());
         modelBuilder.ApplyConfiguration(new BasicAuthUserEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new ApiKeyCredentialEntityConfiguration());
     }
 }

@@ -73,6 +73,43 @@ namespace Sample.Migrations.Master
                             Username = "sampleuser"
                         });
                 });
+
+            modelBuilder.Entity("Sample.Entities.ApiKeyCredential", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("OwnerName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string[]>("Roles")
+                        .IsRequired()
+                        .HasColumnType("text[]");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("ApiKeyCredential", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            Key = "sample-db-api-key",
+                            OwnerName = "database",
+                            Roles = new[] { "integration" }
+                        });
+                });
 #pragma warning restore 612, 618
         }
     }

@@ -1,15 +1,18 @@
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using Jarvis.Authentication;
 using Jarvis.Authentication.Basic;
-using Jarvis.Authentication.Tests.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-namespace Jarvis.Authentication.Tests.Basic;
+using UnitTest.Authentication.Helpers;
 
-/// <summary>Integration test HTTP Basic Authentication qua TestServer.</summary>
+namespace UnitTest.Authentication.Basic;
+
+/// <summary>Test HTTP Basic Authentication qua TestServer.</summary>
 public class BasicAuthenticationTests
 {
+    /// <summary>User/password đúng trong config — request được authenticate.</summary>
     [Fact]
     public async Task BASIC_I_01_Valid_credentials_authenticate()
     {
@@ -26,6 +29,7 @@ public class BasicAuthenticationTests
         await AssertAuthenticatedAsync(response, expected: true, expectedName: "testuser");
     }
 
+    /// <summary>Thiếu header hoặc password sai — không authenticate.</summary>
     [Fact]
     public async Task BASIC_I_02_Invalid_or_missing_credentials_not_authenticated()
     {
@@ -45,6 +49,7 @@ public class BasicAuthenticationTests
         await AssertAuthenticatedAsync(wrongResponse, expected: false);
     }
 
+    /// <summary>Policy <c>Composite</c> — forward sang Basic khi header <c>Authorization: Basic</c>.</summary>
     [Fact]
     public async Task MIX_I_02_Composite_forwards_basic()
     {
@@ -76,56 +81,36 @@ public class BasicAuthenticationTests
         await AssertAuthenticatedAsync(response, expected: true, expectedName: "mix");
     }
 
+    /// <summary><c>AddCoreBasic(configuration)</c> đăng ký <see cref="ConfigBasicCredentialProvider"/> mặc định.</summary>
     [Fact]
-    public void BASIC_U_01_Config_validator_requires_users()
-    {
-        var validator = new AuthenticationBasicOptionValidator();
-        var result = validator.Validate("Basic", new AuthenticationBasicOption());
-        Assert.False(result.Succeeded);
-    }
-
-    [Fact]
-    public void BASIC_I_03_AddCoreBasic_registers_validator()
+    public void BASIC_I_03_AddCoreBasic_registers_config_provider()
     {
         var config = AuthenticationConfigurationBuilder.BuildBasicConfig();
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddJarvisAuthentication(config, auth => auth.AddCoreBasic(config));
+        services.AddJarvisAuthentication(config, auth => auth.AddCoreBasic<ConfigBasicCredentialProvider>(config));
         var sp = services.BuildServiceProvider();
 
-        Assert.IsType<ConfigBasicCredentialValidator>(sp.GetRequiredService<IBasicCredentialValidator>());
+        Assert.IsType<ConfigBasicCredentialProvider>(sp.GetRequiredService<IBasicCredentialProvider>());
     }
 
+    /// <summary>Helper so password — build claims Name và Roles.</summary>
     [Fact]
-    public async Task BASIC_U_02_Delegate_lookup_validates_credentials()
+    public void BASIC_U_02_Credential_validation_helper_builds_claims()
     {
-        BasicCredentialLookupAsync lookup = (scheme, username, _) =>
-            Task.FromResult<BasicUserCredential?>(
-                username == "dbuser"
-                    ? new BasicUserCredential { Password = "dbpass", Roles = ["admin"] }
-                    : null);
+        var credential = new BasicUserCredential { Password = "dbpass", Roles = ["admin"] };
 
-        var validator = new DelegateBasicCredentialValidator(lookup);
-
-        var valid = await validator.ValidateAsync("Basic", "dbuser", "dbpass");
+        var valid = BasicValidationResult.Validate("dbuser", "dbpass", credential);
         Assert.NotNull(valid);
         Assert.Equal("dbuser", valid!.Username);
         Assert.Contains(valid.Claims, c => c.Type == ClaimTypes.Role && c.Value == "admin");
 
-        var invalid = await validator.ValidateAsync("Basic", "dbuser", "wrong");
-        Assert.Null(invalid);
+        Assert.Null(BasicValidationResult.Validate("dbuser", "wrong", credential));
     }
 
+    /// <summary><c>AddCoreBasic&lt;TCredentialProvider&gt;</c> — đăng ký implementation host vào DI.</summary>
     [Fact]
-    public void BASIC_U_03_Delegate_path_allows_empty_config_users()
-    {
-        var validator = new AuthenticationBasicOptionValidator(requireUsers: false);
-        var result = validator.Validate("Basic", new AuthenticationBasicOption());
-        Assert.True(result.Succeeded);
-    }
-
-    [Fact]
-    public void BASIC_I_04_AddCoreBasic_delegate_registers_validator()
+    public void BASIC_I_04_AddCoreBasic_generic_registers_provider()
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -137,10 +122,20 @@ public class BasicAuthenticationTests
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddJarvisAuthentication(config, auth =>
-            auth.AddCoreBasic(config, (_, _, _) => Task.FromResult<BasicUserCredential?>(null)));
+            auth.AddCoreBasic<NoOpBasicCredentialProvider>(config));
 
         var sp = services.BuildServiceProvider();
-        Assert.IsType<DelegateBasicCredentialValidator>(sp.GetRequiredService<IBasicCredentialValidator>());
+        Assert.IsType<NoOpBasicCredentialProvider>(sp.GetRequiredService<IBasicCredentialProvider>());
+    }
+
+    private sealed class NoOpBasicCredentialProvider : IBasicCredentialProvider
+    {
+        public Task<BasicValidationResult?> AuthenticateAsync(
+            string schemeName,
+            string username,
+            string password,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<BasicValidationResult?>(null);
     }
 
     private static async Task AssertAuthenticatedAsync(HttpResponseMessage response, bool expected, string? expectedName = null)

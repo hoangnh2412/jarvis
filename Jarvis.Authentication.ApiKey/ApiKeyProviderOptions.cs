@@ -1,15 +1,20 @@
+using Jarvis.Authentication;
+
 namespace Jarvis.Authentication.ApiKey;
 
-/// <summary>Options nội bộ — xác định scheme/realm mặc định khi header không có prefix <c>realm:</c>.</summary>
-/// <remarks>
-/// <see cref="DefaultSchemeName"/> được gán tự động trong <c>AddCoreApiKey</c>.
-/// Host thường không cần bind config riêng cho class này.
-/// </remarks>
+/// <summary>Options nội bộ — realm mặc định khi header không có prefix <c>realm:</c>.</summary>
 public class ApiKeyProviderOptions
 {
     /// <summary>
-    /// Tên scheme/realm dùng khi validate key không có dạng <c>realm:secret</c>.
-    /// Mặc định <see cref="JarvisAuthenticationSchemes.ApiKey"/> (<c>"Default"</c>).
+    /// Realm mặc định (trùng section <c>Authentication:ApiKey:Default</c>).
+    /// Gán tự động trong <c>AddCoreApiKey</c>.
     /// </summary>
-    public string DefaultSchemeName { get; set; } = JarvisAuthenticationSchemes.ApiKey;
+    public string DefaultRealm { get; set; } = JarvisAuthenticationSchemes.ApiKey;
+
+    /// <summary>
+    /// Khi <c>true</c> (mặc định với <see cref="ConfigApiKeyProvider"/>), startup bắt buộc <c>Key</c> trong config.
+    /// Custom <see cref="AspNetCore.Authentication.ApiKey.IApiKeyProvider"/> (DB/Redis/…) đặt <c>false</c> —
+    /// chỉ còn bắt buộc <c>KeyName</c>.
+    /// </summary>
+    public bool RequireConfigKey { get; set; } = true;
 }

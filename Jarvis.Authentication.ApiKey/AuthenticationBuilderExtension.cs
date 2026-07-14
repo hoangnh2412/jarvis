@@ -1,4 +1,5 @@
 using AspNetCore.Authentication.ApiKey;
+using Jarvis.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,58 +14,25 @@ namespace Jarvis.Authentication.ApiKey;
 public static class AuthenticationBuilderExtension
 {
     /// <summary>
-    /// Đăng ký xác thực API Key với <see cref="ApiKeyProvider"/> mặc định (đọc keys từ config).
+    /// Đăng ký xác thực API Key với provider <typeparamref name="T"/> (ví dụ <see cref="ConfigApiKeyProvider"/>).
     /// </summary>
     /// <remarks>
-    /// <para>Dùng khi host không cần custom logic validate key — chỉ cần bind <c>appsettings</c>.</para>
+    /// <para><see cref="ConfigApiKeyProvider"/> — đọc key từ config; type khác — DB, vault, Redis, MinIO, …</para>
     /// <para>
-    /// <c>schemeName</c> mặc định là <see cref="JarvisAuthenticationSchemes.ApiKey"/> (<c>"Default"</c>),
-    /// khớp section <c>Authentication:ApiKey:Default</c>.
+    /// <paramref name="authenticationScheme"/> phải trùng section <c>Authentication:ApiKey:{scheme}</c>
+    /// và tên dùng trong <c>[Authorize(AuthenticationSchemes = "...")]</c>.
     /// </para>
-    /// <example>
-    /// <code>
-    /// auth.AddCoreApiKey(builder.Configuration);
-    /// // hoặc chỉ định scheme trùng tên section config:
-    /// auth.AddCoreApiKey(builder.Configuration, JarvisAuthenticationSchemes.ApiKey);
-    /// </code>
-    /// </example>
+    /// <para>
+    /// <typeparamref name="T"/> được đăng ký <b>Singleton</b> (<see cref="IApiKeyProvider"/>).
+    /// Không inject scoped <c>DbContext</c> trực tiếp — dùng <c>IDbContextFactory&lt;TContext&gt;</c>
+    /// hoặc <c>IServiceScopeFactory</c>. Redis (<c>IConnectionMultiplexer</c> / <c>IDistributedCache</c>)
+    /// và MinIO client thường Singleton-safe.
+    /// </para>
+    /// <para>
+    /// Với <see cref="ConfigApiKeyProvider"/>, startup bắt buộc <c>Key</c> trong config.
+    /// Custom <typeparamref name="T"/> chỉ bắt buộc <c>KeyName</c> (header) — <c>Key</c> có thể rỗng.
+    /// </para>
     /// </remarks>
-    public static AuthenticationBuilder AddCoreApiKey(
-        this AuthenticationBuilder builder,
-        IConfiguration configuration,
-        string schemeName = JarvisAuthenticationSchemes.ApiKey,
-        Action<ApiKeyOptions>? configureOptions = null) =>
-        builder.AddCoreApiKey<ApiKeyProvider>(configuration, schemeName, configureOptions);
-
-    /// <summary>
-    /// Đăng ký xác thực API Key với provider tùy chỉnh <typeparamref name="T"/>.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Dùng khi cần override cách resolve/validate key (ví dụ đọc từ DB, vault, cache)
-    /// thay vì <see cref="ApiKeyProvider"/> built-in.
-    /// </para>
-    /// <para>
-    /// <c>displayName</c> được đặt bằng <paramref name="schemeName"/> (dùng cho UI/challenge).
-    /// Cần tách tên hiển thị → gọi overload 3 tham số scheme.
-    /// </para>
-    /// <example>
-    /// <code>
-    /// auth.AddCoreApiKey&lt;MyApiKeyProvider&gt;(builder.Configuration, JarvisAuthenticationSchemes.ApiKey);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    public static AuthenticationBuilder AddCoreApiKey<T>(
-        this AuthenticationBuilder builder,
-        IConfiguration configuration,
-        string schemeName = JarvisAuthenticationSchemes.ApiKey,
-        Action<ApiKeyOptions>? configureOptions = null)
-        where T : class, IApiKeyProvider =>
-        builder.AddCoreApiKey<T>(configuration, schemeName, schemeName, configureOptions);
-
-    /// <summary>
-    /// Overload đầy đủ: đăng ký scheme API Key, bind config và (tuỳ chọn) cấu hình header bằng code.
-    /// </summary>
     /// <remarks>
     /// <para><b>Khi <paramref name="configureOptions"/> là <c>null</c> (mặc định — khuyến nghị):</b></para>
     /// <list type="bullet">
@@ -78,30 +46,41 @@ public static class AuthenticationBuilderExtension
     /// <item>Dùng cho test, prototype, hoặc khi header name/realm không nằm trong config.</item>
     /// </list>
     /// <para>
-    /// Luôn đăng ký <typeparamref name="T"/> vào DI (<see cref="IApiKeyProvider"/>).
+    /// Luôn đăng ký <typeparamref name="T"/> vào DI (<see cref="IApiKeyProvider"/>) dạng Singleton.
     /// <paramref name="authenticationScheme"/> phải trùng key section config và tên dùng trong
     /// <c>[Authorize(AuthenticationSchemes = "...")]</c>.
     /// </para>
     /// <example>
     /// <code>
-    /// // Production — bind appsettings:
-    /// auth.AddCoreApiKey&lt;ApiKeyProvider&gt;(config, "Default", "API Key");
+    /// // Config-backed:
+    /// auth.AddCoreApiKey&lt;ConfigApiKeyProvider&gt;(config);
+    ///
+    /// // DB / Redis / MinIO — implement IApiKeyProvider, inject IDbContextFactory hoặc client Singleton:
+    /// auth.AddCoreApiKey&lt;MyDbApiKeyProvider&gt;(config);
     ///
     /// // Test / code-first:
-    /// auth.AddCoreApiKey&lt;ApiKeyProvider&gt;(config, "Default", "API Key", o => o.KeyName = "X-API-KEY");
+    /// auth.AddCoreApiKey&lt;ConfigApiKeyProvider&gt;(config, "Default", "API Key", o => o.KeyName = "X-API-KEY");
     /// </code>
     /// </example>
     /// </remarks>
     public static AuthenticationBuilder AddCoreApiKey<T>(
         this AuthenticationBuilder builder,
         IConfiguration configuration,
-        string authenticationScheme,
-        string displayName,
+        string authenticationScheme = JarvisAuthenticationSchemes.ApiKey,
+        string displayName = JarvisAuthenticationSchemes.ApiKey,
         Action<ApiKeyOptions>? configureOptions = null)
         where T : class, IApiKeyProvider
     {
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<AuthenticationApiKeyOption>, AuthenticationApiKeyPostConfigureOptions>());
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<AuthenticationApiKeyOption>, AuthenticationApiKeyOptionValidator>());
+        var requireConfigKey = typeof(T) == typeof(ConfigApiKeyProvider);
+
+        builder.Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IValidateOptions<AuthenticationApiKeyOption>, AuthenticationApiKeyOptionValidator>());
+
+        builder.Services.Configure<ApiKeyProviderOptions>(o =>
+        {
+            o.DefaultRealm = authenticationScheme;
+            o.RequireConfigKey = requireConfigKey;
+        });
 
         if (configureOptions != null)
         {
@@ -110,8 +89,6 @@ public static class AuthenticationBuilderExtension
         }
 
         ConfigureApiKeyRealms(builder.Services, configuration, authenticationScheme);
-
-        builder.Services.Configure<ApiKeyProviderOptions>(o => o.DefaultSchemeName = authenticationScheme);
 
         var section = configuration.GetSection($"Authentication:ApiKey:{authenticationScheme}");
         builder.Services.TryAddSingleton<IApiKeyProvider, T>();
@@ -138,7 +115,7 @@ public static class AuthenticationBuilderExtension
         {
             var realmName = child.Key;
             var snapshot = child.Get<AuthenticationApiKeyOption>();
-            if (realmName != primaryScheme && snapshot?.Keys.Length == 0)
+            if (realmName != primaryScheme && string.IsNullOrWhiteSpace(snapshot?.Key))
                 continue;
 
             services.Configure<AuthenticationApiKeyOption>(realmName, child);

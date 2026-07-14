@@ -1,14 +1,16 @@
-using Jarvis.Authentication.Tests.Helpers;
+using Jarvis.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using UnitTest.Authentication.Helpers;
 
-namespace Jarvis.Authentication.Tests.Base;
+namespace UnitTest.Authentication.Base;
 
 /// <summary>Test <see cref="AddJarvisAuthentication"/> — bind root options và default scheme.</summary>
 public class AuthenticationBaseTests
 {
+    /// <summary>Config hợp lệ — <c>AddJarvisAuthentication</c> bind đúng <see cref="AuthenticationRootOptions"/>.</summary>
     [Fact]
     public void AUTH_B_01_Valid_config_binds_root_options()
     {
@@ -27,6 +29,7 @@ public class AuthenticationBaseTests
         Assert.Equal("Default", options.DefaultAuthenticateScheme);
     }
 
+    /// <summary><c>Authentication:Type</c> rỗng — validator startup phải fail.</summary>
     [Fact]
     public void AUTH_B_02_Empty_type_fails_validation()
     {
@@ -37,6 +40,7 @@ public class AuthenticationBaseTests
         Assert.Contains("Authentication:Type", result.FailureMessage, StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>Default authenticate scheme = Bearer khi cấu hình Jwt.</summary>
     [Fact]
     public void AUTH_B_03_Default_authenticate_scheme_bearer()
     {
@@ -55,6 +59,7 @@ public class AuthenticationBaseTests
         Assert.Equal("Bearer", options.DefaultAuthenticateScheme);
     }
 
+    /// <summary>Password policy — mật khẩu ngắn hơn <c>MinLength</c> bị từ chối.</summary>
     [Fact]
     public async Task AUTH_B_06_Password_policy_min_length()
     {

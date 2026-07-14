@@ -19,6 +19,12 @@ public static class SampleAuthenticationExtensions
     /// <para><b>Chức năng:</b> wrap <c>AddJarvisAuthentication</c> + satellite <c>AddCore*</c> theo config Sample.</para>
     /// <para><b>Khi nào dùng:</b> gọi một lần trong <c>Program.cs</c> thay vì đăng ký scheme thủ công.
     /// Toggle scheme bằng <c>appsettings.json</c> (<c>Authentication:Schemes:*:Enabled</c> hoặc <c>Authentication:Type</c>).</para>
+    /// <para>
+    /// <c>Authentication:CredentialSource</c> = <c>Config</c> (mặc định) | <c>Database</c> —
+    /// chọn <see cref="ConfigApiKeyProvider"/> / <see cref="ConfigBasicCredentialProvider"/>
+    /// hoặc <see cref="SampleApiKeyProvider"/> / <see cref="SampleBasicAuthCredentialProvider"/>.
+    /// JWT dùng <see cref="SampleJwtTokenAccessChecker"/> (allow-all; host thay bằng blacklist/whitelist DB/Redis).
+    /// </para>
     /// </remarks>
     public static WebApplicationBuilder AddSampleAuthentication(this WebApplicationBuilder builder)
     {
@@ -32,6 +38,11 @@ public static class SampleAuthenticationExtensions
 
         var basicEnabled = configuration.GetValue<bool?>("Authentication:Schemes:Basic:Enabled") ?? false;
 
+        var useDatabaseCredentials = string.Equals(
+            configuration["Authentication:CredentialSource"],
+            "Database",
+            StringComparison.OrdinalIgnoreCase);
+
         var useComposite = (jwtEnabled ? 1 : 0) + (apiKeyEnabled ? 1 : 0) + (basicEnabled ? 1 : 0) > 1;
 
         builder.Services.AddJarvisAuthentication(configuration, auth =>
@@ -40,17 +51,22 @@ public static class SampleAuthenticationExtensions
                 auth.AddJarvisCompositeScheme(includeBasic: basicEnabled);
 
             if (jwtEnabled)
-                auth.AddCoreJwtBearer(configuration, JwtBearerDefaults.AuthenticationScheme);
+                auth.AddCoreJwtBearer<SampleJwtTokenAccessChecker>(configuration, JwtBearerDefaults.AuthenticationScheme);
 
             if (apiKeyEnabled)
-                auth.AddCoreApiKey(configuration, JarvisAuthenticationSchemes.ApiKey);
+            {
+                if (useDatabaseCredentials)
+                    auth.AddCoreApiKey<SampleApiKeyProvider>(configuration);
+                else
+                    auth.AddCoreApiKey<ConfigApiKeyProvider>(configuration);
+            }
 
             if (basicEnabled)
             {
-                auth.AddCoreBasic(
-                    configuration,
-                    SampleBasicAuthDbLookup.Lookup,
-                    JarvisAuthenticationSchemes.Basic);
+                if (useDatabaseCredentials)
+                    auth.AddCoreBasic<SampleBasicAuthCredentialProvider>(configuration);
+                else
+                    auth.AddCoreBasic<ConfigBasicCredentialProvider>(configuration);
             }
         });
 

@@ -1,3 +1,4 @@
+using Jarvis.Authentication;
 using Jarvis.Authentication.ApiKey;
 using Jarvis.Authentication.Basic;
 using Jarvis.Authentication.Jwt;
@@ -12,7 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Jarvis.Authentication.Tests.Helpers;
+namespace UnitTest.Authentication.Helpers;
 
 /// <summary>Test host in-memory với pipeline authentication Jarvis và endpoint probe.</summary>
 public sealed class AuthenticationTestServer : IAsyncDisposable
@@ -53,10 +54,10 @@ public sealed class AuthenticationTestServer : IAsyncDisposable
                             auth.AddCoreJwtBearer(configuration, JwtBearerDefaults.AuthenticationScheme);
 
                         if (apiKey)
-                            auth.AddCoreApiKey(configuration, JarvisAuthenticationSchemes.ApiKey);
+                            auth.AddCoreApiKey<ConfigApiKeyProvider>(configuration, JarvisAuthenticationSchemes.ApiKey);
 
                         if (basic)
-                            auth.AddCoreBasic(configuration, JarvisAuthenticationSchemes.Basic);
+                            auth.AddCoreBasic<ConfigBasicCredentialProvider>(configuration, AuthenticationBasicOption.DefaultScheme);
                     });
                 });
                 webBuilder.Configure(app =>

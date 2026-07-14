@@ -1,5 +1,6 @@
-namespace Jarvis.Authentication;
+namespace Jarvis.Authentication.Cognito;
 
+/// <summary>AWS credentials cho <see cref="CognitoClient"/> (admin SDK).</summary>
 public class AwsOption
 {
     public required string AccessKey { get; set; }
