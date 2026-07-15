@@ -16,17 +16,31 @@
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.15" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.15" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.15" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.15" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.15" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.15" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jarvis.BlobStoring\Jarvis.BlobStoring.csproj" />
+    <ProjectReference Include="..\Jarvis.BlobStoring.AwsS3\Jarvis.BlobStoring.AwsS3.csproj" />
+    <ProjectReference Include="..\Jarvis.BlobStoring.MinIO\Jarvis.BlobStoring.MinIO.csproj" />
     <ProjectReference Include="..\Jarvis.Caching\Jarvis.Caching.csproj" />
     <ProjectReference Include="..\Jarvis.Caching.Redis\Jarvis.Caching.Redis.csproj" />
     <ProjectReference Include="..\Jarvis.Domain\Jarvis.Domain.csproj" />
     <ProjectReference Include="..\Jarvis.EntityFramework\Jarvis.EntityFramework.csproj" />
+    <ProjectReference Include="..\Jarvis.Authentication\Jarvis.Authentication.csproj" />
+    <ProjectReference Include="..\Jarvis.Authentication.ApiKey\Jarvis.Authentication.ApiKey.csproj" />
+    <ProjectReference Include="..\Jarvis.Authentication.Jwt\Jarvis.Authentication.Jwt.csproj" />
+    <ProjectReference Include="..\Jarvis.Authentication.Basic\Jarvis.Authentication.Basic.csproj" />
     <ProjectReference Include="..\Sample\Sample.csproj" />
   </ItemGroup>
 

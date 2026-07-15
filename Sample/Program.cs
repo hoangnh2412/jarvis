@@ -1,4 +1,5 @@
 using Sample;
+using Sample.Extensions;
 using Sample.Health;
 using Sample.Multitenancy;
 using Sample.Persistence;
@@ -17,6 +18,7 @@ using Jarvis.HealthChecks;
 using Serilog;
 using StackExchange.Redis;
 using OpenTelemetry.Trace;
+using Jarvis.BlobStoring.Extensions;
 using Jarvis.Caching.Extensions;
 using Jarvis.Caching.Redis;
 using Jarvis.Caching.Redis.Extensions;
@@ -46,7 +48,11 @@ builder.AddCoreCors();
 builder.AddCoreDomain();
 builder.AddCoreWebApi();
 
-builder.AddJarvisCaching().UseRedisDistributedCache().UseRedisMemoryCacheInvalidation();
+builder.AddJarvisCaching()
+    .UseRedisDistributedCache()
+    .UseRedisMemoryCacheInvalidation();
+
+builder.AddCoreBlobStoring();
 
 builder.AddEntityFramework();
 builder.AddSampleDbContext();
@@ -71,6 +77,8 @@ builder.Services.AddApiVersioning(options =>
     options.SubstituteApiVersionInUrl = true;
 });
 
+builder.AddSampleAuthentication();
+
 builder.AddCoreSwagger();
 
 // builder.Services.AddHostedService<Worker>();
@@ -91,6 +99,8 @@ app.UseCoreSwagger();
 app.UseHttpsRedirection();
 
 app.UseCoreCors();
+
+app.UseAuthentication();
 
 // Demo headers for OTEL trace enrichment (request: send x-demo-request; response: x-demo-response).
 app.UseMiddleware<SampleOtlpDemoHeadersMiddleware>();

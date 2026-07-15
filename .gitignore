@@ -1,6 +1,12 @@
 
 # Created by https://www.gitignore.io/api/visualstudio,git
 
+### Secrets & build artifacts (Jarvis) ###
+.env
+.env.*
+!.env.example
+artifacts/
+
 ### Git ###
 *.orig
 
@@ -284,3 +290,8 @@ Sample/logs/
 #Allow
 
 appsettings.*.json
+
+.opencode
+.cursor
+CLAUDE.md
+rules

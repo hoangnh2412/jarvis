@@ -1,79 +1,232 @@
+using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Jarvis.Authentication.Jwt;
 
 /// <summary>
-/// Issue: PII
-/// https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/wiki/PII
-/// https://stackoverflow.com/questions/77120928/why-do-i-get-idx20803-error-after-upgrading-to-identitymodel-v7-from-v6
+/// Extension đăng ký scheme JWT Bearer vào ASP.NET Core Authentication pipeline.
 /// </summary>
 public static class AuthenticationBuilderExtension
 {
-    public static AuthenticationBuilder AddCoreJwtBearer(this AuthenticationBuilder builder, IConfiguration configuration, Action<JwtBearerOptions>? configureOptions = null) => builder.AddCoreJwtBearer(configuration, JwtBearerDefaults.AuthenticationScheme, JwtBearerDefaults.AuthenticationScheme, configureOptions);
+    /// <summary>
+    /// Đăng ký JwtBearer với scheme mặc định <c>Bearer</c> và <see cref="AllowAllJwtTokenAccessChecker"/>.
+    /// </summary>
+    public static AuthenticationBuilder AddCoreJwtBearer(
+        this AuthenticationBuilder builder,
+        IConfiguration configuration,
+        Action<JwtBearerOptions>? configureOptions = null) =>
+        builder.AddCoreJwtBearer<AllowAllJwtTokenAccessChecker>(
+            configuration, JwtBearerDefaults.AuthenticationScheme, configureOptions);
 
-    public static AuthenticationBuilder AddCoreJwtBearer(this AuthenticationBuilder builder, IConfiguration configuration, string authenticationScheme, Action<JwtBearerOptions>? configureOptions = null) => builder.AddCoreJwtBearer(configuration, authenticationScheme, authenticationScheme, configureOptions);
+    /// <summary>
+    /// Đăng ký JwtBearer với tên scheme tùy chỉnh và <see cref="AllowAllJwtTokenAccessChecker"/>.
+    /// </summary>
+    public static AuthenticationBuilder AddCoreJwtBearer(
+        this AuthenticationBuilder builder,
+        IConfiguration configuration,
+        string authenticationScheme,
+        Action<JwtBearerOptions>? configureOptions = null) =>
+        builder.AddCoreJwtBearer<AllowAllJwtTokenAccessChecker>(
+            configuration, authenticationScheme, authenticationScheme, configureOptions);
 
-    public static AuthenticationBuilder AddCoreJwtBearer(this AuthenticationBuilder builder, IConfiguration configuration, string authenticationScheme, string displayName, Action<JwtBearerOptions>? configureOptions = null)
+    /// <summary>
+    /// Overload đầy đủ với <see cref="AllowAllJwtTokenAccessChecker"/>.
+    /// </summary>
+    public static AuthenticationBuilder AddCoreJwtBearer(
+        this AuthenticationBuilder builder,
+        IConfiguration configuration,
+        string authenticationScheme,
+        string displayName,
+        Action<JwtBearerOptions>? configureOptions = null) =>
+        builder.AddCoreJwtBearer<AllowAllJwtTokenAccessChecker>(
+            configuration, authenticationScheme, displayName, configureOptions);
+
+    /// <summary>
+    /// Đăng ký JwtBearer + <typeparamref name="TAccessChecker"/> (blacklist/whitelist sau validate).
+    /// </summary>
+    /// <remarks>
+    /// <para><typeparamref name="TAccessChecker"/> đăng ký Singleton (<see cref="IJwtTokenAccessChecker"/>).</para>
+    /// <para>Hook <c>OnTokenValidated</c>: chữ ký OK → <c>IsAllowedAsync</c>; <c>false</c> → Fail.</para>
+    /// <example>
+    /// <code>
+    /// auth.AddCoreJwtBearer&lt;AllowAllJwtTokenAccessChecker&gt;(config);
+    /// auth.AddCoreJwtBearer&lt;RedisJwtRevocationChecker&gt;(config);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    public static AuthenticationBuilder AddCoreJwtBearer<TAccessChecker>(
+        this AuthenticationBuilder builder,
+        IConfiguration configuration,
+        Action<JwtBearerOptions>? configureOptions = null)
+        where TAccessChecker : class, IJwtTokenAccessChecker =>
+        builder.AddCoreJwtBearer<TAccessChecker>(
+            configuration, JwtBearerDefaults.AuthenticationScheme, configureOptions);
+
+    /// <summary>
+    /// Đăng ký JwtBearer với scheme tùy chỉnh + <typeparamref name="TAccessChecker"/>.
+    /// </summary>
+    public static AuthenticationBuilder AddCoreJwtBearer<TAccessChecker>(
+        this AuthenticationBuilder builder,
+        IConfiguration configuration,
+        string authenticationScheme,
+        Action<JwtBearerOptions>? configureOptions = null)
+        where TAccessChecker : class, IJwtTokenAccessChecker =>
+        builder.AddCoreJwtBearer<TAccessChecker>(
+            configuration, authenticationScheme, authenticationScheme, configureOptions);
+
+    /// <summary>
+    /// Overload đầy đủ: bind config, đăng ký checker, gắn <c>OnTokenValidated</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Khi <paramref name="configureOptions"/> là <c>null</c> (khuyến nghị):</b></para>
+    /// <list type="bullet">
+    /// <item>Bind <c>Authentication:Jwt:{authenticationScheme}</c> vào <see cref="AuthenticationJwtOption"/>.</item>
+    /// <item>Có <c>Authority</c> → dùng metadata OIDC; không có → dùng <c>IssuerSigningKeys</c> symmetric.</item>
+    /// <item>Validate options lúc startup.</item>
+    /// </list>
+    /// <para><b>Khi truyền <paramref name="configureOptions"/>:</b> cấu hình JwtBearer bằng code — vẫn gắn access checker.</para>
+    /// </remarks>
+    public static AuthenticationBuilder AddCoreJwtBearer<TAccessChecker>(
+        this AuthenticationBuilder builder,
+        IConfiguration configuration,
+        string authenticationScheme,
+        string displayName,
+        Action<JwtBearerOptions>? configureOptions = null)
+        where TAccessChecker : class, IJwtTokenAccessChecker
     {
+        builder.Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IValidateOptions<AuthenticationJwtOption>, AuthenticationJwtOptionValidator>());
+        builder.Services.TryAddSingleton<IJwtTokenAccessChecker, TAccessChecker>();
+
         if (configureOptions != null)
-            return builder.AddJwtBearer(authenticationScheme, displayName ?? authenticationScheme, configureOptions);
+        {
+            return builder.AddJwtBearer(authenticationScheme, displayName ?? authenticationScheme, options =>
+            {
+                configureOptions(options);
+                AttachTokenAccessChecker(options);
+            });
+        }
 
-        var authOption = configuration.GetSection($"Authentication:Jwt:{authenticationScheme}").Get<AuthenticationJwtOption>();
+        var section = configuration.GetSection($"Authentication:Jwt:{authenticationScheme}");
+        builder.Services.Configure<AuthenticationJwtOption>(authenticationScheme, section);
+        builder.Services.AddOptions<AuthenticationJwtOption>(authenticationScheme)
+            .Bind(section)
+            .ValidateOnStart();
 
-        // Default validator: https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/wiki/ValidatingTokens
+        var authOption = section.Get<AuthenticationJwtOption>() ?? new AuthenticationJwtOption();
+
         return builder.AddJwtBearer(authenticationScheme, displayName ?? authenticationScheme, options =>
         {
-            options.RequireHttpsMetadata = false;
-            options.SaveToken = true;
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                IssuerSigningKeys = authOption?.IssuerSigningKeys.Select(x => new SymmetricSecurityKey(Encoding.ASCII.GetBytes(x))),
-                ClockSkew = TimeSpan.Zero,
-                ValidateActor = authOption?.ValidateActor ?? false,
-                ValidateSignatureLast = authOption?.ValidateSignatureLast ?? true,
-                ValidateWithLKG = authOption?.ValidateWithLKG ?? false,
-                ValidateTokenReplay = authOption?.ValidateTokenReplay ?? false,
-                ValidateAudience = authOption?.ValidateAudience ?? true,
-                ValidAudiences = authOption?.ValidAudiences,
-                ValidateIssuerSigningKey = authOption?.ValidateIssuerSigningKey ?? true,
-                ValidateIssuer = authOption?.ValidateIssuer ?? false,
-                ValidIssuers = authOption?.ValidIssuers,
-                LifetimeValidator = (DateTime? notBefore, DateTime? expires, SecurityToken securityToken, TokenValidationParameters validationParameters) =>
-                {
-                    if (validationParameters == null)
-                        throw LogHelper.LogArgumentNullException(nameof(validationParameters));
-
-                    if (!validationParameters.ValidateLifetime)
-                        return true;
-
-                    if (authOption != null && authOption.MaxExpireMinutes > 0)
-                    {
-                        if (notBefore.HasValue && expires.HasValue && (expires - notBefore).Value.TotalMinutes > authOption.MaxExpireMinutes)
-                            throw LogHelper.LogExceptionMessage(new SecurityTokenInvalidLifetimeException($"Token lifetime invalid, lifetime > {authOption.MaxExpireMinutes} minutes") { NotBefore = notBefore, Expires = expires });
-                    }
-
-                    if (!expires.HasValue && validationParameters.RequireExpirationTime)
-                        throw LogHelper.LogExceptionMessage(new SecurityTokenNoExpirationException("Token not expiration time"));
-
-                    if (notBefore.HasValue && expires.HasValue && (notBefore.Value > expires.Value))
-                        throw LogHelper.LogExceptionMessage(new SecurityTokenInvalidLifetimeException("Lifetime invalid, NotBefore > Expire") { NotBefore = notBefore, Expires = expires });
-
-                    DateTime utcNow = DateTime.UtcNow;
-                    if (notBefore.HasValue && (notBefore.Value > DateTimeUtil.Add(utcNow, validationParameters.ClockSkew)))
-                        throw LogHelper.LogExceptionMessage(new SecurityTokenNotYetValidException("Token lifetime invalid, NotBefore > current time") { NotBefore = notBefore.Value });
-
-                    if (expires.HasValue && (expires.Value < DateTimeUtil.Add(utcNow, validationParameters.ClockSkew.Negate())))
-                        throw LogHelper.LogExceptionMessage(new SecurityTokenExpiredException("Token expired, Expire > current time") { Expires = expires.Value });
-
-                    return true;
-                }
-            };
+            ConfigureJwtBearer(options, authOption);
+            AttachTokenAccessChecker(options);
         });
+    }
+
+    /// <summary>
+    /// Map <see cref="AuthenticationJwtOption"/> sang <see cref="JwtBearerOptions"/> và <see cref="TokenValidationParameters"/>.
+    /// </summary>
+    public static void ConfigureJwtBearer(JwtBearerOptions options, AuthenticationJwtOption authOption)
+    {
+        options.RequireHttpsMetadata = authOption.RequireHttpsMetadata ?? true;
+        options.SaveToken = true;
+
+        var useAuthority = !string.IsNullOrWhiteSpace(authOption.Authority);
+        if (useAuthority)
+        {
+            options.Authority = authOption.Authority!.TrimEnd('/');
+            if (!string.IsNullOrWhiteSpace(authOption.Audience))
+                options.Audience = authOption.Audience;
+        }
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ClockSkew = TimeSpan.Zero,
+            ValidateActor = authOption.ValidateActor,
+            ValidateSignatureLast = authOption.ValidateSignatureLast,
+            ValidateWithLKG = authOption.ValidateWithLKG,
+            ValidateTokenReplay = authOption.ValidateTokenReplay,
+            ValidateAudience = authOption.ValidateAudience,
+            ValidAudiences = authOption.ValidAudiences.Length > 0 ? authOption.ValidAudiences : null,
+            ValidateIssuerSigningKey = useAuthority ? false : authOption.ValidateIssuerSigningKey,
+            IssuerSigningKeys = useAuthority
+                ? null
+                : authOption.IssuerSigningKeys.Select(x => new SymmetricSecurityKey(Encoding.UTF8.GetBytes(x))),
+            ValidateIssuer = useAuthority || authOption.ValidateIssuer,
+            ValidIssuers = authOption.ValidIssuers.Length > 0 ? authOption.ValidIssuers : null,
+            ValidateLifetime = true,
+            LifetimeValidator = authOption.MaxExpireMinutes > 0
+                ? (notBefore, expires, _, parameters) => ValidateMaxLifetime(notBefore, expires, parameters, authOption.MaxExpireMinutes)
+                : null
+        };
+    }
+
+    /// <summary>Gắn <see cref="IJwtTokenAccessChecker"/> vào <c>OnTokenValidated</c> (wrap handler có sẵn).</summary>
+    public static void AttachTokenAccessChecker(JwtBearerOptions options)
+    {
+        options.Events ??= new JwtBearerEvents();
+        var prior = options.Events.OnTokenValidated;
+        options.Events.OnTokenValidated = async context =>
+        {
+            if (prior is not null)
+                await prior(context).ConfigureAwait(false);
+
+            if (context.Result != null)
+                return;
+
+            if (context.Principal is null)
+                return;
+
+            var checker = context.HttpContext.RequestServices.GetRequiredService<IJwtTokenAccessChecker>();
+            var rawToken = TryGetBearerToken(context.Request);
+            var allowed = await checker
+                .IsAllowedAsync(context.Principal, rawToken, context.HttpContext.RequestAborted)
+                .ConfigureAwait(false);
+
+            if (!allowed)
+                context.Fail("Token is revoked or not allowed.");
+        };
+    }
+
+    private static string? TryGetBearerToken(Microsoft.AspNetCore.Http.HttpRequest request)
+    {
+        if (!AuthenticationHeaderValue.TryParse(request.Headers.Authorization, out var header))
+            return null;
+
+        if (!string.Equals(header.Scheme, "Bearer", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        return string.IsNullOrWhiteSpace(header.Parameter) ? null : header.Parameter;
+    }
+
+    /// <summary>Giới hạn thời gian sống token tối đa theo <see cref="AuthenticationJwtOption.MaxExpireMinutes"/>.</summary>
+    private static bool ValidateMaxLifetime(
+        DateTime? notBefore,
+        DateTime? expires,
+        TokenValidationParameters validationParameters,
+        int maxExpireMinutes)
+    {
+        if (!validationParameters.ValidateLifetime)
+            return true;
+
+        if (notBefore.HasValue && expires.HasValue
+            && (expires.Value - notBefore.Value).TotalMinutes > maxExpireMinutes)
+        {
+            throw LogHelper.LogExceptionMessage(
+                new SecurityTokenInvalidLifetimeException($"Token lifetime exceeds {maxExpireMinutes} minutes.")
+                {
+                    NotBefore = notBefore,
+                    Expires = expires
+                });
+        }
+
+        return true;
     }
 }

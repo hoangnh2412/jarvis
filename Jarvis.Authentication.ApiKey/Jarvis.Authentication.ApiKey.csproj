@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <InternalsVisibleTo>UnitTest</InternalsVisibleTo>
     <PackageId>Jarvis.Authentications.ApiKey</PackageId>
     <Version>1.0.1</Version>
     <Authors>Hoang Nguyen</Authors>
@@ -11,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="AspNetCore.Authentication.ApiKey" Version="8.0.1" />
   </ItemGroup>
 
