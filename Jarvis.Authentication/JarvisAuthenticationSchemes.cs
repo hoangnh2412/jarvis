@@ -17,4 +17,7 @@ public static class JarvisAuthenticationSchemes
 
     /// <summary>Scheme HTTP Basic mặc định.</summary>
     public const string Basic = "Basic";
+
+    /// <summary>Scheme JWT Bearer mặc định — trùng <c>JwtBearerDefaults.AuthenticationScheme</c>.</summary>
+    public const string Bearer = "Bearer";
 }

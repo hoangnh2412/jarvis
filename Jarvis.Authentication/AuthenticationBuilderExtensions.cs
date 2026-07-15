@@ -16,11 +16,14 @@ public static class AuthenticationBuilderExtensions
     /// sau đó Basic (nếu bật), cuối cùng Bearer JWT.</para>
     /// <para><b>Khi nào dùng:</b> host bật đồng thời ≥ 2 scheme (Jwt + ApiKey, hoặc thêm Basic).
     /// Đặt <c>DefaultAuthenticateScheme</c> = <c>Composite</c> trong config root.</para>
+    /// <para><paramref name="bearerScheme"/> phải trùng tên scheme JWT đã đăng ký qua <c>AddCoreJwtBearer</c>
+    /// — truyền vào khi host dùng scheme JWT không phải <c>Bearer</c> mặc định.</para>
     /// </remarks>
     public static AuthenticationBuilder AddJarvisCompositeScheme(
         this AuthenticationBuilder builder,
         string apiKeyHeaderName = "X-API-KEY",
-        bool includeBasic = false)
+        bool includeBasic = false,
+        string bearerScheme = JarvisAuthenticationSchemes.Bearer)
     {
         return builder.AddPolicyScheme(
             JarvisAuthenticationSchemes.Composite,
@@ -37,11 +40,11 @@ public static class AuthenticationBuilderExtensions
                         return JarvisAuthenticationSchemes.Basic;
 
                     if (authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-                        return "Bearer";
+                        return bearerScheme;
 
                     return includeBasic
                         ? JarvisAuthenticationSchemes.Basic
-                        : "Bearer";
+                        : bearerScheme;
                 };
             });
     }

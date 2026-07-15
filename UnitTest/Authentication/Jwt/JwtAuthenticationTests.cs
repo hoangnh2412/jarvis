@@ -31,7 +31,7 @@ public class JwtAuthenticationTests
             ValidateIssuerSigningKey = true
         };
 
-        AuthenticationBuilderExtension.ConfigureJwtBearer(options, jwtOption, new ServiceCollection());
+        AuthenticationBuilderExtension.ConfigureJwtBearer(options, jwtOption);
 
         Assert.Equal("https://localhost:5001", options.Authority);
         Assert.False(options.TokenValidationParameters.ValidateIssuerSigningKey);
@@ -57,7 +57,7 @@ public class JwtAuthenticationTests
     public void JWT_U_04_Require_https_metadata_defaults_true()
     {
         var options = new JwtBearerOptions();
-        AuthenticationBuilderExtension.ConfigureJwtBearer(options, new AuthenticationJwtOption(), new ServiceCollection());
+        AuthenticationBuilderExtension.ConfigureJwtBearer(options, new AuthenticationJwtOption());
 
         Assert.True(options.RequireHttpsMetadata);
     }
@@ -70,7 +70,7 @@ public class JwtAuthenticationTests
         AuthenticationBuilderExtension.ConfigureJwtBearer(options, new AuthenticationJwtOption
         {
             RequireHttpsMetadata = false
-        }, new ServiceCollection());
+        });
 
         Assert.False(options.RequireHttpsMetadata);
     }

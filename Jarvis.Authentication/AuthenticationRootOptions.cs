@@ -4,8 +4,8 @@ namespace Jarvis.Authentication;
 /// Root options cho toàn bộ authentication — bind từ section <c>Authentication</c> trong config.
 /// </summary>
 /// <remarks>
-/// <para><b>Chức năng:</b> xác định loại auth mặc định, default scheme, scheme enable flags,
-/// password policy, cookie và expiration options dùng chung.</para>
+/// <para><b>Chức năng:</b> xác định loại auth mặc định, default scheme, scheme enable flags
+/// và password policy dùng chung.</para>
 /// <para><b>Khi nào dùng:</b> khai báo trong <c>appsettings.json</c>; bind tự động qua <c>AddJarvisAuthentication</c>.
 /// Satellite packages (Jwt, ApiKey, Basic) đọc section con riêng (<c>Authentication:Jwt</c>, …).</para>
 /// </remarks>
@@ -25,10 +25,4 @@ public class AuthenticationRootOptions
 
     /// <summary>Quy tắc độ mạnh mật khẩu — dùng bởi <see cref="IPasswordPolicyValidator"/>.</summary>
     public PasswordPolicyOptions PasswordPolicy { get; set; } = new();
-
-    /// <summary>Chính sách hết hạn mật khẩu — hook cho flow đăng ký/đổi mật khẩu (OpenIddict tương lai).</summary>
-    public PasswordExpirationOptions PasswordExpiration { get; set; } = new();
-
-    /// <summary>Tuỳ chọn cookie authentication dùng chung — mirror ASP.NET Core cookie middleware.</summary>
-    public JarvisCookieAuthenticationOptions Cookie { get; set; } = new();
 }

@@ -81,7 +81,8 @@ public class AuthenticationIntegrationTests
         Assert.Equal("X-API-KEY", options.KeyName);
         Assert.True(string.IsNullOrEmpty(options.Key));
         Assert.IsType<NoOpApiKeyProvider>(sp.GetRequiredService<AspNetCore.Authentication.ApiKey.IApiKeyProvider>());
-        Assert.False(sp.GetRequiredService<IOptions<ApiKeyProviderOptions>>().Value.RequireConfigKey);
+        // RequireConfigKey giờ gắn theo từng realm (named) — custom provider ⇒ false cho realm "Default".
+        Assert.False(sp.GetRequiredService<IOptionsMonitor<ApiKeyProviderOptions>>().Get("Default").RequireConfigKey);
     }
 
     /// <summary><see cref="ConfigApiKeyProvider"/> + <c>Key</c> rỗng — ValidateOnStart fail.</summary>

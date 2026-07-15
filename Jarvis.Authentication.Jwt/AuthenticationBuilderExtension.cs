@@ -125,7 +125,7 @@ public static class AuthenticationBuilderExtension
 
         return builder.AddJwtBearer(authenticationScheme, displayName ?? authenticationScheme, options =>
         {
-            ConfigureJwtBearer(options, authOption, builder.Services);
+            ConfigureJwtBearer(options, authOption);
             AttachTokenAccessChecker(options);
         });
     }
@@ -133,7 +133,7 @@ public static class AuthenticationBuilderExtension
     /// <summary>
     /// Map <see cref="AuthenticationJwtOption"/> sang <see cref="JwtBearerOptions"/> và <see cref="TokenValidationParameters"/>.
     /// </summary>
-    public static void ConfigureJwtBearer(JwtBearerOptions options, AuthenticationJwtOption authOption, IServiceCollection _)
+    public static void ConfigureJwtBearer(JwtBearerOptions options, AuthenticationJwtOption authOption)
     {
         options.RequireHttpsMetadata = authOption.RequireHttpsMetadata ?? true;
         options.SaveToken = true;

@@ -76,11 +76,8 @@ public static class AuthenticationBuilderExtension
         builder.Services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IValidateOptions<AuthenticationApiKeyOption>, AuthenticationApiKeyOptionValidator>());
 
-        builder.Services.Configure<ApiKeyProviderOptions>(o =>
-        {
-            o.DefaultRealm = authenticationScheme;
-            o.RequireConfigKey = requireConfigKey;
-        });
+        // DefaultRealm (không tên) cho provider — fallback khi header không có prefix "realm:".
+        builder.Services.Configure<ApiKeyProviderOptions>(o => o.DefaultRealm = authenticationScheme);
 
         if (configureOptions != null)
         {
@@ -88,7 +85,7 @@ public static class AuthenticationBuilderExtension
             return builder.AddApiKeyInHeader<T>(authenticationScheme, displayName, configureOptions);
         }
 
-        ConfigureApiKeyRealms(builder.Services, configuration, authenticationScheme);
+        ConfigureApiKeyRealms(builder.Services, configuration, authenticationScheme, requireConfigKey);
 
         var section = configuration.GetSection($"Authentication:ApiKey:{authenticationScheme}");
         builder.Services.TryAddSingleton<IApiKeyProvider, T>();
@@ -105,10 +102,15 @@ public static class AuthenticationBuilderExtension
     /// <summary>
     /// Bind mọi realm con dưới <c>Authentication:ApiKey</c> thành named options.
     /// </summary>
+    /// <remarks>
+    /// <paramref name="requireConfigKey"/> được gắn theo <b>từng realm</b> (named <see cref="ApiKeyProviderOptions"/>)
+    /// để nhiều scheme/provider khác nhau không ghi đè cờ validate của nhau.
+    /// </remarks>
     private static void ConfigureApiKeyRealms(
         IServiceCollection services,
         IConfiguration configuration,
-        string primaryScheme)
+        string primaryScheme,
+        bool requireConfigKey)
     {
         var apiKeySection = configuration.GetSection("Authentication:ApiKey");
         foreach (var child in apiKeySection.GetChildren())
@@ -119,6 +121,11 @@ public static class AuthenticationBuilderExtension
                 continue;
 
             services.Configure<AuthenticationApiKeyOption>(realmName, child);
+            services.Configure<ApiKeyProviderOptions>(realmName, o =>
+            {
+                o.DefaultRealm = primaryScheme;
+                o.RequireConfigKey = requireConfigKey;
+            });
             services.AddOptions<AuthenticationApiKeyOption>(realmName)
                 .Bind(child)
                 .ValidateOnStart();

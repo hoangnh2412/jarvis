@@ -27,8 +27,16 @@ public class ConfigApiKeyProviderTests
             NullLogger<ConfigApiKeyProvider>.Instance);
     }
 
-    private static AuthenticationApiKeyOptionValidator CreateValidator(bool requireConfigKey = true) =>
-        new(Options.Create(new ApiKeyProviderOptions { RequireConfigKey = requireConfigKey }));
+    private static AuthenticationApiKeyOptionValidator CreateValidator(
+        bool requireConfigKey = true,
+        string realm = "Default")
+    {
+        var services = new ServiceCollection();
+        services.Configure<ApiKeyProviderOptions>(realm, o => o.RequireConfigKey = requireConfigKey);
+        var monitor = services.BuildServiceProvider()
+            .GetRequiredService<IOptionsMonitor<ApiKeyProviderOptions>>();
+        return new AuthenticationApiKeyOptionValidator(monitor);
+    }
 
     /// <summary>Header secret thuần (không prefix) — realm mặc định <c>Default</c>, key hợp lệ.</summary>
     [Fact]

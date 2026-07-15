@@ -284,3 +284,7 @@ Sample/logs/
 #Allow
 
 appsettings.*.json
+
+.opencode
+.cursor
+CLAUDE.md
