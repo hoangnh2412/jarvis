@@ -118,23 +118,23 @@ Danh sách module Jarvis (chiều **Atomic** — xem [Triết lý thiết kế](
 
 ## OpenCode skills (AI)
 
-Skill trong [.opencode/skills/](.opencode/skills/) — gọi trong Cursor/OpenCode bằng `@.opencode/skills/<tên-skill>/...`. Hub đầy đủ: [.opencode/README.md](.opencode/README.md).
+Skill trong [.opencode/skills/](ai-skills/jarvis/skills/) — gọi trong Cursor/OpenCode bằng `@.opencode/skills/<tên-skill>/...`. Hub đầy đủ: [.opencode/README.md](ai-skills/jarvis/README.md).
 
 | Skill | Mô tả |
 |-------|--------|
-| [jarvis-dotnet](.opencode/skills/jarvis-dotnet/README.md) | Scaffold / init / add solution Jarvis |
-| [foundation-dotnet](.opencode/skills/foundation-dotnet/README.md) | Json, CORS, WebApi, ApiResponseWrapper |
-| [application-dotnet](.opencode/skills/application-dotnet/README.md) | CQRS Application layer |
-| [authentication-dotnet](.opencode/skills/authentication-dotnet/README.md) | JWT, API Key, Cognito |
-| [notification-dotnet](.opencode/skills/notification-dotnet/README.md) | Email SMTP Mailkit |
-| [caching-dotnet](.opencode/skills/caching-dotnet/README.md) | Memory + Redis cache |
-| [entityframework-dotnet](.opencode/skills/entityframework-dotnet/README.md) | EF multitenancy |
-| [swashbuckle-dotnet](.opencode/skills/swashbuckle-dotnet/README.md) | Swagger / OpenAPI |
-| [healthcheck-dotnet](.opencode/skills/healthcheck-dotnet/README.md) | Health endpoints |
-| [telemetry-dotnet](.opencode/skills/telemetry-dotnet/README.md) | OpenTelemetry OTLP |
-| [analyze-metric-dotnet](.opencode/skills/analyze-metric-dotnet/README.md) | Đọc Grafana Dotnet Runtime Metrics |
-| [blobstoring-dotnet](.opencode/skills/blobstoring-dotnet/README.md) | FileSystem / MinIO / AWS S3 blob |
-| [code-review-dotnet](.opencode/skills/code-review-dotnet/README.md) | Review PR C#/.NET |
+| [jarvis-dotnet](ai-skills/jarvis/skills/jarvis-dotnet/README.md) | Scaffold / init / add solution Jarvis |
+| [foundation-dotnet](ai-skills/jarvis/skills/foundation-dotnet/README.md) | Json, CORS, WebApi, ApiResponseWrapper |
+| [application-dotnet](ai-skills/jarvis/skills/application-dotnet/README.md) | CQRS Application layer |
+| [authentication-dotnet](ai-skills/jarvis/skills/authentication-dotnet/README.md) | JWT, API Key, Cognito |
+| [notification-dotnet](ai-skills/jarvis/skills/notification-dotnet/README.md) | Email SMTP Mailkit |
+| [caching-dotnet](ai-skills/jarvis/skills/caching-dotnet/README.md) | Memory + Redis cache |
+| [entityframework-dotnet](ai-skills/jarvis/skills/entityframework-dotnet/README.md) | EF multitenancy |
+| [swashbuckle-dotnet](ai-skills/jarvis/skills/swashbuckle-dotnet/README.md) | Swagger / OpenAPI |
+| [healthcheck-dotnet](ai-skills/jarvis/skills/healthcheck-dotnet/README.md) | Health endpoints |
+| [telemetry-dotnet](ai-skills/jarvis/skills/telemetry-dotnet/README.md) | OpenTelemetry OTLP |
+| [troubleshooting-dotnet](ai-skills/jarvis/skills/troubleshooting-dotnet/README.md) | Đọc Grafana Dotnet Runtime Metrics |
+| [blobstoring-dotnet](ai-skills/jarvis/skills/blobstoring-dotnet/README.md) | FileSystem / MinIO / AWS S3 blob |
+| [code-review-dotnet](ai-skills/jarvis/skills/code-review-dotnet/README.md) | Review PR C#/.NET |
 
 ## Get started
 
@@ -225,7 +225,7 @@ Sau khi scaffold và build, chạy F5 bạn sẽ thấy:
 
 ## Roadmap
 
-Lộ trình phát triển Jarvis framework (.NET 9). Mỗi hạng mục là **cam kết chức năng** sẽ triển khai; tài liệu và skill OpenCode trong [.opencode/skills/](.opencode/skills/) đi kèm khi từng module được phát hành.
+Lộ trình phát triển Jarvis framework (.NET 9). Mỗi hạng mục là **cam kết chức năng** sẽ triển khai; tài liệu và skill OpenCode trong [.opencode/skills/](ai-skills/jarvis/skills/) đi kèm khi từng module được phát hành.
 
 **Chú thích trạng thái**
 
@@ -247,18 +247,18 @@ Nền tảng bảo mật & admin → Dữ liệu & multitenancy → Kiến trúc
 
 | Thành phần | Phạm vi | Skill |
 |------------|---------|-------|
-| ✅ Foundation | JSON, CORS, WebApi, ApiResponseWrapper | [foundation-dotnet](.opencode/skills/foundation-dotnet/README.md) |
-| ✅ Application | CQRS command/query dispatcher | [application-dotnet](.opencode/skills/application-dotnet/README.md) |
-| ✅ Entity Framework | UoW, repository, multitenancy (single / dedicated / hybrid) | [entityframework-dotnet](.opencode/skills/entityframework-dotnet/README.md) |
-| ✅ Caching | Memory + Redis, invalidation pub/sub | [caching-dotnet](.opencode/skills/caching-dotnet/README.md) |
-| ✅ Authentication | JWT Bearer, API Key, Cognito | [authentication-dotnet](.opencode/skills/authentication-dotnet/README.md) |
-| ✅ Blob storing | FileSystem, MinIO, AWS S3 | [blobstoring-dotnet](.opencode/skills/blobstoring-dotnet/README.md) |
-| ✅ Notification | SMTP (Mailkit) | [notification-dotnet](.opencode/skills/notification-dotnet/README.md) |
-| ✅ Swashbuckle | Swagger đa version, security schemes | [swashbuckle-dotnet](.opencode/skills/swashbuckle-dotnet/README.md) |
-| ✅ OpenTelemetry | Trace, metric, log OTLP | [telemetry-dotnet](.opencode/skills/telemetry-dotnet/README.md) |
-| ✅ Health checks | Liveness, readiness, startup | [healthcheck-dotnet](.opencode/skills/healthcheck-dotnet/README.md) |
-| ✅ Scaffold solution | Clean Architecture 5 layer, F5 Swagger | [jarvis-dotnet](.opencode/skills/jarvis-dotnet/README.md) |
-| ✅ Code review | Checklist C# / Jarvis cho PR | [code-review-dotnet](.opencode/skills/code-review-dotnet/README.md) |
+| ✅ Foundation | JSON, CORS, WebApi, ApiResponseWrapper | [foundation-dotnet](ai-skills/jarvis/skills/foundation-dotnet/README.md) |
+| ✅ Application | CQRS command/query dispatcher | [application-dotnet](ai-skills/jarvis/skills/application-dotnet/README.md) |
+| ✅ Entity Framework | UoW, repository, multitenancy (single / dedicated / hybrid) | [entityframework-dotnet](ai-skills/jarvis/skills/entityframework-dotnet/README.md) |
+| ✅ Caching | Memory + Redis, invalidation pub/sub | [caching-dotnet](ai-skills/jarvis/skills/caching-dotnet/README.md) |
+| ✅ Authentication | JWT Bearer, API Key, Cognito | [authentication-dotnet](ai-skills/jarvis/skills/authentication-dotnet/README.md) |
+| ✅ Blob storing | FileSystem, MinIO, AWS S3 | [blobstoring-dotnet](ai-skills/jarvis/skills/blobstoring-dotnet/README.md) |
+| ✅ Notification | SMTP (Mailkit) | [notification-dotnet](ai-skills/jarvis/skills/notification-dotnet/README.md) |
+| ✅ Swashbuckle | Swagger đa version, security schemes | [swashbuckle-dotnet](ai-skills/jarvis/skills/swashbuckle-dotnet/README.md) |
+| ✅ OpenTelemetry | Trace, metric, log OTLP | [telemetry-dotnet](ai-skills/jarvis/skills/telemetry-dotnet/README.md) |
+| ✅ Health checks | Liveness, readiness, startup | [healthcheck-dotnet](ai-skills/jarvis/skills/healthcheck-dotnet/README.md) |
+| ✅ Scaffold solution | Clean Architecture 5 layer, F5 Swagger | [jarvis-dotnet](ai-skills/jarvis/skills/jarvis-dotnet/README.md) |
+| ✅ Code review | Checklist C# / Jarvis cho PR | [code-review-dotnet](ai-skills/jarvis/skills/code-review-dotnet/README.md) |
 
 ---
 
@@ -345,7 +345,7 @@ Module API + persistence cho portal quản trị (`/api/admin/*`).
 | 📋 | Plug-and-play | `IJarvisModule`; module NuGet / nội bộ / third-party; discovery & thứ tự DI |
 | 📋 | Options & secrets | `IValidateOptions`; Key Vault / biến môi trường |
 | 📋 | OpenAPI contract | Versioning; breaking-change policy; contract test |
-| 📋 | Observability ops | Grafana runtime metrics — [analyze-metric-dotnet](.opencode/skills/analyze-metric-dotnet/README.md) |
+| 📋 | Observability ops | Grafana runtime metrics — [troubleshooting-dotnet](ai-skills/jarvis/skills/troubleshooting-dotnet/README.md) |
 | 📋 | Rate limit & audit | Giới hạn request; audit log thao tác admin |
 | 📋 | NuGet & semver | Phát hành package; matrix .NET; changelog breaking |
 

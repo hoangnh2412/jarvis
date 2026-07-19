@@ -36,10 +36,11 @@ Repo này **là bản thân framework** (mọi project đều là `Jarvis.*`), k
 
 ### Tham chiếu tài liệu
 - `README.md` — tổng quan framework, danh sách module, cách get-started, roadmap.
-- `docs/` — `platform-architecture.md` (tier `Jarvis.Platform.*` dự kiến, **chưa build**), `auth-overview.md`, `refactoring-rules.md` và các refactor plan.
-- `ai-skills/` + `rules/` — skill scaffolding & review cho AI/OpenCode.
+- `rules/` — `refactoring-rules.md` (mindset & style khi refactor), `platform-architecture.md` (tier `Jarvis.Platform.*` dự kiến, **chưa build**), và template skill.
+- `ADRs/` — các ADR đặt tên `yyyy-MM-dd-adr-{name}.md`: `authentication` (gộp overview + review), `blob-storing`, `caching`, `multi-tenant`, `organization-module`.
+- `ai-skills/` — skill scaffolding & review cho AI/OpenCode (`*-dotnet`).
 
-Khi được yêu cầu thêm feature: xác định đúng module/provider chịu trách nhiệm, kiểm tra tài liệu liên quan trong `docs/`, và tôn trọng ranh giới layer trước khi viết code.
+Khi được yêu cầu thêm feature: xác định đúng module/provider chịu trách nhiệm, kiểm tra tài liệu liên quan trong `rules/` và `ADRs/`, và tôn trọng ranh giới layer trước khi viết code.
 
 ---
 

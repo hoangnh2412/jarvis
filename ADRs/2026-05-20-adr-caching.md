@@ -1,6 +1,8 @@
-# Refactor Jarvis.Caching — Plan Document
+# ADR — Caching (Jarvis framework)
 
-Tài liệu kế hoạch refactor module cache Jarvis. **Trạng thái: hoàn tất** (merge-ready).
+> **Trạng thái:** ✅ Hoàn tất — code đã có trên `master` (không cần merge lại từ branch refactor cũ); đã xác minh khớp mã nguồn, **12/12** unit test pass (2026-07-19).
+> **Phạm vi:** Module `Jarvis.Caching` + `Jarvis.Caching.Redis` — memory-first cache đa tầng, đa cụm Redis theo `DistributedGroup`, invalidation cross-node qua pub/sub, key template có placeholder. **Ngoài scope:** provider CouchBase/Memcached.
+> **Liên quan:** [refactoring-rules.md](../rules/refactoring-rules.md) (style/structure), [caching-dotnet skill](../ai-skills/jarvis/skills/caching-dotnet/SKILL.md).
 
 ---
 
@@ -117,7 +119,7 @@ Không còn hạng mục mở. Kết quả review bổ sung sau phase chính:
 | Pub/sub invalidation (Redis impl) | Sau save/delete: `ICacheService.RemoveAsync` hoặc publish invalidation |
 | `CacheParam` + key template | Giá trị param cụ thể (`tenantId`, `id`, …) |
 
-### 4.2 Sentinel TTL (theo [refactoring-rules.md](./refactoring-rules.md) §1.3)
+### 4.2 Sentinel TTL (theo [refactoring-rules.md](../rules/refactoring-rules.md) §1.3)
 
 | Config | Ý nghĩa |
 |--------|---------|

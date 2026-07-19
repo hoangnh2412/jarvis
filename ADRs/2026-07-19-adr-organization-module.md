@@ -2,7 +2,7 @@
 
 > **Trạng thái:** 📝 Draft — phân tích sơ bộ, chờ trao đổi chi tiết.
 > **Vấn đề:** Có nên tách `Organization` (cây đơn vị, phòng ban) thành module riêng, độc lập với `Tenant`, và quan hệ với ABAC như thế nào?
-> **Liên quan:** [multi-tenant.md](./multi-tenant.md), [refactor-authentication.md](./refactor-authentication.md) (story Authorization — chưa thiết kế), [platform-architecture.md](./platform-architecture.md).
+> **Liên quan:** [multi-tenant.md](./2026-07-19-adr-multi-tenant.md), [refactor-authentication.md](./2026-05-21-adr-authentication.md) (story Authorization — chưa thiết kế), [platform-architecture.md](../rules/platform-architecture.md).
 
 ---
 
@@ -48,7 +48,7 @@ Ranh giới đúng:
 - **`Organization`** expose contract truy vấn cây:
   - `IOrganizationScopeResolver.GetDescendants(orgId)` / `IsUnder(node, ancestor)`
   - `IOrganizationTree` — ancestors, subtree, membership của user
-- **`Jarvis.Authorization` (ABAC)** *tiêu thụ* contract đó để đánh giá policy — khớp story Authorization đang "chưa thiết kế" trong [refactor-authentication.md](./refactor-authentication.md).
+- **`Jarvis.Authorization` (ABAC)** *tiêu thụ* contract đó để đánh giá policy — khớp story Authorization đang "chưa thiết kế" trong [refactor-authentication.md](./2026-05-21-adr-authentication.md).
 
 ---
 
@@ -70,7 +70,7 @@ Jarvis.Authorization(.Abac)        ← policy engine, dùng 2 abstractions trên
 
 ## 5. Cảnh báo (Simplicity First)
 
-1. **Giữ `Organization` generic** — cây `Id/TenantId/ParentId/Code/Name`; "đơn vị, phòng ban" chỉ là cách gọi, không hard-code loại node vào core (đúng quyết định trong [multi-tenant.md](./multi-tenant.md)).
+1. **Giữ `Organization` generic** — cây `Id/TenantId/ParentId/Code/Name`; "đơn vị, phòng ban" chỉ là cách gọi, không hard-code loại node vào core (đúng quyết định trong [multi-tenant.md](./2026-07-19-adr-multi-tenant.md)).
 2. **YAGNI cho gói Abstractions** — chỉ tách `*.Abstractions` khi thực sự có module thứ hai (`Authorization`) phụ thuộc contract. Trước đó, giữ contract trong chính `Jarvis.Organization`.
 3. **Không tách quá sớm nếu chưa có ABAC** — nếu ABAC còn xa, để `Organization` đứng riêng nhưng chưa cần Abstractions; nâng cấp khi Authorization được thiết kế.
 

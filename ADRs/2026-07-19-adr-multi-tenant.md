@@ -1,8 +1,8 @@
 # ADR — Multi-Tenant (Jarvis framework)
 
 > **Trạng thái:** 🔧 Đang thiết kế (Draft chi tiết).
-> **Phạm vi:** Module `Jarvis.MultiTenancy` — quản lý `Tenant`, cô lập dữ liệu, đa nguồn dữ liệu (đa cụm server), đa domain, và `ICurrentTenant` để xác định tenant hiện tại. Cấu trúc tổ chức nội bộ (đơn vị, phòng ban) là concern riêng — xem [organization-module.md](./organization-module.md). ABAC / kiểm tra quyền là concern của module Authorization.
-> **Liên quan:** [platform-architecture.md](./platform-architecture.md) (`Jarvis.Platform.Tenants`), [auth-overview.md](./auth-overview.md), [organization-module.md](./organization-module.md).
+> **Phạm vi:** Module `Jarvis.MultiTenancy` — quản lý `Tenant`, cô lập dữ liệu, đa nguồn dữ liệu (đa cụm server), đa domain, và `ICurrentTenant` để xác định tenant hiện tại. Cấu trúc tổ chức nội bộ (đơn vị, phòng ban) là concern riêng — xem [organization-module.md](./2026-07-19-adr-organization-module.md). ABAC / kiểm tra quyền là concern của module Authorization.
+> **Liên quan:** [platform-architecture.md](../rules/platform-architecture.md) (`Jarvis.Platform.Tenants`), [auth-overview.md](./2026-05-21-adr-authentication.md), [organization-module.md](./2026-07-19-adr-organization-module.md).
 
 ---
 
@@ -460,7 +460,7 @@ Jarvis.MultiTenancy
 - **Tenant** = khách hàng SaaS; ranh giới cô lập dữ liệu theo `TenantId`; có `Code`, `Status`, audit + soft-delete (`DeletedId` phục vụ unique index tái tạo `Code`).
 - **Đa nguồn dữ liệu** (đa cụm server theo khoảng ngày) và **đa domain** hỗ trợ chia tách dữ liệu lớn.
 - **`ICurrentTenant`** xác định tenant theo config tĩnh (§6.1) hoặc tự động từ request (§6.2); phơi bày `TenantId` (effective) / `HomeTenantId` / `IsCrossTenant`; **kiểm tra quyền thuộc module Authorization**.
-- Cấu trúc tổ chức nội bộ do module `Organization` đảm nhiệm (xem [organization-module.md](./organization-module.md)).
+- Cấu trúc tổ chức nội bộ do module `Organization` đảm nhiệm (xem [organization-module.md](./2026-07-19-adr-organization-module.md)).
 
 ---
 

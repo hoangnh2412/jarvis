@@ -1,10 +1,12 @@
-# Refactor Jarvis.BlobStoring — Code Review & Kế hoạch
+# ADR — Blob Storing (Jarvis framework)
 
-Review branch **`refactor-blob-storing`** so với **`develop`** theo [code-review-dotnet skill](../.opencode/skills/code-review-dotnet/SKILL.md) và [refactoring-rules.md](./refactoring-rules.md).
+> **Trạng thái:** ✅ Hoàn tất — code đã có đủ trên `master` (không cần merge từ branch `refactor-blob-storing`); Critical đã xử lý, **12/12** unit test pass (2026-07-19). **Phase D (version sau):** stream API (`byte[]`→`Stream`), path prefix FileSystem vs object-storage, health readiness bucket. Housekeeping: sửa XML doc `AddBlobStoring`→`AddCoreBlobStoring`.
+> **Phạm vi:** `Jarvis.BlobStoring` (core + FileSystem built-in), `Jarvis.BlobStoring.MinIO`, `Jarvis.BlobStoring.AwsS3` — `IBlobStoringService`, `AddCoreBlobStoring`, `BlobStoringProviderRegistry` + auto-select theo priority. Review toàn bộ source (không chỉ diff PR), base `develop`. **Ngoài scope:** stream API (Phase D).
+> **Liên quan:** [refactoring-rules.md](../rules/refactoring-rules.md), [code-review-dotnet](../ai-skills/jarvis/skills/code-review-dotnet/SKILL.md), [blobstoring-dotnet](../ai-skills/jarvis/skills/blobstoring-dotnet/SKILL.md).
 
-**Phạm vi review:** toàn bộ source hiện tại (không chỉ diff PR).
+---
 
-**Branch hiện tại:** `refactor-blob-storing` (base `develop`)
+**Branch:** `refactor-blob-storing` (base `develop`)
 
 | Commit | Ghi chú |
 |--------|---------|
@@ -15,18 +17,18 @@ Review branch **`refactor-blob-storing`** so với **`develop`** theo [code-revi
 
 **Thay đổi chính trên branch:** `AddCoreBlobStoring` + `BlobStoringBuilder` + `BlobStoringProviderRegistry`; gộp FileSystem vào `Jarvis.BlobStoring`; thêm `Jarvis.BlobStoring.AwsS3`; refactor `MinioBlobStoringService`; skills `.opencode/skills/blobstoring-dotnet/`.
 
-**Skill tham chiếu (cùng pattern [caching redis-distributed](../.opencode/skills/caching-dotnet/providers/redis-distributed/SKILL.md)):**
+**Skill tham chiếu (cùng pattern [caching redis-distributed](../ai-skills/jarvis/skills/caching-dotnet/providers/redis-distributed/SKILL.md)):**
 
 | Provider | Skill |
 |----------|-------|
-| Orchestrator | [blobstoring-dotnet/SKILL.md](../.opencode/skills/blobstoring-dotnet/SKILL.md) |
-| FileSystem | [providers/filesystem/SKILL.md](../.opencode/skills/blobstoring-dotnet/providers/filesystem/SKILL.md) |
-| MinIO | [providers/minio/SKILL.md](../.opencode/skills/blobstoring-dotnet/providers/minio/SKILL.md) |
-| AwsS3 | [providers/awss3/SKILL.md](../.opencode/skills/blobstoring-dotnet/providers/awss3/SKILL.md) |
+| Orchestrator | [blobstoring-dotnet/SKILL.md](../ai-skills/jarvis/skills/blobstoring-dotnet/SKILL.md) |
+| FileSystem | [providers/filesystem/SKILL.md](../ai-skills/jarvis/skills/blobstoring-dotnet/providers/filesystem/SKILL.md) |
+| MinIO | [providers/minio/SKILL.md](../ai-skills/jarvis/skills/blobstoring-dotnet/providers/minio/SKILL.md) |
+| AwsS3 | [providers/awss3/SKILL.md](../ai-skills/jarvis/skills/blobstoring-dotnet/providers/awss3/SKILL.md) |
 
 ---
 
-## Mục tiêu nghiệp vụ
+## 1. Mục tiêu nghiệp vụ
 
 | # | Yêu cầu | Trạng thái |
 |---|---------|------------|
@@ -36,13 +38,13 @@ Review branch **`refactor-blob-storing`** so với **`develop`** theo [code-revi
 
 ---
 
-## Critical Issues
+## 2. Critical Issues
 
 None — `BlobStoringProviderRegistry.ResolveDefaultProviderKey` đã validate `DefaultProvider` explicit; ném `InvalidOperationException` kèm danh sách provider đã đăng ký và gợi ý `Use*`.
 
 ---
 
-## Suggestions
+## 3. Suggestions
 
 ### `Jarvis.BlobStoring/IBlobStoringService.cs`
 
@@ -84,7 +86,7 @@ None — `BlobStoringProviderRegistry.ResolveDefaultProviderKey` đã validate `
 
 ---
 
-## Best Practices & Improvements
+## 4. Best Practices & Improvements
 
 - Alias public `AddBlobStoring` → `AddCoreBlobStoring` (XML doc vẫn lẫn `AddBlobStoring`).
 - Integration test DI: `DefaultProvider` invalid key → fail message (sau khi sửa Critical).
@@ -94,7 +96,7 @@ None — `BlobStoringProviderRegistry.ResolveDefaultProviderKey` đã validate `
 
 ---
 
-## Đã sửa (so với review ban đầu)
+## 5. Đã sửa (so với review ban đầu)
 
 | Hạng mục | Trạng thái |
 |----------|------------|
@@ -114,7 +116,7 @@ None — `BlobStoringProviderRegistry.ResolveDefaultProviderKey` đã validate `
 
 ---
 
-## Summary
+## 6. Summary
 
 | Khu vực | Đánh giá |
 |---------|----------|
@@ -129,7 +131,7 @@ None — `BlobStoringProviderRegistry.ResolveDefaultProviderKey` đã validate `
 
 ---
 
-## Hướng dẫn host (branch `refactor-blob-storing`)
+## 7. Hướng dẫn host (branch `refactor-blob-storing`)
 
 Pattern giống `AddJarvisCaching().UseRedisDistributedCache()`: core bind config + `Use*` đăng ký provider keyed.
 
@@ -243,7 +245,7 @@ Sample hiện reference `Jarvis.BlobStoring` + `Jarvis.BlobStoring.MinIO`, chỉ
 
 ---
 
-## Kiến trúc hiện tại
+## 8. Kiến trúc hiện tại
 
 ### Options & DI
 
@@ -287,7 +289,7 @@ Jarvis.BlobStoring.AwsS3/   AwsS3BlobStoringService, UseAwsS3
 
 ### `IBlobStoringService` (contract)
 
-Mọi method có `CancellationToken cancellationToken = default`. Chi tiết: [iblob-api.md](../.opencode/skills/blobstoring-dotnet/reference/iblob-api.md).
+Mọi method có `CancellationToken cancellationToken = default`. Chi tiết: [iblob-api.md](../ai-skills/jarvis/skills/blobstoring-dotnet/reference/iblob-api.md).
 
 ```csharp
 Task UploadAsync(string bucket, string fileName, byte[] bytes, CancellationToken cancellationToken = default);
@@ -306,7 +308,7 @@ Task<IReadOnlyList<string>> GetFileNamesAsync(string bucket, string? prefix = nu
 
 ---
 
-## Đối chiếu refactoring-rules.md
+## 9. Đối chiếu refactoring-rules.md
 
 | Jarvis cung cấp | Host owned |
 |-----------------|------------|
@@ -326,7 +328,7 @@ Pattern tham chiếu: `Jarvis.Caching` (`AddJarvisCaching` + `UseRedisDistribute
 
 ---
 
-## Kế hoạch phases
+## 10. Kế hoạch phases
 
 ### Phase 0 — Hotfix ✅
 
@@ -357,7 +359,7 @@ Pattern tham chiếu: `Jarvis.Caching` (`AddJarvisCaching` + `UseRedisDistribute
 
 ---
 
-## Breaking changes (consumer NuGet)
+## 11. Breaking changes (consumer NuGet)
 
 | Trước | Sau |
 |-------|-----|
@@ -368,7 +370,7 @@ Pattern tham chiếu: `Jarvis.Caching` (`AddJarvisCaching` + `UseRedisDistribute
 
 ---
 
-## Tiến độ
+## 12. Tiến độ
 
 | Phase | Ngày | Ghi chú |
 |-------|------|---------|
