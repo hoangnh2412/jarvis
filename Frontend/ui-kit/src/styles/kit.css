@@ -1,0 +1,144 @@
+/* Kit extras — Tailwind button skins + autofill + license hide */
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus {
+  -webkit-text-fill-color: #1e293b;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  transition: background-color 99999s ease-in-out 0s;
+  caret-color: #1e293b;
+}
+
+/* Button skins — không phụ thuộc Aura props */
+.pr-btn-primary {
+  background-color: #0f766e !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+.pr-btn-primary:hover:not(:disabled) {
+  background-color: #0d9488 !important;
+  color: #ffffff !important;
+}
+
+.pr-btn-outlined {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #334155 !important;
+}
+.pr-btn-outlined:hover:not(:disabled) {
+  background-color: #f8fafc !important;
+  color: #334155 !important;
+}
+
+.pr-btn-danger {
+  background-color: #dc2626 !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+.pr-btn-danger:hover:not(:disabled) {
+  background-color: #b91c1c !important;
+  color: #ffffff !important;
+}
+
+.pr-btn-text {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  color: #64748b !important;
+}
+.pr-btn-text:hover:not(:disabled) {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+}
+
+#p-license-host {
+  display: none !important;
+}
+
+/* Sidebar — reset button/list khi host bỏ Tailwind preflight */
+.kit-sidebar-item {
+  cursor: pointer;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+/* react-toastify — simple / professional */
+.kit-toast-container {
+  width: min(360px, calc(100vw - 1.5rem));
+  z-index: 9999;
+}
+
+.Toastify__toast.kit-toast {
+  min-height: 0;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: 10px;
+  border: 1px solid #e4e4e7;
+  border-left-width: 3px;
+  background: #fff;
+  color: #18181b;
+  box-shadow: 0 4px 16px -4px rgba(24, 24, 27, 0.12);
+  font-family: inherit;
+}
+
+.kit-toast .Toastify__toast-body {
+  margin: 0;
+  padding: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #27272a;
+}
+
+.kit-toast .Toastify__toast-icon {
+  width: 1.125rem;
+  margin-inline-end: 0.65rem;
+}
+
+.kit-toast .Toastify__close-button {
+  opacity: 0.4;
+  color: #71717a;
+  align-self: center;
+}
+
+.kit-toast .Toastify__close-button:hover {
+  opacity: 0.75;
+}
+
+.Toastify__toast--success.kit-toast {
+  border-left-color: #0f766e;
+}
+.Toastify__toast--success.kit-toast .Toastify__toast-icon {
+  color: #0f766e;
+}
+
+.Toastify__toast--error.kit-toast {
+  border-left-color: #e11d48;
+}
+.Toastify__toast--error.kit-toast .Toastify__toast-icon {
+  color: #e11d48;
+}
+
+.Toastify__toast--warning.kit-toast,
+.Toastify__toast--warn.kit-toast {
+  border-left-color: #d97706;
+}
+.Toastify__toast--warning.kit-toast .Toastify__toast-icon,
+.Toastify__toast--warn.kit-toast .Toastify__toast-icon {
+  color: #d97706;
+}
+
+.Toastify__toast--info.kit-toast {
+  border-left-color: #0284c7;
+}
+.Toastify__toast--info.kit-toast .Toastify__toast-icon {
+  color: #0284c7;
+}
+

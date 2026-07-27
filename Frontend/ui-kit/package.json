@@ -1,0 +1,90 @@
+{
+  "name": "@fe/ui-kit",
+  "version": "0.1.0",
+  "description": "Reusable UI kit on PrimeReact 11 (Account, CRUD, Tenant, common helpers)",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": [
+    "./src/styles/theme.css",
+    "./src/styles/kit.css"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./theme.css": "./src/styles/theme.css",
+    "./styles.css": "./src/styles/kit.css",
+    "./tailwind.preset.cjs": "./tailwind.preset.cjs",
+    "./tailwind.config.cjs": "./tailwind.config.cjs"
+  },
+  "files": [
+    "dist",
+    "src/styles",
+    "tailwind.preset.cjs",
+    "tailwind.config.cjs",
+    "postcss.config.cjs",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@hookform/resolvers": "^5.4.0",
+    "@primeuix/themes": "^3.0.0",
+    "axios": "^1.7.0",
+    "lucide-react": ">=0.400.0",
+    "primereact": "^11.0.0",
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0",
+    "react-hook-form": "^7.81.0",
+    "react-router-dom": ">=7.0.0",
+    "react-toastify": ">=10.0.0",
+    "tailwindcss": ">=3.4.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@hookform/resolvers": "^5.4.0",
+    "@primeuix/themes": "^3.0.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.5.4",
+    "lucide-react": "^1.24.0",
+    "postcss": "^8.5.19",
+    "primereact": "^11.0.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-hook-form": "^7.81.0",
+    "react-router-dom": "^7.18.1",
+    "react-toastify": "^11.1.0",
+    "tailwindcss": "^3.4.17",
+    "tsup": "^8.5.0",
+    "typescript": "~6.0.2",
+    "zod": "^4.4.3"
+  },
+  "dependencies": {
+    "@primeuix/themes": "^3.0.0",
+    "axios": "^1.7.0",
+    "primereact": "^11.0.0"
+  },
+  "keywords": [
+    "react",
+    "ui",
+    "ui-kit",
+    "primereact",
+    "crud",
+    "tenant",
+    "form",
+    "tailwind"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

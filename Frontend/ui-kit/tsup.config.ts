@@ -1,0 +1,30 @@
+import { defineConfig } from 'tsup'
+
+export default defineConfig({
+  entry: ['src/index.ts'],
+  format: ['esm', 'cjs'],
+  dts: true,
+  splitting: false,
+  sourcemap: true,
+  clean: true,
+  treeshake: true,
+  external: [
+    'react',
+    'react-dom',
+    'react/jsx-runtime',
+    'lucide-react',
+    'zod',
+    'react-hook-form',
+    '@hookform/resolvers',
+    '@hookform/resolvers/zod',
+    'react-toastify',
+    'react-router-dom',
+    'primereact',
+    /^primereact\//,
+    '@primereact/core',
+    /^@primereact\//,
+    '@primeuix/themes',
+    /^@primeuix\//,
+  ],
+  tsconfig: './tsconfig.build.json',
+})
