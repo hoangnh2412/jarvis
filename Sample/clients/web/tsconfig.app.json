@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "esnext",
+    "types": ["vite/client"],
+    "allowArbitraryExtensions": true,
+    "skipLibCheck": true,
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@jarvis/core": ["../../../frameworks/frontend/src/index.ts"],
+      "@jarvis/notifications": [
+        "../../../modules/notifications/frontend/src/features/notifications/index.ts"
+      ],
+      "@jarvis/setting": ["../../../modules/settings/frontend/src/index.ts"],
+      "@jarvis/setting/*": ["../../../modules/settings/frontend/src/*"],
+      "@microsoft/signalr": ["node_modules/@microsoft/signalr"],
+      "lucide-react": ["node_modules/lucide-react"],
+      "primereact/*": ["node_modules/primereact/*"],
+      "react": ["node_modules/@types/react/index.d.ts"],
+      "react/*": ["node_modules/@types/react/*"]
+    },
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"]
+}

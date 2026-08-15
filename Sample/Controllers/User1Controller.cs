@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Asp.Versioning;
-using Jarvis.Domain.Repositories;
-using Jarvis.Domain.Shared.Enums;
-using Jarvis.Domain.Shared.ExceptionHandling;
+using Jarvis.DDD.Domain.Repositories;
+using Jarvis.DDD.Domain.Shared.Enums;
+using Jarvis.DDD.Domain.Shared.ExceptionHandling;
 using Microsoft.AspNetCore.Mvc;
 using Sample.Entities;
 using Sample.ErrorCodes;
@@ -20,7 +20,7 @@ namespace Sample.Controllers;
 [Route("api/v{version:apiVersion}/users")]
 public class User1Controller(
     ILogger<User1Controller> logger,
-    ISampleUnitOfWork unitOfWork,
+    ITenantUnitOfWork unitOfWork,
     [FromKeyedServices("Default")] IConnectionMultiplexer redis) : ControllerBase
 {
     /// <summary>Must match <c>AddSource("Sample")</c> in Jarvis OpenTelemetry defaults.</summary>

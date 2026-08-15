@@ -1,4 +1,4 @@
-using Jarvis.Domain.Entities;
+using Jarvis.DDD.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

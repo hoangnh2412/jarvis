@@ -1,12 +1,16 @@
 using Jarvis.Caching.Extensions;
-using Jarvis.Domain.DataStorages;
-using Jarvis.Domain.Repositories;
-using Jarvis.EntityFramework;
-using Jarvis.EntityFramework.DataStorages;
+using Jarvis.DDD.Domain.DataStorages;
+using Jarvis.DDD.Domain.Repositories;
+using Jarvis.DDD.Domain.Services;
+using Jarvis.ORM.EntityFramework;
+using Jarvis.Multitenancy;
+using Jarvis.Multitenancy.EntityFramework;
+using Jarvis.Multitenancy.EntityFramework.DataStorages;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sample.Multitenancy;
@@ -31,13 +35,16 @@ internal static class MultitenancyEfTestServiceFactory
                 MemSeconds = 3600,
             };
         });
+        builder.AddTenantIdResolvers();
+        builder.Services.TryAddSingleton<ICurrentTenantAccessor, CurrentTenantAccessor>();
         builder.AddEntityFramework();
+        builder.AddMultitenancyEntityFramework();
 
         var services = builder.Services;
         services.AddHttpContextAccessor();
         services.AddLogging(b => b.SetMinimumLevel(LogLevel.Warning));
         services.AddScoped<IMasterUnitOfWork, MasterUnitOfWork>();
-        services.AddScoped<ISampleUnitOfWork, SampleUnitOfWork>();
+        services.AddScoped<ITenantUnitOfWork, TenantUnitOfWork>();
         services.AddScoped<MultitenancyEfJobRunner>();
 
         services.AddCoreDbContext<MasterDbContext>(options =>

@@ -2,7 +2,7 @@ namespace Sample.Models;
 
 /// <summary>
 /// Body payload for <c>GET /api/v{version}/users</c> when <c>version</c> is <c>1.0</c>.
-/// The HTTP pipeline wraps this in <see cref="Jarvis.Domain.Shared.RequestResponse.BaseResponse{T}"/> (see <c>ApiResponseWrapperMiddleware</c>).
+/// The HTTP pipeline wraps this in <see cref="Jarvis.DDD.Domain.Shared.RequestResponse.BaseResponse{T}"/> (see <c>ApiResponseWrapperMiddleware</c>).
 /// </summary>
 public class UserV1GetData
 {

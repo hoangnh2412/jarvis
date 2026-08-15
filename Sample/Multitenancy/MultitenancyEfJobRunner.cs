@@ -1,5 +1,5 @@
-using Jarvis.Domain.DataStorages;
-using Jarvis.Domain.Repositories;
+using Jarvis.DDD.Domain.Repositories;
+using Jarvis.DDD.Domain.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sample.Entities;
@@ -24,19 +24,22 @@ public sealed class MultitenancyEfJobRunner(ILogger<MultitenancyEfJobRunner> log
         var repoTenant = await uow.GetRepositoryAsync<IRepository<Tenant>>(cancellationToken).ConfigureAwait(false);
         var beforeCount = await repoTenant.GetQuery().CountAsync(cancellationToken).ConfigureAwait(false);
 
+        var config = serviceProvider.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+        var tenantConnString = config.GetConnectionString("TenantDbContext") ?? "Host=localhost;Port=5433;User ID=admin;Password=Admin@123;Database=SampleTenant;Pooling=true;";
+
         var tenant = await repoTenant.GetByIdAsync(x => x.Id == MasterTenantRegistryId, cancellationToken).ConfigureAwait(false);
         if (tenant == null)
         {
             tenant = await repoTenant.InsertAsync(new Tenant
             {
                 Id = MasterTenantRegistryId,
-                ConnectionString = "Test Tenant " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                ConnectionString = tenantConnString,
             }, cancellationToken).ConfigureAwait(false);
             logger.LogInformation("Master job: inserted tenant {TenantId}", MasterTenantRegistryId);
         }
         else
         {
-            tenant.ConnectionString = "Test Tenant " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            tenant.ConnectionString = tenantConnString;
             logger.LogInformation("Master job: updated tenant {TenantId}", MasterTenantRegistryId);
         }
 
@@ -52,13 +55,10 @@ public sealed class MultitenancyEfJobRunner(ILogger<MultitenancyEfJobRunner> log
         Guid tenantId,
         CancellationToken cancellationToken = default)
     {
-        var uow = serviceProvider.GetRequiredService<ISampleUnitOfWork>();
+        var uow = serviceProvider.GetRequiredService<ITenantUnitOfWork>();
         await uow.SwitchDbContextAsync(tenantId, cancellationToken).ConfigureAwait(false);
 
         var repoStudent = await uow.GetRepositoryAsync<IRepository<Student>>(cancellationToken).ConfigureAwait(false);
-        // var dbContext = (TenantDbContext)await uow.GetDbContextAsync(cancellationToken).ConfigureAwait(false);
-        // var database = await GetDatabaseNameAsync(dbContext, cancellationToken).ConfigureAwait(false);
-        // Console.WriteLine($"TenantId: {dbContext.TenantId}");
         var beforeCount = await repoStudent.GetQuery().CountAsync(cancellationToken);
 
         var student = await repoStudent

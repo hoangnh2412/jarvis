@@ -35,6 +35,9 @@ bld/
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
 
+# Sample SPA build output only (source: Sample/clients/web)
+Sample/wwwroot/
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
@@ -283,4 +286,16 @@ Sample/logs/
 
 #Allow
 
+# Local Sample development configuration (database credentials/API keys)
+Sample/appsettings.Development.json
 appsettings.*.json
+
+# Local Docker development stack
+compose.yml
+modules/README.md
+
+.opencode/
+.vscode/
+docs/
+modules/notifications/frontend/dist/
+modules/notifications/frontend/.env.local

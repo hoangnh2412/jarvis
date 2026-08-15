@@ -4,3 +4,10 @@ GET {{Sample_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+# Basic Auth từ DB (sampleuser / samplepass) — lookup qua SampleBasicAuthDbLookup.Lookup delegate
+# và DefaultAuthenticateScheme=Basic hoặc Composite nếu bật nhiều scheme
+GET {{Sample_HostAddress}}/api/_auth-test/whoami
+Authorization: Basic c2FtcGxldXNlcjpzYW1wbGVwYXNz
+
+###

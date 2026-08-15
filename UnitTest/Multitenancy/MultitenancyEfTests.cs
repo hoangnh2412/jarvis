@@ -1,4 +1,4 @@
-using Jarvis.Domain.Repositories;
+using Jarvis.DDD.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,7 +70,7 @@ public sealed class MultitenancyEfTests
 
             await using var scope = provider.CreateAsyncScope();
             var uowMaster = scope.ServiceProvider.GetRequiredService<IMasterUnitOfWork>();
-            var uowTenant = scope.ServiceProvider.GetRequiredService<ISampleUnitOfWork>();
+            var uowTenant = scope.ServiceProvider.GetRequiredService<ITenantUnitOfWork>();
 
             await uowTenant.SwitchDbContextAsync(MasterTenantId);
 
@@ -174,7 +174,7 @@ public sealed class MultitenancyEfTests
 
             await using (var scopeA = provider.CreateAsyncScope())
             {
-                var uow = scopeA.ServiceProvider.GetRequiredService<ISampleUnitOfWork>();
+                var uow = scopeA.ServiceProvider.GetRequiredService<ITenantUnitOfWork>();
                 await uow.SwitchDbContextAsync(tenantA);
                 var repo = await uow.GetRepositoryAsync<IRepository<Student>>();
                 await repo.InsertAsync(new Student
@@ -188,7 +188,7 @@ public sealed class MultitenancyEfTests
 
             await using (var scopeB = provider.CreateAsyncScope())
             {
-                var uow = scopeB.ServiceProvider.GetRequiredService<ISampleUnitOfWork>();
+                var uow = scopeB.ServiceProvider.GetRequiredService<ITenantUnitOfWork>();
                 await uow.SwitchDbContextAsync(tenantB);
                 var repo = await uow.GetRepositoryAsync<IRepository<Student>>();
                 var count = await repo.GetQuery().CountAsync();
@@ -197,7 +197,7 @@ public sealed class MultitenancyEfTests
 
             await using (var scopeA2 = provider.CreateAsyncScope())
             {
-                var uow = scopeA2.ServiceProvider.GetRequiredService<ISampleUnitOfWork>();
+                var uow = scopeA2.ServiceProvider.GetRequiredService<ITenantUnitOfWork>();
                 await uow.SwitchDbContextAsync(tenantA);
                 var repo = await uow.GetRepositoryAsync<IRepository<Student>>();
                 var count = await repo.GetQuery().CountAsync();

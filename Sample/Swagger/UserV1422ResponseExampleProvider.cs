@@ -1,4 +1,4 @@
-using Jarvis.Domain.Shared.RequestResponse;
+using Jarvis.DDD.Domain.Shared.RequestResponse;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace Sample.Swagger;

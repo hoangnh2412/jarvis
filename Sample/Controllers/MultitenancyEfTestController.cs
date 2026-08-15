@@ -1,6 +1,6 @@
 using Asp.Versioning;
-using Jarvis.Domain.DataStorages;
-using Jarvis.Domain.Repositories;
+using Jarvis.DDD.Domain.DataStorages;
+using Jarvis.DDD.Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.Entities;
@@ -56,7 +56,7 @@ public class MultitenancyEfTestController : ControllerBase
     [MapToApiVersion(2.0)]
     public async Task<IActionResult> QueryMasterDbAsync(
         [FromServices] IMasterUnitOfWork uowMaster,
-        [FromServices] ISampleUnitOfWork uowTenant,
+        [FromServices] ITenantUnitOfWork uowTenant,
         [FromServices] ITenantIdResolverFactory tenantIdResolverFactory,
         CancellationToken cancellationToken)
     {
@@ -72,7 +72,7 @@ public class MultitenancyEfTestController : ControllerBase
         var repoStudent = await uowTenant.GetRepositoryAsync<IRepository<Student>>(cancellationToken);
         var beforeGet = await repoStudent.GetQuery().ToListAsync(cancellationToken: cancellationToken);
 
-        var studentId = Guid.Parse("006a88c9-0286-47b0-ac87-91e53c0bf2ba");
+        var studentId = Guid.NewGuid();
         var student = await repoStudent.GetByIdAsync(x => x.Id == studentId, cancellationToken);
         if (student == null)
         {

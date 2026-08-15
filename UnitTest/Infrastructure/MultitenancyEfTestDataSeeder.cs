@@ -1,4 +1,4 @@
-using Jarvis.Domain.Repositories;
+using Jarvis.DDD.Domain.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Sample.Entities;
 using Sample.Persistence;
