@@ -55,7 +55,8 @@ Chỉ mục Architecture Decision Records và tài liệu kế hoạch trong `AD
 | Loại | Tài liệu |
 |------|----------|
 | 📄 **Template ADR** | [adr-template.md](./adr-template.md) — Nygard/MADR + quy ước mã P/C/O/D/Q/T + §8 smoke/regression |
-| 📄 Rules | [Architecture rules](./architecture-rules.md) — Clean Architecture + Module Atomic khi sửa `Jarvis.*` |
+| 📄 Architecture software | [architecture-software.md](./architecture-software.md) — Clean Architecture + Module Atomic khi sửa `Jarvis.*`; ranh giới `frameworks/` · `modules/` · `autotest/` (§0.2) |
+| 📄 Autotest SAD | [Architecture autotest](./architecture-autotest.md) — core vs project, UI/API, layout engine-agnostic; NPM `@jarvis/autotest*` |
 | 📄 Template skill | [Template skill Jarvis .NET](./template-skill.md) |
 | 📄 UI kit skill | [Tabler UI kit](./tabler-uikit-skill.md) |
 | 📄 Lịch sử | [Tutorial index](./tutorial-index.md) — hướng dẫn AI agent (đã chuyển trọng tâm sang `.opencode/`) |

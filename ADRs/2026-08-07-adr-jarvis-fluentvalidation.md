@@ -3,7 +3,7 @@
 > **Trạng thái:** 🔴 **Proposed** (chờ confirm §7).  
 > **Ngày:** 2026-08-07  
 > **Loại:** API / Application layer / validation  
-> **Liên quan:** [CRUD AppService](./2026-08-07-adr-jarvis-crud-app-service.md) (🔴), [architecture-rules.md](./architecture-rules.md) (§0.1 Clean Architecture), [README](../README.md) (Application = command/query/DTO).  
+> **Liên quan:** [CRUD AppService](./2026-08-07-adr-jarvis-crud-app-service.md) (🔴), [architecture-software.md](./architecture-software.md) (§0.1 Clean Architecture), [README](../README.md) (Application = command/query/DTO).  
 > **Phạm vi:** chọn **FluentValidation** làm chuẩn validate input ở tầng Application; wiring DI + chỗ gọi validate (CQRS dispatcher / AppService); map lỗi → `BadRequest` / `BaseResponse` hiện có.  
 > **Ngoài phạm vi:** Domain invariant phức tạp (aggregate method); Authorization / RBAC; Localization catalog đầy đủ; thay `AddBadRequestHandler` DataAnnotations ModelState; AutoMapper; OpenAPI schema từ validator.  
 > **Chú thích icon:** 🟢 xong · 🟡 đang làm · 🔴 chưa làm  

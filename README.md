@@ -65,7 +65,7 @@ Khi scaffold hoặc add module, luôn giữ **layer đúng chỗ** và **package
 
 ## Cấu trúc repository
 
-Repo Jarvis là monorepo: **framework packages**, **domain modules**, **Sample host**, và **skill AI**.
+Repo Jarvis là monorepo: **framework packages**, **domain modules**, **Sample host**, **autotest**, và **skill AI**.
 
 ```text
 jarvis/
@@ -84,7 +84,8 @@ jarvis/
 │   ├── accounts/ · identity/ · tenants/
 │   ├── files/ · messaging/ · notifications/ · workflows/
 │   └── … (placeholder — xem Roadmap)
-├── Sample/                        ← Host demo: API + SPA (clients/web → wwwroot)
+├── Sample/                        ← Host demo: API + SPA (clients/web → wwwroot) — SUT cho autotest/sample
+├── autotest/                      ← Test-time: @jarvis/autotest + .playwright + sample/
 ├── UnitTest/
 ├── ADRs/                          ← Architecture Decision Records — [ADRs/README.md](ADRs/README.md)
 ├── docs/                          ← Refactor rules, tutorial index
@@ -97,7 +98,8 @@ jarvis/
 | `frameworks/` | Thư viện hạ tầng Atomic — publish NuGet, reference từ Host/Infrastructure product |
 | `modules/` | Module domain (Setting, Account, Tenant…); mỗi folder một bounded context + optional frontend |
 | `Sample/` | App chạy thử: gắn hầu hết framework + `Jarvis.Modules.Setting`; SPA Vite/React |
-| `UnitTest/` | Unit / integration test cho framework |
+| `autotest/` | Platform test-time TypeScript (`@jarvis/autotest*`) + consumer `sample/` — [autotest/README.md](autotest/README.md) |
+| `UnitTest/` | Unit / integration test **C#** cho framework |
 | `ADRs/` | Quyết định kiến trúc & tiến độ — [ADRs/README.md](ADRs/README.md) |
 | `.opencode/` | Skill scaffold / init / add — hub: [.opencode/README.md](.opencode/README.md) |
 | `docs/` | Quy tắc refactor, tutorial skill — bắt đầu từ [docs/tutorial-index.md](docs/tutorial-index.md) |
@@ -186,6 +188,26 @@ Module nghiệp vụ / portal quản trị — tách khỏi framework hạ tần
 
 Chi tiết Setting: [modules/settings/README.md](modules/settings/README.md).
 
+## Autotest
+
+Platform **test-time** TypeScript — không publish vào runtime Host, **không** thêm vào `Jarvis.sln`. Hub: [autotest/README.md](autotest/README.md). Ranh giới folder: [ADRs/architecture-software.md](ADRs/architecture-software.md) §0.2. SAD: [ADRs/architecture-autotest.md](ADRs/architecture-autotest.md).
+
+| Artifact | Vai trò |
+|----------|---------|
+| `@jarvis/autotest` | Core engine-agnostic (`ApiClient`, ports HTTP/browser, `Workflow`, reporting) |
+| `@jarvis/autotest.playwright` | Satellite Playwright (`PlaywrightTransport`, `PlaywrightBrowserDriver`) |
+| `autotest/sample/` | Consumer demo (layout application / integrations / composition / ui / drivers) — API + UI |
+
+Keyword **`automation`** dành cho Agent/AI sau này — không dùng `@jarvis/automation*`.
+
+`autotest/sample` chạy **chống** Host `Sample/` (API + SPA `clients/web`), không nằm trong `Sample/clients/`. UI smoke: login mock (`admin@gmail.com` / `Admin@123`) rồi mở Setting, Tenant, File.
+
+```bash
+cd autotest && npm install && npm run build
+dotnet run --project Sample          # SUT
+cd autotest/sample && cp .env.example .env && npx playwright install chromium && npm test
+```
+
 ## OpenCode skills (AI)
 
 Skill trong [.opencode/skills/](.opencode/skills/) — gọi trong Cursor/OpenCode bằng `@.opencode/skills/<tên-skill>/...`. Hub đầy đủ: [.opencode/README.md](.opencode/README.md). Bản đồ prompt & decision tree: [docs/tutorial-index.md](docs/tutorial-index.md).
@@ -217,6 +239,7 @@ dotnet run --project Sample
 - Swagger: theo `launchSettings` (thường `https://localhost:7006/swagger`)
 - SPA Sample: `Sample/clients/web` (Vite) — build vào `Sample/wwwroot`, serve cùng Sample
 - UI Setting demo: `modules/settings/frontend` — xem [modules/settings/frontend/README.md](modules/settings/frontend/README.md)
+- Autotest sample (API + UI): xem mục [Autotest](#autotest) — Host phải đang chạy
 
 ### 1. Chọn cách bắt đầu (product mới)
 

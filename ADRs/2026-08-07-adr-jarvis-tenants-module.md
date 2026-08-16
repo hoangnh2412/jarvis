@@ -3,7 +3,7 @@
 > **Trạng thái:** 🔴 **Proposed** (chờ confirm §7).  
 > **Ngày:** 2026-08-07  
 > **Loại:** Business module / Module Atomic (Library + Persistence)  
-> **Liên quan:** [Multitenancy package](./2026-08-06-adr-jarvis-multitenancy-package.md) (🟢 ambient), [generic `ICurrentTenant<TTenant>`](./2026-08-06-adr-generic-current-tenant.md) (🟢 profile + store), [Multitenancy.EF](./2026-08-06-adr-jarvis-multitenancy-entityframework.md) (🟢 — Persistence adapter; **khác** ADR này), [Setting](../modules/settings/Jarvis.Setting/doc/2026-07-30-adr-setting.md) (pattern module nghiệp vụ), [architecture-rules.md](./architecture-rules.md) (§0.2).  
+> **Liên quan:** [Multitenancy package](./2026-08-06-adr-jarvis-multitenancy-package.md) (🟢 ambient), [generic `ICurrentTenant<TTenant>`](./2026-08-06-adr-generic-current-tenant.md) (🟢 profile + store), [Multitenancy.EF](./2026-08-06-adr-jarvis-multitenancy-entityframework.md) (🟢 — Persistence adapter; **khác** ADR này), [Setting](../modules/settings/Jarvis.Setting/doc/2026-07-30-adr-setting.md) (pattern module nghiệp vụ), [architecture-software.md](./architecture-software.md) (§0.2).  
 > **Phạm vi:** quyết định **tách** quản lý catalog / CRUD tenant thành module nghiệp vụ **`Jarvis.Tenants`** (giống Setting); **không** nhét vào `Jarvis.Multitenancy`; facade + contract entity + opt-in Persistence; optional `ICurrentTenantStore` adapter.  
 > **Ngoài phạm vi:** ambient / R2 / `Change` / HTTP resolvers; `Jarvis.Multitenancy.EntityFramework` (interceptor / connection); Authorization / RBAC; Identity User CRUD; SettingManagement; UI admin đầy đủ (chỉ Sample/API tối thiểu khi implement); dedicated-DB provisioning tự động.  
 > **Chú thích icon:** 🟢 xong 100% · 🟡 đã làm, còn việc · 🔴 chưa làm

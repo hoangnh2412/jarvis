@@ -1,8 +1,9 @@
-# Architecture Rules
+# Architecture Software
 
 Tài liệu **mindset, behavior và style code** khi phát triển hoặc refactor `Jarvis.*` / module trong monorepo. Kết hợp:
 
 - [README.md](../README.md) — triết lý **Clean Architecture** + **Module Atomic**
+- [architecture-autotest.md](./architecture-autotest.md) — SAD platform test-time (`@jarvis/autotest*`)
 
 **Phạm vi:** rules & mindset trong file này. Chi tiết package / appsettings / workflow từng capability nằm tài liệu module hoặc ADR riêng — **không** duplicate dài trong đây.
 
@@ -42,15 +43,18 @@ Jarvis tách **chiều dọc** (solution app) và **chiều ngang** (package Ato
 - `Program.cs` / `HostLayerExtension` mỏng — logic DI nằm extension từng module.
 - Business rule (policy ACL, virus scan, naming bucket theo domain) → **host**, không `Jarvis.*` core.
 
-### 0.2 Ranh giới monorepo — `frameworks/` vs `modules/`
+### 0.2 Ranh giới monorepo — `frameworks/` vs `modules/` vs `autotest/`
 
 | Thư mục | Vai trò | Rule |
 |---------|---------|------|
-| **`frameworks/`** | Package hạ tầng Atomic (`Jarvis.*`) — publish NuGet, không chứa nghiệp vụ sản phẩm | Host/Infrastructure reference khi cần capability kỹ thuật |
+| **`frameworks/`** | Package hạ tầng Atomic (`Jarvis.*`, `@jarvis/core`) — publish NuGet/NPM **runtime**, không chứa nghiệp vụ sản phẩm | Host/Infrastructure / SPA product reference khi cần capability kỹ thuật |
 | **`modules/`** | Bounded context nghiệp vụ / portal (`Jarvis.Modules.*`, optional frontend) | Opt-in theo sản phẩm; **không** nhét inbox/CRUD product vào framework chỉ vì “dùng chung kỹ thuật” |
+| **`autotest/`** | Platform **test-time** TypeScript: `@jarvis/autotest` (core) + `@jarvis/autotest.playwright` (satellite) + `sample/` | Product app **không** reference. Không đưa vào `Jarvis.sln`. Keyword `automation` dành cho Agent/AI — không đặt tên package `@jarvis/automation*` |
+| **`UnitTest/`** | Unit / integration **C#** cho `Jarvis.*` | Không chứa Playwright / spec UI-API autotest |
 
 - Framework = transport, persistence foundation, ambient identity, cache, blob, … — **reusable không gắn một product feature**.
 - Module = feature/product surface (API, AppService, store policy, FE) — reference framework + (nếu cần) SPI Abstractions của module khác.
+- Autotest core = contract engine-agnostic (`IHttpTransport`, `ApiClient`, `Workflow`); Playwright là satellite opt-in. Consumer (`autotest/sample` hoặc repo product) giữ workflow / page / endpoint. **Không** nhét consumer vào `Sample/clients/` (`clients/` = SPA/mobile).
 - Không vòng: module A ↛ module B runtime nặng chỉ để “khai báo”; dùng Abstractions khi đủ (xem §0.3).
 
 ### 0.3 Module Atomic — package và provider

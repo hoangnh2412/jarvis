@@ -3,7 +3,7 @@
 > **Trạng thái:** 🟢 **Accepted + Implemented** (2026-08-06). Prerequisite done cho [split packages](./2026-08-01-adr-techdebt-split-current-user-tenant-packages.md) Phase 3.  
 > **Ngày:** 2026-08-06 · Accept §7: 2026-08-06 · Implement: 2026-08-06  
 > **Loại:** Package boundary / foundation  
-> **Liên quan:** [adr-techdebt-split-current-user-tenant-packages](./2026-08-01-adr-techdebt-split-current-user-tenant-packages.md) (🟡 Accepted — Phase 2 tách thành ADR này), [adr-current-user-tenant](./2026-08-01-adr-current-user-tenant.md) (API + D5 🟢), [architecture-rules.md](./architecture-rules.md).  
+> **Liên quan:** [adr-techdebt-split-current-user-tenant-packages](./2026-08-01-adr-techdebt-split-current-user-tenant-packages.md) (🟡 Accepted — Phase 2 tách thành ADR này), [adr-current-user-tenant](./2026-08-01-adr-current-user-tenant.md) (API + D5 🟢), [architecture-software.md](./architecture-software.md).  
 > **Phạm vi:** tạo package **`Jarvis.Multitenancy`**; move **`CurrentTenant`** + **`CurrentTenantAccessor`** + DI **`AddCurrentTenant()`**; cut-over Sample/EF/tests cho nửa Tenant; Domain giữ contract `ICurrentTenant` / `ICurrentTenantAccessor`.  
 > **Ngoài phạm vi:** move `CurrentUser*` → Authentication (ADR split Phase 3); xóa hẳn `AddCoreCurrentContext` (làm khi Auth cũng tách); move resolvers `DataStorages` (Phase 5 split); [`Jarvis.Multitenancy.EntityFramework`](./2026-08-06-adr-jarvis-multitenancy-entityframework.md) (🟡 Accepted); đổi semantic R2; Tenants CRUD → [ADR `Jarvis.Tenants`](./2026-08-07-adr-jarvis-tenants-module.md).  
 > **Chú thích icon:** 🟢 xong 100% · 🟡 đã làm, còn việc · 🔴 chưa làm

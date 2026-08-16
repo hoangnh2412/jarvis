@@ -4,7 +4,7 @@
 > **Ngày:** 2026-08-12 · Accept boundary: 2026-08-12 · Revise store/config/retention: 2026-08-13  
 > **Loại:** Package boundary / naming / Module Atomic / inbox Redis store  
 > **Supersedes (phần):** [2026-08-11-adr-jarvis-notifications](./2026-08-11-adr-jarvis-notifications.md) — D1, D4, D8, D12 (layout); hành vi MVP persist-first + SignalR + REST/FE giữ.  
-> **Liên quan:** [architecture-rules.md](./architecture-rules.md), [current-user-tenant](./2026-08-01-adr-current-user-tenant.md), [adr-template.md](./adr-template.md)  
+> **Liên quan:** [architecture-software.md](./architecture-software.md), [current-user-tenant](./2026-08-01-adr-current-user-tenant.md), [adr-template.md](./adr-template.md)  
 > **Phạm vi:** (1) Framework = realtime transport; Module = inbox; (2) Rename `Jarvis.Realtime*`; (3) Config + Redis inbox model (Lua save, pipeline mark, retention = TTL item + heal orphan lúc List); (4) DTO bỏ `IsRead` / `ReadAtUtc` / `ExpiresAtUtc`.  
 > **Ngoài phạm vi:** email/SMS/push; sticky session (LB); retention job định kỳ; implement code trước khi §7 chốt hết.  
 > **Chú thích icon:** 🟢 xong · 🟡 đang làm / chờ confirm · 🔴 chưa làm
@@ -435,7 +435,7 @@ Smoke T1–T4 + regression T5–T9/T14 + T15/T21 🟢; T17–T20 Redis integrati
 ## 11. Tham chiếu
 
 - [2026-08-11-adr-jarvis-notifications.md](./2026-08-11-adr-jarvis-notifications.md)
-- [architecture-rules.md](./architecture-rules.md)
+- [architecture-software.md](./architecture-software.md)
 - [adr-template.md](./adr-template.md)
 - Review: [reviews/2026-08-12-architecture-review-notifications.md](../reviews/2026-08-12-architecture-review-notifications.md)
 - Code hiện tại (pre-refactor): `frameworks/Jarvis.Notifications*`, `modules/notifications/Jarvis.Modules.Notifications.Api`

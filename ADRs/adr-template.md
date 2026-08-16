@@ -81,7 +81,7 @@ Nếu cần slice package / tech debt / follow-up API → ADR riêng, link qua m
 > **Trạng thái:** 🔴 Proposed · 🟡 Accepted · 🟢 Accepted + Implemented · ⚫ Deprecated · 🔄 Superseded by […]  
 > **Ngày:** YYYY-MM-DD · Accept: YYYY-MM-DD · Implement: YYYY-MM-DD  
 > **Loại:** {API / package boundary / Module Atomic / tech debt / naming / …}  
-> **Liên quan:** [ADR liên quan](./….md), [architecture-rules.md](./architecture-rules.md)  
+> **Liên quan:** [ADR liên quan](./….md), [architecture-software.md](./architecture-software.md)  
 > **Phạm vi:** {packages / contracts / DI / Host — cụ thể những gì ADR này quyết}  
 > **Ngoài phạm vi:** {cố ý không làm ở đây; trỏ ADR khác nếu đã có}  
 > **Chú thích icon:** 🟢 xong · 🟡 đang làm · 🔴 chưa làm
@@ -230,7 +230,7 @@ Nếu chưa có regression phù hợp: ghi 🔴 và thêm ở §8.3 (hoặc mở
 
 ## 11. Tham chiếu thêm *(tuỳ chọn)*
 
-- [architecture-rules.md](./architecture-rules.md) §0.2 Core + satellite
+- [architecture-software.md](./architecture-software.md) §0.2 Core + satellite
 - Commit / PR implement (điền khi xong)
 
 ---

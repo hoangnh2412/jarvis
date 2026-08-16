@@ -3,7 +3,7 @@
 > **Trạng thái:** 🟡 **Accepted (boundary)** · chưa implement code  
 > **Ngày:** 2026-08-13 · Accept boundary: 2026-08-13  
 > **Loại:** Package boundary / Module Atomic / SPI  
-> **Liên quan:** [Setting ADR](../modules/settings/Jarvis.Modules.Setting/doc/2026-07-30-adr-setting.md), [modules/settings/README](../modules/settings/README.md), [architecture-rules.md](./architecture-rules.md) §0.2, [Realtime vs Inbox](./2026-08-12-adr-jarvis-realtime-inbox-boundary.md) (module notifications sẽ khai báo Setting), [adr-template.md](./adr-template.md)  
+> **Liên quan:** [Setting ADR](../modules/settings/Jarvis.Modules.Setting/doc/2026-07-30-adr-setting.md), [modules/settings/README](../modules/settings/README.md), [architecture-software.md](./architecture-software.md) §0.2, [Realtime vs Inbox](./2026-08-12-adr-jarvis-realtime-inbox-boundary.md) (module notifications sẽ khai báo Setting), [adr-template.md](./adr-template.md)  
 > **Phạm vi:** Tách SPI code-first Library (`ISettingDefinitionProvider` + cụm definition) sang package mỏng trong `modules/settings/`; ranh giới phụ thuộc module → Abstractions vs Setting core; **không** đưa SPI vào `Jarvis.DDD.Domain`.  
 > **Ngoài phạm vi:** Đổi semantic Library/Registry/Manager; move `ISettingEntity` (giữ Domain); authorization; UI; rename `ISettingManager`.  
 > **Chú thích icon:** 🟢 xong · 🟡 đang làm / chờ confirm chi tiết · 🔴 chưa làm
@@ -234,6 +234,6 @@ Sau confirm: status boundary giữ 🟡 Accepted; implement → cập nhật che
 
 ## 11. Tham chiếu thêm
 
-- [architecture-rules.md](./architecture-rules.md) — Core + satellite / không vòng module  
+- [architecture-software.md](./architecture-software.md) — Core + satellite / không vòng module  
 - Thảo luận: SPI ≠ Domain chỉ vì mọi module đã reference Domain; folder Setting ≠ package runtime Setting  
 - Commit / PR implement *(điền khi xong)*

@@ -49,7 +49,7 @@ import {
   setAccessToken,
 } from './auth'
 import { NotificationBell } from '@jarvis/notifications'
-// import { SettingPage } from '@jarvis/setting'
+import { SettingPage } from '@jarvis/setting'
 import { extractLoginResult } from './auth/apiHelpers'
 import { RequireAuth } from './auth/RequireAuth'
 import {
@@ -298,7 +298,7 @@ export default function App() {
             path="documents"
             element={<PlaceholderPage title="Tài liệu" />}
           />
-          {/* <Route path="settings" element={<SettingPage />} /> */}
+          <Route path="settings" element={<SettingPage />} />
           <Route path="help" element={<PlaceholderPage title="Trợ giúp" />} />
 
           <Route path="profile" element={<AccountProfilePage />} />

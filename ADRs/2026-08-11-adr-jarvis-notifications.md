@@ -3,7 +3,7 @@
 > **Trạng thái:** 🟢 **Accepted + Implemented** (MVP + D12) · **🔄 Package boundary D1/D4/D8/D12 superseded** bởi [2026-08-12-adr-jarvis-realtime-inbox-boundary](./2026-08-12-adr-jarvis-realtime-inbox-boundary.md) (framework → **Realtime**; inbox store → **module**).  
 > **Ngày:** 2026-08-11 · Accept: 2026-08-11 · Implement MVP: 2026-08 · Implement D12: 2026-08-11 · Boundary amend: 2026-08-12  
 > **Loại:** Module Atomic / package boundary / realtime delivery  
-> **Liên quan:** [current-user-tenant](./2026-08-01-adr-current-user-tenant.md) (🟢 D5), [Multitenancy](./2026-08-06-adr-jarvis-multitenancy-package.md) (🟢), [architecture-rules.md](./architecture-rules.md) (§0.1–0.3, §3.4 fluent builder), [Realtime vs Inbox boundary](./2026-08-12-adr-jarvis-realtime-inbox-boundary.md)  
+> **Liên quan:** [current-user-tenant](./2026-08-01-adr-current-user-tenant.md) (🟢 D5), [Multitenancy](./2026-08-06-adr-jarvis-multitenancy-package.md) (🟢), [architecture-software.md](./architecture-software.md) (§0.1–0.3, §3.4 fluent builder), [Realtime vs Inbox boundary](./2026-08-12-adr-jarvis-realtime-inbox-boundary.md)  
 > **Phạm vi:** quyết định kiến trúc **in-app notification** dùng chung (MVP): persist-first + SignalR + REST/FE; ranh giới Host. **Layout package sau 2026-08-12:** xem ADR Realtime/Inbox — không dùng D12 làm target mới.  
 > **Ngoài phạm vi:** email/SMS/push mobile; Event Bus inbound ERP; SQL store production; Authorization/RBAC chi tiết; definition/template registry; toast pipeline đầy đủ.  
 > **Chú thích icon:** 🟢 xong · 🟡 đang làm · 🔴 chưa làm
@@ -134,7 +134,7 @@ sequenceDiagram
 | `Jarvis.Notifications.SignalR` | `Jarvis.Notifications.SignalR.*` | `NotificationHub`, `HubSignalRNotifier`, `UseSignalR()`, `UseRedisBackplane()`, `AddNotificationAppServiceWithRealtime()`, `MapCoreNotificationHub()` |
 | `Jarvis.Notifications.Redis` | `Jarvis.Notifications.Redis.*` | `RedisNotificationStore`, `UseRedisStore()` |
 
-**Đánh giá vs [architecture-rules.md](./architecture-rules.md) sau D12:**
+**Đánh giá vs [architecture-software.md](./architecture-software.md) sau D12:**
 
 | Rule | Trạng thái |
 |------|------------|
@@ -173,7 +173,7 @@ REST base: `/api/notifications` — list / get / unread-count / read / unread / 
 
 | Hướng | Hệ quả |
 |-------|--------|
-| Tốt | MVP gọn; Atomic khớp architecture-rules; module API chỉ reference core; store/realtime opt-in; offline vẫn đọc trong retention; identity thống nhất |
+| Tốt | MVP gọn; Atomic khớp architecture-software; module API chỉ reference core; store/realtime opt-in; offline vẫn đọc trong retention; identity thống nhất |
 | Xấu / chi phí | Host wiring dài hơn (3 extension calls); breaking change namespace/DI cho consumer cũ; chưa idempotency → duplicate khi retry |
 | Trung lập | Full payload O3; có thể chuyển O4 sau mà không đổi store |
 | Đã giải quyết | P5 atomic debt; business/module chỉ cần `Jarvis.Notifications` assembly |
@@ -223,7 +223,7 @@ REST base: `/api/notifications` — list / get / unread-count / read / unread / 
 | 1 | Framework core + SignalR + Redis + AppService | 🟢 |
 | 2 | Module REST + FE package + Sample wire | 🟢 |
 | 3 | Identity qua `ICurrentUser` / `ICurrentTenant` | 🟢 |
-| 4 | ADR theo template + đánh giá architecture-rules | 🟢 |
+| 4 | ADR theo template + đánh giá architecture-software | 🟢 |
 | 5 | Confirm §7 Q1–Q5 | 🟢 |
 | 6 | Atomic D12 | 🟢 |
 | 7 | Skill D13 | 🔴 |
@@ -234,7 +234,7 @@ REST base: `/api/notifications` — list / get / unread-count / read / unread / 
 ## 10. Tham chiếu thêm
 
 - **Target layout mới:** [2026-08-12-adr-jarvis-realtime-inbox-boundary.md](./2026-08-12-adr-jarvis-realtime-inbox-boundary.md)
-- [architecture-rules.md](./architecture-rules.md) — §0.2 Core + satellite, §3.4 fluent builder, §0.3 skill
+- [architecture-software.md](./architecture-software.md) — §0.2 Core + satellite, §3.4 fluent builder, §0.3 skill
 - Code (hiện tại, pre-refactor): `frameworks/Jarvis.Notifications/`, `frameworks/Jarvis.Notifications.SignalR/`, `frameworks/Jarvis.Notifications.Redis/`, `modules/notifications/`
 - Sample: `Sample/Program.cs` — `AddNotificationModule` + `AddCoreNotifications().UseSignalR().UseRedisStore().AddNotificationAppServiceWithRealtime<…>()`
 - Redis keys: `{prefix}:{tenantId:userId}:item|index|unread|read`

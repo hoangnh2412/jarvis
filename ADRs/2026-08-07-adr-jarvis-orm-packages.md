@@ -3,7 +3,7 @@
 > **Trạng thái:** 🟢 **Accepted + Implemented** (Accept §7 2026-08-10 · Phase B–D 2026-08-10).  
 > **Ngày:** 2026-08-07 · Accept §7 2026-08-10 · Implement 2026-08-10  
 > **Loại:** Package boundary / naming / foundation Persistence  
-> **Liên quan:** [Multitenancy.EF](./2026-08-06-adr-jarvis-multitenancy-entityframework.md) (🟢 Done — satellite **không** gộp vào ORM), [Tenants module](./2026-08-07-adr-jarvis-tenants-module.md) (🔴), [architecture-rules.md](./architecture-rules.md) (§0.2 Core + satellite), [README](../README.md).  
+> **Liên quan:** [Multitenancy.EF](./2026-08-06-adr-jarvis-multitenancy-entityframework.md) (🟢 Done — satellite **không** gộp vào ORM), [Tenants module](./2026-08-07-adr-jarvis-tenants-module.md) (🔴), [architecture-software.md](./architecture-software.md) (§0.2 Core + satellite), [README](../README.md).  
 > **Phạm vi:** đổi tên **`Jarvis.EntityFramework` → `Jarvis.ORM.EntityFramework`**; tạo package nền **`Jarvis.ORM.Dapper`**; chốt ranh giới **ORM foundation ≠ module Persistence satellite**.  
 > **Ngoài phạm vi:** implement đầy đủ Dapper UoW/multitenancy (chỉ skeleton MVP); Multitenancy.Dapper; `Jarvis.Tenants` / Setting CRUD; đổi semantic R2 / query filter.  
 > **Chú thích icon:** 🟢 xong 100% · 🟡 đã làm, còn việc · 🔴 chưa làm

@@ -24,7 +24,7 @@ Tài liệu kế hoạch refactor module cache Jarvis. **Trạng thái: hoàn t�
 ### 1.3 Chuẩn tham chiếu
 
 - Review checklist: `.opencode/skills/code-review/SKILL.md`
-- Style / structure: `architecture-rules.md` (HealthChecks / EF / OTEL patterns)
+- Style / structure: `architecture-software.md` (HealthChecks / EF / OTEL patterns)
 - Module skill: `.opencode/skills/caching-dotnet/SKILL.md`
 
 ---
@@ -117,7 +117,7 @@ Không còn hạng mục mở. Kết quả review bổ sung sau phase chính:
 | Pub/sub invalidation (Redis impl) | Sau save/delete: `ICacheService.RemoveAsync` hoặc publish invalidation |
 | `CacheParam` + key template | Giá trị param cụ thể (`tenantId`, `id`, …) |
 
-### 4.2 Sentinel TTL (theo [architecture-rules.md](./architecture-rules.md) §1.3)
+### 4.2 Sentinel TTL (theo [architecture-software.md](./architecture-software.md) §1.3)
 
 | Config | Ý nghĩa |
 |--------|---------|

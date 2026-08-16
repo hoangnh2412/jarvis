@@ -1,6 +1,6 @@
 # Refactor Jarvis.BlobStoring — Code Review & Kế hoạch
 
-Review branch **`refactor-blob-storing`** so với **`develop`** theo [code-review-dotnet skill](../.opencode/skills/code-review-dotnet/SKILL.md) và [architecture-rules.md](./architecture-rules.md).
+Review branch **`refactor-blob-storing`** so với **`develop`** theo [code-review-dotnet skill](../.opencode/skills/code-review-dotnet/SKILL.md) và [architecture-software.md](./architecture-software.md).
 
 **Phạm vi review:** toàn bộ source hiện tại (không chỉ diff PR).
 
@@ -306,7 +306,7 @@ Task<IReadOnlyList<string>> GetFileNamesAsync(string bucket, string? prefix = nu
 
 ---
 
-## Đối chiếu architecture-rules.md
+## Đối chiếu architecture-software.md
 
 | Jarvis cung cấp | Host owned |
 |-----------------|------------|

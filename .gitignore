@@ -38,6 +38,11 @@ bld/
 # Sample SPA build output only (source: Sample/clients/web)
 Sample/wwwroot/
 
+# Autotest TypeScript packages (workspace under autotest/)
+autotest/**/dist/
+autotest/**/reports/
+autotest/sample/.env
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*

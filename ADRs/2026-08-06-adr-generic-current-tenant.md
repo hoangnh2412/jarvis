@@ -3,7 +3,7 @@
 > **Trạng thái:** 🟢 **Accepted + Implemented** (2026-08-07).  
 > **Ngày:** 2026-08-06 · Accept §8: 2026-08-07 · Implement: 2026-08-07  
 > **Loại:** API / Domain contract (follow-up sau package split)  
-> **Liên quan:** [current-user-tenant](./2026-08-01-adr-current-user-tenant.md) (🟢 — **không** generic tenant lúc đó), [split packages](./2026-08-01-adr-techdebt-split-current-user-tenant-packages.md) (🟢 Phase 2–4), [Multitenancy package](./2026-08-06-adr-jarvis-multitenancy-package.md) (🟢), [Multitenancy.EF](./2026-08-06-adr-jarvis-multitenancy-entityframework.md) (🟢), [architecture-rules.md](./architecture-rules.md).  
+> **Liên quan:** [current-user-tenant](./2026-08-01-adr-current-user-tenant.md) (🟢 — **không** generic tenant lúc đó), [split packages](./2026-08-01-adr-techdebt-split-current-user-tenant-packages.md) (🟢 Phase 2–4), [Multitenancy package](./2026-08-06-adr-jarvis-multitenancy-package.md) (🟢), [Multitenancy.EF](./2026-08-06-adr-jarvis-multitenancy-entityframework.md) (🟢), [architecture-software.md](./architecture-software.md).  
 > **Phạm vi:** thêm **generic tenant profile** `ICurrentTenant<TTenant>` (+ identity + store + default `CurrentTenantInfo`); DI Multitenancy; **giữ** R2 + D5 (home vs current). **Không** facade `IWorkContext` (bỏ 2026-08-07 — inject `ICurrentUser` / `ICurrentTenant` trực tiếp).  
 > **Ngoài phạm vi:** Tenants CRUD / Identity → [ADR `Jarvis.Tenants`](./2026-08-07-adr-jarvis-tenants-module.md); đổi semantic R2; generic hóa `ICurrentTenantAccessor` (Guid ambient cho EF/UoW); Phase 5 resolvers; Multitenancy.EF; ClaimsPrincipal ambient; `Change(TTenant)`.  
 > **Chú thích icon:** 🟢 xong 100% · 🟡 đã làm, còn việc · 🔴 chưa làm

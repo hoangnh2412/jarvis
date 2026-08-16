@@ -1,0 +1,21 @@
+{
+  "name": "@jarvis/autotest-sample",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "playwright test --config drivers/playwright/playwright.config.ts",
+    "test:api": "playwright test --config drivers/playwright/playwright.config.ts tests/api",
+    "test:ui": "playwright test --config drivers/playwright/playwright.config.ts tests/ui",
+    "test:smoke": "playwright test --config drivers/playwright/playwright.config.ts --grep @smoke"
+  },
+  "dependencies": {
+    "@jarvis/autotest": "*",
+    "@jarvis/autotest.playwright": "*"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}

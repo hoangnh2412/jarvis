@@ -3,7 +3,7 @@
 > **Trạng thái:** 🟢 **Accepted + Implemented** (confirm §7 2026-08-07; Phase A–E 2026-08-07).  
 > **Ngày:** 2026-08-06 · Accept §7: 2026-08-07  
 > **Loại:** Package boundary / Module Atomic (core + satellite)  
-> **Liên quan:** [jarvis-multitenancy-package](./2026-08-06-adr-jarvis-multitenancy-package.md) (🟢 Done), [split packages](./2026-08-01-adr-techdebt-split-current-user-tenant-packages.md) (Phase 5 = Phase A **trước** B–D), [ORM family](./2026-08-07-adr-jarvis-orm-packages.md) (🟢 Done — `Jarvis.ORM.EntityFramework`), [architecture-rules.md](./architecture-rules.md) (§0.2 Core + satellite).  
+> **Liên quan:** [jarvis-multitenancy-package](./2026-08-06-adr-jarvis-multitenancy-package.md) (🟢 Done), [split packages](./2026-08-01-adr-techdebt-split-current-user-tenant-packages.md) (Phase 5 = Phase A **trước** B–D), [ORM family](./2026-08-07-adr-jarvis-orm-packages.md) (🟢 Done — `Jarvis.ORM.EntityFramework`), [architecture-software.md](./architecture-software.md) (§0.2 Core + satellite).  
 > **Phạm vi:** tách **adapter EF gắn Multitenancy** khỏi `Jarvis.EntityFramework` (sau rename: `Jarvis.ORM.EntityFramework`) → package **`Jarvis.Multitenancy.EntityFramework`**; Host compose opt-in; giữ ORM.EF = infra EF chung.  
 > **Ngoài phạm vi:** `Jarvis.Multitenancy.Dapper` (chỉ nêu pattern; foundation Dapper → [ORM ADR](./2026-08-07-adr-jarvis-orm-packages.md)); Tenants CRUD / Identity → [ADR `Jarvis.Tenants`](./2026-08-07-adr-jarvis-tenants-module.md) (🔴 Proposed); đổi semantic R2 / dedicated-DB vs shared-DB; Auth User move (split Phase 3–4).  
 > **Chú thích icon:** 🟢 xong 100% · 🟡 đã làm, còn việc · 🔴 chưa làm
@@ -28,7 +28,7 @@ Hệ quả hiện tại:
 - Adapter tenant–EF (`TenantDbConnectionInterceptor`, `DbTenantConnectionStringResolver`, cache connection string, overload `AddCoreDbContext` có interceptor) nằm trong package EF chung.
 - App muốn **Multitenancy + Dapper** (hoặc persistence khác) vẫn bị phụ thuộc khái niệm / wiring EF, hoặc phải fork copy.
 
-Module Atomic ([architecture-rules](./architecture-rules.md) §0.2): **core + satellite** — cùng pattern `Jarvis.Caching` + `Jarvis.Caching.Redis`, `Jarvis.Authentication` + `Jarvis.Authentication.Jwt`.
+Module Atomic ([architecture-software](./architecture-software.md) §0.2): **core + satellite** — cùng pattern `Jarvis.Caching` + `Jarvis.Caching.Redis`, `Jarvis.Authentication` + `Jarvis.Authentication.Jwt`.
 
 ---
 

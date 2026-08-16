@@ -3,7 +3,7 @@
 > **Trạng thái:** 🔴 **Proposed** (chờ confirm §7).  
 > **Ngày:** 2026-08-07  
 > **Loại:** API / Application layer foundation  
-> **Liên quan:** [architecture-rules.md](./architecture-rules.md) (§0.1 Clean Architecture), [Setting ADR](../modules/settings/Jarvis.Setting/doc/2026-07-30-adr-setting.md) (facade domain-specific), [Tenants module](./2026-08-07-adr-jarvis-tenants-module.md) (🔴 — dùng pattern Manager riêng, **không** thay bằng base CRUD), [ORM packages](./2026-08-07-adr-jarvis-orm-packages.md) (🟢 Done — Persistence foundation), [FluentValidation](./2026-08-07-adr-jarvis-fluentvalidation.md) (🔴 — validate Create/Update input).  
+> **Liên quan:** [architecture-software.md](./architecture-software.md) (§0.1 Clean Architecture), [Setting ADR](../modules/settings/Jarvis.Setting/doc/2026-07-30-adr-setting.md) (facade domain-specific), [Tenants module](./2026-08-07-adr-jarvis-tenants-module.md) (🔴 — dùng pattern Manager riêng, **không** thay bằng base CRUD), [ORM packages](./2026-08-07-adr-jarvis-orm-packages.md) (🟢 Done — Persistence foundation), [FluentValidation](./2026-08-07-adr-jarvis-fluentvalidation.md) (🔴 — validate Create/Update input).  
 > **Phạm vi:** quyết định **base service CRUD** trên tầng Application: contract + class nền trong `Jarvis.DDD.Application` / `.Contracts`; map Entity ↔ DTO; Get / GetList (pagination) / Create / Update / Delete; quan hệ với CQRS hiện có.  
 > **Ngoài phạm vi:** Authorization / RBAC policy; AutoMapper bắt buộc; HTTP controller base / OpenAPI; soft-delete policy toàn jarvis; module Tenants / Setting / Identity CRUD cụ thể; đổi semantic `IRepository` / `PagedListRequest`; chi tiết FluentValidation (xem ADR riêng).  
 > **Chú thích icon:** 🟢 xong · 🟡 đang làm · 🔴 chưa làm
@@ -23,7 +23,7 @@ Jarvis đã có đủ **Persistence ports** và **CQRS wiring**, nhưng **chưa*
 | Module Setting | Facade domain-specific `ISettingManager` (không generic entity CRUD) |
 | Sample / Host | Một số controller gọi thẳng `DbContext` / executor (vd. `CompanyController`) |
 
-Clean Architecture ([architecture-rules](./architecture-rules.md) §0.1): use case nằm **Application**; Host/API không query `DbSet` trực tiếp. Host đang lặp boilerplate Get/Create/Update/Delete + map DTO cho mỗi aggregate đơn giản, trong khi CQRS phù hợp use case phức tạp hơn là CRUD phẳng.
+Clean Architecture ([architecture-software](./architecture-software.md) §0.1): use case nằm **Application**; Host/API không query `DbSet` trực tiếp. Host đang lặp boilerplate Get/Create/Update/Delete + map DTO cho mỗi aggregate đơn giản, trong khi CQRS phù hợp use case phức tạp hơn là CRUD phẳng.
 
 Cần chốt **một** base service CRUD dùng lại được, không thay CQRS và không biến Jarvis thành “business app”.
 

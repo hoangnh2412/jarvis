@@ -5,7 +5,7 @@
 > **Phạm vi:** `Jarvis.DDD.Domain` (`Services/*` — current user/tenant contracts + accessors; `DataStorages` — tenant resolvers), DI `AddCoreDomain` / `AddCoreCurrentContext{TUser}`; semantic **home tenant (user)** vs **current tenant (working)**.  
 > **Ngoài phạm vi:** Authorization/RBAC, module Identity/Tenants CRUD, thay đổi pipeline auth scheme (JWT/ApiKey/Basic), redesign UoW / connection-string resolve, `ClaimsPrincipal` ambient (để Auth story sau); **không** thêm `WorkContext.AmbientTenant` / hai `ICurrentTenant` trên facade; **package split** / Skill Host → ADR tiếp theo (không thuộc plan triển khai ADR này).  
 > **Tech debt tiếp theo:** [Multitenancy package](./2026-08-06-adr-jarvis-multitenancy-package.md) 🟢 → [split packages](./2026-08-01-adr-techdebt-split-current-user-tenant-packages.md) Phase 3–4 (Auth). OTEL enrich: [đã xong](./2026-08-01-adr-techdebt-otel-enrichment-out-of-ddd.md).  
-> **Tham chiếu:** ABP `ICurrentUser` / `ICurrentTenant` / `ICurrentTenantAccessor`; [architecture-rules.md](./architecture-rules.md); multitenancy hiện có trong `Jarvis.DDD.Domain/DataStorages` (`UserTenantIdResolver`).  
+> **Tham chiếu:** ABP `ICurrentUser` / `ICurrentTenant` / `ICurrentTenantAccessor`; [architecture-software.md](./architecture-software.md); multitenancy hiện có trong `Jarvis.DDD.Domain/DataStorages` (`UserTenantIdResolver`).  
 > **Chú thích icon:** 🟢 xong 100% · 🟡 đã làm, còn việc · 🔴 chưa làm
 
 ---

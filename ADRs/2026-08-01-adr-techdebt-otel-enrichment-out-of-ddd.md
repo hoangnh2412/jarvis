@@ -3,7 +3,7 @@
 > **Trạng thái:** 🟢 **Accepted** + **Implemented** (2026-08-06) — Phase 1–4 xong.  
 > **Ngày:** 2026-08-01 · Confirm: 2026-08-06 (revise: bridge package) · Implement: 2026-08-06  
 > **Loại:** Technical debt / package boundary  
-> **Liên quan:** [2026-08-01-adr-current-user-tenant.md](./2026-08-01-adr-current-user-tenant.md) (**Implemented** trong Domain), [2026-08-01-adr-techdebt-split-current-user-tenant-packages.md](./2026-08-01-adr-techdebt-split-current-user-tenant-packages.md) (D4), [architecture-rules.md](./architecture-rules.md).  
+> **Liên quan:** [2026-08-01-adr-current-user-tenant.md](./2026-08-01-adr-current-user-tenant.md) (**Implemented** trong Domain), [2026-08-01-adr-techdebt-split-current-user-tenant-packages.md](./2026-08-01-adr-techdebt-split-current-user-tenant-packages.md) (D4), [architecture-software.md](./architecture-software.md).  
 > **Phạm vi:** chuyển Enrich khỏi Domain → pipeline mặc định trong `Jarvis.OpenTelemetry` + adapter WorkContext trong package bridge **`Jarvis.OpenTelemetry.DDD`**; bỏ `ProjectReference` OpenTelemetry khỏi Domain.  
 > **Ngoài phạm vi:** đổi semantic attribute names; redesign middleware OTEL / `IEnrich*` signature; tách project `Jarvis.OpenTelemetry.Abstractions`; đặt adapter ở Host/Sample hoặc `Jarvis.Mvc`.  
 > **Chú thích icon:** 🟢 xong 100% · 🟡 đã làm, còn việc · 🔴 chưa làm

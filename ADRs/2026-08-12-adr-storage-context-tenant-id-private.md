@@ -3,7 +3,7 @@
 > **Trạng thái:** 🟢 **Accepted + Implemented** (confirm §7 + code 2026-08-12)  
 > **Ngày:** 2026-08-12 · Accept: 2026-08-12 · Implement: 2026-08-12  
 > **Loại:** API / boundary (Domain contract + ORM.EF)  
-> **Liên quan:** [current-user-tenant](./2026-08-01-adr-current-user-tenant.md) (D5 home vs current), [generic current tenant](./2026-08-06-adr-generic-current-tenant.md), [Multitenancy.EF](./2026-08-06-adr-jarvis-multitenancy-entityframework.md), [ORM packages](./2026-08-07-adr-jarvis-orm-packages.md), [architecture-rules.md](./architecture-rules.md)  
+> **Liên quan:** [current-user-tenant](./2026-08-01-adr-current-user-tenant.md) (D5 home vs current), [generic current tenant](./2026-08-06-adr-generic-current-tenant.md), [Multitenancy.EF](./2026-08-06-adr-jarvis-multitenancy-entityframework.md), [ORM packages](./2026-08-07-adr-jarvis-orm-packages.md), [architecture-software.md](./architecture-software.md)  
 > **Phạm vi:** Ẩn `TenantId` khỏi surface công khai của `IStorageContext` / `BaseStorageContext`; chuẩn hóa nguồn tenant cho app = `ICurrentTenant<TTenant>`; giữ snapshot nội bộ cho EF global query filter.  
 > **Ngoài phạm vi:** Đổi semantic R2 / D5; inject `ICurrentTenant` vào DbContext; redesign `ITenantIdResolverFactory`; Tenants CRUD.  
 > **Chú thích icon:** 🟢 xong · 🟡 đang làm · 🔴 chưa làm
