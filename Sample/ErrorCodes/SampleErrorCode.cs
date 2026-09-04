@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
-using Jarvis.Domain.Shared.ExceptionHandling;
+using Jarvis.DDD.Domain.Shared.ExceptionHandling;
 
 namespace Sample.ErrorCodes;
 
 /// <summary>
 /// Mã lỗi nghiệp vụ demo cho Sample (định dạng số để tương thích <see cref="BusinessException"/> / <c>HResult</c>).
-/// Xuất hiện trong catalog <see cref="Jarvis.Domain.Shared.ExceptionHandling.ErrorCodeHelper"/> sau khi assembly được load.
+/// Xuất hiện trong catalog <see cref="Jarvis.DDD.Domain.Shared.ExceptionHandling.ErrorCodeHelper"/> sau khi assembly được load.
 /// </summary>
 public class SampleErrorCode : IErrorCode
 {

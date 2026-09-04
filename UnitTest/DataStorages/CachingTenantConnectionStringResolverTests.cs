@@ -1,6 +1,6 @@
 using Jarvis.Caching;
-using Jarvis.Domain.DataStorages;
-using Jarvis.EntityFramework.DataStorages;
+using Jarvis.DDD.Domain.DataStorages;
+using Jarvis.ORM.EntityFramework.DataStorages;
 using UnitTest.Caching;
 
 namespace UnitTest.DataStorages;

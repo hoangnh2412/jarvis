@@ -1,5 +1,6 @@
-using Jarvis.EntityFramework;
-using Jarvis.EntityFramework.DataStorages;
+using Jarvis.ORM.EntityFramework;
+using Jarvis.Multitenancy.EntityFramework;
+using Jarvis.Multitenancy.EntityFramework.DataStorages;
 using Microsoft.EntityFrameworkCore;
 using Sample.Entities;
 using Sample.Persistence;
@@ -11,7 +12,7 @@ public static class HostApplicationBuilderExtension
     public static IHostApplicationBuilder AddSampleDbContext(this IHostApplicationBuilder builder)
     {
         builder.Services.AddScoped<IMasterUnitOfWork, MasterUnitOfWork>();
-        builder.Services.AddScoped<ISampleUnitOfWork, SampleUnitOfWork>();
+        builder.Services.AddScoped<ITenantUnitOfWork, TenantUnitOfWork>();
 
         builder.Services.AddCoreDbContext<MasterDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("MasterDbContext")));

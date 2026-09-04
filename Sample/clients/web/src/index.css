@@ -1,0 +1,39 @@
+@layer theme, base, primereact, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Scan @jarvis/core src — không dùng node_modules (Tailwind bỏ qua / gitignore). */
+@source "../../../../frameworks/frontend/src";
+@source "./";
+@source "../../../../modules/notifications/frontend/src";
+@source "../../../../modules/settings/frontend/src";
+
+@import "@jarvis/core/theme.css";
+@import "@jarvis/core/styles.css";
+@import "@jarvis/core/dashboard.css";
+@import "@jarvis/notifications/styles.css";
+
+:root {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172033;
+  background: #f4f7fb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+
+button {
+  font: inherit;
+}

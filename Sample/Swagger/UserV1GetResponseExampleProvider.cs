@@ -1,4 +1,4 @@
-using Jarvis.Domain.Shared.RequestResponse;
+using Jarvis.DDD.Domain.Shared.RequestResponse;
 using Sample.Models;
 using Swashbuckle.AspNetCore.Filters;
 

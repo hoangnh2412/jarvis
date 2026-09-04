@@ -7,6 +7,9 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <SpaRoot>clients\web\</SpaRoot>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
+    <SkipFrontendBuild>false</SkipFrontendBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +20,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Npgsql" Version="9.0.3" />
     <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.15.1-beta.1" />
     <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="1.15.1-beta.1" />
     <PackageReference Include="StackExchange.Redis" Version="2.7.33" />
@@ -26,20 +30,68 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Jarvis.OpenTelemetry\Jarvis.OpenTelemetry.csproj" />
-    <ProjectReference Include="..\Jarvis.Swashbuckle\Jarvis.Swashbuckle.csproj" />
-    <ProjectReference Include="..\Jarvis.Mvc\Jarvis.Mvc.csproj" />
-    <ProjectReference Include="..\Jarvis.Caching.Redis\Jarvis.Caching.Redis.csproj" />
-    <ProjectReference Include="..\Jarvis.Authentication\Jarvis.Authentication.csproj" />
-    <ProjectReference Include="..\Jarvis.Authentication.Jwt\Jarvis.Authentication.Jwt.csproj" />
-    <ProjectReference Include="..\Jarvis.Authentication.ApiKey\Jarvis.Authentication.ApiKey.csproj" />
-    <ProjectReference Include="..\Jarvis.Authentication.Basic\Jarvis.Authentication.Basic.csproj" />
-    <ProjectReference Include="..\Jarvis.BlobStoring\Jarvis.BlobStoring.csproj" />
-    <ProjectReference Include="..\Jarvis.BlobStoring.MinIO\Jarvis.BlobStoring.MinIO.csproj" />
-    <ProjectReference Include="..\Jarvis.Authentication.Cognito\Jarvis.Authentication.Cognito.csproj" />
-    <ProjectReference Include="..\Jarvis.EntityFramework\Jarvis.EntityFramework.csproj" />
-    <ProjectReference Include="..\Jarvis.Notification.Mailkit\Jarvis.Notification.Mailkit.csproj" />
-    <ProjectReference Include="..\Jarvis.HealthChecks\Jarvis.HealthChecks.csproj" />
+    <!-- Don't publish client source; show it in Solution Explorer -->
+    <Content Remove="$(SpaRoot)**" />
+    <None Remove="$(SpaRoot)**" />
+    <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\frameworks\Jarvis.OpenTelemetry\Jarvis.OpenTelemetry.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.OpenTelemetry.DDD\Jarvis.OpenTelemetry.DDD.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.Swashbuckle\Jarvis.Swashbuckle.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.Mvc\Jarvis.Mvc.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.Caching.Redis\Jarvis.Caching.Redis.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.Authentication\Jarvis.Authentication.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.Authentication.Jwt\Jarvis.Authentication.Jwt.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.Authentication.ApiKey\Jarvis.Authentication.ApiKey.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.Authentication.Basic\Jarvis.Authentication.Basic.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.BlobStoring\Jarvis.BlobStoring.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.BlobStoring.MinIO\Jarvis.BlobStoring.MinIO.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.Authentication.Cognito\Jarvis.Authentication.Cognito.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.ORM.EntityFramework\Jarvis.ORM.EntityFramework.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.ORM.Dapper\Jarvis.ORM.Dapper.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.Multitenancy\Jarvis.Multitenancy.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.Multitenancy.EntityFramework\Jarvis.Multitenancy.EntityFramework.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.Notification.Mailkit\Jarvis.Notification.Mailkit.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.HealthChecks\Jarvis.HealthChecks.csproj" />
+    <ProjectReference Include="..\modules\settings\Jarvis.Modules.Setting\Jarvis.Modules.Setting.csproj" />
+    <ProjectReference Include="..\modules\settings\Jarvis.Modules.Setting.API\Jarvis.Modules.Setting.API.csproj" />
+    <ProjectReference Include="..\modules\settings\Jarvis.Modules.Setting.EntityFramework\Jarvis.Modules.Setting.EntityFramework.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.Realtime\Jarvis.Realtime.csproj" />
+    <ProjectReference Include="..\frameworks\Jarvis.Realtime.SignalR\Jarvis.Realtime.SignalR.csproj" />
+    <ProjectReference Include="..\modules\notifications\Jarvis.Modules.Notifications\Jarvis.Modules.Notifications.csproj" />
+    <ProjectReference Include="..\modules\notifications\Jarvis.Modules.Notifications.Redis\Jarvis.Modules.Notifications.Redis.csproj" />
+    <ProjectReference Include="..\modules\notifications\Jarvis.Modules.Notifications.Api\Jarvis.Modules.Notifications.Api.csproj" />
+  </ItemGroup>
+
+  <!--
+    Frontend: npm run build (prebuild → ensure-linked-deps đọc file: deps từ package.json).
+    Bỏ qua: -p:SkipFrontendBuild=true
+  -->
+  <Target Name="EnsureFrontendNodeEnv" BeforeTargets="Build;PublishRunWebpack" Condition="'$(SkipFrontendBuild)' != 'true'">
+    <Exec Command="node --version" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="FrontendNodeErrorCode" />
+    </Exec>
+    <Error Condition="'$(FrontendNodeErrorCode)' != '0'" Text="Node.js is required to build the Sample frontend. Install from https://nodejs.org/ and restart the terminal." />
+  </Target>
+
+  <Target Name="DebugBuildFrontend" AfterTargets="EnsureFrontendNodeEnv" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug' And '$(SkipFrontendBuild)' != 'true'">
+    <Message Importance="high" Text="Building Sample web client into wwwroot..." />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
+  </Target>
+
+  <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish;EnsureFrontendNodeEnv" Condition="'$(SkipFrontendBuild)' != 'true'">
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
+    <ItemGroup>
+      <DistFiles Include="wwwroot\**" Exclude="wwwroot\.gitignore" />
+      <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>wwwroot\%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
 
 </Project>

@@ -1,0 +1,53 @@
+{
+  "OTEL": {
+    "Name": "my-service",
+    "Namespace": "my-namespace",
+    "InstanceId": "local",
+    "Resource": {
+      "IncludeHostDetector": true,
+      "IncludeContainerDetector": true
+    },
+    "Attributes": {},
+    "Logging": {
+      "IncludeConsoleExporter": false,
+      "Endpoint": "http://localhost:4317",
+      "IncludeFormattedMessage": true,
+      "IncludeScopes": true,
+      "ParseStateValues": true
+    },
+    "Tracing": {
+      "Endpoint": "http://localhost:4317",
+      "Sampler": "ParentBasedRatio",
+      "TraceIdRatio": 1.0,
+      "TimeoutMilliseconds": 10000,
+      "HttpTraceEnrichment": {
+        "CaptureRequestHeaders": true,
+        "CaptureResponseHeaders": true,
+        "AllowedRequestHeaderNames": [
+          "traceparent",
+          "x-request-id",
+          "x-correlation-id"
+        ],
+        "AllowedResponseHeaderNames": [
+          "content-type"
+        ],
+        "MaxHeaderValueLength": 256
+      },
+      "AspNetCoreInstrumentation": {
+        "RecordException": true,
+        "ExcludedPathPrefixes": [
+          "/health",
+          "/swagger"
+        ]
+      },
+      "HttpClient": {
+        "ExcludedUrlSubstrings": []
+      }
+    },
+    "Metric": {
+      "Endpoint": "http://localhost:4317",
+      "HistogramAggregation": "explicit",
+      "IncludeConsoleExporter": false
+    }
+  }
+}

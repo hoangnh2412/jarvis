@@ -4,16 +4,24 @@ using Sample.Health;
 using Sample.Multitenancy;
 using Sample.Persistence;
 using Sample.Telemetry;
-using Jarvis.EntityFramework;
+using Microsoft.EntityFrameworkCore;
+using Jarvis.ORM.EntityFramework;
+using Jarvis.ORM.Dapper;
+using Jarvis.Multitenancy.EntityFramework;
+using Npgsql;
 using Jarvis.Mvc;
 using Jarvis.Mvc.ExceptionHandling;
 using Jarvis.Swashbuckle;
 using Asp.Versioning;
 using Jarvis.OpenTelemetry.Abstractions;
 using Jarvis.OpenTelemetry.Extensions;
-using Jarvis.Domain.Services;
-using Jarvis.Domain;
+using Jarvis.OpenTelemetry.DDD.Extensions;
+using Jarvis.DDD.Domain.Services;
+using Jarvis.DDD.Domain;
+using Jarvis.Authentication;
+using Jarvis.Multitenancy;
 using Jarvis.Mvc.ApplicationBuilders;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Jarvis.HealthChecks;
 using Serilog;
 using StackExchange.Redis;
@@ -22,6 +30,11 @@ using Jarvis.BlobStoring.Extensions;
 using Jarvis.Caching.Extensions;
 using Jarvis.Caching.Redis;
 using Jarvis.Caching.Redis.Extensions;
+using Module.Notifications.Extensions;
+using Jarvis.Modules.Notifications.Redis.Extensions;
+using Jarvis.Realtime.Extensions;
+using Jarvis.Realtime.SignalR.Extensions;
+using Sample.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,8 +42,17 @@ builder.Host.UseSerilog((context, _, configuration) => configuration.ReadFrom.Co
 builder.Services
     .AddJarvisOpenTelemetry(builder.Configuration, services =>
     {
-        services.AddScoped<IEnrichLogService, EnrichLogService>();
-        services.AddScoped<IEnrichTraceService, EnrichTraceService>();
+        // User/tenant - cả log + trace
+        services.AddUserContextTelemetryEnrichment<CurrentUserInfo, CurrentTenantInfo>();
+
+        // Case 1 - chỉ log
+        services.AddScoped<IEnrichLogService, SampleLogOnlyEnrichmentService>();
+
+        // Case 2 - can trace
+        services.AddScoped<IEnrichTraceService, SampleTraceOnlyEnrichmentService>();
+
+        // Case 3 - cả log and trace (IEnrichmentSource)
+        services.AddScoped<IEnrichmentSource, SampleSharedEnrichmentSource>();
     })
     .ConfigureResource()
     .ConfigureLogging()
@@ -46,19 +68,32 @@ builder.Services
 builder.AddCoreJson();
 builder.AddCoreCors();
 builder.AddCoreDomain();
+builder.AddCurrentUser<CurrentUserInfo>();
+builder.AddCurrentTenant<CurrentTenantInfo>();
+builder.Services.TryAddSingleton<ICurrentUserStore<CurrentUserInfo>, SampleCurrentUserStore>();
+builder.Services.TryAddSingleton<ICurrentTenantStore<CurrentTenantInfo>, SampleCurrentTenantStore>();
 builder.AddCoreWebApi();
 
 builder.AddJarvisCaching()
     .UseRedisDistributedCache()
     .UseRedisMemoryCacheInvalidation();
 
+builder.AddSampleSettings();
+
 builder.AddCoreBlobStoring();
 
 builder.AddEntityFramework();
+builder.AddMultitenancyEntityFramework();
+builder.AddOrmDapper(options =>
+{
+    options.ConnectionStringName = "MasterDbContext";
+    options.CreateConnection = connectionString => new NpgsqlConnection(connectionString);
+});
+builder.Services.AddScoped<SampleDapperReadSample>();
 builder.AddSampleDbContext();
 builder.AddMultitenancyEfTestHostedService();
 
-// Redis (StackExchange) for Sample demos — same config shape as Cache:DistributedGroups:Redis:Default.
+// Redis (StackExchange) for Sample demos - same config shape as Cache:DistributedGroups:Redis:Default.
 builder.Services.AddKeyedSingleton<IConnectionMultiplexer>("Default", (_, keyedService) =>
 {
     var configuration = _.GetRequiredService<IConfiguration>();
@@ -79,6 +114,12 @@ builder.Services.AddApiVersioning(options =>
 
 builder.AddSampleAuthentication();
 
+builder.AddNotificationModule();
+builder.AddCoreRealtime()
+    .UseSignalR()
+    .UseRedisInboxStore()
+    .AddNotificationAppServiceWithRealtime<CurrentUserInfo, CurrentTenantInfo>();
+
 builder.AddCoreSwagger();
 
 // builder.Services.AddHostedService<Worker>();
@@ -98,14 +139,17 @@ var app = builder.Build();
 app.UseCoreSwagger();
 app.UseHttpsRedirection();
 
-app.UseCoreCors();
+app.UseCoreSpa();
+
+app.UseCoreCors(); 
 
 app.UseAuthentication();
+app.UseAuthorization();
 
 // Demo headers for OTEL trace enrichment (request: send x-demo-request; response: x-demo-response).
 app.UseMiddleware<SampleOtlpDemoHeadersMiddleware>();
 
-// Custom metrics (OTLP via Jarvis ConfigureMetric → same meter name "Sample").
+// Custom metrics (OTLP via Jarvis ConfigureMetric -> same meter name "Sample").
 app.UseMiddleware<SampleApiCallMetricsMiddleware>();
 
 app.UseSerilogRequestLogging();
@@ -113,8 +157,10 @@ app.UseSerilogRequestLogging();
 app.UseJarvisOpenTelemetry();
 app.UseCoreMiddleware<ApiResponseWrapperMiddleware>();
 app.MapControllers();
+app.MapRealtimeHub<CurrentUserInfo, CurrentTenantInfo>();
 // app.UseHealthChecks();
 
+
 app.EnsureMigrateDb<IMasterUnitOfWork>();
-app.EnsureMigrateDb<ISampleUnitOfWork>();
+app.EnsureMigrateTemplateDb<TenantDbContext>((config, options) => options.UseNpgsql(config.GetConnectionString("TenantDbContext")));
 app.Run();

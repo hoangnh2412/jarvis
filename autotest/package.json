@@ -1,0 +1,14 @@
+{
+  "name": "@jarvis/autotest-workspace",
+  "private": true,
+  "workspaces": [
+    "core",
+    "playwright",
+    "sample"
+  ],
+  "scripts": {
+    "build": "npm run build -w @jarvis/autotest && npm run build -w @jarvis/autotest.playwright",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test:unit": "npm run test:unit -w @jarvis/autotest"
+  }
+}

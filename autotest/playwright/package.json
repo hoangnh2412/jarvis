@@ -1,0 +1,31 @@
+{
+  "name": "@jarvis/autotest.playwright",
+  "version": "0.1.0",
+  "description": "Playwright satellite for @jarvis/autotest — IHttpTransport + IBrowserDriver",
+  "license": "UNLICENSED",
+  "private": false,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "@jarvis/autotest": ">=0.1.0",
+    "@playwright/test": "^1.50.0"
+  },
+  "devDependencies": {
+    "@jarvis/autotest": "*",
+    "@playwright/test": "^1.54.0",
+    "typescript": "^5.7.0"
+  }
+}

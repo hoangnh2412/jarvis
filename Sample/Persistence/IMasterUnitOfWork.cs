@@ -1,4 +1,4 @@
-using Jarvis.Domain.Repositories;
+using Jarvis.DDD.Domain.Repositories;
 
 namespace Sample.Persistence;
 

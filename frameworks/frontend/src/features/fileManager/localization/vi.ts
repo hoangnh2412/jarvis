@@ -1,0 +1,55 @@
+export const fileManagerMessagesVi = {
+  routes: {
+    list: 'Files',
+  },
+  list: {
+    description: 'Quản lý tệp và thư mục',
+    upload: 'Upload files',
+    createFolder: 'Create folder',
+    allFiles: 'All files',
+    filter: 'Filter',
+    goUp: 'Lên thư mục cha',
+    actions: 'Actions',
+    name: 'Name',
+    size: 'Size',
+    sharedLink: 'Shared link',
+    total: (n: number) => `${n} total`,
+    empty: 'Thư mục trống',
+    storageUsage: (used: string, total: string) =>
+      `Storage usage: ${used} / ${total}`,
+    available: (value: string) => `Available: ${value}`,
+    folderTree: 'Folders',
+  },
+  actions: {
+    open: 'Open',
+    rename: 'Rename',
+    move: 'Move',
+    delete: 'Delete',
+    copyLink: 'Copy link',
+  },
+  dialog: {
+    createFolderTitle: 'Create folder',
+    createFolderLabel: 'Folder name',
+    renameTitle: 'Rename',
+    renameLabel: 'New name',
+    moveTitle: 'Move to',
+    moveLabel: 'Destination folder',
+    cancel: 'Hủy',
+    save: 'Save',
+    deleteTitle: 'Xoá mục?',
+    deleteDescription: (name: string) => `"${name}" sẽ bị xoá vĩnh viễn.`,
+    confirmDelete: 'Xoá',
+  },
+  toast: {
+    uploadSuccess: 'Đã tải lên tệp',
+    createFolderSuccess: 'Đã tạo thư mục',
+    renameSuccess: 'Đã đổi tên',
+    moveSuccess: 'Đã di chuyển',
+    deleteSuccess: 'Đã xoá',
+    copyLinkSuccess: 'Đã sao chép liên kết',
+    openFile: 'Đang mở tệp',
+    error: 'Thao tác thất bại',
+  },
+} as const
+
+export type FileManagerMessages = typeof fileManagerMessagesVi

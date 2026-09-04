@@ -1,5 +1,6 @@
-using Jarvis.Domain.DataStorages;
-using Jarvis.EntityFramework.Repositories;
+using Jarvis.DDD.Domain.DataStorages;
+using Jarvis.DDD.Domain.Services;
+using Jarvis.ORM.EntityFramework.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Sample.Persistence;

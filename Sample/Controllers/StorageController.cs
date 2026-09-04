@@ -1,6 +1,6 @@
 using Asp.Versioning;
-using Jarvis.Domain.Repositories;
-using Jarvis.Domain.Shared.Extensions;
+using Jarvis.DDD.Domain.Repositories;
+using Jarvis.DDD.Domain.Shared.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.Entities;
@@ -11,7 +11,7 @@ namespace Sample.Controllers;
 [ApiVersionNeutral]
 [Route("api/v{version:apiVersion}/storage")]
 [ApiController]
-public class StorageController(ISampleUnitOfWork uow) : ControllerBase
+public class StorageController(ITenantUnitOfWork uow) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAsync(CancellationToken cancellationToken)

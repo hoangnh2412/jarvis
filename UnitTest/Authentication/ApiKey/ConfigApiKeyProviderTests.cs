@@ -27,17 +27,6 @@ public class ConfigApiKeyProviderTests
             NullLogger<ConfigApiKeyProvider>.Instance);
     }
 
-    private static AuthenticationApiKeyOptionValidator CreateValidator(
-        bool requireConfigKey = true,
-        string realm = "Default")
-    {
-        var services = new ServiceCollection();
-        services.Configure<ApiKeyProviderOptions>(realm, o => o.RequireConfigKey = requireConfigKey);
-        var monitor = services.BuildServiceProvider()
-            .GetRequiredService<IOptionsMonitor<ApiKeyProviderOptions>>();
-        return new AuthenticationApiKeyOptionValidator(monitor);
-    }
-
     /// <summary>Header secret thuần (không prefix) — realm mặc định <c>Default</c>, key hợp lệ.</summary>
     [Fact]
     public async Task AK_U_01_Default_realm_plain_secret_valid()
@@ -88,25 +77,15 @@ public class ConfigApiKeyProviderTests
         Assert.Null(await provider.ProvideAsync("Other:s1"));
     }
 
-    /// <summary><c>Key</c> rỗng + <see cref="ApiKeyProviderOptions.RequireConfigKey"/> — validator fail.</summary>
+    /// <summary><c>Key</c> rỗng — ValidateOnStart / validator phải fail.</summary>
     [Fact]
     public void AK_U_08_Empty_key_fails_validation()
     {
-        var validator = CreateValidator(requireConfigKey: true);
+        var validator = new AuthenticationApiKeyOptionValidator();
         var result = validator.Validate("Default", new AuthenticationApiKeyOption { KeyName = "X-API-KEY", Key = "" });
 
         Assert.True(result.Failed);
         Assert.Contains("Key is required", result.FailureMessage, StringComparison.OrdinalIgnoreCase);
-    }
-
-    /// <summary>Custom provider — <c>RequireConfigKey=false</c> cho phép <c>Key</c> rỗng.</summary>
-    [Fact]
-    public void AK_U_08b_Empty_key_ok_when_require_config_key_false()
-    {
-        var validator = CreateValidator(requireConfigKey: false);
-        var result = validator.Validate("Default", new AuthenticationApiKeyOption { KeyName = "X-API-KEY", Key = "" });
-
-        Assert.False(result.Failed);
     }
 
     /// <summary>Hai realm <c>Default</c> và <c>Integration</c> — mỗi realm một secret riêng.</summary>
@@ -149,18 +128,9 @@ public class ConfigApiKeyProviderTests
     [Fact]
     public void AK_U_09_Missing_key_name_fails_validation()
     {
-        var validator = CreateValidator();
+        var validator = new AuthenticationApiKeyOptionValidator();
         var result = validator.Validate("Default", new AuthenticationApiKeyOption { KeyName = "", Key = "x" });
 
         Assert.True(result.Failed);
-    }
-
-    /// <summary><see cref="ConfigApiKeyProvider"/> + <c>Key</c> rỗng → <c>ProvideAsync</c> trả null.</summary>
-    [Fact]
-    public async Task AK_U_11_Empty_config_key_provide_returns_null()
-    {
-        var provider = CreateProvider(AuthenticationConfigurationBuilder.BuildApiKeyConfig(key: ""));
-
-        Assert.Null(await provider.ProvideAsync("anything"));
     }
 }

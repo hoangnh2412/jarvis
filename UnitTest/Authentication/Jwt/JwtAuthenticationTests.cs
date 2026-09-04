@@ -1,16 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Text.Json;
-using Jarvis.Authentication;
 using Jarvis.Authentication.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using UnitTest.Authentication.Helpers;
 
@@ -31,7 +24,7 @@ public class JwtAuthenticationTests
             ValidateIssuerSigningKey = true
         };
 
-        AuthenticationBuilderExtension.ConfigureJwtBearer(options, jwtOption);
+        AuthenticationBuilderExtension.ConfigureJwtBearer(options, jwtOption, new ServiceCollection());
 
         Assert.Equal("https://localhost:5001", options.Authority);
         Assert.False(options.TokenValidationParameters.ValidateIssuerSigningKey);
@@ -57,7 +50,7 @@ public class JwtAuthenticationTests
     public void JWT_U_04_Require_https_metadata_defaults_true()
     {
         var options = new JwtBearerOptions();
-        AuthenticationBuilderExtension.ConfigureJwtBearer(options, new AuthenticationJwtOption());
+        AuthenticationBuilderExtension.ConfigureJwtBearer(options, new AuthenticationJwtOption(), new ServiceCollection());
 
         Assert.True(options.RequireHttpsMetadata);
     }
@@ -70,22 +63,9 @@ public class JwtAuthenticationTests
         AuthenticationBuilderExtension.ConfigureJwtBearer(options, new AuthenticationJwtOption
         {
             RequireHttpsMetadata = false
-        });
+        }, new ServiceCollection());
 
         Assert.False(options.RequireHttpsMetadata);
-    }
-
-    /// <summary><c>AddCoreJwtBearer</c> đăng ký <see cref="AllowAllJwtTokenAccessChecker"/>.</summary>
-    [Fact]
-    public void JWT_U_06_Registers_allow_all_access_checker_by_default()
-    {
-        var config = AuthenticationConfigurationBuilder.BuildJwtSymmetricConfig("test-signing-key-at-least-32-chars-long");
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddJarvisAuthentication(config, auth => auth.AddCoreJwtBearer(config));
-        var sp = services.BuildServiceProvider();
-
-        Assert.IsType<AllowAllJwtTokenAccessChecker>(sp.GetRequiredService<IJwtTokenAccessChecker>());
     }
 
     /// <summary>Bearer token hợp lệ (symmetric) — <c>authenticated: true</c> trên endpoint probe.</summary>
@@ -125,80 +105,15 @@ public class JwtAuthenticationTests
         Assert.Contains("\"authenticated\":false", json, StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary><see cref="IJwtTokenAccessChecker"/> trả <c>false</c> — token chữ ký đúng vẫn không authenticate.</summary>
-    [Fact]
-    public async Task JWT_I_03_Access_checker_can_reject_valid_token()
-    {
-        const string signingKey = "test-signing-key-at-least-32-chars-long";
-        var config = AuthenticationConfigurationBuilder.BuildJwtSymmetricConfig(signingKey);
-
-        var host = new HostBuilder()
-            .ConfigureWebHost(webBuilder =>
-            {
-                webBuilder.UseTestServer();
-                webBuilder.ConfigureServices(services =>
-                {
-                    services.AddRouting();
-                    services.AddControllers()
-                        .PartManager.ApplicationParts.Add(new AssemblyPart(typeof(TestAuthProbeController).Assembly));
-
-                    services.AddJarvisAuthentication(config, auth =>
-                        auth.AddCoreJwtBearer<RejectAllJwtTokenAccessChecker>(
-                            config, JwtBearerDefaults.AuthenticationScheme));
-                });
-                webBuilder.Configure(app =>
-                {
-                    app.UseRouting();
-                    app.UseAuthentication();
-                    app.UseAuthorization();
-                    app.UseEndpoints(endpoints => endpoints.MapControllers());
-                });
-            })
-            .Build();
-
-        await host.StartAsync();
-        try
-        {
-            var client = host.GetTestClient();
-            var token = CreateToken(signingKey, DateTime.UtcNow.AddHours(1), jti: "revoked-1");
-            var request = new HttpRequestMessage(HttpMethod.Get, "/api/_auth-test/whoami");
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-            var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            var json = await response.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(json);
-            Assert.False(doc.RootElement.GetProperty("authenticated").GetBoolean());
-        }
-        finally
-        {
-            await host.StopAsync();
-            host.Dispose();
-        }
-    }
-
-    private static string CreateToken(string signingKey, DateTime expires, string? jti = null)
+    private static string CreateToken(string signingKey, DateTime expires)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var claims = new List<Claim> { new("sub", "user-1") };
-        if (jti is not null)
-            claims.Add(new Claim(JwtRegisteredClaimNames.Jti, jti));
-
         var token = new JwtSecurityToken(
-            claims: claims,
+            claims: [new Claim("sub", "user-1")],
             expires: expires,
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
-    private sealed class RejectAllJwtTokenAccessChecker : IJwtTokenAccessChecker
-    {
-        public Task<bool> IsAllowedAsync(
-            ClaimsPrincipal principal,
-            string? rawToken,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(false);
     }
 }

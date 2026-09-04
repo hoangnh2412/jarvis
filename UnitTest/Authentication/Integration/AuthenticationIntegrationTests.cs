@@ -3,7 +3,6 @@ using Jarvis.Authentication;
 using Jarvis.Authentication.ApiKey;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using UnitTest.Authentication.Helpers;
 
 namespace UnitTest.Authentication.Integration;
@@ -57,60 +56,6 @@ public class AuthenticationIntegrationTests
 
         var provider = sp.GetRequiredService<AspNetCore.Authentication.ApiKey.IApiKeyProvider>();
         Assert.IsType<ConfigApiKeyProvider>(provider);
-    }
-
-    /// <summary>Custom <see cref="IApiKeyProvider"/> + <c>Key</c> rỗng — startup OK (chỉ bắt buộc <c>KeyName</c>).</summary>
-    [Fact]
-    public void AK_I_05_Custom_provider_allows_empty_config_key_at_startup()
-    {
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["Authentication:ApiKey:Default:KeyName"] = "X-API-KEY",
-                ["Authentication:ApiKey:Default:Key"] = "",
-            })
-            .Build();
-
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddJarvisAuthentication(config, auth => auth.AddCoreApiKey<NoOpApiKeyProvider>(config));
-        var sp = services.BuildServiceProvider();
-
-        // Force ValidateOnStart for named AuthenticationApiKeyOption.
-        var options = sp.GetRequiredService<IOptionsMonitor<AuthenticationApiKeyOption>>().Get("Default");
-        Assert.Equal("X-API-KEY", options.KeyName);
-        Assert.True(string.IsNullOrEmpty(options.Key));
-        Assert.IsType<NoOpApiKeyProvider>(sp.GetRequiredService<AspNetCore.Authentication.ApiKey.IApiKeyProvider>());
-        // RequireConfigKey giờ gắn theo từng realm (named) — custom provider ⇒ false cho realm "Default".
-        Assert.False(sp.GetRequiredService<IOptionsMonitor<ApiKeyProviderOptions>>().Get("Default").RequireConfigKey);
-    }
-
-    /// <summary><see cref="ConfigApiKeyProvider"/> + <c>Key</c> rỗng — ValidateOnStart fail.</summary>
-    [Fact]
-    public void AK_I_06_Config_provider_empty_key_fails_startup_validation()
-    {
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["Authentication:ApiKey:Default:KeyName"] = "X-API-KEY",
-                ["Authentication:ApiKey:Default:Key"] = "",
-            })
-            .Build();
-
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddJarvisAuthentication(config, auth => auth.AddCoreApiKey<ConfigApiKeyProvider>(config));
-        var sp = services.BuildServiceProvider();
-
-        var ex = Assert.Throws<OptionsValidationException>(() =>
-            sp.GetRequiredService<IOptionsMonitor<AuthenticationApiKeyOption>>().Get("Default"));
-        Assert.Contains("Key is required", ex.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private sealed class NoOpApiKeyProvider : AspNetCore.Authentication.ApiKey.IApiKeyProvider
-    {
-        public Task<AspNetCore.Authentication.ApiKey.IApiKey?> ProvideAsync(string key) =>
-            Task.FromResult<AspNetCore.Authentication.ApiKey.IApiKey?>(null);
     }
 
     /// <summary>Scheme <c>Composite</c> — request có <c>X-API-KEY</c> forward sang ApiKey.</summary>

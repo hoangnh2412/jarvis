@@ -1,32 +1,41 @@
-using Sample.Persistence;
-using Jarvis.Authentication.ApiKey;
-using AspNetCore.Authentication.ApiKey;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using AspNetCore.Authentication.ApiKey;
+using Microsoft.Extensions.Options;
+using Jarvis.Authentication.ApiKey;
 
 namespace Sample.Authentication;
 
 /// <summary>
-/// API key provider tra Master DB qua <see cref="IDbContextFactory{TContext}"/> (Singleton-safe).
+/// Validate API key theo config (kế thừa <see cref="ConfigApiKeyProvider"/>) rồi gắn danh tính demo
+/// từ <see cref="SampleDemoIdentityOptions"/>.
 /// </summary>
-public sealed class SampleApiKeyProvider(IDbContextFactory<MasterDbContext> dbFactory) : IApiKeyProvider
+/// <remarks>
+/// <para><b>Khi nào dùng:</b> Sample chưa tra user từ DB/vault; các module cần user/tenant
+/// (Notifications) sẽ trả 401 nếu principal không có claim id dạng <see cref="Guid"/>.</para>
+/// </remarks>
+public sealed class SampleApiKeyProvider(
+    IOptionsFactory<AuthenticationApiKeyOption> options,
+    IOptions<ApiKeyProviderOptions> providerOptions,
+    IOptions<SampleDemoIdentityOptions> demoIdentity,
+    ILogger<ConfigApiKeyProvider> logger)
+    : ConfigApiKeyProvider(options, providerOptions, logger)
 {
-    public async Task<IApiKey?> ProvideAsync(string key)
+    public override async Task<IApiKey?> ProvideAsync(string key)
     {
-        if (string.IsNullOrWhiteSpace(key))
+        if (await base.ProvideAsync(key).ConfigureAwait(false) is not { } apiKey)
             return null;
 
-        await using var db = await dbFactory.CreateDbContextAsync();
-        var row = await db.ApiKeyCredentials.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Key == key);
+        var identity = demoIdentity.Value;
+        if (identity.UserId == Guid.Empty)
+            return apiKey;
 
-        if (row is null)
-            return null;
+        var claims = new List<Claim>
+        {
+            new("tenant_id", identity.TenantId.ToString()),
+            new("realm", apiKey.OwnerName ?? string.Empty)
+        };
 
-        var claims = new List<Claim>();
-        foreach (var role in row.Roles)
-            claims.Add(new Claim(ClaimTypes.Role, role));
-
-        return new ApiKeyModel(key, row.OwnerName, claims);
+        // OwnerName là nguồn của ClaimTypes.NameIdentifier — ICurrentUser đọc user id từ đây.
+        return new ApiKeyModel(apiKey.Key, identity.UserId.ToString(), claims);
     }
 }

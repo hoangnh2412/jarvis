@@ -1,0 +1,12 @@
+/**
+ * Tailwind v4 source registration for @jarvis/core.
+ * App host phải import file này (hoặc tự @source path tới package src),
+ * vì Tailwind bỏ qua `node_modules` / `.gitignore` khi scan class.
+ *
+ *   @import "@jarvis/core/sources.css";
+ */
+@source "../features";
+@source "../common";
+@source "../layouts";
+@source "../lib";
+@source "../prime";

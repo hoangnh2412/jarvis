@@ -1,0 +1,1 @@
+export { SettingPage } from './SettingPage'
