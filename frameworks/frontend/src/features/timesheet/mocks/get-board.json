@@ -1,0 +1,1784 @@
+{
+  "logs": [
+    {
+      "id": "ts-01",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-01",
+      "hours": 6.5,
+      "workItems": [
+        {
+          "id": "wi-1",
+          "title": "Mock API middleware",
+          "issueKey": "LEX-272",
+          "hours": 3.9
+        },
+        {
+          "id": "wi-2",
+          "title": "Board sprint view",
+          "issueKey": "LEX-273",
+          "hours": 2.6
+        }
+      ]
+    },
+    {
+      "id": "ts-02",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-01",
+      "hours": 5.5,
+      "workItems": [
+        {
+          "id": "wi-3",
+          "title": "Họp kick-off Matter",
+          "issueKey": "GHC-104",
+          "hours": 3.3
+        },
+        {
+          "id": "wi-4",
+          "title": "Phân bổ team Matter",
+          "issueKey": "GHC-105",
+          "hours": 2.2
+        }
+      ]
+    },
+    {
+      "id": "ts-03",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-01",
+      "hours": 4.5,
+      "workItems": [
+        {
+          "id": "wi-5",
+          "title": "Board sprint view",
+          "issueKey": "LEX-274",
+          "hours": 2.7
+        },
+        {
+          "id": "wi-6",
+          "title": "Matter project workspace",
+          "issueKey": "LEX-275",
+          "hours": 1.8
+        }
+      ]
+    },
+    {
+      "id": "ts-04",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-02",
+      "hours": 7,
+      "workItems": [
+        {
+          "id": "wi-7",
+          "title": "Matter project workspace",
+          "issueKey": "LEX-276",
+          "hours": 4.2
+        },
+        {
+          "id": "wi-8",
+          "title": "Jira module sidebar",
+          "issueKey": "LEX-277",
+          "hours": 2.8
+        }
+      ]
+    },
+    {
+      "id": "ts-05",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-02",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-9",
+          "title": "Khởi tạo Matter + Sub-matter",
+          "issueKey": "GHC-108",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-10",
+          "title": "Soạn hợp đồng dịch vụ",
+          "issueKey": "GHC-109",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-06",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-02",
+      "hours": 5,
+      "workItems": [
+        {
+          "id": "wi-11",
+          "title": "Jira module sidebar",
+          "issueKey": "LEX-278",
+          "hours": 3
+        },
+        {
+          "id": "wi-12",
+          "title": "Issue navigator UI",
+          "issueKey": "LEX-279",
+          "hours": 2
+        }
+      ]
+    },
+    {
+      "id": "ts-07",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-03",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-13",
+          "title": "Issue navigator UI",
+          "issueKey": "LEX-280",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-14",
+          "title": "Platform SearchableSelect",
+          "issueKey": "LEX-281",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-08",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-03",
+      "hours": 6.5,
+      "workItems": [
+        {
+          "id": "wi-15",
+          "title": "Checklist đóng Sub-matter",
+          "issueKey": "GHC-112",
+          "hours": 3.9
+        },
+        {
+          "id": "wi-16",
+          "title": "Due diligence tài liệu",
+          "issueKey": "GHC-113",
+          "hours": 2.6
+        }
+      ]
+    },
+    {
+      "id": "ts-09",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-03",
+      "hours": 5.5,
+      "workItems": [
+        {
+          "id": "wi-17",
+          "title": "Platform SearchableSelect",
+          "issueKey": "LEX-282",
+          "hours": 3.3
+        },
+        {
+          "id": "wi-18",
+          "title": "Timesheet grid tích hợp Tempo",
+          "issueKey": "LEX-283",
+          "hours": 2.2
+        }
+      ]
+    },
+    {
+      "id": "ts-10",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-03",
+      "hours": 3,
+      "workItems": [
+        {
+          "id": "wi-19",
+          "title": "Soạn memo pháp lý",
+          "issueKey": "RET-814",
+          "hours": 1.8
+        },
+        {
+          "id": "wi-20",
+          "title": "Review hợp đồng retainer",
+          "issueKey": "RET-815",
+          "hours": 1.2
+        }
+      ]
+    },
+    {
+      "id": "ts-11",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-04",
+      "hours": 6.5,
+      "workItems": [
+        {
+          "id": "wi-21",
+          "title": "Jira module sidebar",
+          "issueKey": "LEX-285",
+          "hours": 3.9
+        },
+        {
+          "id": "wi-22",
+          "title": "Issue navigator UI",
+          "issueKey": "LEX-286",
+          "hours": 2.6
+        }
+      ]
+    },
+    {
+      "id": "ts-12",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-04",
+      "hours": 5,
+      "workItems": [
+        {
+          "id": "wi-23",
+          "title": "Soạn hợp đồng dịch vụ",
+          "issueKey": "GHC-117",
+          "hours": 3
+        },
+        {
+          "id": "wi-24",
+          "title": "Checklist đóng Sub-matter",
+          "issueKey": "GHC-118",
+          "hours": 2
+        }
+      ]
+    },
+    {
+      "id": "ts-13",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-04",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-25",
+          "title": "Issue navigator UI",
+          "issueKey": "LEX-287",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-26",
+          "title": "Platform SearchableSelect",
+          "issueKey": "LEX-288",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-14",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-07",
+      "hours": 6.5,
+      "workItems": [
+        {
+          "id": "wi-27",
+          "title": "Timesheet grid tích hợp Tempo",
+          "issueKey": "LEX-271",
+          "hours": 3.9
+        },
+        {
+          "id": "wi-28",
+          "title": "Mock API middleware",
+          "issueKey": "LEX-272",
+          "hours": 2.6
+        }
+      ]
+    },
+    {
+      "id": "ts-15",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-07",
+      "hours": 6.5,
+      "workItems": [
+        {
+          "id": "wi-29",
+          "title": "Review BRD Matter",
+          "issueKey": "GHC-103",
+          "hours": 3.9
+        },
+        {
+          "id": "wi-30",
+          "title": "Họp kick-off Matter",
+          "issueKey": "GHC-104",
+          "hours": 2.6
+        }
+      ]
+    },
+    {
+      "id": "ts-16",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-07",
+      "hours": 5,
+      "workItems": [
+        {
+          "id": "wi-31",
+          "title": "Mock API middleware",
+          "issueKey": "LEX-273",
+          "hours": 3
+        },
+        {
+          "id": "wi-32",
+          "title": "Board sprint view",
+          "issueKey": "LEX-274",
+          "hours": 2
+        }
+      ]
+    },
+    {
+      "id": "ts-17",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-08",
+      "hours": 7,
+      "workItems": [
+        {
+          "id": "wi-33",
+          "title": "Checklist đóng Sub-matter",
+          "issueKey": "GHC-106",
+          "hours": 4.2
+        },
+        {
+          "id": "wi-34",
+          "title": "Due diligence tài liệu",
+          "issueKey": "GHC-107",
+          "hours": 2.8
+        }
+      ]
+    },
+    {
+      "id": "ts-18",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-08",
+      "hours": 5,
+      "workItems": [
+        {
+          "id": "wi-35",
+          "title": "Chuẩn bị báo cáo tháng",
+          "issueKey": "RET-807",
+          "hours": 3
+        },
+        {
+          "id": "wi-36",
+          "title": "Họp định kỳ KH",
+          "issueKey": "RET-808",
+          "hours": 2
+        }
+      ]
+    },
+    {
+      "id": "ts-19",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-08",
+      "hours": 5.5,
+      "workItems": [
+        {
+          "id": "wi-37",
+          "title": "Matter project workspace",
+          "issueKey": "LEX-277",
+          "hours": 3.3
+        },
+        {
+          "id": "wi-38",
+          "title": "Jira module sidebar",
+          "issueKey": "LEX-278",
+          "hours": 2.2
+        }
+      ]
+    },
+    {
+      "id": "ts-20",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-09",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-39",
+          "title": "Review BRD Matter",
+          "issueKey": "GHC-110",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-40",
+          "title": "Họp kick-off Matter",
+          "issueKey": "GHC-111",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-21",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-09",
+      "hours": 5.5,
+      "workItems": [
+        {
+          "id": "wi-41",
+          "title": "Email tư vấn KH",
+          "issueKey": "RET-811",
+          "hours": 3.3
+        },
+        {
+          "id": "wi-42",
+          "title": "Chuẩn bị báo cáo tháng",
+          "issueKey": "RET-812",
+          "hours": 2.2
+        }
+      ]
+    },
+    {
+      "id": "ts-22",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-09",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-43",
+          "title": "Issue navigator UI",
+          "issueKey": "LEX-281",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-44",
+          "title": "Platform SearchableSelect",
+          "issueKey": "LEX-282",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-23",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-10",
+      "hours": 6.5,
+      "workItems": [
+        {
+          "id": "wi-45",
+          "title": "Phân bổ team Matter",
+          "issueKey": "GHC-114",
+          "hours": 3.9
+        },
+        {
+          "id": "wi-46",
+          "title": "Khởi tạo Matter + Sub-matter",
+          "issueKey": "GHC-115",
+          "hours": 2.6
+        }
+      ]
+    },
+    {
+      "id": "ts-24",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-10",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-47",
+          "title": "Họp định kỳ KH",
+          "issueKey": "RET-815",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-48",
+          "title": "Email tư vấn KH",
+          "issueKey": "RET-816",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-25",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-10",
+      "hours": 4,
+      "workItems": [
+        {
+          "id": "wi-49",
+          "title": "Timesheet grid tích hợp Tempo",
+          "issueKey": "LEX-285",
+          "hours": 2.4
+        },
+        {
+          "id": "wi-50",
+          "title": "Mock API middleware",
+          "issueKey": "LEX-286",
+          "hours": 1.6
+        }
+      ]
+    },
+    {
+      "id": "ts-26",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-10",
+      "hours": 2,
+      "workItems": [
+        {
+          "id": "wi-51",
+          "title": "Email tư vấn KH",
+          "issueKey": "RET-817",
+          "hours": 1.2
+        },
+        {
+          "id": "wi-52",
+          "title": "Chuẩn bị báo cáo tháng",
+          "issueKey": "RET-818",
+          "hours": 0.8
+        }
+      ]
+    },
+    {
+      "id": "ts-27",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-10",
+      "hours": 3,
+      "workItems": [
+        {
+          "id": "wi-53",
+          "title": "Soạn memo pháp lý",
+          "issueKey": "RET-818",
+          "hours": 1.8
+        },
+        {
+          "id": "wi-54",
+          "title": "Review hợp đồng retainer",
+          "issueKey": "RET-819",
+          "hours": 1.2
+        }
+      ]
+    },
+    {
+      "id": "ts-28",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-11",
+      "hours": 7,
+      "workItems": [
+        {
+          "id": "wi-55",
+          "title": "Checklist đóng Sub-matter",
+          "issueKey": "GHC-120",
+          "hours": 4.2
+        },
+        {
+          "id": "wi-56",
+          "title": "Due diligence tài liệu",
+          "issueKey": "GHC-121",
+          "hours": 2.8
+        }
+      ]
+    },
+    {
+      "id": "ts-29",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-11",
+      "hours": 6.5,
+      "workItems": [
+        {
+          "id": "wi-57",
+          "title": "Họp định kỳ KH",
+          "issueKey": "RET-801",
+          "hours": 3.9
+        },
+        {
+          "id": "wi-58",
+          "title": "Email tư vấn KH",
+          "issueKey": "RET-802",
+          "hours": 2.6
+        }
+      ]
+    },
+    {
+      "id": "ts-30",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-11",
+      "hours": 4.5,
+      "workItems": [
+        {
+          "id": "wi-59",
+          "title": "Matter project workspace",
+          "issueKey": "LEX-271",
+          "hours": 2.7
+        },
+        {
+          "id": "wi-60",
+          "title": "Jira module sidebar",
+          "issueKey": "LEX-272",
+          "hours": 1.8
+        }
+      ]
+    },
+    {
+      "id": "ts-31",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-14",
+      "hours": 7,
+      "workItems": [
+        {
+          "id": "wi-61",
+          "title": "Họp kick-off Matter",
+          "issueKey": "GHC-106",
+          "hours": 4.2
+        },
+        {
+          "id": "wi-62",
+          "title": "Phân bổ team Matter",
+          "issueKey": "GHC-107",
+          "hours": 2.8
+        }
+      ]
+    },
+    {
+      "id": "ts-32",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-14",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-63",
+          "title": "Họp định kỳ KH",
+          "issueKey": "RET-807",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-64",
+          "title": "Email tư vấn KH",
+          "issueKey": "RET-808",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-33",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-14",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-65",
+          "title": "Platform SearchableSelect",
+          "issueKey": "LEX-277",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-66",
+          "title": "Timesheet grid tích hợp Tempo",
+          "issueKey": "LEX-278",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-34",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-15",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-67",
+          "title": "Timesheet grid tích hợp Tempo",
+          "issueKey": "LEX-279",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-68",
+          "title": "Mock API middleware",
+          "issueKey": "LEX-280",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-35",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-15",
+      "hours": 6.5,
+      "workItems": [
+        {
+          "id": "wi-69",
+          "title": "Review BRD Matter",
+          "issueKey": "GHC-111",
+          "hours": 3.9
+        },
+        {
+          "id": "wi-70",
+          "title": "Họp kick-off Matter",
+          "issueKey": "GHC-112",
+          "hours": 2.6
+        }
+      ]
+    },
+    {
+      "id": "ts-36",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-15",
+      "hours": 4,
+      "workItems": [
+        {
+          "id": "wi-71",
+          "title": "Mock API middleware",
+          "issueKey": "LEX-281",
+          "hours": 2.4
+        },
+        {
+          "id": "wi-72",
+          "title": "Board sprint view",
+          "issueKey": "LEX-282",
+          "hours": 1.6
+        }
+      ]
+    },
+    {
+      "id": "ts-37",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-15",
+      "hours": 3,
+      "workItems": [
+        {
+          "id": "wi-73",
+          "title": "Họp định kỳ KH",
+          "issueKey": "RET-813",
+          "hours": 1.8
+        },
+        {
+          "id": "wi-74",
+          "title": "Email tư vấn KH",
+          "issueKey": "RET-814",
+          "hours": 1.2
+        }
+      ]
+    },
+    {
+      "id": "ts-38",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-16",
+      "hours": 6.5,
+      "workItems": [
+        {
+          "id": "wi-75",
+          "title": "Platform SearchableSelect",
+          "issueKey": "LEX-284",
+          "hours": 3.9
+        },
+        {
+          "id": "wi-76",
+          "title": "Timesheet grid tích hợp Tempo",
+          "issueKey": "LEX-285",
+          "hours": 2.6
+        }
+      ]
+    },
+    {
+      "id": "ts-39",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-16",
+      "hours": 5,
+      "workItems": [
+        {
+          "id": "wi-77",
+          "title": "Due diligence tài liệu",
+          "issueKey": "GHC-116",
+          "hours": 3
+        },
+        {
+          "id": "wi-78",
+          "title": "Review BRD Matter",
+          "issueKey": "GHC-117",
+          "hours": 2
+        }
+      ]
+    },
+    {
+      "id": "ts-40",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-16",
+      "hours": 4.5,
+      "workItems": [
+        {
+          "id": "wi-79",
+          "title": "Timesheet grid tích hợp Tempo",
+          "issueKey": "LEX-286",
+          "hours": 2.7
+        },
+        {
+          "id": "wi-80",
+          "title": "Mock API middleware",
+          "issueKey": "LEX-287",
+          "hours": 1.8
+        }
+      ]
+    },
+    {
+      "id": "ts-41",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-17",
+      "hours": 7,
+      "workItems": [
+        {
+          "id": "wi-81",
+          "title": "Mock API middleware",
+          "issueKey": "LEX-288",
+          "hours": 4.2
+        },
+        {
+          "id": "wi-82",
+          "title": "Board sprint view",
+          "issueKey": "LEX-289",
+          "hours": 2.8
+        }
+      ]
+    },
+    {
+      "id": "ts-42",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-17",
+      "hours": 5.5,
+      "workItems": [
+        {
+          "id": "wi-83",
+          "title": "Họp kick-off Matter",
+          "issueKey": "GHC-120",
+          "hours": 3.3
+        },
+        {
+          "id": "wi-84",
+          "title": "Phân bổ team Matter",
+          "issueKey": "GHC-121",
+          "hours": 2.2
+        }
+      ]
+    },
+    {
+      "id": "ts-43",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-17",
+      "hours": 5,
+      "workItems": [
+        {
+          "id": "wi-85",
+          "title": "Board sprint view",
+          "issueKey": "LEX-270",
+          "hours": 3
+        },
+        {
+          "id": "wi-86",
+          "title": "Matter project workspace",
+          "issueKey": "LEX-271",
+          "hours": 2
+        }
+      ]
+    },
+    {
+      "id": "ts-44",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-17",
+      "hours": 3,
+      "workItems": [
+        {
+          "id": "wi-87",
+          "title": "Soạn memo pháp lý",
+          "issueKey": "RET-802",
+          "hours": 1.8
+        },
+        {
+          "id": "wi-88",
+          "title": "Review hợp đồng retainer",
+          "issueKey": "RET-803",
+          "hours": 1.2
+        }
+      ]
+    },
+    {
+      "id": "ts-45",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-18",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-89",
+          "title": "Timesheet grid tích hợp Tempo",
+          "issueKey": "LEX-273",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-90",
+          "title": "Mock API middleware",
+          "issueKey": "LEX-274",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-46",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-18",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-91",
+          "title": "Review BRD Matter",
+          "issueKey": "GHC-105",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-92",
+          "title": "Họp kick-off Matter",
+          "issueKey": "GHC-106",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-47",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-18",
+      "hours": 5.5,
+      "workItems": [
+        {
+          "id": "wi-93",
+          "title": "Mock API middleware",
+          "issueKey": "LEX-275",
+          "hours": 3.3
+        },
+        {
+          "id": "wi-94",
+          "title": "Board sprint view",
+          "issueKey": "LEX-276",
+          "hours": 2.2
+        }
+      ]
+    },
+    {
+      "id": "ts-48",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-21",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-95",
+          "title": "Matter project workspace",
+          "issueKey": "LEX-279",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-96",
+          "title": "Jira module sidebar",
+          "issueKey": "LEX-280",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-49",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-21",
+      "hours": 5.5,
+      "workItems": [
+        {
+          "id": "wi-97",
+          "title": "Khởi tạo Matter + Sub-matter",
+          "issueKey": "GHC-111",
+          "hours": 3.3
+        },
+        {
+          "id": "wi-98",
+          "title": "Soạn hợp đồng dịch vụ",
+          "issueKey": "GHC-112",
+          "hours": 2.2
+        }
+      ]
+    },
+    {
+      "id": "ts-50",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-21",
+      "hours": 4.5,
+      "workItems": [
+        {
+          "id": "wi-99",
+          "title": "Jira module sidebar",
+          "issueKey": "LEX-281",
+          "hours": 2.7
+        },
+        {
+          "id": "wi-100",
+          "title": "Issue navigator UI",
+          "issueKey": "LEX-282",
+          "hours": 1.8
+        }
+      ]
+    },
+    {
+      "id": "ts-51",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-22",
+      "hours": 6.5,
+      "workItems": [
+        {
+          "id": "wi-101",
+          "title": "Họp kick-off Matter",
+          "issueKey": "GHC-114",
+          "hours": 3.9
+        },
+        {
+          "id": "wi-102",
+          "title": "Phân bổ team Matter",
+          "issueKey": "GHC-115",
+          "hours": 2.6
+        }
+      ]
+    },
+    {
+      "id": "ts-52",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-22",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-103",
+          "title": "Chuẩn bị báo cáo tháng",
+          "issueKey": "RET-815",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-104",
+          "title": "Họp định kỳ KH",
+          "issueKey": "RET-816",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-53",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-22",
+      "hours": 5,
+      "workItems": [
+        {
+          "id": "wi-105",
+          "title": "Platform SearchableSelect",
+          "issueKey": "LEX-285",
+          "hours": 3
+        },
+        {
+          "id": "wi-106",
+          "title": "Timesheet grid tích hợp Tempo",
+          "issueKey": "LEX-286",
+          "hours": 2
+        }
+      ]
+    },
+    {
+      "id": "ts-54",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-23",
+      "hours": 7,
+      "workItems": [
+        {
+          "id": "wi-107",
+          "title": "Khởi tạo Matter + Sub-matter",
+          "issueKey": "GHC-118",
+          "hours": 4.2
+        },
+        {
+          "id": "wi-108",
+          "title": "Soạn hợp đồng dịch vụ",
+          "issueKey": "GHC-119",
+          "hours": 2.8
+        }
+      ]
+    },
+    {
+      "id": "ts-55",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-23",
+      "hours": 6.5,
+      "workItems": [
+        {
+          "id": "wi-109",
+          "title": "Email tư vấn KH",
+          "issueKey": "RET-819",
+          "hours": 3.9
+        },
+        {
+          "id": "wi-110",
+          "title": "Chuẩn bị báo cáo tháng",
+          "issueKey": "RET-820",
+          "hours": 2.6
+        }
+      ]
+    },
+    {
+      "id": "ts-56",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-23",
+      "hours": 5.5,
+      "workItems": [
+        {
+          "id": "wi-111",
+          "title": "Mock API middleware",
+          "issueKey": "LEX-289",
+          "hours": 3.3
+        },
+        {
+          "id": "wi-112",
+          "title": "Board sprint view",
+          "issueKey": "LEX-290",
+          "hours": 2.2
+        }
+      ]
+    },
+    {
+      "id": "ts-57",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-24",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-113",
+          "title": "Checklist đóng Sub-matter",
+          "issueKey": "GHC-102",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-114",
+          "title": "Due diligence tài liệu",
+          "issueKey": "GHC-103",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-58",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-24",
+      "hours": 5,
+      "workItems": [
+        {
+          "id": "wi-115",
+          "title": "Họp định kỳ KH",
+          "issueKey": "RET-803",
+          "hours": 3
+        },
+        {
+          "id": "wi-116",
+          "title": "Email tư vấn KH",
+          "issueKey": "RET-804",
+          "hours": 2
+        }
+      ]
+    },
+    {
+      "id": "ts-59",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-24",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-117",
+          "title": "Matter project workspace",
+          "issueKey": "LEX-273",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-118",
+          "title": "Jira module sidebar",
+          "issueKey": "LEX-274",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-60",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-24",
+      "hours": 3,
+      "workItems": [
+        {
+          "id": "wi-119",
+          "title": "Email tư vấn KH",
+          "issueKey": "RET-805",
+          "hours": 1.8
+        },
+        {
+          "id": "wi-120",
+          "title": "Chuẩn bị báo cáo tháng",
+          "issueKey": "RET-806",
+          "hours": 1.2
+        }
+      ]
+    },
+    {
+      "id": "ts-61",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-25",
+      "hours": 6.5,
+      "workItems": [
+        {
+          "id": "wi-121",
+          "title": "Soạn hợp đồng dịch vụ",
+          "issueKey": "GHC-107",
+          "hours": 3.9
+        },
+        {
+          "id": "wi-122",
+          "title": "Checklist đóng Sub-matter",
+          "issueKey": "GHC-108",
+          "hours": 2.6
+        }
+      ]
+    },
+    {
+      "id": "ts-62",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-25",
+      "hours": 5.5,
+      "workItems": [
+        {
+          "id": "wi-123",
+          "title": "Review hợp đồng retainer",
+          "issueKey": "RET-808",
+          "hours": 3.3
+        },
+        {
+          "id": "wi-124",
+          "title": "Cập nhật timesheet billing",
+          "issueKey": "RET-809",
+          "hours": 2.2
+        }
+      ]
+    },
+    {
+      "id": "ts-63",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-25",
+      "hours": 4,
+      "workItems": [
+        {
+          "id": "wi-125",
+          "title": "Board sprint view",
+          "issueKey": "LEX-278",
+          "hours": 2.4
+        },
+        {
+          "id": "wi-126",
+          "title": "Matter project workspace",
+          "issueKey": "LEX-279",
+          "hours": 1.6
+        }
+      ]
+    },
+    {
+      "id": "ts-64",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-25",
+      "hours": 3,
+      "workItems": [
+        {
+          "id": "wi-127",
+          "title": "Cập nhật timesheet billing",
+          "issueKey": "RET-810",
+          "hours": 1.8
+        },
+        {
+          "id": "wi-128",
+          "title": "Soạn memo pháp lý",
+          "issueKey": "RET-811",
+          "hours": 1.2
+        }
+      ]
+    },
+    {
+      "id": "ts-65",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-28",
+      "hours": 6.5,
+      "workItems": [
+        {
+          "id": "wi-129",
+          "title": "Soạn hợp đồng dịch vụ",
+          "issueKey": "GHC-114",
+          "hours": 3.9
+        },
+        {
+          "id": "wi-130",
+          "title": "Checklist đóng Sub-matter",
+          "issueKey": "GHC-115",
+          "hours": 2.6
+        }
+      ]
+    },
+    {
+      "id": "ts-66",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-28",
+      "hours": 5,
+      "workItems": [
+        {
+          "id": "wi-131",
+          "title": "Họp định kỳ KH",
+          "issueKey": "RET-815",
+          "hours": 3
+        },
+        {
+          "id": "wi-132",
+          "title": "Email tư vấn KH",
+          "issueKey": "RET-816",
+          "hours": 2
+        }
+      ]
+    },
+    {
+      "id": "ts-67",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-28",
+      "hours": 5.5,
+      "workItems": [
+        {
+          "id": "wi-133",
+          "title": "Board sprint view",
+          "issueKey": "LEX-285",
+          "hours": 3.3
+        },
+        {
+          "id": "wi-134",
+          "title": "Matter project workspace",
+          "issueKey": "LEX-286",
+          "hours": 2.2
+        }
+      ]
+    },
+    {
+      "id": "ts-68",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-29",
+      "hours": 7,
+      "workItems": [
+        {
+          "id": "wi-135",
+          "title": "Matter project workspace",
+          "issueKey": "LEX-287",
+          "hours": 4.2
+        },
+        {
+          "id": "wi-136",
+          "title": "Jira module sidebar",
+          "issueKey": "LEX-288",
+          "hours": 2.8
+        }
+      ]
+    },
+    {
+      "id": "ts-69",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-29",
+      "hours": 5.5,
+      "workItems": [
+        {
+          "id": "wi-137",
+          "title": "Khởi tạo Matter + Sub-matter",
+          "issueKey": "GHC-119",
+          "hours": 3.3
+        },
+        {
+          "id": "wi-138",
+          "title": "Soạn hợp đồng dịch vụ",
+          "issueKey": "GHC-120",
+          "hours": 2.2
+        }
+      ]
+    },
+    {
+      "id": "ts-70",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-29",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-139",
+          "title": "Jira module sidebar",
+          "issueKey": "LEX-289",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-140",
+          "title": "Issue navigator UI",
+          "issueKey": "LEX-290",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-71",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-30",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-141",
+          "title": "Issue navigator UI",
+          "issueKey": "LEX-271",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-142",
+          "title": "Platform SearchableSelect",
+          "issueKey": "LEX-272",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-72",
+      "projectId": "prj-ghc-matter",
+      "projectName": "GHC Matter — T&M CAP",
+      "projectKey": "GHC-MT",
+      "userId": "usr-b",
+      "userName": "Trần Thị B",
+      "date": "2026-09-30",
+      "hours": 6,
+      "workItems": [
+        {
+          "id": "wi-143",
+          "title": "Checklist đóng Sub-matter",
+          "issueKey": "GHC-103",
+          "hours": 3.6
+        },
+        {
+          "id": "wi-144",
+          "title": "Due diligence tài liệu",
+          "issueKey": "GHC-104",
+          "hours": 2.4
+        }
+      ]
+    },
+    {
+      "id": "ts-73",
+      "projectId": "prj-lexora",
+      "projectName": "Lexora Platform",
+      "projectKey": "LEX",
+      "userId": "usr-c",
+      "userName": "Lê Minh C",
+      "date": "2026-09-30",
+      "hours": 4,
+      "workItems": [
+        {
+          "id": "wi-145",
+          "title": "Platform SearchableSelect",
+          "issueKey": "LEX-273",
+          "hours": 2.4
+        },
+        {
+          "id": "wi-146",
+          "title": "Timesheet grid tích hợp Tempo",
+          "issueKey": "LEX-274",
+          "hours": 1.6
+        }
+      ]
+    },
+    {
+      "id": "ts-74",
+      "projectId": "prj-retainer",
+      "projectName": "Retainer — Corporate Advisory",
+      "projectKey": "RET-08",
+      "userId": "usr-a",
+      "userName": "Nguyễn Văn A",
+      "date": "2026-09-30",
+      "hours": 2,
+      "workItems": [
+        {
+          "id": "wi-147",
+          "title": "Chuẩn bị báo cáo tháng",
+          "issueKey": "RET-805",
+          "hours": 1.2
+        },
+        {
+          "id": "wi-148",
+          "title": "Họp định kỳ KH",
+          "issueKey": "RET-806",
+          "hours": 0.8
+        }
+      ]
+    }
+  ],
+  "range": {
+    "from": "2026-09-01",
+    "to": "2026-09-30"
+  }
+}

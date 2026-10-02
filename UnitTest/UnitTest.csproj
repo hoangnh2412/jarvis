@@ -14,16 +14,17 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.20" />
+    <PackageReference Include="Moq" Version="4.20.70" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.15" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.20" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.15" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.15" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.15" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.15" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.15" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.20" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.20" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.20" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.20" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.20" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
     <PackageReference Include="xunit" Version="2.9.2" />
@@ -31,24 +32,29 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\frameworks\Jarvis.BlobStoring\Jarvis.BlobStoring.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.BlobStoring.AwsS3\Jarvis.BlobStoring.AwsS3.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.BlobStoring.MinIO\Jarvis.BlobStoring.MinIO.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Caching\Jarvis.Caching.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Caching.Redis\Jarvis.Caching.Redis.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.DDD.Domain\Jarvis.DDD.Domain.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.ORM.EntityFramework\Jarvis.ORM.EntityFramework.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.ORM.Dapper\Jarvis.ORM.Dapper.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Authentication\Jarvis.Authentication.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Authentication.ApiKey\Jarvis.Authentication.ApiKey.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Authentication.Jwt\Jarvis.Authentication.Jwt.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Authentication.Basic\Jarvis.Authentication.Basic.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.BlobStoring\Platform.BlobStoring.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.BlobStoring.AwsS3\Platform.BlobStoring.AwsS3.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.BlobStoring.MinIO\Platform.BlobStoring.MinIO.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Caching\Platform.Caching.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Caching.Redis\Platform.Caching.Redis.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.DDD.Domain\Platform.DDD.Domain.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Authorization\Platform.Authorization.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Authorization.EntityFramework\Platform.Authorization.EntityFramework.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.ORM.EntityFramework\Platform.ORM.EntityFramework.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.ORM.Dapper\Platform.ORM.Dapper.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Authentication\Platform.Authentication.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Authentication.ApiKey\Platform.Authentication.ApiKey.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Authentication.Jwt\Platform.Authentication.Jwt.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Authentication.Basic\Platform.Authentication.Basic.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Workflow\Platform.Workflow.csproj" />
     <ProjectReference Include="..\Sample\Sample.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Realtime\Jarvis.Realtime.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Realtime.SignalR\Jarvis.Realtime.SignalR.csproj" />
-    <ProjectReference Include="..\modules\notifications\Jarvis.Modules.Notifications\Jarvis.Modules.Notifications.csproj" />
-    <ProjectReference Include="..\modules\notifications\Jarvis.Modules.Notifications.Redis\Jarvis.Modules.Notifications.Redis.csproj" />
-    <ProjectReference Include="..\modules\notifications\Jarvis.Modules.Notifications.Api\Jarvis.Modules.Notifications.Api.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Realtime\Platform.Realtime.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Realtime.SignalR\Platform.Realtime.SignalR.csproj" />
+    <ProjectReference Include="..\modules\notifications\Platform.Modules.Notifications\Platform.Modules.Notifications.csproj" />
+    <ProjectReference Include="..\modules\notifications\Platform.Modules.Notifications.Redis\Platform.Modules.Notifications.Redis.csproj" />
+    <ProjectReference Include="..\modules\notifications\Platform.Modules.Notifications.Api\Platform.Modules.Notifications.Api.csproj" />
+    <ProjectReference Include="..\modules\identity\Platform.Modules.Account\Platform.Modules.Account.csproj" />
+    <ProjectReference Include="..\modules\identity\Platform.Modules.IdentityAdmin\Platform.Modules.IdentityAdmin.csproj" />
   </ItemGroup>
 
   <ItemGroup>

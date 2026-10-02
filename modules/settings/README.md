@@ -1,4 +1,4 @@
-# Jarvis.Modules.Setting
+# Platform.Modules.Setting
 
 Module cấu hình dùng chung (**SettingManagement**): quản lý cấu hình toàn hệ thống **theo nhóm (Group)**, lưu giá trị theo **1 Key = 1 row**, định nghĩa metadata theo **code-first Library**, đọc/ghi qua `ISettingManager` (không query DB trực tiếp từ UI/API nghiệp vụ).
 
@@ -27,14 +27,14 @@ Module **chỉ** làm SettingManagement — định nghĩa + lưu/đọc/cập n
 | Đọc / ghi theo Key | Get / Create / GetOrCreate / Update / Delete |
 | Đọc / ghi theo Group | GetByGroup / GetForm / SaveGroup (upsert cả form) |
 | Encrypt Value at rest | Mã hóa field nhạy cảm khi ghi DB |
-| Cache Value | Cache theo key; invalidate khi ghi |
+| Cache Value | Cache theo Group (Memory → Redis → DB); invalidate khi ghi |
 | Validate Type | Email / Number / Options / Date / Image (≤ 2MB)… |
 | `IsReadOnly` | Thuộc tính của setting: không cho sửa/xóa giá trị đó |
 
 ```text
   [Authorization]   [Multitenancy]   [Audit]   [UI]
          │                │             │        │
-         └────── không nằm trong Jarvis.Modules.Setting ──────┘
+         └────── không nằm trong Platform.Modules.Setting ──────┘
                           │
                           ▼
                    ISettingManager
@@ -66,7 +66,7 @@ Module **chỉ** làm SettingManagement — định nghĩa + lưu/đọc/cập n
            ↓ đăng ký
   ISettingDefinitionRegistry (metadata in-memory)
            ↓
-  ISettingManager  ←→  cache (Tenant+Key)  ←→  DB (ISettingEntity)
+  ISettingManager  ←→  cache (Tenant+Group)  ←→  DB (ISettingEntity)
                            ↕
                     encrypt at rest (AES-GCM)
                     validate Type khi ghi
@@ -76,12 +76,12 @@ Module **chỉ** làm SettingManagement — định nghĩa + lưu/đọc/cập n
 
 | Project | Vai trò |
 |---------|---------|
-| `Jarvis.Modules.Setting` | Library, manager, validator, DI lõi (encryptor dùng `Jarvis.Common`) |
-| `Jarvis.Modules.Setting.EntityFramework` | Entity mặc định + `UseEntityFramework` + `ConfigureSetting` |
-| `Jarvis.Modules.Setting.API` | HTTP API sẵn (`UseHttpApi`) — form/groups/CRUD; opt-in |
-| `Jarvis.DDD.Domain` | `ISettingEntity` |
-| `Jarvis.Caching` (+ Redis) | Cache theo `Tenant + Key` |
-| `modules/settings/frontend` (`@jarvis/setting`) | UI feature (pages/components) cho host SPA |
+| `Platform.Modules.Setting` | Library, manager, validator, DI lõi (encryptor dùng `Platform.Common`) |
+| `Platform.Modules.Setting.EntityFramework` | Entity mặc định + `UseEntityFramework` + `ConfigureSetting` |
+| `Platform.Modules.Setting.API` | HTTP API sẵn (`UseHttpApi`) — form/groups/CRUD; opt-in |
+| `Platform.DDD.Domain` | `ISettingEntity` |
+| `Platform.Caching` (+ Redis) | Cache theo `Tenant + Group` |
+| `modules/settings/frontend` (`@platform/setting`) | UI feature (pages/components) cho host SPA |
 | Host app (vd. Sample) | Provider nghiệp vụ, DbContext, endpoint demo (vd. test email), wiring DI |
 
 ## Cài đặt nhanh
@@ -94,7 +94,7 @@ builder.AddCurrentUser<CurrentUserInfo>();
 builder.AddCurrentTenant<CurrentTenantInfo>();
 // + ICurrentUserStore / ICurrentTenantStore của host
 
-// 1. DI — sau AddJarvisCaching().UseRedisDistributedCache()
+// 1. DI — sau AddPlatformCaching().UseRedisDistributedCache()
 builder.AddCoreSetting()
     .UseEntityFramework<IMasterUnitOfWork, CurrentTenantInfo>()
     .UseHttpApi() // opt-in: expose api/v{version}/settings (không Authorize — nội bộ)
@@ -103,7 +103,7 @@ builder.AddCoreSetting()
 // 2. DbContext
 modelBuilder.ConfigureSetting(); // hoặc ConfigureSetting(o => { o.TableName = "..."; o.Schema = "..."; })
 
-// 3. Cache — khai báo Cache:Items:Setting trong appsettings (Jarvis.Caching)
+// 3. Cache — khai báo Cache:Items:SettingGroup trong appsettings (Platform.Caching)
 ```
 
 Bỏ `.UseHttpApi()` nếu host chỉ dùng `ISettingManager` nội bộ hoặc tự viết controller.
@@ -161,8 +161,8 @@ public sealed class EmailSettingDefinition : ISettingDefinitionProvider
   },
   "Cache": {
     "Items": {
-      "Setting": {
-        "Key": "setting:{tenantId}:{key}",
+      "SettingGroup": {
+        "Key": "setting-group:{tenantId}:{group}",
         "MemSeconds": 300,
         "DistributedSeconds": 3600,
         "DistributedGroup": "Default",
@@ -173,18 +173,19 @@ public sealed class EmailSettingDefinition : ISettingDefinitionProvider
 }
 ```
 
-- `Encryption:DataEncryptionKey`: Base64 của khóa AES-256 (32 byte) — dùng chung qua `Jarvis.Common` (`AesGcmStringEncryptionHelper`). Bắt buộc khi có setting `IsEncrypted` / `Password`.
-- Cache item cố định tên `Setting` — host khai báo `Cache:Items:Setting` với placeholder `{tenantId}` và `{key}`.
-- Redis runtime: `AddJarvisCaching().UseRedisDistributedCache()` + `Cache:Items:Setting` trong appsettings.
+- `Encryption:DataEncryptionKey`: Base64 của khóa AES-256 (32 byte) — dùng chung qua `Platform.Common` (`AesGcmStringEncryptionHelper`). Bắt buộc khi có setting `IsEncrypted` / `Password`.
+- Cache item `SettingGroup` — snapshot theo Group; placeholder `{tenantId}` và `{group}`. Dùng cho `GetByGroupAsync` / `GetFormAsync` / `GetAsync` (tìm Key trong snapshot). Thiếu entry → đọc thẳng DB (không lỗi).
+- Thứ tự đọc: **Memory → Redis → DB**. Không cache theo Key. `DefaultValue` luôn merge từ Library.
+- Redis runtime: `AddPlatformCaching().UseRedisDistributedCache()` + `Cache:Items:SettingGroup` trong appsettings.
 
 ## API chính — `ISettingManager`
 
 | Method | Mô tả |
 |--------|--------|
 | `GetGroups()` / `GetDefinitions(group?)` | Metadata từ Library (không đụng DB) |
-| `GetAsync(key)` | Đọc value theo Key (cache → DB), decrypt nếu cần → `SettingModel?` |
-| `GetByGroupAsync(group)` | Đọc các row đã lưu theo Group (không kèm default) → `SettingModel[]` |
-| `GetFormAsync(group)` | Form UI: mọi definition ⊕ values (hoặc default) → `SettingFormItemModel[]` |
+| `GetAsync(key)` | Đọc value theo Key qua snapshot Group (Memory → Redis → DB), decrypt nếu cần → `SettingModel?` |
+| `GetByGroupAsync(group)` | Đọc các row đã lưu theo Group (cache group), không kèm default → `SettingModel[]` |
+| `GetFormAsync(group)` | Form UI: definitions ⊕ values (cache group) hoặc DefaultValue từ Library → `SettingFormItemModel[]` |
 | `CreateAsync(key, value?)` | Tạo row từ definition (runtime); validate Type |
 | `GetOrCreateAsync(key)` | Có thì lấy, chưa có thì tạo từ definition |
 | `UpdateAsync(key, value)` | Cập nhật theo Key; chặn `IsReadOnly`; validate Type; invalidate cache |
@@ -204,8 +205,8 @@ Giá trị trả về luôn là **plaintext**. DB và cache lưu ciphertext cho 
 
 ## HTTP API — endpoint cho Frontend
 
-Package `Jarvis.Modules.Setting.API` cung cấp controller sẵn (opt-in qua `UseHttpApi`).
-Core `Jarvis.Modules.Setting` **không** kèm HTTP — host tự chọn expose API hoặc chỉ dùng `ISettingManager`.
+Package `Platform.Modules.Setting.API` cung cấp controller sẵn (opt-in qua `UseHttpApi`).
+Core `Platform.Modules.Setting` **không** kèm HTTP — host tự chọn expose API hoặc chỉ dùng `ISettingManager`.
 
 ```csharp
 builder.AddCoreSetting()
@@ -215,9 +216,9 @@ builder.AddCoreSetting()
 
 Host vẫn thêm endpoint riêng trên cùng prefix nếu cần (Sample: `POST .../settings/email/test`).
 
-Tài liệu request/response/envelope: [`Jarvis.Modules.Setting/doc/openapi.md`](./Jarvis.Modules.Setting/doc/openapi.md).
+Tài liệu request/response/envelope: [`Platform.Modules.Setting/doc/openapi.md`](./Platform.Modules.Setting/doc/openapi.md).
 
-Base route: `api/v{version}/settings` (ví dụ `api/v1/settings`). Không gắn `[Authorize]` — module jarvis không enforce auth; chưa đăng nhập vẫn gọi API bình thường nếu host không tự bảo vệ. `GET /form` và `GET /` bắt buộc có query `group`.
+Base route: `api/v{version}/settings` (ví dụ `api/v1/settings`). Không gắn `[Authorize]` — module platform không enforce auth; chưa đăng nhập vẫn gọi API bình thường nếu host không tự bảo vệ. `GET /form` và `GET /` bắt buộc có query `group`.
 
 ### Host gắn Auth (mẫu)
 
@@ -264,7 +265,7 @@ Authorization, multitenancy, audit — do host xử lý **trước** khi gọi m
    → vẽ menu / tab nhóm
 2. GET /form?group=Email
    → mỗi item có: key, name, type, options, value, isReadOnly…
-3. Render form theo type / options (@jarvis/setting)
+3. Render form theo type / options (@platform/setting)
 4. User sửa → PUT /group/Email
    Body: { "values": { "Email.Host": "...", "Email.Port": "587", ... } }
 ```
@@ -272,7 +273,7 @@ Authorization, multitenancy, audit — do host xử lý **trước** khi gọi m
 Host SPA (Sample):
 
 ```tsx
-import { SettingPage, TestEmailPage } from '@jarvis/setting'
+import { SettingPage, TestEmailPage } from '@platform/setting'
 ```
 
 ### Options theo Type
@@ -299,7 +300,7 @@ Hai ngữ nghĩa (theo `Type`, **không trộn** trong cùng một Key):
 - Email: luôn đọc điều kiện từ `Options.regex` (`default` hoặc pattern); không nhúng cả default regex dài xuống DB.
 - Image mặc định: ≤ 2MB, MIME `png/jpeg/gif/webp`.
 
-File tham chiếu: `Jarvis.Modules.Setting.API/Controllers/SettingController.cs`, `Sample/Controllers/SettingEmailController.cs`, `Sample/Settings/DemoSettingDefinition.cs`.
+File tham chiếu: `Platform.Modules.Setting.API/Controllers/SettingController.cs`, `Sample/Controllers/SettingEmailController.cs`, `Sample/Settings/DemoSettingDefinition.cs`.
 
 ### Ví dụ dùng
 
@@ -351,11 +352,13 @@ Backend: `Validation/SettingValueValidator.cs` + `SettingTypeOptions.cs`. Fronte
 
 ## Bảo mật & cache
 
-- Encryptor dùng chung: `AesGcmStringEncryptionHelper` trong `Jarvis.Common` (static helper, không DI).
+- Encryptor dùng chung: `AesGcmStringEncryptionHelper` trong `Platform.Common` (static helper, không DI).
 - Payload: `enc.v1.{base64(nonce|tag|ciphertext)}`.
 - Đọc: nếu definition encrypt / type Password / value có prefix → decrypt.
-- Cache lưu giá trị persisted (ciphertext với secret); chỉ decrypt sau cache hit trước khi trả caller.
-- Cache miss không ghi null vào cache (`GetOrSetAsync` bỏ qua null).
+- Thứ tự đọc: Memory → Redis → DB. Chỉ dùng Group cache (`SettingGroup`); không cache theo Key.
+- `GetAsync` / `GetFormAsync` / `GetByGroupAsync` dùng chung snapshot group; metadata + `DefaultValue` luôn merge từ Library.
+- Ghi (Create/Update/Delete/SaveGroup) invalidate snapshot Group liên quan.
+- Snapshot Group rỗng vẫn được cache để tránh miss lặp.
 - Image lớn: cân nhắc không dùng data URL trên production (object storage); validator chỉ là lớp bảo vệ kích thước.
 
 ## Mã lỗi (`SettingErrorCode`)
@@ -376,9 +379,9 @@ Backend: `Validation/SettingValueValidator.cs` + `SettingTypeOptions.cs`. Fronte
 
 | File | Công việc |
 |------|-----------|
-| `Jarvis.DDD.Domain/Entities/ISettingEntity.cs` | Contract tenant-scoped: `Group`, `Key`, `Name`, `Value`, `Type`, `Options`, `Description`, `IsReadOnly`. |
+| `Platform.DDD.Domain/Entities/ISettingEntity.cs` | Contract tenant-scoped: `Group`, `Key`, `Name`, `Value`, `Type`, `Options`, `Description`, `IsReadOnly`. |
 
-### 2. Package lõi `Jarvis.Modules.Setting`
+### 2. Package lõi `Platform.Modules.Setting`
 
 | File | Công việc |
 |------|-----------|
@@ -389,9 +392,9 @@ Backend: `Validation/SettingValueValidator.cs` + `SettingTypeOptions.cs`. Fronte
 | `Services/ISettingManager.cs` + `SettingManager.cs` | Facade CRUD + cache + encrypt + validate. |
 | `Models/SettingModel.cs` | DTO runtime / CRUD (có Id, TenantId). |
 | `Models/SettingFormItemModel.cs` | DTO form UI (`GetFormAsync`). |
-| `Extensions/JarvisSettingExtensions.cs` | `AddCoreSetting()` / generic overload + `AddProvider`. |
+| `Extensions/PlatformSettingExtensions.cs` | `AddCoreSetting()` / generic overload + `AddProvider`. |
 
-### 3. `Jarvis.Modules.Setting.EntityFramework`
+### 3. `Platform.Modules.Setting.EntityFramework`
 
 | File | Công việc |
 |------|-----------|
@@ -401,7 +404,7 @@ Backend: `Validation/SettingValueValidator.cs` + `SettingTypeOptions.cs`. Fronte
 | `Extensions/SettingModelBuilderExtensions.cs` | `ConfigureSetting()` trên `ModelBuilder`. |
 | `Configuration/SettingModelBuilderConfigurationOptions.cs` | Ghi đè TableName / Schema. |
 
-### 4. `Jarvis.Modules.Setting.API`
+### 4. `Platform.Modules.Setting.API`
 
 | File | Công việc |
 |------|-----------|
@@ -409,7 +412,7 @@ Backend: `Validation/SettingValueValidator.cs` + `SettingTypeOptions.cs`. Fronte
 | `Extensions/SettingApiExtensions.cs` | `UseHttpApi()` — ApplicationPart. |
 | `Models/SettingHttpApiRequests.cs` | DTO request HTTP. |
 
-### 5. Frontend `@jarvis/setting`
+### 5. Frontend `@platform/setting`
 
 | Path | Công việc |
 |------|-----------|
@@ -424,24 +427,24 @@ Backend: `Validation/SettingValueValidator.cs` + `SettingTypeOptions.cs`. Fronte
 | `Sample/Persistence/MasterDbContext.cs` | `DbSet<Setting>` + `ConfigureSetting()`. |
 | `Sample/Settings/*SettingDefinition.cs` | Provider nghiệp vụ (Email, Demo, Localization…). |
 | `Sample/Controllers/SettingEmailController.cs` | Endpoint demo test email (ngoài package API). |
-| `Sample/appsettings.json` | Section `Setting` + `Cache:Items:Setting`. |
+| `Sample/appsettings.json` | Section `Encryption` + `Cache:Items:SettingGroup`. |
 
 ### 7. Tài liệu
 
 | File | Công việc |
 |------|-----------|
 | [`README.md`](./README.md) | Hướng dẫn tích hợp (file này). |
-| [`Jarvis.Modules.Setting/doc/SAD.md`](./Jarvis.Modules.Setting/doc/SAD.md) | Software Architecture Document. |
-| [`Jarvis.Modules.Setting/doc/2026-07-30-adr-setting.md`](./Jarvis.Modules.Setting/doc/2026-07-30-adr-setting.md) | ADR. |
-| [`Jarvis.Modules.Setting/doc/openapi.md`](./Jarvis.Modules.Setting/doc/openapi.md) | HTTP API cho Frontend. |
-| [`frontend/README.md`](./frontend/README.md) | Package UI `@jarvis/setting`. |
+| [`Platform.Modules.Setting/doc/SAD.md`](./Platform.Modules.Setting/doc/SAD.md) | Software Architecture Document. |
+| [`Platform.Modules.Setting/doc/2026-07-30_platform_setting.md`](./Platform.Modules.Setting/doc/2026-07-30_platform_setting.md) | ADR. |
+| [`Platform.Modules.Setting/doc/openapi.md`](./Platform.Modules.Setting/doc/openapi.md) | HTTP API cho Frontend. |
+| [`frontend/README.md`](./frontend/README.md) | Package UI `@platform/setting`. |
 
 ### Sơ đồ thư mục
 
 ```text
 modules/settings/
   README.md
-  Jarvis.Modules.Setting/
+  Platform.Modules.Setting/
     Definitions/
     Validation/
     Extensions/
@@ -450,16 +453,16 @@ modules/settings/
     doc/
     SettingValueTypes.cs
     SettingErrorCode.cs
-  Jarvis.Modules.Setting.EntityFramework/
+  Platform.Modules.Setting.EntityFramework/
     Configuration/
     Entities/
     EntityConfigurations/
     Extensions/
-  Jarvis.Modules.Setting.API/
+  Platform.Modules.Setting.API/
     Controllers/
     Extensions/
     Models/
-  frontend/                    # @jarvis/setting
+  frontend/                    # @platform/setting
     src/features/settings/
 ```
 
@@ -473,13 +476,13 @@ Trạng thái: ✅ xong · 📋 kế hoạch · ⏸️ backlog
 
 | | Hạng mục | Ghi chú |
 |---|----------|---------|
-| ✅ | `ISettingEntity` + package `Jarvis.Modules.Setting` | |
+| ✅ | `ISettingEntity` + package `Platform.Modules.Setting` | |
 | ✅ | Code-first Library | Provider / Registry |
 | ✅ | `ISettingManager` | Key + Group |
 | ✅ | Encrypt at rest | AES-GCM |
-| ✅ | Cache theo key | `Jarvis.Caching` |
+| ✅ | Cache theo key | `Platform.Caching` |
 | ✅ | Package EF / Redis / API | EF + API dùng ở Sample; Redis package giữ lại nhưng chưa dùng |
-| ✅ | Type đầy đủ | Text…Image (kèm UI `@jarvis/setting`) |
+| ✅ | Type đầy đủ | Text…Image (kèm UI `@platform/setting`) |
 | ✅ | Validate Type / Options / Image ≤ 2MB | `SettingValueValidator` + FE |
 | ✅ | Sample + HTTP API + docs | API package + Sample demo email |
 

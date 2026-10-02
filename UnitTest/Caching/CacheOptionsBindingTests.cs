@@ -1,4 +1,4 @@
-using Jarvis.Caching;
+using Platform.Caching;
 using Microsoft.Extensions.Configuration;
 
 namespace UnitTest.Caching;
@@ -17,8 +17,8 @@ public class CacheOptionsBindingTests
             })
             .Build();
 
-        var options = new JarvisCacheOptions();
-        configuration.GetSection(JarvisCacheOptions.SectionName).Bind(options);
+        var options = new PlatformCacheOptions();
+        configuration.GetSection(PlatformCacheOptions.SectionName).Bind(options);
 
         Assert.Equal("Auth", options.DefaultDistributedGroup);
         Assert.Equal("Redis", options.DefaultDistributedType);
@@ -35,8 +35,8 @@ public class CacheOptionsBindingTests
             })
             .Build();
 
-        var options = new JarvisCacheOptions();
-        configuration.GetSection(JarvisCacheOptions.SectionName).Bind(options);
+        var options = new PlatformCacheOptions();
+        configuration.GetSection(PlatformCacheOptions.SectionName).Bind(options);
 
         Assert.Equal("invalidation.redis:6379", options.MemoryInvalidation.Redis.Configuration);
     }

@@ -1,5 +1,5 @@
-using Jarvis.Modules.Setting;
-using Jarvis.Modules.Setting.Definitions;
+using Platform.Modules.Setting;
+using Platform.Modules.Setting.Definitions;
 
 namespace Sample.Settings;
 

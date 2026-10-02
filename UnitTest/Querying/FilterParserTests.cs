@@ -1,4 +1,4 @@
-using Jarvis.DDD.Domain.Querying;
+using Platform.DDD.Domain.Querying;
 
 namespace UnitTest.Querying;
 

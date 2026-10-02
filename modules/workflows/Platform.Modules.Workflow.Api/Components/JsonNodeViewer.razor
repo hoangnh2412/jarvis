@@ -1,0 +1,79 @@
+@using System.Text.Json.Nodes
+
+@if (Node is null)
+{
+    <span class="detail-empty-value">-</span>
+}
+else if (Node is JsonObject jsonObject)
+{
+    <div class="json-property-list">
+        @foreach (var property in jsonObject)
+        {
+            <div class="json-property">
+                <div class="json-property-name">@property.Key</div>
+                <div class="json-property-value">
+                    @if (property.Value is JsonObject or JsonArray)
+                    {
+                        <JsonNodeViewer Node="@property.Value" />
+                    }
+                    else
+                    {
+                        @GetValue(property.Value)
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+else if (Node is JsonArray jsonArray)
+{
+    <div class="json-array">
+        @for (var i = 0; i < jsonArray.Count; i++)
+        {
+            var item = jsonArray[i];
+            <div class="json-array-item">
+                <div class="json-array-index">#@i</div>
+                @if (item is JsonObject or JsonArray)
+                {
+                    <JsonNodeViewer Node="@item" />
+                }
+                else
+                {
+                    <span>@GetValue(item)</span>
+                }
+            </div>
+        }
+    </div>
+}
+else
+{
+    <span>@GetValue(Node)</span>
+}
+
+@code
+{
+    [Parameter]
+    public JsonNode? Node { get; set; }
+
+    private static string GetValue(JsonNode? node)
+    {
+        if (node is null)
+            return "-";
+
+        if (node is JsonValue value)
+        {
+            if (value.TryGetValue<string>(out var stringValue))
+                return stringValue;
+            if (value.TryGetValue<bool>(out var boolValue))
+                return boolValue.ToString();
+            if (value.TryGetValue<int>(out var intValue))
+                return intValue.ToString();
+            if (value.TryGetValue<long>(out var longValue))
+                return longValue.ToString();
+            if (value.TryGetValue<double>(out var doubleValue))
+                return doubleValue.ToString();
+        }
+
+        return node.ToJsonString();
+    }
+}

@@ -54,6 +54,8 @@ export {
   FILE_MANAGER_ROOT_PATH,
 } from './constants'
 
+export { getFilesMock } from './mocks'
+
 // Routes
 export {
   FILE_MANAGER_ROUTES,
@@ -76,6 +78,16 @@ export {
   getFileManagerMessages,
 } from './localization'
 export type { FileManagerLocale, FileManagerMessages } from './localization'
+
+// Validation
+// Validation
+export {
+  ENTRY_NAME_MESSAGES,
+  entryNameSchema,
+  getEntryNameError,
+  assertValidEntryName,
+} from './validation'
+export type { EntryNameData } from './validation'
 
 // Utils
 export {

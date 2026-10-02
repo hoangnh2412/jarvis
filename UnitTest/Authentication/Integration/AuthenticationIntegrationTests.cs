@@ -1,6 +1,6 @@
 using System.Text.Json;
-using Jarvis.Authentication;
-using Jarvis.Authentication.ApiKey;
+using Platform.Authentication;
+using Platform.Authentication.ApiKey;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UnitTest.Authentication.Helpers;
@@ -51,7 +51,7 @@ public class AuthenticationIntegrationTests
         var config = AuthenticationConfigurationBuilder.BuildApiKeyConfig(key: "k");
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddJarvisAuthentication(config, auth => auth.AddCoreApiKey<ConfigApiKeyProvider>(config));
+        services.AddPlatformAuthentication(config, auth => auth.AddCoreApiKey<ConfigApiKeyProvider>(config));
         var sp = services.BuildServiceProvider();
 
         var provider = sp.GetRequiredService<AspNetCore.Authentication.ApiKey.IApiKeyProvider>();
@@ -114,7 +114,7 @@ public class AuthenticationIntegrationTests
     private static string FindRepoRoot()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "Jarvis.sln")))
+        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "Platform.sln")))
             dir = dir.Parent;
 
         return dir?.FullName ?? throw new InvalidOperationException("Could not find repo root.");

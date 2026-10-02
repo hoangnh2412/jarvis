@@ -1,8 +1,8 @@
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using Jarvis.Authentication;
-using Jarvis.Authentication.Basic;
+using Platform.Authentication;
+using Platform.Authentication.Basic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UnitTest.Authentication.Helpers;
@@ -88,7 +88,7 @@ public class BasicAuthenticationTests
         var config = AuthenticationConfigurationBuilder.BuildBasicConfig();
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddJarvisAuthentication(config, auth => auth.AddCoreBasic<ConfigBasicCredentialProvider>(config));
+        services.AddPlatformAuthentication(config, auth => auth.AddCoreBasic<ConfigBasicCredentialProvider>(config));
         var sp = services.BuildServiceProvider();
 
         Assert.IsType<ConfigBasicCredentialProvider>(sp.GetRequiredService<IBasicCredentialProvider>());
@@ -121,7 +121,7 @@ public class BasicAuthenticationTests
 
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddJarvisAuthentication(config, auth =>
+        services.AddPlatformAuthentication(config, auth =>
             auth.AddCoreBasic<NoOpBasicCredentialProvider>(config));
 
         var sp = services.BuildServiceProvider();

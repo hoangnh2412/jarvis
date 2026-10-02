@@ -1,11 +1,11 @@
-# @jarvis/setting
+# @platform/setting
 
-UI feature Setting — tổ chức giống `@jarvis/core` (`pages` / `components` / `services` / …).
+UI feature Setting — tổ chức giống `@platform/core` (`pages` / `components` / `services` / …).
 
 Host app (vd. `Sample/clients/web`) import và gắn route, không clone UI kit vào đây.
 
 ```tsx
-import { SettingPage, TestEmailPage, SETTING_ROUTES } from '@jarvis/setting'
+import { SettingPage, TestEmailPage, SETTING_ROUTES } from '@platform/setting'
 ```
 
 ## Cấu trúc

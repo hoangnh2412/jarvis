@@ -1,6 +1,6 @@
-using Jarvis.Modules.Setting;
-using Jarvis.Modules.Setting.Definitions;
-using Jarvis.Modules.Setting.Validation;
+using Platform.Modules.Setting;
+using Platform.Modules.Setting.Definitions;
+using Platform.Modules.Setting.Validation;
 
 namespace Sample.Settings;
 

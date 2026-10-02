@@ -1,11 +1,11 @@
 using System.Data.Common;
 using Dapper;
-using Jarvis.ORM.Dapper;
+using Platform.ORM.Dapper;
 
 namespace Sample.Services;
 
 /// <summary>
-/// Thin Sample for <c>Jarvis.ORM.Dapper</c>: one scalar read against the master connection.
+/// Thin Sample for <c>Platform.ORM.Dapper</c>: one scalar read against the master connection.
 /// </summary>
 public sealed class SampleDapperReadSample(ISqlConnectionFactory connections)
 {

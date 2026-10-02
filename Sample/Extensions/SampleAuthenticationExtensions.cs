@@ -1,5 +1,5 @@
-using Jarvis.Authentication;
-using Jarvis.Authentication.ApiKey;
+using Platform.Authentication;
+using Platform.Authentication.ApiKey;
 using Sample.Authentication;
 
 namespace Sample.Extensions;
@@ -16,7 +16,7 @@ public static class SampleAuthenticationExtensions
         builder.Services.Configure<SampleDemoIdentityOptions>(
             configuration.GetSection(SampleDemoIdentityOptions.SectionName));
 
-        builder.Services.AddJarvisAuthentication(configuration, auth =>
+        builder.Services.AddPlatformAuthentication(configuration, auth =>
         {
             auth.AddCoreApiKey<SampleApiKeyProvider>(configuration);
         });

@@ -1,4 +1,4 @@
-import { Button, notify } from '@jarvis/core'
+import { Button, notify } from '@platform/core'
 import {
   Bell,
   BellOff,

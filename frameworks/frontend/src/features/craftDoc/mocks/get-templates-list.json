@@ -1,0 +1,14 @@
+{
+  "templates": [
+    {
+      "id": "labor-contract",
+      "name": "Hợp đồng lao động",
+      "fileName": "Hop-dong-lao-dong-mau.docx"
+    },
+    {
+      "id": "lla-idas",
+      "name": "Nội dung trao đổi LLA – IDAS",
+      "fileName": "LLA-IDAS.docx"
+    }
+  ]
+}

@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
-using Jarvis.Authentication;
-using Jarvis.DDD.Domain.Services;
-using Jarvis.Modules.Notifications.Contracts;
-using Jarvis.Realtime.Configuration;
-using Jarvis.Realtime.SignalR.Groups;
-using Jarvis.Realtime.SignalR.Hubs;
-using Jarvis.Realtime.SignalR.Services;
+using Platform.Authentication;
+using Platform.DDD.Domain.Services;
+using Platform.Modules.Notifications.Contracts;
+using Platform.Realtime.Configuration;
+using Platform.Realtime.SignalR.Groups;
+using Platform.Realtime.SignalR.Hubs;
+using Platform.Realtime.SignalR.Services;
 
 namespace UnitTest.Realtime;
 
@@ -22,7 +22,7 @@ public class HubRealtimeNotifierTests
     {
         var proxy = new RecordingClientProxy();
         var hubContext = new FakeHubContext(proxy);
-        var options = Options.Create(new JarvisRealtimeOptions());
+        var options = Options.Create(new PlatformRealtimeOptions());
         var sut = new HubRealtimeNotifier<CurrentUserInfo, TestTenantInfo>(hubContext, options);
         var userId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
@@ -44,7 +44,7 @@ public class HubRealtimeNotifierTests
     {
         var sut = new HubRealtimeNotifier<CurrentUserInfo, TestTenantInfo>(
             new FakeHubContext(new RecordingClientProxy()),
-            Options.Create(new JarvisRealtimeOptions()));
+            Options.Create(new PlatformRealtimeOptions()));
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             sut.PublishToUserAsync(Guid.NewGuid(), null!));
     }
@@ -54,7 +54,7 @@ public class HubRealtimeNotifierTests
     {
         var proxy = new RecordingClientProxy();
         var hubContext = new FakeHubContext(proxy);
-        var options = Options.Create(new JarvisRealtimeOptions());
+        var options = Options.Create(new PlatformRealtimeOptions());
         var sut = new HubRealtimeNotifier<CurrentUserInfo, TestTenantInfo>(hubContext, options);
         var tenantId = Guid.Parse("22222222-2222-2222-2222-222222222222");
         var group = RealtimeGroupNames.ForTenant(tenantId);
@@ -74,7 +74,7 @@ public class HubRealtimeNotifierTests
     {
         var sut = new HubRealtimeNotifier<CurrentUserInfo, TestTenantInfo>(
             new FakeHubContext(new RecordingClientProxy()),
-            Options.Create(new JarvisRealtimeOptions()));
+            Options.Create(new PlatformRealtimeOptions()));
         await Assert.ThrowsAsync<ArgumentException>(() =>
             sut.PublishToGroupAsync(" ", new { }));
     }

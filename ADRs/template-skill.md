@@ -1,6 +1,6 @@
-# Template: Skill Jarvis .NET (OpenCode)
+# Template: Skill Platform .NET (OpenCode)
 
-Chuẩn tạo skill trong `.opencode/skills/<tên-skill>/` cho framework Jarvis. **Không** dùng một file SKILL dài kiểu Purpose / Role / Process chung chung.
+Chuẩn tạo skill trong `.opencode/skills/<tên-skill>/` cho framework Platform. **Không** dùng một file SKILL dài kiểu Purpose / Role / Process chung chung.
 
 **Tham chiếu đầy đủ:** [healthcheck-dotnet](../.opencode/skills/healthcheck-dotnet/)  
 **Bản đồ skill:** [.opencode/README.md](../.opencode/README.md)
@@ -9,10 +9,10 @@ Chuẩn tạo skill trong `.opencode/skills/<tên-skill>/` cho framework Jarvis.
 
 ## 1. Khi nào tạo skill riêng
 
-| Tạo skill `*-dotnet` riêng trong `.opencode/skills/` | Chỉ trong `jarvis-dotnet` (scaffold, templates, catalog) |
+| Tạo skill `*-dotnet` riêng trong `.opencode/skills/` | Chỉ trong `platform-dotnet` (scaffold, templates, catalog) |
 |------------------------------------------------------|--------------------------------------------------------|
-| Module Jarvis có workflow init/add phức tạp | Orchestrator solution — `jarvis-dotnet` |
-| Nhiều biến thể (providers, patterns) | Link từ `jarvis-dotnet/templates/SKILLS.md` |
+| Module Platform có workflow init/add phức tạp | Orchestrator solution — `platform-dotnet` |
+| Nhiều biến thể (providers, patterns) | Link từ `platform-dotnet/templates/SKILLS.md` |
 | Agent cần discover qua `description` (health, OTEL, EF, cache) | Skill độc lập, không thư mục `modules/` con |
 
 Ví dụ skill độc lập: `foundation-dotnet`, `application-dotnet`, `authentication-dotnet`, `notification-dotnet`, `healthcheck-dotnet`, `caching-dotnet`, `telemetry-dotnet`, `entityframework-dotnet`, `swashbuckle-dotnet`.
@@ -26,7 +26,7 @@ Ví dụ skill độc lập: `foundation-dotnet`, `application-dotnet`, `authent
 ├── SKILL.md                 # Orchestrator — agent đọc file này trước
 ├── README.md                # Hướng dẫn người dùng — prompt @, khi nào dùng
 ├── workflows/
-│   ├── init.md              # Chưa có module Jarvis trên project
+│   ├── init.md              # Chưa có module Platform trên project
 │   └── add.md               # Đã có core, thêm provider/pattern
 ├── providers/               # Biến thể atomic (health, cache, OTEL, swagger security)
 │   └── <provider-name>/
@@ -77,7 +77,7 @@ metadata:
   workflow: github
 ---
 
-# <Jarvis.Module> — Orchestrator
+# <Platform.Module> — Orchestrator
 
 Skill điều phối `<PackageId>` trên ASP.NET Core.
 
@@ -100,7 +100,7 @@ Kiến trúc / hướng dẫn người: [README.md](README.md).
 
 | PackageId | Version* | Layer |
 |---|---|---|
-| `Jarvis.*` | x.x.x | Host / Infrastructure |
+| `Platform.*` | x.x.x | Host / Infrastructure |
 
 ## Providers (atomic)
 
@@ -129,7 +129,7 @@ Chỉ đọc provider cần dùng:
 
 **`description` frontmatter** — quan trọng cho agent chọn skill:
 
-- ✅ `Thiết lập Jarvis.HealthChecks — init liveness/readiness, thêm provider PostgreSQL. Dùng khi /health/ready, healthcheck .NET.`
+- ✅ `Thiết lập Platform.HealthChecks — init liveness/readiness, thêm provider PostgreSQL. Dùng khi /health/ready, healthcheck .NET.`
 - ❌ `Giúp bạn làm healthcheck` (mơ hồ, không có trigger)
 
 ---
@@ -139,7 +139,7 @@ Chỉ đọc provider cần dùng:
 ```markdown
 # <skill-name>
 
-Skill tích hợp **<Jarvis.Module>**. Agent đọc [SKILL.md](./SKILL.md).
+Skill tích hợp **<Platform.Module>**. Agent đọc [SKILL.md](./SKILL.md).
 
 ## Khi nào dùng
 
@@ -148,9 +148,9 @@ Skill tích hợp **<Jarvis.Module>**. Agent đọc [SKILL.md](./SKILL.md).
 | ... | [workflows/init.md](./workflows/init.md) |
 | ... | [workflows/add.md](./workflows/add.md) |
 
-**Không dùng cho:** ... (vd. scaffold solution → jarvis-dotnet)
+**Không dùng cho:** ... (vd. scaffold solution → platform-dotnet)
 
-Scaffold `jarvis-dotnet` đã ... — dùng skill này khi ...
+Scaffold `platform-dotnet` đã ... — dùng skill này khi ...
 
 ## Cách gọi
 
@@ -172,7 +172,7 @@ Scaffold `jarvis-dotnet` đã ... — dùng skill này khi ...
 
 ## Liên quan
 
-- [jarvis-dotnet/README.md](../jarvis-dotnet/README.md)
+- [platform-dotnet/README.md](../platform-dotnet/README.md)
 - [skill-phụ-thuộc](../other-skill/README.md)
 ```
 
@@ -189,7 +189,7 @@ Scaffold `jarvis-dotnet` đã ... — dùng skill này khi ...
 
 \`\`\`text
 - [ ] 1. Phân tích layer (Host / Infrastructure)
-- [ ] 2. Package Jarvis.*
+- [ ] 2. Package Platform.*
 - [ ] 3. Đăng ký DI (thứ tự đúng)
 - [ ] 4. appsettings section
 - [ ] 5. Validate
@@ -198,7 +198,7 @@ Scaffold `jarvis-dotnet` đã ... — dùng skill này khi ...
 ## Bước 1 — Package
 
 \`\`\`xml
-<PackageReference Include="Jarvis.*" Version="*" />
+<PackageReference Include="Platform.*" Version="*" />
 \`\`\`
 
 ## Bước 2 — Registration
@@ -262,7 +262,7 @@ name: <skill-name>-<provider-name>
 description: <Một câu WHAT + WHEN cho provider này>
 dependencies:
   - Package.ThirdParty
-  - Jarvis.*
+  - Platform.*
 ---
 
 # <Provider display name>
@@ -308,14 +308,14 @@ Orchestrator trỏ: `patterns/` + `reference/setup.md` thay vì bảng providers
 
 ---
 
-## 10. Quan hệ với `jarvis-dotnet`
+## 10. Quan hệ với `platform-dotnet`
 
 | Vai trò | Skill |
 |---------|--------|
-| Scaffold / init / add **cả solution** | `jarvis-dotnet` |
+| Scaffold / init / add **cả solution** | `platform-dotnet` |
 | Chỉ health / cache / EF / OTEL / Swagger | skill `*-dotnet` tương ứng |
 
-Trong `jarvis-dotnet/SKILL.md` — bảng Modules:
+Trong `platform-dotnet/SKILL.md` — bảng Modules:
 
 ```markdown
 | Module | Skill chuyên sâu |
@@ -340,7 +340,7 @@ Mọi module: skill `*-dotnet` trong `.opencode/skills/` — hub [.opencode/READ
 - [ ] providers/ hoặc patterns/ — mỗi biến thể một SKILL.md + dependencies
 - [ ] templates/ — program + appsettings mẫu
 - [ ] Cập nhật .opencode/README.md
-- [ ] Cập nhật jarvis-dotnet (link, bỏ module trùng)
+- [ ] Cập nhật platform-dotnet (link, bỏ module trùng)
 - [ ] Không tham chiếu docs/ cũ — mọi doc nằm trong skill hoặc README repo
 ```
 

@@ -1,0 +1,6 @@
+export { DocumentWorkspace } from './DocumentWorkspace'
+export { DocumentToolbar } from './DocumentToolbar'
+export { PageControls } from './PageControls'
+export type { DocumentWorkspaceProps } from './DocumentWorkspace'
+export type { DocumentToolbarProps } from './DocumentToolbar'
+export type { PageControlsProps } from './PageControls'

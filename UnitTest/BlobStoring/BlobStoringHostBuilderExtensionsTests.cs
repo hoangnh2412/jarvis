@@ -1,7 +1,7 @@
-using Jarvis.BlobStoring;
-using Jarvis.BlobStoring.Configuration;
-using Jarvis.BlobStoring.Extensions;
-using Jarvis.BlobStoring.FileSystem;
+using Platform.BlobStoring;
+using Platform.BlobStoring.Configuration;
+using Platform.BlobStoring.Extensions;
+using Platform.BlobStoring.FileSystem;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -13,7 +13,7 @@ public class BlobStoringHostBuilderExtensionsTests
     [Fact]
     public void UseFileSystem_Configure_Applies_RootPath_To_Service()
     {
-        var root = Path.Combine(Path.GetTempPath(), "jarvis-blob-di", Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(Path.GetTempPath(), "platform-blob-di", Guid.NewGuid().ToString("N"));
         try
         {
             var hostBuilder = Host.CreateApplicationBuilder();

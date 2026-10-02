@@ -1,0 +1,68 @@
+@page "/_Host"
+
+@namespace Platform.Modules.ElsaWorkflow.Api.Pages
+
+@using Elsa.Studio.Shell
+@using Microsoft.AspNetCore.Components.Web
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <title>Elsa Studio</title>
+
+    @* <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" /> *@
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <link href="_content/CodeBeam.MudBlazor.Extensions/MudExtensions.min.css" rel="stylesheet" />
+    <link href="_content/Radzen.Blazor/css/material-base.css" rel="stylesheet" />
+    <link href="_content/Elsa.Studio.Shell/css/shell.css" rel="stylesheet" />
+    <link href="_content/Elsa.Studio.Workflows.Designer/designer.css" rel="stylesheet" />
+    <link href="_content/Platform.Modules.ElsaWorkflow.Api/css/elsa-embedded.css" rel="stylesheet" />
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+<body>
+    <div class="my-application">
+        <div class="app-body">
+            <main class="app-content">
+                <div class="elsa-embedded">
+                    <component type="typeof(Elsa.Studio.Shell.App)" render-mode="Server" />
+                </div>
+            </main>
+        </div>
+    </div>
+        
+    <script src="_content/BlazorMonaco/jsInterop.js"></script>
+    <script src="_content/BlazorMonaco/lib/monaco-editor/min/vs/loader.js"></script>
+    <script src="_content/BlazorMonaco/lib/monaco-editor/min/vs/editor/editor.main.js"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="_content/CodeBeam.MudBlazor.Extensions/MudExtensions.min.js"></script>
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+    @* <script>
+        window.mudElementRef ??= {};
+        window.mudElementRef.getBoundingClientRect ??= element => element.getBoundingClientRect();
+        window.mudElementRef.addOnBlurEvent ??= (element, dotNetReference) => {
+            if (!element) return;
+            element._mudBlurHandler = event => {
+                if (!document.contains(element)) {
+                    window.mudElementRef.removeOnBlurEvent(element);
+                    return;
+                }
+
+                event.preventDefault();
+                dotNetReference?.invokeMethodAsync("CallOnBlurredAsync");
+            };
+            element.addEventListener("blur", element._mudBlurHandler);
+        };
+        window.mudElementRef.removeOnBlurEvent ??= element => {
+            if (!element?._mudBlurHandler) return;
+            element.removeEventListener("blur", element._mudBlurHandler);
+            delete element._mudBlurHandler;
+        };
+    </script> *@
+    <script src="_framework/blazor.server.js"></script>
+</body>
+</html>

@@ -5,10 +5,10 @@ export {
   normalizeApiBaseUrl,
 } from './constants'
 export {
-  default as jarvisHttp,
-  configureJarvisHttp,
+  default as platformHttp,
+  configurePlatformHttp,
   configureQueryBuilderHttp,
   configureTenantHttp,
 } from './req'
 export { default } from './req'
-export type { JarvisHttpConfig } from './req'
+export type { PlatformHttpConfig } from './req'

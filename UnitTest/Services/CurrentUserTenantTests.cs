@@ -1,8 +1,8 @@
 using System.Security.Claims;
-using Jarvis.Authentication;
-using Jarvis.DDD.Domain.DataStorages;
-using Jarvis.DDD.Domain.Services;
-using Jarvis.Multitenancy;
+using Platform.Authentication;
+using Platform.DDD.Domain.DataStorages;
+using Platform.DDD.Domain.Services;
+using Platform.Multitenancy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 

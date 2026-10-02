@@ -1,6 +1,6 @@
-using Jarvis.ORM.EntityFramework;
-using Jarvis.Multitenancy.EntityFramework;
-using Jarvis.Multitenancy.EntityFramework.DataStorages;
+using Platform.ORM.EntityFramework;
+using Platform.Multitenancy.EntityFramework;
+using Platform.Multitenancy.EntityFramework.DataStorages;
 using Microsoft.EntityFrameworkCore;
 using Sample.Entities;
 using Sample.Persistence;

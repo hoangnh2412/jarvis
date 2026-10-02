@@ -1,11 +1,11 @@
-using Jarvis.Caching;
-using Jarvis.Caching.Internal;
+using Platform.Caching;
+using Platform.Caching.Internal;
 
 namespace UnitTest.Caching;
 
 public class CacheServiceResolutionTests
 {
-    private static JarvisCacheOptions CreateOptions() => new()
+    private static PlatformCacheOptions CreateOptions() => new()
     {
         DefaultDistributedType = "Redis",
         DefaultDistributedGroup = "Default",

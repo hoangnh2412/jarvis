@@ -1,5 +1,5 @@
-using Jarvis.DDD.Domain.Services;
-using Jarvis.Multitenancy;
+using Platform.DDD.Domain.Services;
+using Platform.Multitenancy;
 
 namespace Sample.Services;
 

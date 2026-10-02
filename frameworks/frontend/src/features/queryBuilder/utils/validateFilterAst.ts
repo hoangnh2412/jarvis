@@ -53,7 +53,7 @@ function walk(
   walk(ast[2], depth + 1, state)
 }
 
-/** Client-side checks mirroring Jarvis FilterParser limits. */
+/** Client-side checks mirroring Platform FilterParser limits. */
 export function validateFilterAst(
   ast: FilterAst | null | undefined,
 ): FilterValidationResult {

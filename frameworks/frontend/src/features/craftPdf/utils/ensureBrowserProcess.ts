@@ -8,7 +8,7 @@ export function ensureBrowserProcess(): void {
   if (typeof globalThis === 'undefined') return
   const g = globalThis as typeof globalThis & { process?: ProcessLike }
   if (!g.process) {
-    g.process = { env: { NODE_ENV: 'production' } }
+    g.process = { env: { NODE_ENV: 'production' } } as any
     return
   }
   if (!g.process.env) {

@@ -1,4 +1,4 @@
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Info, X } from 'lucide-react'
 import { Button } from 'primereact/button'
 import { Dialog } from 'primereact/dialog'
 
@@ -11,6 +11,7 @@ export type ConfirmDialogProps = {
   confirmText?: string
   cancelText?: string
   loading?: boolean
+  variant?: 'danger' | 'primary'
 }
 
 /** Confirm dialog trên Dialog của PrimeReact (thay ConfirmModal cũ). */
@@ -23,7 +24,14 @@ export default function ConfirmDialog({
   confirmText = 'Xác nhận',
   cancelText = 'Hủy',
   loading = false,
+  variant = 'danger',
 }: ConfirmDialogProps) {
+  const isDanger = variant === 'danger'
+  const Icon = isDanger ? AlertTriangle : Info
+  const iconWrapperClass = isDanger ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
+  const confirmBtnClass = isDanger
+    ? 'pr-btn-danger focus-visible:ring-red-600/30'
+    : 'pr-btn-primary focus-visible:ring-blue-600/30'
   return (
     <Dialog.Root
       open={open}
@@ -40,18 +48,21 @@ export default function ConfirmDialog({
                 {title}
               </Dialog.Title>
               <Dialog.Close
-                className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                type="button"
                 aria-label="Đóng"
-              />
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border-0 bg-transparent text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              >
+                <X className="h-4 w-4" />
+              </Dialog.Close>
             </Dialog.Header>
             <Dialog.Content className="px-5 py-4">
-              <div className="flex gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600">
-                  <AlertTriangle className="h-5 w-5" />
+              <div className="flex items-center gap-3">
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${iconWrapperClass}`}>
+                  <Icon className="h-5 w-5" />
                 </div>
-                <p className="leading-relaxed text-slate-600">
-                    {description}
-                  </p>
+                <p className="m-0 leading-relaxed text-slate-600">
+                  {description}
+                </p>
               </div>
             </Dialog.Content>
             <Dialog.Footer className="flex justify-end gap-2 border-t border-slate-100 px-5 py-4">
@@ -67,7 +78,7 @@ export default function ConfirmDialog({
               <Button
                 type="button"
                 unstyled
-                className="pr-btn-danger inline-flex h-10 items-center justify-center gap-2 rounded-xl border-0 px-4 text-sm font-semibold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600/30 disabled:cursor-not-allowed disabled:opacity-60"
+                className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl border-0 px-4 text-sm font-semibold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60 ${confirmBtnClass}`}
                 disabled={loading}
                 onClick={onConfirm}
               >

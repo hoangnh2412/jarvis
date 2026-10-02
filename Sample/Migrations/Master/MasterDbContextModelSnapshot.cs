@@ -22,7 +22,7 @@ namespace Sample.Migrations.Master
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Jarvis.Modules.Setting.EntityFramework.Entities.Setting", b =>
+            modelBuilder.Entity("Platform.Modules.Setting.EntityFramework.Entities.Setting", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -76,6 +76,160 @@ namespace Sample.Migrations.Master
                     b.ToTable("Setting", (string)null);
                 });
 
+            modelBuilder.Entity("Sample.Entities.AppUser", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
+
+                b.Property<DateTimeOffset>("CreatedAt")
+                    .HasColumnType("timestamp with time zone");
+
+                b.Property<string>("Department")
+                    .HasMaxLength(128)
+                    .HasColumnType("character varying(128)");
+
+                b.Property<string>("Email")
+                    .IsRequired()
+                    .HasMaxLength(256)
+                    .HasColumnType("character varying(256)");
+
+                b.Property<string>("FullName")
+                    .IsRequired()
+                    .HasMaxLength(256)
+                    .HasColumnType("character varying(256)");
+
+                b.Property<bool>("IsActive")
+                    .HasColumnType("boolean");
+
+                b.Property<string>("Position")
+                    .HasMaxLength(128)
+                    .HasColumnType("character varying(128)");
+
+                b.Property<string>("Username")
+                    .IsRequired()
+                    .HasMaxLength(128)
+                    .HasColumnType("character varying(128)");
+
+                b.HasKey("Id");
+
+                b.HasIndex("Username")
+                    .IsUnique();
+
+                b.ToTable("AppUsers", "public");
+            });
+
+            modelBuilder.Entity("Sample.Entities.BusinessWorkflowMapping", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
+
+                b.Property<DateTimeOffset>("CreatedAt")
+                    .HasColumnType("timestamp with time zone");
+
+                b.Property<string>("Description")
+                    .HasColumnType("text");
+
+                b.Property<string>("InstanceId")
+                    .HasMaxLength(128)
+                    .HasColumnType("character varying(128)");
+
+                b.Property<bool>("IsActive")
+                    .HasColumnType("boolean");
+
+                b.Property<string>("StepCode")
+                    .HasMaxLength(64)
+                    .HasColumnType("character varying(64)");
+
+                b.Property<Guid?>("StepId")
+                    .HasColumnType("uuid");
+
+                b.Property<Guid?>("UserId")
+                    .HasColumnType("uuid");
+
+                b.Property<string>("WorkflowDefinitionId")
+                    .IsRequired()
+                    .HasMaxLength(128)
+                    .HasColumnType("character varying(128)");
+
+                b.Property<string>("WorkflowName")
+                    .IsRequired()
+                    .HasMaxLength(256)
+                    .HasColumnType("character varying(256)");
+
+                b.Property<string>("WorkflowStatus")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasMaxLength(32)
+                    .HasColumnType("character varying(32)")
+                    .HasDefaultValue("NotStarted");
+
+                b.HasKey("Id");
+
+                b.HasIndex("StepId")
+                    .IsUnique();
+
+                b.HasIndex("UserId");
+
+                b.HasIndex("WorkflowDefinitionId", "InstanceId");
+
+                b.ToTable("BusinessWorkflowMappings", "public");
+            });
+
+            modelBuilder.Entity("Sample.Entities.OnboardingStep", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
+
+                b.Property<string>("AssignedTo")
+                    .HasMaxLength(128)
+                    .HasColumnType("character varying(128)");
+
+                b.Property<DateTimeOffset>("CreatedAt")
+                    .HasColumnType("timestamp with time zone");
+
+                b.Property<string>("Department")
+                    .IsRequired()
+                    .HasMaxLength(64)
+                    .HasColumnType("character varying(64)");
+
+                b.Property<string>("Description")
+                    .HasColumnType("text");
+
+                b.Property<int>("Order")
+                    .HasColumnType("integer");
+
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .HasMaxLength(32)
+                    .HasColumnType("character varying(32)");
+
+                b.Property<string>("StepCode")
+                    .IsRequired()
+                    .HasMaxLength(64)
+                    .HasColumnType("character varying(64)");
+
+                b.Property<string>("Title")
+                    .IsRequired()
+                    .HasMaxLength(256)
+                    .HasColumnType("character varying(256)");
+
+                b.Property<DateTimeOffset?>("UpdatedAt")
+                    .HasColumnType("timestamp with time zone");
+
+                b.Property<Guid?>("UserId")
+                    .HasColumnType("uuid");
+
+                b.HasKey("Id");
+
+                b.HasIndex("UserId", "StepCode")
+                    .IsUnique();
+
+                b.ToTable("OnboardingSteps", "public");
+            });
+
             modelBuilder.Entity("Sample.Entities.Tenant", b =>
                 {
                     b.Property<Guid>("Id")
@@ -90,6 +244,42 @@ namespace Sample.Migrations.Master
 
                     b.ToTable("Tenant", (string)null);
                 });
+
+            modelBuilder.Entity("Sample.Entities.BusinessWorkflowMapping", b =>
+            {
+                b.HasOne("Sample.Entities.OnboardingStep", "Step")
+                    .WithOne("WorkflowMapping")
+                    .HasForeignKey("Sample.Entities.BusinessWorkflowMapping", "StepId")
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                b.HasOne("Sample.Entities.AppUser", "User")
+                    .WithMany("WorkflowMappings")
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                b.Navigation("Step");
+
+                b.Navigation("User");
+            });
+
+            modelBuilder.Entity("Sample.Entities.OnboardingStep", b =>
+            {
+                b.HasOne("Sample.Entities.AppUser", "User")
+                    .WithMany("OnboardingSteps")
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                b.Navigation("User");
+
+                b.Navigation("WorkflowMapping");
+            });
+
+            modelBuilder.Entity("Sample.Entities.AppUser", b =>
+            {
+                b.Navigation("OnboardingSteps");
+
+                b.Navigation("WorkflowMappings");
+            });
 #pragma warning restore 612, 618
         }
     }

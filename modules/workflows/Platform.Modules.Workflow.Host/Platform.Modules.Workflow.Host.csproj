@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+	<TargetFramework>net9.0</TargetFramework>
+	<Nullable>enable</Nullable>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<RootNamespace>Platform.Modules.Workflow.Host</RootNamespace>
+	<AssemblyName>Platform.Modules.Workflow.Host</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\Platform.Modules.Workflow\Platform.Modules.Workflow.csproj" />
+	<ProjectReference Include="..\Platform.Modules.Workflow.Api\Platform.Modules.Workflow.Api.csproj" />
+	<ProjectReference Include="..\Platform.Modules.Workflow.EntityFramework\Platform.Modules.Workflow.EntityFramework.csproj" />
+	<ProjectReference Include="..\..\..\frameworks\Platform.ORM.EntityFramework\Platform.ORM.EntityFramework.csproj" />
+  </ItemGroup>
+
+</Project>

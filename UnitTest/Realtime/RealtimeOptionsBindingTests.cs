@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Configuration;
-using Jarvis.Realtime.Configuration;
+using Platform.Realtime.Configuration;
 
 namespace UnitTest.Realtime;
 
@@ -12,22 +12,22 @@ public class RealtimeOptionsBindingTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Realtime:SignalR:HubPath"] = "/hubs/custom",
-                ["Realtime:SignalR:Redis:ChannelPrefix"] = "jarvis-realtime",
+                ["Realtime:SignalR:Redis:ChannelPrefix"] = "platform-realtime",
             })
             .Build();
 
-        var options = new JarvisRealtimeOptions();
-        configuration.GetSection(JarvisRealtimeOptions.SectionName).Bind(options);
+        var options = new PlatformRealtimeOptions();
+        configuration.GetSection(PlatformRealtimeOptions.SectionName).Bind(options);
 
         Assert.Equal("/hubs/custom", options.HubPath);
-        Assert.Equal("jarvis-realtime", options.Redis.ChannelPrefix);
+        Assert.Equal("platform-realtime", options.Redis.ChannelPrefix);
     }
 
     [Fact]
     public void CoreValidator_Succeeds_When_Backplane_Configuration_Missing()
     {
-        var validator = new JarvisRealtimeOptionsValidator();
-        var result = validator.Validate(null, new JarvisRealtimeOptions
+        var validator = new PlatformRealtimeOptionsValidator();
+        var result = validator.Validate(null, new PlatformRealtimeOptions
         {
             HubPath = "/hubs/notifications"
         });

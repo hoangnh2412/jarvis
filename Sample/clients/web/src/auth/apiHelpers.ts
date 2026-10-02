@@ -1,4 +1,4 @@
-import type { LoginResult } from '@jarvis/core'
+import type { LoginResult } from '@platform/core'
 
 type ApiResponse = { data: unknown }
 

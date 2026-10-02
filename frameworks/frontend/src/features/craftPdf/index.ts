@@ -136,6 +136,8 @@ export {
   callGeneratePdf,
 } from './services'
 
+export { getPdfTemplatesMock, getCraftPdfDataFieldsMock } from './mocks'
+
 // Routes
 export {
   CRAFT_PDF_ROUTES,

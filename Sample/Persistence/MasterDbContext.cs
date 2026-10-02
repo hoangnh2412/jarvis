@@ -1,7 +1,7 @@
-using Jarvis.ORM.EntityFramework.DataStorages;
+using Platform.ORM.EntityFramework.DataStorages;
 using Microsoft.EntityFrameworkCore;
-using Jarvis.Modules.Setting.EntityFramework.Entities;
-using Jarvis.Modules.Setting.EntityFramework.Extensions;
+using Platform.Modules.Setting.EntityFramework.Entities;
+using Platform.Modules.Setting.EntityFramework.Extensions;
 using Sample.Entities;
 
 namespace Sample.Persistence;
@@ -13,7 +13,11 @@ public class MasterDbContext(
     public DbSet<Tenant> Tenants => Set<Tenant>();
 
     public DbSet<Setting> Settings => Set<Setting>();
+    public DbSet<AppUser> AppUsers => Set<AppUser>();
 
+    public DbSet<OnboardingStep> OnboardingSteps => Set<OnboardingStep>();
+
+    public DbSet<BusinessWorkflowMapping> BusinessWorkflowMappings => Set<BusinessWorkflowMapping>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

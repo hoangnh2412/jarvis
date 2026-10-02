@@ -174,6 +174,12 @@ export {
   BASE_URL_TENANT,
 } from './constants'
 
+export {
+  getTenantListMock,
+  getTenantDomainsMock,
+  getTenantConnectionsMock,
+} from './mocks'
+
 // Theme
 export { defaultTenantTheme } from './theme'
 export type { TenantTheme } from './theme'

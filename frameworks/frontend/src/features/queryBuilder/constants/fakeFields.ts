@@ -1,4 +1,5 @@
 import type { Field } from 'react-querybuilder'
+import fieldsMock from '../mocks/get-fields.json'
 import {
   BOOLEAN_OPERATORS,
   DATE_OPERATORS,
@@ -6,76 +7,36 @@ import {
   STRING_OPERATORS,
 } from '../utils/operators'
 
-/**
- * Demo field catalog — operators use RQB names; serialize maps to FilterParser.
- * Used when `VITE_API_URL_QUERY_BUILDER` is unset.
- */
-export const FAKE_QUERY_BUILDER_FIELDS: Field[] = [
-  {
-    name: 'BaseSalary',
-    label: 'Base Salary',
-    inputType: 'number',
-    datatype: 'number',
-    operators: NUMBER_OPERATORS,
-  },
-  {
-    name: 'IsActive',
-    label: 'Is Active',
-    valueEditorType: 'checkbox',
-    datatype: 'boolean',
-    defaultValue: true,
-    operators: BOOLEAN_OPERATORS,
-  },
-  {
-    name: 'FullName',
-    label: 'Full Name',
-    operators: STRING_OPERATORS,
-  },
-  {
-    name: 'Email',
-    label: 'Email',
-    operators: STRING_OPERATORS,
-  },
-  {
-    name: 'HireDate',
-    label: 'Hire Date',
-    inputType: 'date',
-    datatype: 'date',
-    operators: DATE_OPERATORS,
-  },
-  {
-    name: 'CreatedAt',
-    label: 'Created At',
-    inputType: 'datetime',
-    datatype: 'datetime',
-    operators: DATE_OPERATORS,
-  },
-  {
-    name: 'Department',
-    label: 'Department',
-    valueEditorType: 'select',
-    values: [
-      { name: 'Engineering', label: 'Engineering' },
-      { name: 'Sales', label: 'Sales' },
-      { name: 'HR', label: 'HR' },
-      { name: 'Finance', label: 'Finance' },
-    ],
-    operators: [
+type FieldSeed = Omit<Field, 'operators'> & {
+  operators?: Array<{ name: string; label: string }>
+}
+
+const FIELD_SEEDS = fieldsMock.fields as FieldSeed[]
+
+function operatorsFor(field: FieldSeed): Field['operators'] {
+  if (field.datatype === 'number') return NUMBER_OPERATORS
+  if (field.datatype === 'boolean') return BOOLEAN_OPERATORS
+  if (field.datatype === 'date' || field.datatype === 'datetime') return DATE_OPERATORS
+  if (field.valueEditorType === 'select') {
+    return [
       { name: '=', label: '=' },
       { name: '!=', label: '!=' },
       { name: 'in', label: 'in' },
       { name: 'null', label: 'is null' },
       { name: 'notNull', label: 'is not null' },
-    ],
-  },
-  {
-    name: 'Age',
-    label: 'Age',
-    inputType: 'number',
-    datatype: 'number',
-    operators: NUMBER_OPERATORS,
-  },
-]
+    ]
+  }
+  return STRING_OPERATORS
+}
+
+/**
+ * Demo field catalog — nguồn: `mocks/get-fields.json`.
+ * Operators gắn tại runtime (RQB names → FilterParser khi serialize).
+ */
+export const FAKE_QUERY_BUILDER_FIELDS: Field[] = FIELD_SEEDS.map((f) => ({
+  ...(f as Field),
+  operators: operatorsFor(f),
+}))
 
 export function getFakeQueryBuilderFields(): Field[] {
   return FAKE_QUERY_BUILDER_FIELDS.map((f) => ({

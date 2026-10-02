@@ -1,4 +1,4 @@
-/** Re-export PrimeReact primitives for consumers of @jarvis/core */
+/** Re-export PrimeReact primitives for consumers of @platform/core */
 export { Button } from 'primereact/button'
 export { ButtonGroup } from 'primereact/buttongroup'
 export { InputText } from 'primereact/inputtext'

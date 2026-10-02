@@ -1,6 +1,6 @@
-using Jarvis.OpenTelemetry.Abstractions;
-using Jarvis.OpenTelemetry.Enrichment;
-using Jarvis.OpenTelemetry.Extensions;
+using Platform.OpenTelemetry.Abstractions;
+using Platform.OpenTelemetry.Enrichment;
+using Platform.OpenTelemetry.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace UnitTest.OpenTelemetry;

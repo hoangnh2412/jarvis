@@ -1,4 +1,4 @@
-/** Operators accepted by Jarvis.DDD.Domain FilterParser (lowercase). */
+/** Operators accepted by Platform.DDD.Domain FilterParser (lowercase). */
 export const BE_FILTER_OPERATORS = [
   '=',
   '!=',

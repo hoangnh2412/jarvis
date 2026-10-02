@@ -6,6 +6,13 @@ declare global {
     readonly VITE_API_PROXY_TARGET?: string
     readonly VITE_API_KEY?: string
     readonly VITE_API_KEY_NAME?: string
+    /**
+     * Bật Vite middleware mock planner + timesheet (Sample).
+     * Axios gọi `/api/v1/planner/*`, `/api/v1/timesheet/*` → middleware trả JSON từ
+     * `@platform/core` → `features/*/mocks/*.json`.
+     * Mặc định: bật. Set `false` khi nối BE thật.
+     */
+    readonly VITE_USE_MOCK?: string
     /** @deprecated Use VITE_API_URL */
     readonly VITE_API_URL_TENANT?: string
     /** @deprecated Use VITE_API_URL */
@@ -32,6 +39,11 @@ declare global {
 declare module '*.css' {
   const content: string
   export default content
+}
+
+declare module '*.json' {
+  const value: unknown
+  export default value
 }
 
 declare module 'gridstack/dist/gridstack.css' {

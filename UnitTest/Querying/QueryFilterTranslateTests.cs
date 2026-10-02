@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Jarvis.DDD.Domain.Entities;
-using Jarvis.DDD.Domain.Querying;
-using Jarvis.ORM.EntityFramework.Extensions;
+using Platform.DDD.Domain.Entities;
+using Platform.DDD.Domain.Querying;
+using Platform.ORM.EntityFramework.Extensions;
 
 namespace UnitTest.Querying;
 

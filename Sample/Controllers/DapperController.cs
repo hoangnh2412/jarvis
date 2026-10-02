@@ -2,13 +2,13 @@ using System.Data.Common;
 using Asp.Versioning;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
-using Jarvis.ORM.Dapper;
+using Platform.ORM.Dapper;
 using Sample.Entities;
 
 namespace Sample.Controllers;
 
 /// <summary>
-/// Sample CRUD against Master <c>Tenant</c> via <c>Jarvis.ORM.Dapper</c> (<see cref="ISqlConnectionFactory"/>).
+/// Sample CRUD against Master <c>Tenant</c> via <c>Platform.ORM.Dapper</c> (<see cref="ISqlConnectionFactory"/>).
 /// </summary>
 [ApiController]
 [Route("api/v{version:apiVersion}/orm/dapper/tenants")]

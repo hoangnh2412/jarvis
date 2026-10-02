@@ -13,10 +13,10 @@ export {
   API_KEY,
   API_KEY_HEADER,
   normalizeApiBaseUrl,
-  jarvisHttp,
-  configureJarvisHttp,
+  platformHttp,
+  configurePlatformHttp,
   configureQueryBuilderHttp,
   configureTenantHttp,
 } from './http'
-export type { JarvisHttpConfig } from './http'
+export type { PlatformHttpConfig } from './http'
 export { default as http } from './http'

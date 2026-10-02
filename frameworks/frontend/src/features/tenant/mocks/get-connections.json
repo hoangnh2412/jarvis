@@ -1,0 +1,36 @@
+{
+  "items": [
+    {
+      "createdAt": "2026-08-06T06:00:00.000Z",
+      "createdBy": "system",
+      "updatedAt": null,
+      "updatedBy": null,
+      "deletedId": "00000000-0000-0000-0000-000000000000",
+      "deletedAt": null,
+      "deletedBy": null,
+      "id": "conn-001",
+      "tenantId": "00000000-0000-0000-0000-000000000001",
+      "providerType": 0,
+      "connectionString": "Host=localhost;Port=5432;Database=ghc_lexora;Username=app;Password=***",
+      "partitionFrom": null,
+      "partitionTo": null,
+      "isDefault": true
+    },
+    {
+      "createdAt": "2026-08-06T06:00:00.000Z",
+      "createdBy": "system",
+      "updatedAt": null,
+      "updatedBy": null,
+      "deletedId": "00000000-0000-0000-0000-000000000000",
+      "deletedAt": null,
+      "deletedBy": null,
+      "id": "conn-002",
+      "tenantId": "00000000-0000-0000-0000-000000000001",
+      "providerType": 1,
+      "connectionString": "Server=localhost;Database=ghc_archive;Trusted_Connection=True;",
+      "partitionFrom": "2024-01-01",
+      "partitionTo": "2025-12-31",
+      "isDefault": false
+    }
+  ]
+}

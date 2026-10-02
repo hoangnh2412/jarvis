@@ -37,6 +37,8 @@ export {
   mockImportStudents,
 } from './services'
 
+export { getImportValidateResultMock } from './mocks'
+
 // Routes
 export {
   IMPORT_ROUTES,

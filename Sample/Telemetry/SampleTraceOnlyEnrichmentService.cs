@@ -1,4 +1,4 @@
-using Jarvis.OpenTelemetry.Abstractions;
+using Platform.OpenTelemetry.Abstractions;
 
 namespace Sample.Telemetry;
 

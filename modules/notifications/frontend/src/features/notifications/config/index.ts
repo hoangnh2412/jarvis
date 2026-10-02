@@ -13,7 +13,7 @@ const apiKey = import.meta.env.VITE_NOTIFICATION_API_KEY ?? ''
 let accessTokenGetter: (() => string | null) | null = null
 let tenantIdGetter: (() => string | null) | null = null
 
-/** Host app gắn nguồn JWT (ví dụ `getAccessToken` từ `@jarvis/core`). */
+/** Host app gắn nguồn JWT (ví dụ `getAccessToken` từ `@platform/core`). */
 export function configureNotificationAuth(getter: () => string | null) {
   accessTokenGetter = getter
 }

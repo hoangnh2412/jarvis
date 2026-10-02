@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Platform.Modules.Setting</PackageId>
+    <AssemblyName>Platform.Modules.Setting</AssemblyName>
+    <RootNamespace>Platform.Modules.Setting</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>Hoang Nguyen</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\frameworks\Platform.Caching\Platform.Caching.csproj" />
+    <ProjectReference Include="..\..\..\frameworks\Platform.Common\Platform.Common.csproj" />
+    <ProjectReference Include="..\..\..\frameworks\Platform.DDD.Domain\Platform.DDD.Domain.csproj" />
+    <ProjectReference Include="..\..\..\frameworks\Platform.DDD.Domain.Shared\Platform.DDD.Domain.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="UnitTest" />
+  </ItemGroup>
+
+</Project>

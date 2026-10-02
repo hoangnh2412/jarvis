@@ -1,5 +1,5 @@
 {
-  "name": "@jarvis/notifications",
+  "name": "@platform/notifications",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -33,7 +33,7 @@
   },
   "peerDependencies": {
     "@microsoft/signalr": "^10.0.0",
-    "@jarvis/core": "*",
+    "@platform/core": "*",
     "lucide-react": ">=0.400.0",
     "react": ">=19.0.0",
     "react-dom": ">=19.0.0"
@@ -41,7 +41,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.5.7",
     "@microsoft/signalr": "^10.0.0",
-    "@jarvis/core": "file:../../../frameworks/frontend",
+    "@platform/core": "file:../../../frameworks/frontend",
     "@primeuix/themes": "^3.0.0",
     "@tailwindcss/vite": "^4.3.3",
     "axios": "^1.19.0",

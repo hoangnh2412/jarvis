@@ -1,4 +1,4 @@
-using Jarvis.Caching;
+using Platform.Caching;
 
 namespace UnitTest.Caching;
 

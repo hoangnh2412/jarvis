@@ -1,4 +1,4 @@
-using Jarvis.OpenTelemetry.HostedServices;
+using Platform.OpenTelemetry.HostedServices;
 
 namespace Sample.Multitenancy;
 

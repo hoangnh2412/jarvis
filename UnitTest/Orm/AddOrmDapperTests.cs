@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Npgsql;
-using Jarvis.ORM.Dapper;
+using Platform.ORM.Dapper;
 
 namespace UnitTest.Orm;
 

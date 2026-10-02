@@ -1,0 +1,281 @@
+{
+  "id": "form-001",
+  "name": "Customer Registration",
+  "description": "Please enter your information.",
+  "version": 1,
+  "fields": [
+    {
+      "id": "fld_personal",
+      "key": "personalInfo",
+      "type": "group",
+      "label": "Personal information",
+      "helpText": "Your basic identity details",
+      "layoutWidth": "half",
+      "children": [
+        {
+          "id": "fld_first",
+          "key": "firstName",
+          "type": "text",
+          "label": "First Name",
+          "required": true,
+          "placeholder": "Enter first name",
+          "minLength": 0,
+          "maxLength": 100
+        },
+        {
+          "id": "fld_last",
+          "key": "lastName",
+          "type": "text",
+          "label": "Last Name",
+          "required": true,
+          "placeholder": "Enter last name"
+        },
+        {
+          "id": "fld_age",
+          "key": "age",
+          "type": "number",
+          "label": "Age",
+          "placeholder": "Enter age",
+          "minimum": 0,
+          "maximum": 120
+        },
+        {
+          "id": "fld_gender",
+          "key": "gender",
+          "type": "select",
+          "label": "Gender",
+          "options": [
+            {
+              "id": "opt_m",
+              "label": "Male",
+              "value": "male",
+              "enabled": true
+            },
+            {
+              "id": "opt_f",
+              "label": "Female",
+              "value": "female",
+              "enabled": true
+            },
+            {
+              "id": "opt_o",
+              "label": "Other",
+              "value": "other",
+              "enabled": true
+            }
+          ],
+          "selectConfig": {
+            "quickEdit": false,
+            "sortAlphabetical": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "fld_contact",
+      "key": "contactInfo",
+      "type": "group",
+      "label": "Contact details",
+      "helpText": "How we can reach you",
+      "layoutWidth": "half",
+      "children": [
+        {
+          "id": "fld_email",
+          "key": "email",
+          "type": "email",
+          "label": "Email",
+          "required": true,
+          "placeholder": "Enter your email"
+        },
+        {
+          "id": "fld_desc",
+          "key": "description",
+          "type": "textarea",
+          "label": "About you",
+          "placeholder": "Tell us a little about yourself"
+        }
+      ]
+    },
+    {
+      "id": "fld_line_items",
+      "key": "lineItems",
+      "type": "table",
+      "label": "Line items",
+      "helpText": "Rows are loaded from the server",
+      "required": false,
+      "children": [
+        {
+          "id": "fld_li_label",
+          "key": "label",
+          "type": "text",
+          "label": "Item",
+          "required": true,
+          "placeholder": "Item name"
+        },
+        {
+          "id": "fld_li_qty",
+          "key": "qty",
+          "type": "number",
+          "label": "Qty",
+          "required": true,
+          "minimum": 1
+        },
+        {
+          "id": "fld_li_amount",
+          "key": "amount",
+          "type": "number",
+          "label": "Amount"
+        }
+      ]
+    },
+    {
+      "id": "fld_agree",
+      "key": "acceptTerms",
+      "type": "checkbox",
+      "label": "I agree to the terms and conditions",
+      "required": true,
+      "defaultValue": false
+    }
+  ],
+  "schema": {
+    "title": "Customer Registration",
+    "description": "Please enter your information.",
+    "type": "object",
+    "properties": {
+      "personalInfo": {
+        "type": "object",
+        "title": "Personal information",
+        "description": "Your basic identity details",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "title": "First Name",
+            "minLength": 0,
+            "maxLength": 100
+          },
+          "lastName": {
+            "type": "string",
+            "title": "Last Name"
+          },
+          "age": {
+            "type": "number",
+            "title": "Age",
+            "minimum": 0,
+            "maximum": 120
+          },
+          "gender": {
+            "type": "string",
+            "title": "Gender",
+            "enum": [
+              "male",
+              "female",
+              "other"
+            ]
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName"
+        ]
+      },
+      "contactInfo": {
+        "type": "object",
+        "title": "Contact details",
+        "description": "How we can reach you",
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "format": "email"
+          },
+          "description": {
+            "type": "string",
+            "title": "About you"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "acceptTerms": {
+        "type": "boolean",
+        "title": "I agree to the terms and conditions",
+        "default": false
+      }
+    },
+    "required": [
+      "acceptTerms"
+    ]
+  },
+  "uiSchema": {
+    "ui:order": [
+      "personalInfo",
+      "contactInfo",
+      "acceptTerms",
+      "*"
+    ],
+    "personalInfo": {
+      "ui:order": [
+        "firstName",
+        "lastName",
+        "age",
+        "gender",
+        "*"
+      ],
+      "firstName": {
+        "ui:placeholder": "Enter first name"
+      },
+      "lastName": {
+        "ui:placeholder": "Enter last name"
+      },
+      "age": {
+        "ui:placeholder": "Enter age"
+      },
+      "gender": {
+        "ui:enumNames": [
+          "Male",
+          "Female",
+          "Other"
+        ]
+      }
+    },
+    "contactInfo": {
+      "ui:order": [
+        "email",
+        "description",
+        "*"
+      ],
+      "email": {
+        "ui:placeholder": "Enter your email",
+        "ui:widget": "email"
+      },
+      "description": {
+        "ui:placeholder": "Tell us a little about yourself",
+        "ui:widget": "textarea",
+        "ui:options": {
+          "rows": 4
+        }
+      }
+    },
+    "acceptTerms": {}
+  },
+  "formData": {
+    "personalInfo": {},
+    "contactInfo": {},
+    "lineItems": [
+      {
+        "label": "Consulting",
+        "qty": 2,
+        "amount": 150
+      },
+      {
+        "label": "License",
+        "qty": 1,
+        "amount": 499
+      }
+    ],
+    "acceptTerms": false
+  },
+  "createdAt": "2026-08-29T00:00:00.000Z",
+  "updatedAt": "2026-08-29T00:00:00.000Z"
+}

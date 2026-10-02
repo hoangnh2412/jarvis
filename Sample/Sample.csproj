@@ -9,6 +9,9 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
     <SpaRoot>clients\web\</SpaRoot>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
+    <SpaProxyServerUrl>http://127.0.0.1:5173</SpaProxyServerUrl>
+    <SpaProxyLaunchCommand>npm run dev:spa</SpaProxyLaunchCommand>
+    <SpaProxyTimeoutInSeconds>180</SpaProxyTimeoutInSeconds>
     <SkipFrontendBuild>false</SkipFrontendBuild>
   </PropertyGroup>
 
@@ -16,7 +19,8 @@
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.15">
+    <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.20">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -37,51 +41,58 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\frameworks\Jarvis.OpenTelemetry\Jarvis.OpenTelemetry.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.OpenTelemetry.DDD\Jarvis.OpenTelemetry.DDD.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Swashbuckle\Jarvis.Swashbuckle.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Mvc\Jarvis.Mvc.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Caching.Redis\Jarvis.Caching.Redis.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Authentication\Jarvis.Authentication.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Authentication.Jwt\Jarvis.Authentication.Jwt.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Authentication.ApiKey\Jarvis.Authentication.ApiKey.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Authentication.Basic\Jarvis.Authentication.Basic.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.BlobStoring\Jarvis.BlobStoring.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.BlobStoring.MinIO\Jarvis.BlobStoring.MinIO.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Authentication.Cognito\Jarvis.Authentication.Cognito.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.ORM.EntityFramework\Jarvis.ORM.EntityFramework.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.ORM.Dapper\Jarvis.ORM.Dapper.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Multitenancy\Jarvis.Multitenancy.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Multitenancy.EntityFramework\Jarvis.Multitenancy.EntityFramework.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Notification.Mailkit\Jarvis.Notification.Mailkit.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.HealthChecks\Jarvis.HealthChecks.csproj" />
-    <ProjectReference Include="..\modules\settings\Jarvis.Modules.Setting\Jarvis.Modules.Setting.csproj" />
-    <ProjectReference Include="..\modules\settings\Jarvis.Modules.Setting.API\Jarvis.Modules.Setting.API.csproj" />
-    <ProjectReference Include="..\modules\settings\Jarvis.Modules.Setting.EntityFramework\Jarvis.Modules.Setting.EntityFramework.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Realtime\Jarvis.Realtime.csproj" />
-    <ProjectReference Include="..\frameworks\Jarvis.Realtime.SignalR\Jarvis.Realtime.SignalR.csproj" />
-    <ProjectReference Include="..\modules\notifications\Jarvis.Modules.Notifications\Jarvis.Modules.Notifications.csproj" />
-    <ProjectReference Include="..\modules\notifications\Jarvis.Modules.Notifications.Redis\Jarvis.Modules.Notifications.Redis.csproj" />
-    <ProjectReference Include="..\modules\notifications\Jarvis.Modules.Notifications.Api\Jarvis.Modules.Notifications.Api.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.OpenTelemetry\Platform.OpenTelemetry.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.OpenTelemetry.DDD\Platform.OpenTelemetry.DDD.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Swashbuckle\Platform.Swashbuckle.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Mvc\Platform.Mvc.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Caching.Redis\Platform.Caching.Redis.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Authentication\Platform.Authentication.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Authentication.Jwt\Platform.Authentication.Jwt.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Authentication.ApiKey\Platform.Authentication.ApiKey.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Authentication.Basic\Platform.Authentication.Basic.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.BlobStoring\Platform.BlobStoring.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.BlobStoring.MinIO\Platform.BlobStoring.MinIO.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Authentication.Cognito\Platform.Authentication.Cognito.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Authorization\Platform.Authorization.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Authorization.EntityFramework\Platform.Authorization.EntityFramework.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.ORM.EntityFramework\Platform.ORM.EntityFramework.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.ORM.Dapper\Platform.ORM.Dapper.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Multitenancy\Platform.Multitenancy.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Multitenancy.EntityFramework\Platform.Multitenancy.EntityFramework.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Notification.Mailkit\Platform.Notification.Mailkit.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.HealthChecks\Platform.HealthChecks.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Workflow\Platform.Workflow.csproj" />
+    <ProjectReference Include="..\modules\settings\Platform.Modules.Setting\Platform.Modules.Setting.csproj" />
+    <ProjectReference Include="..\modules\settings\Platform.Modules.Setting.API\Platform.Modules.Setting.API.csproj" />
+    <ProjectReference Include="..\modules\settings\Platform.Modules.Setting.EntityFramework\Platform.Modules.Setting.EntityFramework.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Realtime\Platform.Realtime.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Realtime.SignalR\Platform.Realtime.SignalR.csproj" />
+    <ProjectReference Include="..\modules\notifications\Platform.Modules.Notifications\Platform.Modules.Notifications.csproj" />
+    <ProjectReference Include="..\modules\notifications\Platform.Modules.Notifications.Redis\Platform.Modules.Notifications.Redis.csproj" />
+    <ProjectReference Include="..\modules\notifications\Platform.Modules.Notifications.Api\Platform.Modules.Notifications.Api.csproj" />
+    <ProjectReference Include="..\modules\workflows\Platform.Modules.Workflow.Api\Platform.Modules.Workflow.Api.csproj" />
+    <ProjectReference Include="..\modules\workflows\Platform.Modules.Workflow.EntityFramework\Platform.Modules.Workflow.EntityFramework.csproj" />
   </ItemGroup>
 
-  <!--
-    Frontend: npm run build (prebuild → ensure-linked-deps đọc file: deps từ package.json).
-    Bỏ qua: -p:SkipFrontendBuild=true
-  -->
-  <Target Name="EnsureFrontendNodeEnv" BeforeTargets="Build;PublishRunWebpack" Condition="'$(SkipFrontendBuild)' != 'true'">
+  <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') And '$(SkipFrontendBuild)' != 'true'">
     <Exec Command="node --version" ContinueOnError="true">
-      <Output TaskParameter="ExitCode" PropertyName="FrontendNodeErrorCode" />
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
     </Exec>
-    <Error Condition="'$(FrontendNodeErrorCode)' != '0'" Text="Node.js is required to build the Sample frontend. Install from https://nodejs.org/ and restart the terminal." />
+    <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run the Sample frontend. Install from https://nodejs.org/ and restart the terminal." />
+    <Message Importance="high" Text="Restoring Sample web client dependencies (npm install)..." />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
   </Target>
 
-  <Target Name="DebugBuildFrontend" AfterTargets="EnsureFrontendNodeEnv" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug' And '$(SkipFrontendBuild)' != 'true'">
+  <!--
+    One-command run: build SPA into wwwroot on Debug build (no SpaProxy).
+    Skip with: -p:SkipFrontendBuild=true
+  -->
+  <Target Name="DebugBuildFrontend" AfterTargets="DebugEnsureNodeEnv" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug' And '$(SkipFrontendBuild)' != 'true'">
     <Message Importance="high" Text="Building Sample web client into wwwroot..." />
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
   </Target>
 
-  <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish;EnsureFrontendNodeEnv" Condition="'$(SkipFrontendBuild)' != 'true'">
+  <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish" Condition="'$(SkipFrontendBuild)' != 'true'">
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
     <ItemGroup>

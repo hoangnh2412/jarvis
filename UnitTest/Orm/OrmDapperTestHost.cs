@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
-using Jarvis.ORM.Dapper;
+using Platform.ORM.Dapper;
 
 namespace UnitTest.Orm;
 
@@ -59,11 +59,11 @@ internal static class OrmDapperTestHost
     public static string GetSampleAppSettingsPath()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "Jarvis.sln")))
+        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "Platform.sln")))
             dir = dir.Parent;
 
         var repoRoot = dir?.FullName
-            ?? throw new InvalidOperationException("Could not find repo root (Jarvis.sln).");
+            ?? throw new InvalidOperationException("Could not find repo root (Platform.sln).");
 
         return Path.Combine(repoRoot, "Sample", "appsettings.json");
     }

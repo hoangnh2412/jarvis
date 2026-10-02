@@ -1,7 +1,7 @@
-using Jarvis.Authentication;
-using Jarvis.Authentication.ApiKey;
-using Jarvis.Authentication.Basic;
-using Jarvis.Authentication.Jwt;
+using Platform.Authentication;
+using Platform.Authentication.ApiKey;
+using Platform.Authentication.Basic;
+using Platform.Authentication.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -15,7 +15,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace UnitTest.Authentication.Helpers;
 
-/// <summary>Test host in-memory với pipeline authentication Jarvis và endpoint probe.</summary>
+/// <summary>Test host in-memory với pipeline authentication Platform và endpoint probe.</summary>
 public sealed class AuthenticationTestServer : IAsyncDisposable
 {
     private readonly IHost _host;
@@ -45,16 +45,16 @@ public sealed class AuthenticationTestServer : IAsyncDisposable
                     services.AddControllers()
                         .PartManager.ApplicationParts.Add(new AssemblyPart(typeof(TestAuthProbeController).Assembly));
 
-                    services.AddJarvisAuthentication(configuration, auth =>
+                    services.AddPlatformAuthentication(configuration, auth =>
                     {
                         if (composite)
-                            auth.AddJarvisCompositeScheme(includeBasic: basic);
+                            auth.AddPlatformCompositeScheme(includeBasic: basic);
 
                         if (jwt)
                             auth.AddCoreJwtBearer(configuration, JwtBearerDefaults.AuthenticationScheme);
 
                         if (apiKey)
-                            auth.AddCoreApiKey<ConfigApiKeyProvider>(configuration, JarvisAuthenticationSchemes.ApiKey);
+                            auth.AddCoreApiKey<ConfigApiKeyProvider>(configuration, PlatformAuthenticationSchemes.ApiKey);
 
                         if (basic)
                             auth.AddCoreBasic<ConfigBasicCredentialProvider>(configuration, AuthenticationBasicOption.DefaultScheme);

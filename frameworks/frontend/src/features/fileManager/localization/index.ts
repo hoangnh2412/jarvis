@@ -15,6 +15,12 @@ export const fileManagerMessagesEn = {
   dialog: {
     ...fileManagerMessagesVi.dialog,
     cancel: 'Cancel',
+    deleteTitle: 'Delete item?',
+    deleteDescription: (name: string) => `"${name}" will be permanently deleted.`,
+    confirmDelete: 'Delete',
+  },
+  validation: {
+    ...fileManagerMessagesVi.validation,
   },
   toast: {
     uploadSuccess: 'Files uploaded',
@@ -27,6 +33,7 @@ export const fileManagerMessagesEn = {
     error: 'Operation failed',
   },
 }
+
 
 export type FileManagerLocale = 'vi' | 'en'
 

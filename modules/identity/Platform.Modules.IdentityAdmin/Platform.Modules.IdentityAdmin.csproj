@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Platform.Modules.IdentityAdmin</PackageId>
+    <AssemblyName>Platform.Modules.IdentityAdmin</AssemblyName>
+    <RootNamespace>Platform.Modules.IdentityAdmin</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>Hoang Nguyen</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\frameworks\Platform.DDD.Application\Platform.DDD.Application.csproj" />
+    <ProjectReference Include="..\..\..\frameworks\Platform.DDD.Application.Contracts\Platform.DDD.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\frameworks\Platform.Authentication\Platform.Authentication.csproj" />
+    <ProjectReference Include="..\..\..\frameworks\Platform.Authentication.Identity\Platform.Authentication.Identity.csproj" />
+    <ProjectReference Include="..\..\..\frameworks\Platform.Authorization\Platform.Authorization.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="UnitTest" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,51 @@
+@page "/preview/{definitionId}/{instanceId?}"
+
+@using Platform.Modules.ElsaWorkflow.Api.Components
+@using Microsoft.AspNetCore.Components.Web
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    Layout = null;
+    var definitionId = ViewContext.RouteData.Values["definitionId"]?.ToString();
+    var instanceId = ViewContext.RouteData.Values["instanceId"]?.ToString();
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <title>Workflow Preview</title>
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <link href="_content/CodeBeam.MudBlazor.Extensions/MudExtensions.min.css" rel="stylesheet" />
+    <link href="_content/Radzen.Blazor/css/material-base.css" rel="stylesheet" />
+    <link href="_content/Elsa.Studio.Shell/css/shell.css" rel="stylesheet" />
+    <link href="_content/Elsa.Studio.Workflows.Designer/designer.css" rel="stylesheet" />
+    <link href="/_content/Platform.Modules.ElsaWorkflow.Api/css/workflow-preview.css" rel="stylesheet" />
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+<body>
+    <div class="preview-page">
+        <header class="preview-header">
+            <div>Workflow Preview</div>
+            <a href="/workflows/definitions/@definitionId/edit" class="open-studio-button">
+                Open Studio
+            </a>
+        </header>
+        <main class="preview-content">
+            <component type="typeof(WorkflowPreview)"
+                       render-mode="Server"
+                       param-DefinitionId="@definitionId"
+                       param-InstanceId="@instanceId" />
+        </main>
+    </div>
+    <script src="_content/BlazorMonaco/jsInterop.js"></script>
+    <script src="_content/BlazorMonaco/lib/monaco-editor/min/vs/loader.js"></script>
+    <script src="_content/BlazorMonaco/lib/monaco-editor/min/vs/editor/editor.main.js"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="_content/CodeBeam.MudBlazor.Extensions/MudExtensions.min.js"></script>
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+    <script src="_framework/blazor.server.js"></script>
+</body>
+</html>

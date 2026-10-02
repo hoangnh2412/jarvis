@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { Button } from '@jarvis/core'
+import { Button } from '@platform/core'
 import { ImagePlus, Trash2 } from 'lucide-react'
 import {
   getImageAccept,

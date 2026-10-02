@@ -1,4 +1,4 @@
-using Jarvis.DDD.Domain.Entities;
+using Platform.DDD.Domain.Entities;
 
 namespace Sample.Entities;
 

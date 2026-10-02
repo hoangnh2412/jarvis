@@ -19,7 +19,7 @@ import {
   FileManagerTable,
   FileManagerToolbar,
 } from '../../components'
-import { btnOutlinedClass, btnPrimaryClass, fieldInputClass } from '../../components/fieldStyles'
+import { btnOutlinedClass, btnPrimaryClass, fieldInputClass, fieldInputInvalidClass } from '../../components/fieldStyles'
 import { getFileManagerMessages, type FileManagerLocale } from '../../localization'
 import {
   mockCreateFolder,
@@ -38,6 +38,7 @@ import {
   resolveFileManagerContent,
   type FileManagerSlotContent,
 } from '../../utils'
+import { getEntryNameError } from '../../validation'
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
 import { Select } from 'primereact/select'
@@ -238,7 +239,11 @@ export function FileManagerPage({
 
   const onCreateFolder = async () => {
     const name = folderName.trim()
-    if (!name) return
+    const nameError = getEntryNameError(name)
+    if (nameError) {
+      notify.error(nameError)
+      return
+    }
     setSavingFolder(true)
     try {
       const outcome = await handleAction({
@@ -264,7 +269,11 @@ export function FileManagerPage({
   const onConfirmRename = async () => {
     if (!renameEntry) return
     const name = renameValue.trim()
-    if (!name) return
+    const nameError = getEntryNameError(name)
+    if (nameError) {
+      notify.error(nameError)
+      return
+    }
     setSavingRename(true)
     try {
       const outcome = await handleAction({
@@ -373,6 +382,15 @@ export function FileManagerPage({
     savingMove ||
     deleting
 
+  const folderNameError = folderName.trim()
+    ? getEntryNameError(folderName)
+    : null
+  const renameValueError = renameValue.trim()
+    ? getEntryNameError(renameValue)
+    : null
+  const canSaveFolder = Boolean(folderName.trim()) && !folderNameError
+  const canSaveRename = Boolean(renameValue.trim()) && !renameValueError
+
   const defaultLayout = (
     <div
       className={`file-manager-shell flex h-full min-h-[520px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm ${className} [&_button:focus]:outline-none [&_button:focus]:ring-0 [&_button:focus-visible]:outline-none [&_button:focus-visible]:ring-0 [&_[data-focused]]:outline-none [&_[data-focused]]:ring-0`}
@@ -451,7 +469,7 @@ export function FileManagerPage({
               type="button"
               unstyled
               className={`${btnPrimaryClass} !w-auto`}
-              disabled={savingFolder || !folderName.trim()}
+              disabled={savingFolder || !canSaveFolder}
               onClick={() => void onCreateFolder()}
             >
               {messages.dialog.save}
@@ -465,14 +483,18 @@ export function FileManagerPage({
             value={folderName}
             unstyled
             autoFocus
-            className={`${fieldInputClass} mt-1.5`}
+            className={`${folderNameError ? fieldInputInvalidClass : fieldInputClass} mt-1.5`}
+            placeholder="Documents"
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               setFolderName(e.target.value)
             }
             onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
-              if (e.key === 'Enter') void onCreateFolder()
+              if (e.key === 'Enter' && canSaveFolder) void onCreateFolder()
             }}
           />
+          {folderNameError ? (
+            <span className="mt-1 block text-xs text-red-600">{folderNameError}</span>
+          ) : null}
         </label>
       </FeatureDialog>
 
@@ -496,7 +518,7 @@ export function FileManagerPage({
               type="button"
               unstyled
               className={`${btnPrimaryClass} !w-auto`}
-              disabled={savingRename || !renameValue.trim()}
+              disabled={savingRename || !canSaveRename}
               onClick={() => void onConfirmRename()}
             >
               {messages.dialog.save}
@@ -510,14 +532,18 @@ export function FileManagerPage({
             value={renameValue}
             unstyled
             autoFocus
-            className={`${fieldInputClass} mt-1.5`}
+            className={`${renameValueError ? fieldInputInvalidClass : fieldInputClass} mt-1.5`}
+            placeholder="Report.pdf"
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               setRenameValue(e.target.value)
             }
             onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
-              if (e.key === 'Enter') void onConfirmRename()
+              if (e.key === 'Enter' && canSaveRename) void onConfirmRename()
             }}
           />
+          {renameValueError ? (
+            <span className="mt-1 block text-xs text-red-600">{renameValueError}</span>
+          ) : null}
         </label>
       </FeatureDialog>
 

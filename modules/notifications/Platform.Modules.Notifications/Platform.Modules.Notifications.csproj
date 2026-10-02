@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Platform.Modules.Notifications</PackageId>
+    <AssemblyName>Platform.Modules.Notifications</AssemblyName>
+    <RootNamespace>Platform.Modules.Notifications</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>Hoang Nguyen</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\frameworks\Platform.DDD.Domain\Platform.DDD.Domain.csproj" />
+    <ProjectReference Include="..\..\..\frameworks\Platform.DDD.Application.Contracts\Platform.DDD.Application.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\frameworks\Platform.Realtime\Platform.Realtime.csproj" />
+    <ProjectReference Include="..\..\settings\Platform.Modules.Setting\Platform.Modules.Setting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="UnitTest" />
+    <InternalsVisibleTo Include="Platform.Modules.Notifications.Redis" />
+    <InternalsVisibleTo Include="Platform.Realtime.SignalR" />
+  </ItemGroup>
+
+</Project>

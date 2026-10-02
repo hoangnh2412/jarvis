@@ -96,6 +96,8 @@ export type { RoleLocale } from './localization'
 // Constants
 export { PERMISSION_CATALOG, FAKE_ROLES, ROLE_STORAGE_KEY } from './constants'
 
+export { getRoleListMock } from './mocks'
+
 // Utils
 export {
   collectAllPermissionIds,

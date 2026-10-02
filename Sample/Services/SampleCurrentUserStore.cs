@@ -1,7 +1,7 @@
 using System.Security.Claims;
-using Jarvis.Authentication;
-using Jarvis.DDD.Domain.Services;
-using Jarvis.DDD.Domain.Shared.Extensions;
+using Platform.Authentication;
+using Platform.DDD.Domain.Services;
+using Platform.DDD.Domain.Shared.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 

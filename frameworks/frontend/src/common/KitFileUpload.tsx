@@ -1,5 +1,5 @@
 import { useCallback, type KeyboardEvent, type MouseEvent } from 'react'
-import { Upload, X } from 'lucide-react'
+import { Plus, Upload, X } from 'lucide-react'
 import {
   FileUploadClear,
   FileUploadContent,
@@ -32,8 +32,8 @@ export type KitFileUploadProps = Omit<FileUploadRootProps, 'children'> & {
   errorMessage?: string
   invalid?: boolean
   className?: string
-  /** `advanced` = kéo thả + click cả khung; `basic` = một hàng click chọn */
-  mode?: 'basic' | 'advanced'
+  /** `advanced` = kéo thả + click cả khung; `basic` = một hàng click chọn; `cccd`/`passport` = document modes với preview fit theo khung */
+  mode?: 'basic' | 'advanced' | 'cccd' | 'passport'
   dropzoneTitle?: string
   dropzoneHint?: string
   showPreview?: boolean
@@ -41,6 +41,8 @@ export type KitFileUploadProps = Omit<FileUploadRootProps, 'children'> & {
   showClearButton?: boolean
   uploadLabel?: string
   clearLabel?: string
+  /** `single` = chỉ upload 1 file; `multiple` = upload nhiều file (mặc định) */
+  uploadMode?: 'single' | 'multiple'
 }
 
 function formatMaxFileSize(bytes?: number): string {
@@ -52,6 +54,10 @@ function formatMaxFileSize(bytes?: number): string {
   }
   const kb = bytes / 1024
   return `${Math.round(kb)}KB`
+}
+
+function usesDropzonePreview(mode?: KitFileUploadProps['mode']): boolean {
+  return mode === 'cccd' || mode === 'passport' || mode === 'advanced'
 }
 
 function buildLimitsText(
@@ -67,18 +73,151 @@ function buildLimitsText(
   return parts.length > 0 ? parts.join(', ') : null
 }
 
+function FilePreviewItem({
+  file,
+  index,
+  uploadMode = 'multiple',
+}: {
+  file: File
+  index: number
+  uploadMode?: 'single' | 'multiple'
+}) {
+  const isImage = file.type.startsWith('image/')
+  const sizeVariant = uploadMode === 'single' ? 'single' : 'multiple'
+
+  return (
+    <FileUploadItem file={file} index={index} className="kit-file-upload__preview-item">
+      <div
+        className={[
+          'kit-file-upload__preview-content',
+          `kit-file-upload__preview-content--${sizeVariant}`,
+        ].join(' ')}
+      >
+        {isImage ? (
+          <div
+            className={[
+              'kit-file-upload__preview-image-wrapper',
+              `kit-file-upload__preview-image-wrapper--${sizeVariant}`,
+            ].join(' ')}
+          >
+            <FileUploadItemPreview className="kit-file-upload__preview-image" />
+            <FileUploadItemRemove
+              type="button"
+              className="kit-file-upload__preview-remove-button"
+              aria-label="Xóa file"
+              onClick={(event: MouseEvent<HTMLButtonElement>) => event.stopPropagation()}
+            >
+              <X className="size-3.5" />
+            </FileUploadItemRemove>
+          </div>
+        ) : (
+          <div
+            className={[
+              'kit-file-upload__preview-icon-wrapper',
+              `kit-file-upload__preview-image-wrapper--${sizeVariant}`,
+            ].join(' ')}
+          >
+            <span className="kit-file-upload__file-icon" aria-hidden>
+              <Upload className="size-4" />
+            </span>
+            <FileUploadItemRemove
+              type="button"
+              className="kit-file-upload__preview-remove-button"
+              aria-label="Xóa file"
+              onClick={(event: MouseEvent<HTMLButtonElement>) => event.stopPropagation()}
+            >
+              <X className="size-3.5" />
+            </FileUploadItemRemove>
+          </div>
+        )}
+        <FileUploadItemName
+          className={[
+            'kit-file-upload__preview-name',
+            uploadMode === 'multiple' ? 'kit-file-upload__preview-name--visible' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        />
+      </div>
+    </FileUploadItem>
+  )
+}
+
+function PreviewAddButton({
+  onAdd,
+  disabled,
+}: {
+  onAdd: () => void
+  disabled?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      className="kit-file-upload__preview-add-button"
+      aria-label="Thêm file"
+      disabled={disabled}
+      onClick={(event: MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation()
+        onAdd()
+      }}
+    >
+      <Plus className="size-5" aria-hidden />
+    </button>
+  )
+}
+
+function KitFileUploadDropzoneWrapper({
+  mode,
+  dropzoneTitle,
+  dropzoneHint,
+  limitsText,
+  disabled,
+  uploadMode,
+  fileLimit,
+}: {
+  mode?: 'basic' | 'advanced' | 'cccd' | 'passport'
+  dropzoneTitle: string
+  dropzoneHint: string
+  limitsText: string | null
+  disabled?: boolean
+  uploadMode?: 'single' | 'multiple'
+  fileLimit?: number
+}) {
+  const ctx = useFileUploadContext()
+  const files = ctx?.state.files ?? []
+
+  return (
+    <KitFileUploadDropzone
+      mode={mode}
+      dropzoneTitle={dropzoneTitle}
+      dropzoneHint={dropzoneHint}
+      limitsText={limitsText}
+      disabled={disabled}
+      files={files}
+      uploadMode={uploadMode}
+      fileLimit={fileLimit}
+    />
+  )
+}
+
 function KitFileUploadDropzone({
   mode,
   dropzoneTitle,
   dropzoneHint,
   limitsText,
   disabled,
+  files,
+  uploadMode,
+  fileLimit,
 }: {
-  mode: 'basic' | 'advanced'
+  mode?: 'basic' | 'advanced' | 'cccd' | 'passport'
   dropzoneTitle: string
   dropzoneHint: string
   limitsText: string | null
   disabled?: boolean
+  files: File[]
+  uploadMode?: 'single' | 'multiple'
+  fileLimit?: number
 }) {
   const ctx = useFileUploadContext()
 
@@ -106,42 +245,62 @@ function KitFileUploadDropzone({
     [disabled, openPicker],
   )
 
-  if (mode === 'basic') {
-    return (
-      <FileUploadContent
-        className="kit-file-upload__dropzone kit-file-upload__dropzone--basic"
-        role="button"
-        tabIndex={disabled ? -1 : 0}
-        aria-disabled={disabled || undefined}
-        onClick={onClick}
-        onKeyDown={onKeyDown}
-      >
-        <span className="kit-file-upload__dropzone-icon" aria-hidden>
-          <Upload className="size-5" />
-        </span>
-        <p className="kit-file-upload__dropzone-title">{dropzoneTitle}</p>
-        {limitsText ? (
-          <p className="kit-file-upload__dropzone-limits">{limitsText}</p>
-        ) : null}
-      </FileUploadContent>
-    )
-  }
+  const hasFiles = files.length > 0
+  const canAddMore =
+    uploadMode === 'multiple' && (!fileLimit || fileLimit <= 0 || files.length < fileLimit)
+  const dropzoneClass = [
+    'kit-file-upload__dropzone',
+    mode === 'basic' ? 'kit-file-upload__dropzone--basic' : '',
+    hasFiles ? 'kit-file-upload__dropzone--filled' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <FileUploadContent
-      className="kit-file-upload__dropzone"
+      className={dropzoneClass}
       role="button"
       tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled || undefined}
       onClick={onClick}
       onKeyDown={onKeyDown}
     >
-      <span className="kit-file-upload__dropzone-icon" aria-hidden>
-        <Upload className="size-6" />
-      </span>
-      <p className="kit-file-upload__dropzone-title">{dropzoneTitle}</p>
-      <p className="kit-file-upload__dropzone-hint">{dropzoneHint}</p>
-      {limitsText ? (
+      {!hasFiles ? (
+        <>
+          <span className="kit-file-upload__dropzone-icon" aria-hidden>
+            <Upload className={mode === 'basic' ? 'size-5' : 'size-6'} />
+          </span>
+          <p className="kit-file-upload__dropzone-title">{dropzoneTitle}</p>
+          {mode !== 'basic' ? (
+            <p className="kit-file-upload__dropzone-hint">{dropzoneHint}</p>
+          ) : null}
+        </>
+      ) : (
+        <div
+          className="kit-file-upload__preview-container"
+          onClick={(event: MouseEvent<HTMLDivElement>) => event.stopPropagation()}
+        >
+          {uploadMode === 'multiple' ? (
+            <div className="kit-file-upload__preview-scroll">
+              {files.map((file, index) => (
+                <FilePreviewItem
+                  key={`${file.name}-${file.size}-${index}`}
+                  file={file}
+                  index={index}
+                  uploadMode={uploadMode}
+                />
+              ))}
+              {canAddMore ? (
+                <PreviewAddButton onAdd={openPicker} disabled={disabled} />
+              ) : null}
+            </div>
+          ) : (
+            <FilePreviewItem file={files[0]} index={0} uploadMode={uploadMode} />
+          )}
+        </div>
+      )}
+
+      {!hasFiles && limitsText ? (
         <p className="kit-file-upload__dropzone-limits">{limitsText}</p>
       ) : null}
     </FileUploadContent>
@@ -260,6 +419,7 @@ export function KitFileUpload({
   showClearButton = true,
   uploadLabel = 'Tải lên',
   clearLabel = 'Xóa tất cả',
+  uploadMode = 'multiple',
   multiple = true,
   accept = 'image/*',
   customUpload = true,
@@ -272,9 +432,14 @@ export function KitFileUpload({
   invalidFileTypeMessage = '{0}: Loại file không hợp lệ. Cho phép: {1}.',
   ...rootProps
 }: KitFileUploadProps) {
+  // Override multiple setting based on uploadMode
+  const isMultipleMode = uploadMode === 'multiple'
+  const fileUploadMultiple = isMultipleMode ? multiple : false
+
   const rootClass = [
     'kit-file-upload',
-    mode === 'basic' ? 'kit-file-upload--basic' : 'kit-file-upload--advanced',
+    mode === 'basic' ? 'kit-file-upload--basic' : mode === 'advanced' ? 'kit-file-upload--advanced' : `kit-file-upload--${mode}`,
+    uploadMode === 'single' ? 'kit-file-upload--single' : 'kit-file-upload--multiple',
     invalid ? 'is-invalid' : '',
     disabled ? 'is-disabled' : '',
     className ?? '',
@@ -283,7 +448,10 @@ export function KitFileUpload({
     .join(' ')
 
   const resolvedLimitsText = buildLimitsText(fileLimit, maxFileSize, limitsText)
-  const showActions = !auto && (showUploadButton || showClearButton)
+  const hideDropzoneExtras = usesDropzonePreview(mode)
+  const showActions =
+    !auto && !hideDropzoneExtras && (showUploadButton || showClearButton)
+  const hideFileList = hideDropzoneExtras
 
   return (
     <div className={rootClass}>
@@ -296,7 +464,7 @@ export function KitFileUpload({
       <FileUploadRoot
         id={id}
         className="kit-file-upload__root"
-        multiple={multiple}
+        multiple={fileUploadMultiple}
         accept={accept}
         fileLimit={fileLimit}
         maxFileSize={maxFileSize}
@@ -308,15 +476,17 @@ export function KitFileUpload({
         invalidFileTypeMessage={invalidFileTypeMessage}
         {...rootProps}
       >
-        <KitFileUploadDropzone
+        <KitFileUploadDropzoneWrapper
           mode={mode}
           dropzoneTitle={dropzoneTitle}
           dropzoneHint={dropzoneHint}
           limitsText={resolvedLimitsText}
           disabled={disabled}
+          uploadMode={uploadMode}
+          fileLimit={fileLimit}
         />
 
-        <KitFileUploadList showPreview={showPreview} />
+        {!hideFileList ? <KitFileUploadList showPreview={showPreview} /> : null}
         <KitFileUploadProgress />
 
         {showActions ? (
@@ -340,5 +510,5 @@ export function KitFileUpload({
   )
 }
 
-/** Alias ngắn khi import từ @jarvis/core */
+/** Alias ngắn khi import từ @platform/core */
 export { KitFileUpload as FileUploadField }

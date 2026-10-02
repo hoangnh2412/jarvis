@@ -1,0 +1,393 @@
+.craft-doc-page {
+  --craft-doc-page-padding: 0.375rem;
+  box-sizing: border-box;
+  padding: var(--craft-doc-page-padding);
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .craft-doc-page {
+    --craft-doc-page-padding: 0.5rem;
+  }
+}
+
+.craft-doc-builder {
+  --craft-doc-accent: #2563eb;
+  --craft-doc-accent-soft: #eff6ff;
+  --craft-doc-border: #e5e7eb;
+  --craft-doc-muted: #6b7280;
+  --craft-doc-panel: #f3f4f6;
+  --craft-doc-gap: 0.5rem;
+  --craft-doc-radius: 0.375rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+@media (min-width: 1024px) {
+  .craft-doc-builder {
+    --craft-doc-gap: 0.625rem;
+  }
+}
+
+.craft-doc-split {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--craft-doc-border);
+  border-radius: var(--craft-doc-radius);
+  background: #fff;
+}
+
+.craft-doc-split.is-resizing {
+  user-select: none;
+}
+
+.craft-doc-split__form {
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.craft-doc-split__preview {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #eef1f5;
+}
+
+.craft-doc-split__resizer {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 10px;
+  width: 10px;
+  margin: 0 -5px;
+  cursor: col-resize;
+  touch-action: none;
+  background: transparent;
+}
+
+.craft-doc-split__resizer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: rgb(226 232 240 / 0.95);
+}
+
+.craft-doc-split__resizer::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: #cbd5e1;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.craft-doc-split__resizer:hover::after,
+.craft-doc-split__resizer:focus-visible::after,
+.craft-doc-split.is-resizing .craft-doc-split__resizer::after {
+  opacity: 1;
+  background: #2563eb;
+}
+
+.craft-doc-split__resizer:focus-visible {
+  outline: none;
+}
+
+.craft-doc-split .craft-doc-form-panel,
+.craft-doc-split .craft-doc-preview-panel {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+body.craft-doc-split-resizing {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+body.craft-doc-split-resizing iframe {
+  pointer-events: none !important;
+}
+
+.craft-doc-form-panel {
+  background: #fff;
+  border-radius: var(--craft-doc-radius);
+}
+
+/* Sidebar van cuon — chi an thanh scrollbar */
+.craft-doc-form-scroll {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.craft-doc-form-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.craft-doc-preview-panel {
+  background: #eef1f5;
+  border-radius: var(--craft-doc-radius);
+}
+
+.craft-doc-preview-tabs {
+  display: inline-flex;
+  gap: 0.15rem;
+  padding: 0.15rem;
+  border-radius: 0.5rem;
+  background: #f1f5f9;
+}
+
+.craft-doc-preview-tabs__tab {
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+.craft-doc-preview-tabs__tab.is-active {
+  color: #0f172a;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+}
+
+.craft-doc-json {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  background: #0f172a;
+}
+
+.craft-doc-json__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+.craft-doc-json__tabs {
+  display: flex;
+  gap: 0.15rem;
+}
+
+.craft-doc-json__tab {
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 550;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.craft-doc-json__tab.is-active {
+  color: #fff;
+  background: #334155;
+}
+
+.craft-doc-json__copy {
+  border: 1px solid #475569;
+  background: #334155;
+  color: #e2e8f0;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+.craft-doc-json__copy:hover {
+  background: #475569;
+}
+
+.craft-doc-json__code {
+  flex: 1 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #0f172a !important;
+  color: #cbd5e1 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.55 !important;
+  padding: 1rem 1.1rem !important;
+  resize: none !important;
+}
+
+.craft-doc-preview-shell {
+  background: #eef1f5;
+}
+
+.craft-doc-preview-viewport {
+  position: relative;
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+
+.craft-doc-preview-viewport.is-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: #0f172a;
+}
+
+.craft-doc-preview-stage {
+  transform-origin: top center;
+  transition: transform 160ms ease;
+}
+
+.craft-doc-preview-container {
+  box-sizing: border-box;
+}
+
+.craft-doc-preview-styles {
+  display: contents;
+}
+
+.craft-doc-preview-container .docx-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  margin: 0 auto;
+  padding: 0 0 24px;
+  background: transparent;
+}
+
+.craft-doc-preview-container .docx-wrapper > section.docx {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 10px 28px rgba(15, 23, 42, 0.08);
+  margin: 0;
+  scroll-margin-top: 16px;
+}
+
+.craft-doc-preview-container .docx-wrapper > section.docx > article {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.craft-doc-preview-container .docx-wrapper table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  max-width: 100%;
+}
+
+.craft-doc-preview-container .docx-wrapper td,
+.craft-doc-preview-container .docx-wrapper th {
+  vertical-align: top;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+/* Giữ khoảng trắng/tab giữa các w:r — docx-preview chỉ set pre-wrap trên span. */
+.craft-doc-preview-container .docx-wrapper p {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.craft-doc-preview-container .docx-wrapper u,
+.craft-doc-preview-container .docx-wrapper [style*='underline'] {
+  text-decoration: underline;
+  text-underline-offset: 0.08em;
+}
+
+.craft-doc-preview-container .docx-wrapper span {
+  letter-spacing: normal;
+}
+
+.craft-doc-preview-container .craft-doc-field-mark {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  font: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-style: inherit;
+  text-decoration: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  line-height: inherit;
+  background: rgb(37 99 235 / 0.08);
+  box-decoration-break: clone;
+}
+
+.craft-doc-preview-container .craft-doc-field-mark.is-selected {
+  background: rgb(37 99 235 / 0.18);
+  outline: 1px solid rgb(37 99 235 / 0.45);
+}
+
+@media (max-width: 1023px) {
+  .craft-doc-builder {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .craft-doc-split {
+    flex-direction: column;
+    min-height: min(100%, 920px);
+  }
+
+  .craft-doc-split__form {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-height: min(46vh, 520px);
+  }
+
+  .craft-doc-split__preview {
+    flex: 1 1 auto;
+    min-height: 420px;
+  }
+
+  .craft-doc-split__resizer {
+    display: none;
+  }
+
+  .craft-doc-form-panel,
+  .craft-doc-preview-panel {
+    min-height: 320px;
+  }
+}

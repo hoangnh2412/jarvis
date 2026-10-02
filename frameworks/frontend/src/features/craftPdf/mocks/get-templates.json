@@ -1,0 +1,166 @@
+{
+  "items": [
+    {
+      "id": "tpl-invoice",
+      "name": "Complex invoice",
+      "description": "Invoice với bảng và QR — sample CraftMyPDF-style",
+      "status": "published",
+      "pageSize": {
+        "width": 794,
+        "height": 1123,
+        "label": "A4"
+      },
+      "createdAt": "2026-08-06T06:00:00.000Z",
+      "updatedAt": "2026-08-06T06:00:00.000Z",
+      "elements": [
+        {
+          "id": "inv-title",
+          "type": "text",
+          "x": 48,
+          "y": 40,
+          "width": 280,
+          "height": 40,
+          "content": "INVOICE",
+          "fontFamily": "Inter",
+          "fontSize": 28,
+          "fontWeight": "bold",
+          "fontStyle": "normal",
+          "textDecoration": "none",
+          "color": "#111827",
+          "align": "left"
+        },
+        {
+          "id": "inv-number",
+          "type": "text",
+          "x": 48,
+          "y": 90,
+          "width": 240,
+          "height": 28,
+          "content": "{{data.invoice_number}}",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal",
+          "fontStyle": "normal",
+          "textDecoration": "none",
+          "color": "#374151",
+          "align": "left",
+          "bindingKey": "invoice_number"
+        },
+        {
+          "id": "inv-table",
+          "type": "table",
+          "x": 48,
+          "y": 160,
+          "width": 700,
+          "height": 200,
+          "columns": 4,
+          "rows": 6,
+          "headerLabel": "Item",
+          "bindingKey": "line_items"
+        },
+        {
+          "id": "inv-qr",
+          "type": "qrcode",
+          "x": 650,
+          "y": 40,
+          "width": 96,
+          "height": 96,
+          "value": "",
+          "bindingKey": "qr_payload"
+        }
+      ]
+    },
+    {
+      "id": "tpl-certificate",
+      "name": "Certificate Sample",
+      "description": "Chứng nhận hiện đại — layout trống để customize",
+      "status": "draft",
+      "pageSize": {
+        "width": 794,
+        "height": 1123,
+        "label": "A4"
+      },
+      "createdAt": "2026-08-06T06:00:00.000Z",
+      "updatedAt": "2026-08-06T06:00:00.000Z",
+      "elements": [
+        {
+          "id": "cert-title",
+          "type": "text",
+          "x": 120,
+          "y": 200,
+          "width": 550,
+          "height": 48,
+          "content": "Certificate of Completion",
+          "fontFamily": "Inter",
+          "fontSize": 26,
+          "fontWeight": "bold",
+          "fontStyle": "normal",
+          "textDecoration": "none",
+          "color": "#111827",
+          "align": "center"
+        },
+        {
+          "id": "cert-name",
+          "type": "text",
+          "x": 120,
+          "y": 280,
+          "width": 550,
+          "height": 36,
+          "content": "{{data.customer_name}}",
+          "fontFamily": "Inter",
+          "fontSize": 18,
+          "fontWeight": "normal",
+          "fontStyle": "normal",
+          "textDecoration": "none",
+          "color": "#374151",
+          "align": "center",
+          "bindingKey": "customer_name"
+        }
+      ]
+    },
+    {
+      "id": "tpl-packing",
+      "name": "Packing List",
+      "description": "Packing list với barcode",
+      "status": "published",
+      "pageSize": {
+        "width": 794,
+        "height": 1123,
+        "label": "A4"
+      },
+      "createdAt": "2026-08-06T06:00:00.000Z",
+      "updatedAt": "2026-08-06T06:00:00.000Z",
+      "elements": [
+        {
+          "id": "pack-title",
+          "type": "text",
+          "x": 48,
+          "y": 48,
+          "width": 300,
+          "height": 36,
+          "content": "Packing List",
+          "fontFamily": "Inter",
+          "fontSize": 22,
+          "fontWeight": "bold",
+          "fontStyle": "normal",
+          "textDecoration": "none",
+          "color": "#111827",
+          "align": "left"
+        },
+        {
+          "id": "pack-barcode",
+          "type": "barcode",
+          "x": 48,
+          "y": 100,
+          "width": 200,
+          "height": 60,
+          "value": "",
+          "bindingKey": "tracking_code"
+        }
+      ]
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "size": 20
+}

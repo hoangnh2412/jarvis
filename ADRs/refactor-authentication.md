@@ -1,6 +1,6 @@
 # Refactor Authentication — Thiết kế & Code Review
 
-> **Trạng thái tài liệu:** Phase 0–3, 6 + **Basic** (`Jarvis.Authentication.Basic`). Base: `AddJarvisAuthentication`, `Composite`, password/cookie options. Satellite: chỉ `AddCoreApiKey<T>`, `AddCoreBasic<TCredentialProvider>`, `ConfigApiKeyProvider`, `ConfigBasicCredentialProvider`. Sample: placeholder `SampleApiKeyProvider` / `SampleBasicAuthCredentialProvider`. **Chưa** OpenIddict; Cognito = admin SDK stub. Test: `UnitTest/Authentication` — **29** tests, pass.
+> **Trạng thái tài liệu:** Phase 0–3, 6 + **Basic** (`Platform.Authentication.Basic`). Base: `AddPlatformAuthentication`, `Composite`, password/cookie options. Satellite: chỉ `AddCoreApiKey<T>`, `AddCoreBasic<TCredentialProvider>`, `ConfigApiKeyProvider`, `ConfigBasicCredentialProvider`. Sample: placeholder `SampleApiKeyProvider` / `SampleBasicAuthCredentialProvider`. **Chưa** OpenIddict; Cognito = admin SDK stub. Test: `UnitTest/Authentication` — **29** tests, pass.
 
 ## Phạm vi (scope)
 
@@ -9,12 +9,12 @@
 | Xác định **danh tính** request: JWT Bearer, ApiKey, HTTP Basic, OpenIddict (AS/RS — đề xuất), Cognito-as-JWKS | **Quyền**: policies, roles, claims requirements, resource-based auth |
 | `AddAuthentication`, schemes, `IApiKeyProvider`, token validation, options (`PasswordPolicy`, `Cookie` cho **login flow**) | `AddAuthorization`, `UseAuthorization`, `[Authorize]`, `IAuthorizationHandler` |
 | `UseAuthentication()` trên pipeline | Enforcement `[Authorize]` / policy evaluation |
-| Package `Jarvis.Authentication.*` (base, Jwt, ApiKey, Basic; OpenIddict đề xuất) | Package `Jarvis.Authorization.*` (base — chưa thiết kế) |
+| Package `Platform.Authentication.*` (base, Jwt, ApiKey, Basic; OpenIddict đề xuất) | Package `Platform.Authorization.*` (base — chưa thiết kế) |
 | Swagger: khai báo scheme (JWT, API_KEY, Basic) | Swagger: gắn policy/scope vào operation (có thể thuộc Authorization story) |
 
-**Phạm vi review code (2026-05-28):** `Jarvis.Authentication`, `Jarvis.Authentication.Jwt`, `Jarvis.Authentication.ApiKey`, `Jarvis.Authentication.Basic`, `Jarvis.Authentication.Cognito`, `Sample/Extensions/SampleAuthenticationExtensions.cs`, `Sample/Program.cs`, `Sample/appsettings.json`, `UnitTest/Authentication`.
+**Phạm vi review code (2026-05-28):** `Platform.Authentication`, `Platform.Authentication.Jwt`, `Platform.Authentication.ApiKey`, `Platform.Authentication.Basic`, `Platform.Authentication.Cognito`, `Sample/Extensions/SampleAuthenticationExtensions.cs`, `Sample/Program.cs`, `Sample/appsettings.json`, `UnitTest/Authentication`.
 
-**Chuẩn review:** `.opencode/skills/code-review-dotnet/SKILL.md` + Jarvis auth (`.opencode/skills/authentication-dotnet/SKILL.md`).
+**Chuẩn review:** `.opencode/skills/code-review-dotnet/SKILL.md` + Platform auth (`.opencode/skills/authentication-dotnet/SKILL.md`).
 
 **Kết luận review (2026-05-28, lần 2 — skill `code-review-dotnet`):** Jwt / ApiKey / Basic **merge-ready**. Sample đã có **mẫu config đầy đủ** (`appsettings.json` + `appsettings.Development.json`), `Composite` default scheme, `ConfigApiKeyProvider` / `ConfigBasicCredentialProvider` khi chạy Development. Production: `Key` / password rỗng — cần user-secrets; Cognito chỉ template (chưa wire DI). **Overall: merge-ready** (libraries + Sample dev); production secrets + Cognito JWT còn việc host.
 
@@ -24,9 +24,9 @@
 
 | # | Yêu cầu | Hiện trạng | Đáp ứng |
 |---|---------|------------|---------|
-| 1 | `Jarvis.Authentication` là base chung | `AddJarvisAuthentication`, `AuthenticationRootOptions`, `JarvisAuthenticationSchemes`, `AddJarvisCompositeScheme`, `IPasswordPolicyValidator` + `PasswordPolicy` / `Cookie` / `PasswordExpiration` options, `ValidateOnStart` root | **Có** (orchestration scheme vẫn ở Host qua callback) |
-| 2 | JWT: `Jarvis.Authentication.Jwt` | `AddCoreJwtBearer`, `Authority` hoặc symmetric keys, `RequireHttpsMetadata` mặc định `true`, `AuthenticationJwtOptionValidator` | **Có** |
-| 3 | API Key: `Jarvis.Authentication.ApiKey` | `AddCoreApiKey<T>` only, `ConfigApiKeyProvider`, `Key` per realm, `realm:secret` hoặc secret thuần → `DefaultRealm`, `ValidateOnStart` | **Có** |
+| 1 | `Platform.Authentication` là base chung | `AddPlatformAuthentication`, `AuthenticationRootOptions`, `PlatformAuthenticationSchemes`, `AddPlatformCompositeScheme`, `IPasswordPolicyValidator` + `PasswordPolicy` / `Cookie` / `PasswordExpiration` options, `ValidateOnStart` root | **Có** (orchestration scheme vẫn ở Host qua callback) |
+| 2 | JWT: `Platform.Authentication.Jwt` | `AddCoreJwtBearer`, `Authority` hoặc symmetric keys, `RequireHttpsMetadata` mặc định `true`, `AuthenticationJwtOptionValidator` | **Có** |
+| 3 | API Key: `Platform.Authentication.ApiKey` | `AddCoreApiKey<T>` only, `ConfigApiKeyProvider`, `Key` per realm, `realm:secret` hoặc secret thuần → `DefaultRealm`, `ValidateOnStart` | **Có** |
 | 4 | Customize password / cookie | Options + `DefaultPasswordPolicyValidator`; cookie options bind; **chưa** gắn OpenIddict/login flow | **Một phần** |
 | 5 | Basic (mới) | `AddCoreBasic<T>`, `IBasicCredentialProvider.AuthenticateAsync`, `ConfigBasicCredentialProvider`, `BasicValidationResult.Validate`, `AuthenticationBasicOption.DefaultRealm` / `DefaultScheme` | **Có** |
 
@@ -59,7 +59,7 @@ None — sau cập nhật `Sample/appsettings.json`, `appsettings.Development.js
 | # | Mục cũ | Trạng thái |
 |---|--------|------------|
 | — | ApiKey bắt buộc `realm:secret` | **Đã sửa** — secret thuần → default realm; `realm:secret` tùy chọn trong `ConfigApiKeyProvider` |
-| — | Lệch scheme `ApiKey` vs `Default` | **Đã sửa** — `JarvisAuthenticationSchemes.ApiKey = "Default"` |
+| — | Lệch scheme `ApiKey` vs `Default` | **Đã sửa** — `PlatformAuthenticationSchemes.ApiKey = "Default"` |
 | — | Sample không `UseAuthentication` | **Đã sửa** — `AddSampleAuthentication` + `app.UseAuthentication()` |
 | — | JWT `RequireHttpsMetadata = false` mặc định | **Đã sửa** — `?? true` trong `ConfigureJwtBearer` |
 | — | JWT thiếu signing keys im lặng | **Đã sửa** — `AuthenticationJwtOptionValidator` + `ValidateOnStart` |
@@ -77,19 +77,19 @@ None — sau cập nhật `Sample/appsettings.json`, `appsettings.Development.js
 
 ---
 
-### `Jarvis.Authentication` — `Authentication.Type` chỉ dùng ở Sample, không trong base
+### `Platform.Authentication` — `Authentication.Type` chỉ dùng ở Sample, không trong base
 
-**Issue:** `AddJarvisAuthentication` bind `AuthenticationRootOptions.Type` nhưng **không** tự bật scheme theo `Type`; `SampleAuthenticationExtensions` mới đọc `Type` / `Schemes:*:Enabled`.
+**Issue:** `AddPlatformAuthentication` bind `AuthenticationRootOptions.Type` nhưng **không** tự bật scheme theo `Type`; `SampleAuthenticationExtensions` mới đọc `Type` / `Schemes:*:Enabled`.
 
-**Impact:** Host khác copy chỉ gọi `AddJarvisAuthentication` mà quên callback → không có scheme.
+**Impact:** Host khác copy chỉ gọi `AddPlatformAuthentication` mà quên callback → không có scheme.
 
 **Suggested fix:** Document bắt buộc callback; hoặc optional đọc `Schemes` flags trong base (tránh reference vòng package).
 
 ---
 
-### `Jarvis.Authentication.Basic` — So sánh password plain text
+### `Platform.Authentication.Basic` — So sánh password plain text
 
-**File:** `Jarvis.Authentication.Basic/BasicValidationResult.cs` (`Validate` static)
+**File:** `Platform.Authentication.Basic/BasicValidationResult.cs` (`Validate` static)
 
 **Issue:** `string.Equals(..., Ordinal)` — không constant-time; `ConfigBasicCredentialProvider` đọc password plain từ config.
 
@@ -99,9 +99,9 @@ None — sau cập nhật `Sample/appsettings.json`, `appsettings.Development.js
 
 ---
 
-### `Jarvis.Authentication.Jwt` — `ClockSkew = TimeSpan.Zero`
+### `Platform.Authentication.Jwt` — `ClockSkew = TimeSpan.Zero`
 
-**File:** `Jarvis.Authentication.Jwt/AuthenticationBuilderExtension.cs`
+**File:** `Platform.Authentication.Jwt/AuthenticationBuilderExtension.cs`
 
 **Impact:** Token sát `exp` dễ fail khi lệch giờ.
 
@@ -109,9 +109,9 @@ None — sau cập nhật `Sample/appsettings.json`, `appsettings.Development.js
 
 ---
 
-### `Jarvis.Authentication.ApiKey` — Integration realm `Key` rỗng bị bỏ qua bind
+### `Platform.Authentication.ApiKey` — Integration realm `Key` rỗng bị bỏ qua bind
 
-**File:** `Jarvis.Authentication.ApiKey/AuthenticationBuilderExtension.cs` — `ConfigureApiKeyRealms`
+**File:** `Platform.Authentication.ApiKey/AuthenticationBuilderExtension.cs` — `ConfigureApiKeyRealms`
 
 **Issue:** Realm con có `Key` rỗng (trừ primary scheme) không bind / không `ValidateOnStart` — dễ hiểu nhầm realm “Integration” hoạt động khi chưa set key.
 
@@ -119,7 +119,7 @@ None — sau cập nhật `Sample/appsettings.json`, `appsettings.Development.js
 
 ---
 
-### `Jarvis.Authentication.Cognito` — Stub (giữ từ review trước)
+### `Platform.Authentication.Cognito` — Stub (giữ từ review trước)
 
 **Suggested fix:** Admin SDK tách biệt; Bearer qua `AddCoreJwtBearer(Authority=...)` + JWKS.
 
@@ -138,7 +138,7 @@ None — sau cập nhật `Sample/appsettings.json`, `appsettings.Development.js
 | ApiKey `Keys[]` / `ApiKeyMode` | **`Key` string** + `ConfigApiKeyProvider` |
 | `AddCoreApiKey` / `AddCoreBasic` non-generic | Chỉ **`AddCoreApiKey<T>`**, **`AddCoreBasic<T>`** |
 | `BasicCredentialValidation` / `ProvideAsync` credential | **`IBasicCredentialProvider.AuthenticateAsync`** → `BasicValidationResult` |
-| `AwsOption` trong base | **`Jarvis.Authentication.Cognito`** |
+| `AwsOption` trong base | **`Platform.Authentication.Cognito`** |
 | `Task.Yield` trong `ProvideAsync` | **`Task.FromResult`** |
 | Thiếu `AddSingleton<IApiKeyProvider>` | **Có** trong `AddCoreApiKey<T>` |
 
@@ -149,24 +149,24 @@ None — sau cập nhật `Sample/appsettings.json`, `appsettings.Development.js
 ### Kiến trúc đề xuất (đáp ứng 4 yêu cầu)
 
 ```text
-Jarvis.Authentication                    ← contracts, root options, password/cookie policy options, validation
+Platform.Authentication                    ← contracts, root options, password/cookie policy options, validation
     ↑
-    ├── Jarvis.Authentication.Jwt        ← AddCoreJwtBearer (optional package)
-    ├── Jarvis.Authentication.ApiKey     ← AddCoreApiKey (optional package)
-    ├── Jarvis.Authentication.Cognito    ← SDK + JwtBearer từ User Pool (optional)
-    ├── Jarvis.Authentication.Basic        ← AddCoreBasic (đã có)
-    ├── Jarvis.Authentication.OpenIddict   ← AS + validation (optional)
+    ├── Platform.Authentication.Jwt        ← AddCoreJwtBearer (optional package)
+    ├── Platform.Authentication.ApiKey     ← AddCoreApiKey (optional package)
+    ├── Platform.Authentication.Cognito    ← SDK + JwtBearer từ User Pool (optional)
+    ├── Platform.Authentication.Basic        ← AddCoreBasic (đã có)
+    ├── Platform.Authentication.OpenIddict   ← AS + validation (optional)
     └── Cognito-as-Jwt-Authority qua Jwt Authority
 ```
 
-**Base (`Jarvis.Authentication`) nên có:**
+**Base (`Platform.Authentication`) nên có:**
 
 | Thành phần | Mục đích |
 |------------|----------|
 | `AuthenticationRootOptions` | `Type`, default scheme, forward scheme |
 | `PasswordPolicyOptions` | Min length, complexity, history — cho Basic/local account |
 | `PasswordExpirationOptions` | Max age, warn days — hook `IPasswordExpirationValidator` |
-| `JarvisCookieAuthenticationOptions` | Name, HttpOnly, SameSite, sliding expiration — mirror cookie middleware |
+| `PlatformCookieAuthenticationOptions` | Name, HttpOnly, SameSite, sliding expiration — mirror cookie middleware |
 | `IAuthenticationCustomizer` / `IPostConfigureOptions<T>` | Extension point không sửa library |
 | Options validation (`IValidateOptions<T>`) | Fail fast lúc startup |
 
@@ -216,7 +216,7 @@ app.UseAuthentication();
 
 - **Đúng hướng:** Tách package theo scheme; `Action<JwtBearerOptions>?` / `Action<ApiKeyOptions>?` cho override.
 - **Thiếu:** Policy-based authorization helpers, claims transformation chung, multi-scheme (`Jwt` + `ApiKey`), và **extension points** cho password/cookie như yêu cầu #4.
-- **Đặt tên:** Folder `Jarvis.Authentication.*` vs NuGet `Jarvis.Authentications.*` — document một lần trong README base để tránh nhầm package.
+- **Đặt tên:** Folder `Platform.Authentication.*` vs NuGet `Platform.Authentications.*` — document một lần trong README base để tránh nhầm package.
 
 ### Test (khi implement)
 
@@ -228,11 +228,11 @@ Chi tiết: mục [Test cases (Authentication story)](#test-cases-authentication
 
 | Project | Nhận xét ngắn |
 |---------|----------------|
-| `Jarvis.Authentication` | Base đủ dùng: `AddJarvisAuthentication`, root/cookie/password options, `Composite`, validators |
-| `Jarvis.Authentication.Jwt` | Production-ready cho RS symmetric/OIDC Authority; HTTPS metadata + startup validation |
-| `Jarvis.Authentication.ApiKey` | `AddCoreApiKey<T>`, `ConfigApiKeyProvider`, `Key` per realm, `ValidateOnStart` |
-| `Jarvis.Authentication.Basic` | `IBasicCredentialProvider`, `ConfigBasicCredentialProvider`, validate trong provider |
-| `Jarvis.Authentication.Cognito` | **Chưa sẵn sàng** — `AwsOption` + `CognitoClient` stub; config bind lệch |
+| `Platform.Authentication` | Base đủ dùng: `AddPlatformAuthentication`, root/cookie/password options, `Composite`, validators |
+| `Platform.Authentication.Jwt` | Production-ready cho RS symmetric/OIDC Authority; HTTPS metadata + startup validation |
+| `Platform.Authentication.ApiKey` | `AddCoreApiKey<T>`, `ConfigApiKeyProvider`, `Key` per realm, `ValidateOnStart` |
+| `Platform.Authentication.Basic` | `IBasicCredentialProvider`, `ConfigBasicCredentialProvider`, validate trong provider |
+| `Platform.Authentication.Cognito` | **Chưa sẵn sàng** — `AwsOption` + `CognitoClient` stub; config bind lệch |
 | `Sample` | Config mẫu + Development secrets; `Config*Provider`; Composite OK |
 
 **Overall:** **merge-ready** (packages + Sample dev). Production: user-secrets, Cognito JWT, OpenIddict.
@@ -242,7 +242,7 @@ Chi tiết: mục [Test cases (Authentication story)](#test-cases-authentication
 Thứ tự tiếp theo (Authentication story):
 
 1. ~~Sửa Sample `DefaultAuthenticateScheme`~~ — **done**; production: user-secrets override `Key` / Basic password.
-2. Phase 4 — `Jarvis.Authentication.OpenIddict` (xem [Luồng chung](#luồng-chung-openiddict--jwt--apikey)).
+2. Phase 4 — `Platform.Authentication.OpenIddict` (xem [Luồng chung](#luồng-chung-openiddict--jwt--apikey)).
 3. Cognito: thu hẹp phạm vi hoặc `AddCognitoJwtBearer` + fix bind.
 4. Phase 7–8 — Swagger đồng bộ scheme; bổ sung test còn thiếu (`MIX-I-02` Bearer-only Composite, OIDC-*).
 5. **Story khác** — Authorization (`UseAuthorization`, policies).
@@ -253,12 +253,12 @@ Thứ tự tiếp theo (Authentication story):
 
 | File / area | Vai trò |
 |-------------|---------|
-| `AuthenticationServiceCollectionExtensions.cs` | `AddJarvisAuthentication` |
+| `AuthenticationServiceCollectionExtensions.cs` | `AddPlatformAuthentication` |
 | `AuthenticationRootOptions.cs` | Type, default schemes, Schemes flags, Password/Cookie |
-| `AuthenticationBuilderExtensions.cs` | `AddJarvisCompositeScheme` |
-| `JarvisAuthenticationSchemes.cs` | `Composite`, `Default` (ApiKey), `Basic` |
+| `AuthenticationBuilderExtensions.cs` | `AddPlatformCompositeScheme` |
+| `PlatformAuthenticationSchemes.cs` | `Composite`, `Default` (ApiKey), `Basic` |
 | `DefaultPasswordPolicyValidator.cs` | `IPasswordPolicyValidator` |
-| `Jarvis.Authentication.Cognito/AwsOption.cs` | AWS credentials (Cognito package) |
+| `Platform.Authentication.Cognito/AwsOption.cs` | AWS credentials (Cognito package) |
 | `AuthenticationJwtOption.cs` + `AuthenticationJwtOptionValidator.cs` | JWT options + startup validation |
 | `AuthenticationBuilderExtension.cs` (Jwt) | `AddCoreJwtBearer`, `ConfigureJwtBearer` |
 | `AuthenticationApiKeyOption.cs` (`Key`, `KeyName`) + `Validator` | ApiKey per realm |
@@ -286,7 +286,7 @@ Phần này mở rộng kiến trúc để **một host/API** có thể dùng đ
 | **JWT (JwtBearer)** | Resource Server (RS): **xác thực** access token trên request API (`Authorization: Bearer`) — token do OpenIddict (hoặc IdP khác) ký |
 | **ApiKey** | Machine-to-machine / partner / webhook: header tĩnh, **không** qua OAuth; chạy **song song** JWT, không thay thế |
 
-Nguyên tắc: **OpenIddict ≠ JWT package**. OpenIddict **cấp** token; `Jarvis.Authentication.Jwt` **kiểm** token. ApiKey là scheme độc lập cho client không dùng OAuth.
+Nguyên tắc: **OpenIddict ≠ JWT package**. OpenIddict **cấp** token; `Platform.Authentication.Jwt` **kiểm** token. ApiKey là scheme độc lập cho client không dùng OAuth.
 
 ### Mô hình triển khai khuyến nghị
 
@@ -315,12 +315,12 @@ Nguyên tắc: **OpenIddict ≠ JWT package**. OpenIddict **cấp** token; `Jarv
 
 **Hai topology thường gặp:**
 
-| Topology | Khi nào dùng | Jarvis packages |
+| Topology | Khi nào dùng | Platform packages |
 |----------|--------------|-----------------|
 | **A — Combined** | Monolith: API + AS cùng process | Base + OpenIddict + Jwt + ApiKey (optional) |
 | **B — Split** | AS riêng, nhiều API | API chỉ Jwt (+ ApiKey); Authority trỏ AS | Base + Jwt + ApiKey |
 
-Jarvis nên hỗ trợ **cả A và B** qua cùng config key `Authentication:Jwt:*:Authority` / `Issuer`.
+Platform nên hỗ trợ **cả A và B** qua cùng config key `Authentication:Jwt:*:Authority` / `Issuer`.
 
 ### Luồng request (runtime)
 
@@ -356,30 +356,30 @@ sequenceDiagram
 ### Cấu trúc package (mục tiêu)
 
 ```text
-Jarvis.Authentication
+Platform.Authentication
   ├── Options/AuthenticationRootOptions.cs
   ├── Options/PasswordPolicyOptions.cs
-  ├── Options/JarvisCookieAuthenticationOptions.cs
+  ├── Options/PlatformCookieAuthenticationOptions.cs
   ├── Abstractions/IAuthenticationModule.cs
-  ├── Extensions/AuthenticationServiceCollectionExtensions.cs   ← AddJarvisAuthentication
+  ├── Extensions/AuthenticationServiceCollectionExtensions.cs   ← AddPlatformAuthentication
   └── Validation/...
 
-Jarvis.Authentication.OpenIddict          ← NEW (optional NuGet)
+Platform.Authentication.OpenIddict          ← NEW (optional NuGet)
   ├── OpenIddictServerOptions.cs          ← bind Authentication:OpenIddict:Server
   ├── OpenIddictValidationOptions.cs      ← bind Authentication:OpenIddict:Validation
   └── Extensions/AddCoreOpenIddict(...)
 
-Jarvis.Authentication.Jwt                 ← đã có; mở rộng Authority/JWKS
+Platform.Authentication.Jwt                 ← đã có; mở rộng Authority/JWKS
   └── AddCoreJwtBearer(...)               ← RS: validate token từ OpenIddict
 
-Jarvis.Authentication.ApiKey              ← đã có; sửa provider + scheme
+Platform.Authentication.ApiKey              ← đã có; sửa provider + scheme
   └── AddCoreApiKey(...)
 ```
 
 **Dependency:**
 
-- `OpenIddict` → reference `Jarvis.Authentication` (options chung: password, cookie).
-- `Jwt` → reference `Jarvis.Authentication`; **không** reference OpenIddict package (tránh kéo server vào API thuần RS).
+- `OpenIddict` → reference `Platform.Authentication` (options chung: password, cookie).
+- `Jwt` → reference `Platform.Authentication`; **không** reference OpenIddict package (tránh kéo server vào API thuần RS).
 - Host topology A: reference cả `OpenIddict` + `Jwt` + `ApiKey`.
 
 ### Cấu hình thống nhất (`appsettings`)
@@ -466,20 +466,20 @@ Jarvis.Authentication.ApiKey              ← đã có; sửa provider + scheme
 - `DefaultAuthenticateScheme` = **`Composite`** khi bật **cả** Jwt + ApiKey (policy scheme forward). Chỉ Jwt → `Bearer`; chỉ ApiKey → `Default` (scheme ApiKey).
 - Topology **A**: `OpenIddict:Validation` và `Jwt:Bearer` dùng **cùng** `Issuer`/`Audience` — JwtBearer có thể lấy signing keys từ OpenIddict validation handler hoặc `Authority` metadata.
 - Topology **B**: tắt `OpenIddict:Server:Enabled`; chỉ `Jwt:Bearer:Authority` trỏ AS bên ngoài.
-- `PasswordPolicy` / `Cookie`: bind ở **base**, implement trong `Jarvis.Authentication.OpenIddict` (custom `IOpenIddict*Handler` / ASP.NET Identity nếu có).
+- `PasswordPolicy` / `Cookie`: bind ở **base**, implement trong `Platform.Authentication.OpenIddict` (custom `IOpenIddict*Handler` / ASP.NET Identity nếu có).
 
 ### API Host — wiring chung (đề xuất, chưa implement)
 
 ```csharp
-using Jarvis.Authentication;                    // đề xuất — package base
-using Jarvis.Authentication.OpenIddict.Extensions; // đề xuất — package mới
-using Jarvis.Authentication.Jwt;
-using Jarvis.Authentication.ApiKey;
+using Platform.Authentication;                    // đề xuất — package base
+using Platform.Authentication.OpenIddict.Extensions; // đề xuất — package mới
+using Platform.Authentication.Jwt;
+using Platform.Authentication.ApiKey;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
-    .AddJarvisAuthentication(builder.Configuration, auth =>
+    .AddPlatformAuthentication(builder.Configuration, auth =>
     {
         if (builder.Configuration.GetValue("Authentication:Schemes:OpenIddict:Enabled", false))
             auth.AddCoreOpenIddict(builder.Configuration);
@@ -499,7 +499,7 @@ app.UseAuthentication();
 app.MapControllers();
 ```
 
-**`AddJarvisAuthentication`** (đề xuất, trong `Jarvis.Authentication`) — trách nhiệm:
+**`AddPlatformAuthentication`** (đề xuất, trong `Platform.Authentication`) — trách nhiệm:
 
 1. `services.AddAuthentication()` + bind `AuthenticationRootOptions`.
 2. Đặt `DefaultAuthenticateScheme` / `DefaultChallengeScheme` từ config.
@@ -553,9 +553,9 @@ GET  /api/... + Bearer  → Composite → Bearer → Jwt (Authority = OpenIddict
 GET  /api/... + ApiKey  → Composite → Default → IApiKeyProvider
 ```
 
-**Swagger** (`Jarvis.Swashbuckle`): giữ `SecuritySchemes: ["JWT", "API_KEY"]`; operation có `[Authorize]` không scheme → filter thêm **cả hai** requirement (OR semantics phía client — user chọn một).
+**Swagger** (`Platform.Swashbuckle`): giữ `SecuritySchemes: ["JWT", "API_KEY"]`; operation có `[Authorize]` không scheme → filter thêm **cả hai** requirement (OR semantics phía client — user chọn một).
 
-### `Jarvis.Authentication.OpenIddict` — thiết kế chi tiết
+### `Platform.Authentication.OpenIddict` — thiết kế chi tiết
 
 | Module | Extension | Mô tả |
 |--------|-----------|-------|
@@ -564,7 +564,7 @@ GET  /api/... + ApiKey  → Composite → Default → IApiKeyProvider
 | Store | `UseEfCoreStore` / custom | Application, authorization, scope, token — **ở Host/Infrastructure**, không hard-code trong library |
 | Customize | `IPasswordPolicyValidator`, `IPasswordExpirationValidator` | Gọi từ custom handler trước `SignIn` / token password grant |
 
-**Quan hệ với `Jarvis.Authentication.Jwt`:**
+**Quan hệ với `Platform.Authentication.Jwt`:**
 
 | Cách | Ưu | Nhược |
 |------|-----|-------|
@@ -572,7 +572,7 @@ GET  /api/... + ApiKey  → Composite → Default → IApiKeyProvider
 | Chỉ **JwtBearer** + `Authority` | Chuẩn OIDC, JWKS tự động | Hai nơi cấu hình issuer nếu vừa có OpenIddict server |
 | **Cả hai** (không khuyến nghị cùng scheme) | — | Trùng validate, khó debug |
 
-**Khuyến nghị Jarvis:**
+**Khuyến nghị Platform:**
 
 - Topology **A** (combined): `AddCoreOpenIddictServer` + `AddCoreOpenIddictValidation` **hoặc** `AddCoreJwtBearer` với `Authority = OpenIddict:Server:Issuer` — **chọn một** làm default authenticate, không bật song song trùng chức năng.
 - Topology **B** (split): API chỉ `AddCoreJwtBearer`.
@@ -590,9 +590,9 @@ public interface IPasswordPolicyValidator
 // → gọi validator trước khi cho phép token
 ```
 
-Cookie options (`JarvisCookieAuthenticationOptions`) map sang `CookieAuthenticationOptions` cho interactive login (authorization code + cookie session), tách khỏi Bearer API.
+Cookie options (`PlatformCookieAuthenticationOptions`) map sang `CookieAuthenticationOptions` cho interactive login (authorization code + cookie session), tách khỏi Bearer API.
 
-### `Jarvis.Authentication.Jwt` — điều chỉnh cho OpenIddict
+### `Platform.Authentication.Jwt` — điều chỉnh cho OpenIddict
 
 Bổ sung vào `AuthenticationJwtOption`:
 
@@ -618,7 +618,7 @@ Config mẫu khi AS là OpenIddict local:
 }
 ```
 
-### `Jarvis.Authentication.ApiKey` — trong luồng chung
+### `Platform.Authentication.ApiKey` — trong luồng chung
 
 - Scheme name = **`Default`** (section `Authentication:ApiKey:Default`), không hard-code `ApiKeyDefaults.AuthenticationScheme` cho config path.
 - `Mode`: `SingleKey` | `RealmKey` — xem Critical Issues #1–2.
@@ -629,7 +629,7 @@ Config mẫu khi AS là OpenIddict local:
 
 Authentication story chỉ cần **`ClaimsPrincipal` nhất quán** trên `HttpContext.User`. Story Authorization sẽ dùng claims đó cho policies.
 
-Đề xuất helper `JarvisClaimTypes` (package base):
+Đề xuất helper `PlatformClaimTypes` (package base):
 
 | Nguồn | Claim gợi ý |
 |-------|-------------|
@@ -641,11 +641,11 @@ Authentication story chỉ cần **`ClaimsPrincipal` nhất quán** trên `HttpC
 | Phase | Việc làm | Trạng thái |
 |-------|-----------|------------|
 | **0** | ApiKey scheme, mode, DI, HashSet | **Done** |
-| **1** | `AuthenticationRootOptions`, `AddJarvisAuthentication`, Composite | **Done** |
+| **1** | `AuthenticationRootOptions`, `AddPlatformAuthentication`, Composite | **Done** |
 | **2** | Jwt Authority, HTTPS metadata, validators | **Done** |
 | **3** | `AddCoreApiKey(configuration)` | **Done** |
-| **3b** | `Jarvis.Authentication.Basic` | **Done** |
-| **4** | `Jarvis.Authentication.OpenIddict` | **Chưa** |
+| **3b** | `Platform.Authentication.Basic` | **Done** |
+| **4** | `Platform.Authentication.OpenIddict` | **Chưa** |
 | **5** | Password/cookie hooks trong OpenIddict flow | **Một phần** (validator có, chưa gắn OIDC) |
 | **6** | Sample wire + `AuthProbeController` | **Done** (sửa Composite default — pending) |
 | **7** | Swagger đồng bộ scheme | **Chưa** |
@@ -655,7 +655,7 @@ Authentication story chỉ cần **`ClaimsPrincipal` nhất quán** trên `HttpC
 
 ```csharp
 builder.Services
-    .AddJarvisAuthentication(builder.Configuration, auth =>
+    .AddPlatformAuthentication(builder.Configuration, auth =>
     {
         auth.AddCoreOpenIddict(builder.Configuration);
         auth.AddCoreJwtBearer(builder.Configuration, "Bearer");
@@ -681,7 +681,7 @@ app.UseAuthentication();
 
 | # | Yêu cầu | Hiện trạng code |
 |---|---------|-----------------|
-| 1 | Base chung | **Đạt** — `AddJarvisAuthentication`, Composite, shared options |
+| 1 | Base chung | **Đạt** — `AddPlatformAuthentication`, Composite, shared options |
 | 2 | JWT đơn giản | **Đạt** — `AddCoreJwtBearer` + Authority/symmetric |
 | 3 | ApiKey đơn giản | **Đạt** — `AddCoreApiKey<ConfigApiKeyProvider>` |
 | 4 | Customize | **Một phần** — options + `IPasswordPolicyValidator`; OpenIddict flow chưa |
@@ -702,18 +702,18 @@ app.UseAuthentication();
 | Loại | Project | Công cụ |
 |------|---------|---------|
 | Unit | `UnitTest/Authentication` (Base, ApiKey, Jwt, Basic, Integration) | xUnit + `WebApplicationFactory` / options |
-| Integration | `Sample.Tests` hoặc `Jarvis.Authentication.IntegrationTests` | `WebApplicationFactory<Program>`, `HttpClient` |
+| Integration | `Sample.Tests` hoặc `Platform.Authentication.IntegrationTests` | `WebApplicationFactory<Program>`, `HttpClient` |
 | Config / startup | Unit hoặc integration | `ValidateOnStart`, host build |
 
 **Ký hiệu:** `P0` = bắt buộc trước merge Authentication; `P1` = nên có; `P2` = sau hoặc topology tùy chọn.
 
 ---
 
-### A. `Jarvis.Authentication` (base)
+### A. `Platform.Authentication` (base)
 
 | ID | Phase | P | Given | When | Then |
 |----|-------|---|-------|------|------|
-| AUTH-B-01 | 1 | P0 | Config hợp lệ `Authentication:Type` | `AddJarvisAuthentication` + build host | Host start OK; `AuthenticationRootOptions` bind đúng |
+| AUTH-B-01 | 1 | P0 | Config hợp lệ `Authentication:Type` | `AddPlatformAuthentication` + build host | Host start OK; `AuthenticationRootOptions` bind đúng |
 | AUTH-B-02 | 1 | P0 | `Authentication:Type` rỗng | ValidateOnStart / build | Fail startup; message chỉ rõ `Authentication:Type` |
 | AUTH-B-03 | 1 | P1 | `DefaultAuthenticateScheme` = `Bearer` | `AddAuthentication` callback | `AuthenticationOptions.DefaultAuthenticateScheme` == `Bearer` |
 | AUTH-B-04 | 1 | P1 | Bật Jwt + ApiKey; `DefaultAuthenticateScheme` = `Composite` | Request có `X-API-KEY` | Forward scheme `Default` |
@@ -723,7 +723,7 @@ app.UseAuthentication();
 
 ---
 
-### B. `Jarvis.Authentication.ApiKey`
+### B. `Platform.Authentication.ApiKey`
 
 | ID | Phase | P | Given | When | Then |
 |----|-------|---|-------|------|------|
@@ -741,7 +741,7 @@ app.UseAuthentication();
 
 ---
 
-### C. `Jarvis.Authentication.Jwt`
+### C. `Platform.Authentication.Jwt`
 
 | ID | Phase | P | Given | When | Then |
 |----|-------|---|-------|------|------|
@@ -759,7 +759,7 @@ app.UseAuthentication();
 
 ---
 
-### D. `Jarvis.Authentication.OpenIddict` (sau Phase 4)
+### D. `Platform.Authentication.OpenIddict` (sau Phase 4)
 
 | ID | Phase | P | Given | When | Then |
 |----|-------|---|-------|------|------|
@@ -831,9 +831,9 @@ app.UseAuthentication();
 
 ```text
 tests/
-├── Jarvis.Authentication.ApiKey.Tests/
+├── Platform.Authentication.ApiKey.Tests/
 │   └── ConfigApiKeyProviderTests.cs    # AK-U-*
-├── Jarvis.Authentication.Jwt.Tests/
+├── Platform.Authentication.Jwt.Tests/
 │   └── AuthenticationJwtOptionValidatorTests.cs
 └── Sample.Tests/
     └── Authentication/
@@ -869,7 +869,7 @@ Chỉ dùng trong Sample/test environment; không expose production.
 Khi bắt đầu Story Authorization, tách doc riêng (ví dụ `docs/refactor-authorization.md`) và chỉ **phụ thuộc** output của Authentication:
 
 - `HttpContext.User` đã authenticated
-- Claim types thống nhất (`JarvisClaimTypes`)
+- Claim types thống nhất (`PlatformClaimTypes`)
 - Scheme names ổn định: policy `Composite`, `Bearer`, ApiKey `Default` — cho Story Authorization
 
 Authentication doc **không** định nghĩa policy names hay role matrix — tránh trùng scope.

@@ -1,0 +1,1363 @@
+﻿@using System.Text.Json
+@using System.Text.Json.Nodes
+@using Elsa.Workflows.Management
+@using Elsa.Workflows.Management.Filters
+@using Elsa.Workflows.Management.Entities
+@using Elsa.Workflows.Runtime
+@using Elsa.Workflows.Runtime.Filters
+@using Elsa.Workflows.Runtime.Entities
+@using Elsa.Studio.Workflows.DiagramDesigners.Flowcharts
+@using MudBlazor
+
+@inherits LayoutComponentBase
+
+@inject IWorkflowDefinitionStore WorkflowDefinitionStore
+@inject IWorkflowInstanceStore WorkflowInstanceStore
+@inject IBookmarkStore BookmarkStore
+@inject IActivityExecutionStore ActivityExecutionStore
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<div style="width:100%;height:100vh;min-height:700px;display:flex;overflow:hidden; background:#f5f5f5;">
+    <div style="flex:1;min-width:0;height:100%;position:relative;">
+        @if (_loading)
+        {
+            <div style="
+                width:100%;
+                height:100%;
+                display:flex;
+                align-items:center;
+                justify-content:center;">
+                Loading workflow...
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(_error))
+        {
+            <div style="padding:20px;color:red;">
+                @_error
+            </div>
+        }
+        else if (_flowchart is not null)
+        {
+            @if (!string.IsNullOrWhiteSpace(InstanceId))
+            {
+                <div style="
+                    position:absolute;
+                    top:15px;
+                    left:15px;
+                    z-index:1000;
+                    background:white;
+                    border:1px solid #ddd;
+                    border-radius:8px;
+                    padding:12px 18px;
+                    box-shadow:0 2px 8px rgba(0,0,0,.15);">
+
+                    <div>
+                        <strong>Instance:</strong>
+                        @InstanceId
+                    </div>
+
+                    @if (_currentSteps.Count > 0)
+                    {
+                        <div style="
+                            margin-top:6px;
+                            color:#ed6c02;
+                            font-weight:600;">
+
+                            Current step:
+
+                            @foreach (var step in _currentSteps)
+                            {
+                                <div>
+                                    ● @step.DisplayName
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="
+                            margin-top:6px;
+                            color:#666;">
+                            No waiting activity.
+                        </div>
+                    }
+                </div>
+            }
+            <div style="position:absolute;inset:0;width:100%;height:100%;">
+                <FlowchartDesignerWrapper
+                    @ref="_designer"
+                    Flowchart="@_flowchart" IsReadOnly="true" ActivitySelected="@OnActivitySelected" />
+            </div>
+        }
+    </div>
+
+    @if (_selectedActivity is not null)
+    {
+        <div style="width:400px;min-width:400px;max-width:400px;height:100%;
+            background:white;border-left:1px solid #ddd;box-shadow:-2px 0 10px rgba(0,0,0,.08);
+            display:flex;flex-direction:column;z-index:2000;" @onclick:stopPropagation="true">
+            <div style="
+                padding:18px 20px;
+                border-bottom:1px solid #e5e5e5;
+                display:flex;
+                align-items:flex-start;
+                justify-content:space-between;">
+                <div style="min-width:0;">
+                    <div style="font-size:18px;font-weight:600;color:#222; word-break:break-word;">
+                        @GetActivityDisplayName(_selectedActivity)
+                    </div>
+
+                    <div style="margin-top:4px;font-size:12px;color:#777;word-break:break-word;">
+                        @GetActivityProperty(_selectedActivity, "type")
+                    </div>
+                </div>
+                <div>
+                    <button type="button"
+                            class="detail-close-button"
+                            @onclick="ClearSelectedActivity"
+                            @onclick:stopPropagation="true"
+                            style="border:none; background:transparent; cursor:pointer; font-size:26px;
+                        line-height:26px; color:#666; margin-left:10px;">
+                        ×
+                    </button>
+                </div>
+                
+            </div>
+            <div style="flex:1;overflow-y:auto;padding:20px;">
+                <div style="font-size:13px;font-weight:700;color:#666;margin-bottom:14px;text-transform:uppercase;">
+                    General
+                </div>
+                @RenderDetailRow("Display Name",GetActivityDisplayName(_selectedActivity))
+                @RenderDetailRow("Name", GetActivityProperty(_selectedActivity, "name"))
+                @RenderDetailRow("Display Text", GetActivityDisplayText(_selectedActivity))
+                @RenderDetailRow("Description", GetActivityDescription(_selectedActivity))
+                @RenderDetailRow("Type", GetActivityProperty(_selectedActivity, "type"))
+                @RenderDetailRow("Activity ID", GetActivityProperty(_selectedActivity,"id"), true)
+                @RenderDetailRow("Node ID", GetActivityProperty(_selectedActivity,"nodeId"), true)
+                @RenderDetailRow("Version",GetActivityProperty(_selectedActivity, "version"))
+                @if (_selectedExecutionRecord is not null)
+                {
+                    <div style="margin-top:26px;padding-top:18px;border-top:1px solid #eee;">
+                        <div style="font-size:13px; font-weight:700; color:#666; margin-bottom:14px; text-transform:uppercase;">
+                            Runtime
+                        </div>
+
+                        @RenderDetailRow("Status",GetExecutionStatus(_selectedExecutionRecord))
+                        @RenderDetailRow("Activity Name", _selectedExecutionRecord.ActivityName)
+                        @RenderDetailRow("Activity Type", _selectedExecutionRecord.ActivityType)
+                        @RenderDetailRow("Execution ID", _selectedExecutionRecord.Id, true)
+                        @RenderDetailRow("Activity Instance ID", _selectedExecutionRecord.Id, true)
+                        @RenderDetailRow("Started At", _selectedExecutionRecord.StartedAt.ToString())
+                        @RenderDetailRow("Completed At",_selectedExecutionRecord.CompletedAt?.ToString())
+                        @if (_selectedExecutionRecord.Exception is not null)
+                        {
+                            <div style="
+                                margin-top:14px;
+                                padding:12px;
+                                border:1px solid #ffcdd2;
+                                background:#fff5f5;
+                                border-radius:6px;">
+
+                                <div style="
+                                    color:#c62828;
+                                    font-size:12px;
+                                    font-weight:700;
+                                    margin-bottom:6px;">
+                                    Exception
+                                </div>
+
+                                <pre style="
+                                    white-space:pre-wrap;
+                                    word-break:break-word;
+                                    margin:0;
+                                    font-size:11px;
+                                    color:#b71c1c;">@_selectedExecutionRecord.Exception</pre>
+
+                            </div>
+                        }
+
+                    </div>
+                }
+
+                @if (_selectedBookmarks.Count > 0)
+                {
+                    <div style="
+                        margin-top:26px;
+                        padding-top:18px;
+                        border-top:1px solid #eee;">
+
+                        <div style="
+                            font-size:13px;
+                            font-weight:700;
+                            color:#666;
+                            margin-bottom:14px;
+                            text-transform:uppercase;">
+                            Waiting / Bookmarks
+                        </div>
+
+                        @foreach (var bookmark in _selectedBookmarks)
+                        {
+                            <div style="
+                                padding:10px 12px;
+                                margin-bottom:8px;
+                                background:#fff8e1;
+                                border:1px solid #ffe0b2;
+                                border-radius:6px;">
+
+                                <div style="
+                                    font-size:13px;
+                                    font-weight:600;
+                                    color:#e65100;">
+                                    @(bookmark.Name ?? "Bookmark")
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(
+                                        bookmark.ActivityInstanceId))
+                                {
+                                    <div style="
+                                        margin-top:5px;
+                                        font-family:Consolas,monospace;
+                                        font-size:11px;
+                                        color:#777;
+                                        word-break:break-all;">
+
+                                        @bookmark.ActivityInstanceId
+
+                                    </div>
+                                }
+
+                            </div>
+                        }
+
+                    </div>
+                }
+
+                @if (HasJsonProperty(_selectedActivity,"inputs"))
+                {
+                    <div style="
+                        margin-top:26px;
+                        padding-top:18px;
+                        border-top:1px solid #eee;">
+
+                        <div style="
+                            font-size:13px;
+                            font-weight:700;
+                            color:#666;
+                            margin-bottom:10px;
+                            text-transform:uppercase;">
+                            Inputs
+                        </div>
+
+                        <pre style="
+                            margin:0;
+                            padding:12px;
+                            border-radius:6px;
+                            background:#f7f7f7;
+                            border:1px solid #eee;
+                            font-size:11px;
+                            white-space:pre-wrap;
+                            word-break:break-word;">@GetJsonProperty(
+                                _selectedActivity,
+                                "inputs")</pre>
+
+                    </div>
+                }
+
+
+                <!-- OUTPUTS -->
+
+                @if (HasJsonProperty(_selectedActivity,"outputs"))
+                {
+                    <div style="
+                        margin-top:26px;
+                        padding-top:18px;
+                        border-top:1px solid #eee;">
+
+                        <div style="
+                            font-size:13px;
+                            font-weight:700;
+                            color:#666;
+                            margin-bottom:10px;
+                            text-transform:uppercase;">
+                            Outputs
+                        </div>
+
+                        <pre style="
+                            margin:0;
+                            padding:12px;
+                            border-radius:6px;
+                            background:#f7f7f7;
+                            border:1px solid #eee;
+                            font-size:11px;
+                            white-space:pre-wrap;
+                            word-break:break-word;">@GetJsonProperty(
+                                _selectedActivity,
+                                "outputs")</pre>
+
+                    </div>
+                }
+
+
+                <!-- CUSTOM PROPERTIES -->
+
+                @if (HasJsonProperty(_selectedActivity,"customProperties"))
+                {
+                    <div style="
+                        margin-top:26px;
+                        padding-top:18px;
+                        border-top:1px solid #eee;">
+
+                        <div style="
+                            font-size:13px;
+                            font-weight:700;
+                            color:#666;
+                            margin-bottom:10px;
+                            text-transform:uppercase;">
+                            Custom Properties
+                        </div>
+
+                        <pre style="
+                            margin:0;
+                            padding:12px;
+                            border-radius:6px;
+                            background:#f7f7f7;
+                            border:1px solid #eee;
+                            font-size:11px;
+                            white-space:pre-wrap;
+                            word-break:break-word;">@GetJsonProperty(
+                                _selectedActivity,
+                                "customProperties")</pre>
+
+                    </div>
+                }
+
+
+                <!-- METADATA -->
+
+                @if (HasJsonProperty(_selectedActivity,"metadata"))
+                {
+                    <div style="
+                        margin-top:26px;
+                        padding-top:18px;
+                        border-top:1px solid #eee;">
+
+                        <div style="
+                            font-size:13px;
+                            font-weight:700;
+                            color:#666;
+                            margin-bottom:10px;
+                            text-transform:uppercase;">
+                            Metadata
+                        </div>
+
+                        <pre style="
+                            margin:0;
+                            padding:12px;
+                            border-radius:6px;
+                            background:#f7f7f7;
+                            border:1px solid #eee;
+                            font-size:11px;
+                            white-space:pre-wrap;
+                            word-break:break-word;">@GetJsonProperty(
+                                _selectedActivity,
+                                "metadata")</pre>
+
+                    </div>
+                }
+
+                <!-- CUSTOM NODE INFO FROM REDIS -->
+
+                @{
+                    var customNodeJson = GetSelectedNodeInfoJson();
+                }
+
+                @if (!string.IsNullOrWhiteSpace(customNodeJson))
+                {
+                    <div style="margin-top:26px;padding-top:18px;border-top:1px solid #43a047;">
+                        <div style="font-size:13px;font-weight:700;color:#43a047;margin-bottom:10px;text-transform:uppercase;">
+                            📊 Custom Node Info (JSON)
+                        </div>
+
+                        <pre style="
+                            margin:0;
+                            padding:12px;
+                            border-radius:6px;
+                            background:#f7f7f7;
+                            border:1px solid #c8e6c9;
+                            font-size:11px;
+                            white-space:pre-wrap;
+                            word-break:break-word;">@customNodeJson</pre>
+                    </div>
+                }
+
+                <div style="margin-top:26px;padding-top:18px; border-top:1px solid #eee;">
+                    <details>
+                        <summary style="cursor:pointer;font-size:13px;font-weight:700;color:#666;">
+                            Raw JSON
+                        </summary>
+                        <pre style="
+                            margin-top:12px;
+                            padding:12px;
+                            background:#1e1e1e;
+                            color:#ddd;
+                            border-radius:6px;
+                            overflow-x:auto;
+                            font-size:11px;
+                            line-height:1.5;
+                            white-space:pre-wrap;
+                            word-break:break-word;">@GetRawActivityJson()</pre>
+                    </details>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code
+{
+    [Parameter]
+    public string? DefinitionId { get; set; }
+    [Parameter]
+    public string? InstanceId { get; set; }
+    private FlowchartDesignerWrapper? _designer;
+    private JsonObject? _flowchart;
+    private JsonObject? _selectedActivity;
+    private WorkflowInstance? _workflowInstance;
+    private ActivityExecutionRecord? _selectedExecutionRecord;
+    private bool _loading = true;
+    private bool _clearingSelection;
+    private bool _needLoadDesigner;
+    private string? _error;
+    private readonly List<CurrentWorkflowStep> _currentSteps = new();
+    private readonly List<ActivityExecutionRecord> _executionRecords = new();
+    private readonly List<StoredBookmark> _bookmarks = new();
+    private readonly List<StoredBookmark> _selectedBookmarks = new();
+
+    // Custom node info from external source (Redis)
+    private readonly Dictionary<string, string> _nodeInfoCache = new(StringComparer.OrdinalIgnoreCase);
+    private bool _loadingNodeInfo = false;
+
+    private string? GetSelectedNodeInfoJson()
+    {
+        if (_selectedActivity is null)
+            return null;
+
+        var activityId = GetActivityProperty(_selectedActivity, "id");
+        var nodeId = GetActivityProperty(_selectedActivity, "nodeId");
+
+        if (!string.IsNullOrWhiteSpace(activityId) && _nodeInfoCache.TryGetValue(activityId, out var json))
+            return json;
+
+        if (!string.IsNullOrWhiteSpace(nodeId) && _nodeInfoCache.TryGetValue(nodeId, out var jsonByNode))
+            return jsonByNode;
+
+        // Fallback fake data khi test nếu node chưa có dữ liệu riêng
+        if (_nodeInfoCache.TryGetValue("*", out var defaultFakeJson))
+            return defaultFakeJson;
+
+        return null;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _error = null;
+        _flowchart = null;
+        _workflowInstance = null;
+        _selectedActivity = null;
+        _selectedExecutionRecord = null;
+        _currentSteps.Clear();
+        _executionRecords.Clear();
+        _bookmarks.Clear();
+        _selectedBookmarks.Clear();
+        _needLoadDesigner = false;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(
+                    DefinitionId))
+            {
+                _error = "DefinitionId is required.";
+                return;
+            }
+
+            var workflowDefinition = await WorkflowDefinitionStore.FindLastVersionAsync(
+                        new WorkflowDefinitionFilter
+                        {
+                            DefinitionId = DefinitionId
+                        },CancellationToken.None);
+
+            if (workflowDefinition is null)
+            {
+                _error =
+                    $"Workflow '{DefinitionId}' not found.";
+
+                return;
+            }
+
+
+            if (string.IsNullOrWhiteSpace(
+                    workflowDefinition.StringData))
+            {
+                _error =
+                    "Workflow StringData is empty.";
+
+                return;
+            }
+
+
+            var root =
+                JsonNode.Parse(
+                    workflowDefinition.StringData);
+
+
+            if (root is null)
+            {
+                _error =
+                    "Unable to parse workflow JSON.";
+
+                return;
+            }
+
+
+            _flowchart =
+                FindFlowchart(root);
+
+
+            if (_flowchart is null)
+            {
+                _error =
+                    "Elsa.Flowchart not found.";
+
+                return;
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(
+                    InstanceId))
+            {
+                await LoadRuntimeStateAsync();
+                await LoadNodeInfoAsync();  // NEW: Load custom node info from Redis
+            }
+
+
+            _needLoadDesigner = true;
+        }
+        catch (Exception ex)
+        {
+            _error =
+                ex.ToString();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+
+    private async Task LoadRuntimeStateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(
+                InstanceId))
+        {
+            return;
+        }
+
+
+        _workflowInstance =
+            await WorkflowInstanceStore.FindAsync(
+                new WorkflowInstanceFilter
+                {
+                    Id = InstanceId
+                },
+                CancellationToken.None);
+
+
+        if (_workflowInstance is null)
+        {
+            _error =
+                $"Workflow instance '{InstanceId}' not found.";
+
+            return;
+        }
+
+
+        var bookmarks =
+            await BookmarkStore.FindManyAsync(
+                new BookmarkFilter
+                {
+                    WorkflowInstanceId =
+                        InstanceId
+                },
+                CancellationToken.None);
+
+
+        _bookmarks.AddRange(
+            bookmarks);
+
+
+        var executionRecords =
+            await ActivityExecutionStore.FindManyAsync(
+                new ActivityExecutionRecordFilter
+                {
+                    WorkflowInstanceId =
+                        InstanceId
+                },
+                CancellationToken.None);
+
+
+        _executionRecords.AddRange(
+            executionRecords);
+
+
+        foreach (var bookmark in _bookmarks)
+        {
+            if (string.IsNullOrWhiteSpace(
+                    bookmark.ActivityInstanceId))
+            {
+                continue;
+            }
+
+
+            var executionRecord =
+                _executionRecords
+                    .Where(
+                        x =>
+                            string.Equals(
+                                x.Id,
+                                bookmark.ActivityInstanceId,
+                                StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(
+                        x => x.StartedAt)
+                    .FirstOrDefault();
+
+
+            if (executionRecord is null)
+            {
+                continue;
+            }
+
+
+            if (_currentSteps.Any(
+                    x =>
+                        string.Equals(
+                            x.ActivityId,
+                            executionRecord.ActivityId,
+                            StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+
+            _currentSteps.Add(
+                new CurrentWorkflowStep
+                {
+                    ActivityId =
+                        executionRecord.ActivityId,
+
+                    ActivityNodeId =
+                        executionRecord.ActivityNodeId,
+
+                    DisplayName =
+                        !string.IsNullOrWhiteSpace(
+                            executionRecord.ActivityName)
+                            ? executionRecord.ActivityName
+                            : executionRecord.ActivityType,
+
+                    BookmarkName =
+                        bookmark.Name
+                });
+        }
+
+
+        if (_currentSteps.Count == 0)
+        {
+            var runningRecords =
+                _executionRecords
+                    .Where(
+                        x =>
+                            x.CompletedAt == null &&
+                            x.Exception == null)
+                    .OrderByDescending(
+                        x => x.StartedAt)
+                    .ToList();
+
+
+            foreach (var record in runningRecords)
+            {
+                if (string.IsNullOrWhiteSpace(
+                        record.ActivityId))
+                {
+                    continue;
+                }
+
+
+                if (_currentSteps.Any(
+                        x =>
+                            string.Equals(
+                                x.ActivityId,
+                                record.ActivityId,
+                                StringComparison.OrdinalIgnoreCase)))
+                {
+                    continue;
+                }
+
+
+                _currentSteps.Add(
+                    new CurrentWorkflowStep
+                    {
+                        ActivityId =
+                            record.ActivityId,
+
+                        ActivityNodeId =
+                            record.ActivityNodeId,
+
+                        DisplayName =
+                            !string.IsNullOrWhiteSpace(
+                                record.ActivityName)
+                                ? record.ActivityName
+                                : record.ActivityType
+                    });
+            }
+        }
+    }
+
+
+    private Task OnActivitySelected(
+        JsonObject activity)
+    {
+        if (_clearingSelection)
+            return Task.CompletedTask;
+
+        _selectedActivity =
+            (JsonObject)activity.DeepClone();
+
+
+        LoadSelectedRuntimeInformation();
+
+
+        return InvokeAsync(
+            StateHasChanged);
+    }
+
+
+    private void LoadSelectedRuntimeInformation()
+    {
+        _selectedExecutionRecord = null;
+
+        _selectedBookmarks.Clear();
+
+
+        if (_selectedActivity is null)
+        {
+            return;
+        }
+
+
+        var activityId =
+            GetActivityProperty(
+                _selectedActivity,
+                "id");
+
+
+        var nodeId =
+            GetActivityProperty(
+                _selectedActivity,
+                "nodeId");
+
+
+        if (string.IsNullOrWhiteSpace(
+                activityId))
+        {
+            return;
+        }
+
+
+        _selectedExecutionRecord =
+            _executionRecords
+                .Where(
+                    x =>
+                        string.Equals(
+                            x.ActivityId,
+                            activityId,
+                            StringComparison.OrdinalIgnoreCase)
+                        ||
+                        (
+                            !string.IsNullOrWhiteSpace(nodeId)
+                            &&
+                            string.Equals(
+                                x.ActivityNodeId,
+                                nodeId,
+                                StringComparison.OrdinalIgnoreCase)
+                        ))
+                .OrderByDescending(
+                    x => x.StartedAt)
+                .FirstOrDefault();
+
+
+        if (_selectedExecutionRecord is null)
+        {
+            return;
+        }
+
+
+        var selectedExecutionId =
+            _selectedExecutionRecord.Id;
+
+
+        var selectedBookmarks =
+            _bookmarks
+                .Where(
+                    x =>
+                        string.Equals(
+                            x.ActivityInstanceId,
+                            selectedExecutionId,
+                            StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+
+        _selectedBookmarks.AddRange(
+            selectedBookmarks);
+    }
+
+
+    private async Task ClearSelectedActivity()
+    {
+        _clearingSelection = true;
+        try
+        {
+            _selectedActivity = null;
+            _selectedExecutionRecord = null;
+            _selectedBookmarks.Clear();
+
+            await InvokeAsync(StateHasChanged);
+
+            if (_designer is not null)
+            {
+                try
+                {
+                    await _designer.SelectActivityAsync(string.Empty);
+                }
+                catch
+                {
+                    // Ignore designer deselection issues; UI state is already cleared.
+                }
+            }
+        }
+        finally
+        {
+            _clearingSelection = false;
+        }
+    }
+
+
+    protected override async Task OnAfterRenderAsync(
+        bool firstRender)
+    {
+        if (!_needLoadDesigner)
+        {
+            return;
+        }
+
+
+        if (_designer is null)
+        {
+            return;
+        }
+
+
+        if (_flowchart is null)
+        {
+            return;
+        }
+
+
+        _needLoadDesigner = false;
+
+
+        try
+        {
+            await Task.Delay(300);
+
+
+            await _designer.LoadFlowchartAsync(
+                _flowchart);
+
+
+            await Task.Delay(500);
+
+
+            var currentStep =
+                _currentSteps.FirstOrDefault();
+
+
+            if (currentStep is not null &&
+                !string.IsNullOrWhiteSpace(
+                    currentStep.ActivityId))
+            {
+                await _designer.SelectActivityAsync(
+                    currentStep.ActivityId);
+            }
+
+
+            // await _designer.ZoomToFitAsync();
+        }
+        catch (Exception ex)
+        {
+            _error =
+                $"Designer error: {ex}";
+
+
+            await InvokeAsync(
+                StateHasChanged);
+        }
+    }
+
+
+    private static JsonObject? FindFlowchart(
+        JsonNode? node)
+    {
+        if (node is null)
+        {
+            return null;
+        }
+
+
+        if (node is JsonObject obj)
+        {
+            var type =
+                obj["type"]?
+                    .GetValue<string>();
+
+
+            if (string.Equals(
+                    type,
+                    "Elsa.Flowchart",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return obj;
+            }
+
+
+            foreach (var property in obj)
+            {
+                var result =
+                    FindFlowchart(
+                        property.Value);
+
+
+                if (result is not null)
+                {
+                    return result;
+                }
+            }
+        }
+
+
+        if (node is JsonArray array)
+        {
+            foreach (var item in array)
+            {
+                var result =
+                    FindFlowchart(item);
+
+
+                if (result is not null)
+                {
+                    return result;
+                }
+            }
+        }
+
+
+        return null;
+    }
+
+
+    private static string GetActivityDisplayName(
+        JsonObject activity)
+    {
+        var displayName =
+            GetActivityProperty(
+                activity,
+                "displayName");
+
+
+        if (!string.IsNullOrWhiteSpace(
+                displayName))
+        {
+            return displayName;
+        }
+
+
+        var name =
+            GetActivityProperty(
+                activity,
+                "name");
+
+
+        if (!string.IsNullOrWhiteSpace(
+                name))
+        {
+            return name;
+        }
+
+
+        var type =
+            GetActivityProperty(
+                activity,
+                "type");
+
+
+        if (!string.IsNullOrWhiteSpace(
+                type))
+        {
+            return type;
+        }
+
+
+        return "Activity";
+    }
+
+
+    private static string? GetActivityDisplayText(JsonObject activity)
+    {
+        var displayText = GetActivityProperty(activity,"displayText");
+
+        if (!string.IsNullOrWhiteSpace(displayText))
+        {
+            return displayText;
+        }
+
+
+        if (!activity.TryGetPropertyValue("metadata",out var metadataNode))
+        {
+            return null;
+        }
+
+        if (metadataNode is not JsonObject metadata)
+        {
+            return null;
+        }
+
+        return GetActivityProperty(metadata,"displayText");
+    }
+
+    private static string? GetActivityDescription(JsonObject activity)
+    {
+        var displayText = GetActivityProperty(activity, "description");
+
+        if (!string.IsNullOrWhiteSpace(displayText))
+        {
+            return displayText;
+        }
+
+
+        if (!activity.TryGetPropertyValue("metadata", out var metadataNode))
+        {
+            return null;
+        }
+
+        if (metadataNode is not JsonObject metadata)
+        {
+            return null;
+        }
+
+        return GetActivityProperty(metadata, "description");
+    }
+
+
+    private static string? GetActivityProperty(
+        JsonObject activity,
+        string propertyName)
+    {
+        if (!activity.TryGetPropertyValue(
+                propertyName,
+                out var value))
+        {
+            return null;
+        }
+
+
+        if (value is null)
+        {
+            return null;
+        }
+
+
+        if (value is JsonValue jsonValue)
+        {
+            if (jsonValue.TryGetValue<string>(
+                    out var stringValue))
+            {
+                return stringValue;
+            }
+
+
+            return jsonValue.ToString();
+        }
+
+
+        return value.ToJsonString();
+    }
+
+
+    private static bool HasJsonProperty(
+        JsonObject activity,
+        string propertyName)
+    {
+        if (!activity.TryGetPropertyValue(
+                propertyName,
+                out var node))
+        {
+            return false;
+        }
+
+
+        if (node is null)
+        {
+            return false;
+        }
+
+
+        if (node is JsonObject obj)
+        {
+            return obj.Count > 0;
+        }
+
+
+        if (node is JsonArray array)
+        {
+            return array.Count > 0;
+        }
+
+
+        return true;
+    }
+
+
+    private static string GetJsonProperty(
+        JsonObject activity,
+        string propertyName)
+    {
+        if (!activity.TryGetPropertyValue(
+                propertyName,
+                out var node))
+        {
+            return "-";
+        }
+
+
+        if (node is null)
+        {
+            return "-";
+        }
+
+
+        return node.ToJsonString(
+            new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+    }
+
+
+    private string GetRawActivityJson()
+    {
+        if (_selectedActivity is null)
+        {
+            return string.Empty;
+        }
+
+
+        return _selectedActivity.ToJsonString(
+            new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+    }
+
+
+    private static string GetExecutionStatus(
+        ActivityExecutionRecord record)
+    {
+        if (record.Exception is not null)
+        {
+            return "Faulted";
+        }
+
+
+        if (record.CompletedAt is not null)
+        {
+            return "Completed";
+        }
+
+
+        return "Running / Suspended";
+    }
+
+
+    private RenderFragment RenderDetailRow(
+        string label,
+        string? value,
+        bool monospace = false)
+    {
+        return builder =>
+        {
+            var sequence = 0;
+
+
+            builder.OpenElement(sequence++, "div");
+
+
+            builder.AddAttribute(sequence++, "style", "margin-bottom:14px;");
+
+
+            builder.OpenElement(
+                sequence++,
+                "div");
+
+
+            builder.AddAttribute(
+                sequence++,
+                "style",
+                "font-size:11px;color:#888;margin-bottom:4px;");
+
+
+            builder.AddContent(
+                sequence++,
+                label);
+
+
+            builder.CloseElement();
+
+
+            builder.OpenElement(
+                sequence++,
+                "div");
+
+            builder.AddAttribute(sequence++, "style", monospace ? "font-family:Consolas,monospace;font-size:12px;color:#222;word-break:break-all;"
+                                                                : "font-size:13px;color:#222;word-break:break-word;");
+            builder.AddContent(sequence++, string.IsNullOrWhiteSpace(value) ? "-" : value);
+            builder.CloseElement();
+            builder.CloseElement();
+        };
+    }
+
+
+    // NEW: Load custom node info from Redis via API
+    private async Task LoadNodeInfoAsync()
+    {
+        if (string.IsNullOrWhiteSpace(InstanceId))
+            return;
+
+        try
+        {
+            _loadingNodeInfo = true;
+            _nodeInfoCache.Clear();
+
+            // Fake 1 data mẫu vào Redis cache để test hiển thị trực tiếp JSON
+            var sampleFakeNode = new JsonObject
+            {
+                ["instanceId"] = InstanceId,
+                ["activityId"] = _currentSteps.FirstOrDefault()?.ActivityId ?? "sample-activity-id",
+                ["handler"] = "Nguyễn Văn A (HR Specialist)",
+                ["status"] = "Completed",
+                ["processedAt"] = DateTime.UtcNow.ToString("O"),
+                ["assignee"] = "Trần Thị B (IT Admin)",
+                ["notes"] = "Đã tiếp nhận hồ sơ và xử lý thành công trên hệ thống.",
+                ["duration"] = "00:12:45",
+                ["result"] = "Approved",
+                ["customData"] = new JsonObject
+                {
+                    ["source"] = "Redis Cache",
+                    ["department"] = "Human Resources",
+                    ["ticketCode"] = "ONB-2025-001",
+
+                    ["isAutomated"] = false
+                }
+            };
+
+            var formattedFakeJson = sampleFakeNode.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+
+            // Gán fake data cho activity đầu tiên và fallback "*" để node nào cũng xem được lúc test
+            if (!string.IsNullOrWhiteSpace(_currentSteps.FirstOrDefault()?.ActivityId))
+            {
+                _nodeInfoCache[_currentSteps.First().ActivityId] = formattedFakeJson;
+            }
+            _nodeInfoCache["*"] = formattedFakeJson;
+
+            // Lấy dữ liệu thực tế từ API / Redis nếu có và format trực tiếp sang JSON
+            using var httpClient = HttpClientFactory.CreateClient("WorkflowPreview");
+            var requestUri = new Uri(
+                new Uri(Navigation.BaseUri, UriKind.Absolute),
+                $"api/v1/workflows/{Uri.EscapeDataString(InstanceId)}/node-info");
+            var response = await httpClient.GetAsync(requestUri);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var root = JsonNode.Parse(json);
+
+                if (root?["nodesInfo"] is JsonArray nodesArray)
+                {
+                    foreach (var nodeItem in nodesArray)
+                    {
+                        var activityId = nodeItem?["activityId"]?.GetValue<string>();
+                        if (!string.IsNullOrWhiteSpace(activityId) && nodeItem is not null)
+                        {
+                            _nodeInfoCache[activityId] = nodeItem.ToJsonString(new JsonSerializerOptions
+                            {
+                                WriteIndented = true
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't fail - node info is optional enhancement
+            System.Diagnostics.Debug.WriteLine($"Failed to load node info: {ex.Message}");
+        }
+        finally
+        {
+            _loadingNodeInfo = false;
+        }
+    }
+
+    private sealed class CurrentWorkflowStep
+    {
+        public string ActivityId
+        {
+            get;
+            set;
+        } = string.Empty;
+
+
+        public string? ActivityNodeId
+        {
+            get;
+            set;
+        }
+
+
+        public string DisplayName
+        {
+            get;
+            set;
+        } = string.Empty;
+
+
+        public string? BookmarkName
+        {
+            get;
+            set;
+        }
+    }
+}

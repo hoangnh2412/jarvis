@@ -1,4 +1,4 @@
-using Jarvis.DDD.Domain.Repositories;
+using Platform.DDD.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;

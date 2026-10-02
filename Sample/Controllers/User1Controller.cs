@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Asp.Versioning;
-using Jarvis.DDD.Domain.Repositories;
-using Jarvis.DDD.Domain.Shared.Enums;
-using Jarvis.DDD.Domain.Shared.ExceptionHandling;
+using Platform.DDD.Domain.Repositories;
+using Platform.DDD.Domain.Shared.Enums;
+using Platform.DDD.Domain.Shared.ExceptionHandling;
 using Microsoft.AspNetCore.Mvc;
 using Sample.Entities;
 using Sample.ErrorCodes;
@@ -23,7 +23,7 @@ public class User1Controller(
     ITenantUnitOfWork unitOfWork,
     [FromKeyedServices("Default")] IConnectionMultiplexer redis) : ControllerBase
 {
-    /// <summary>Must match <c>AddSource("Sample")</c> in Jarvis OpenTelemetry defaults.</summary>
+    /// <summary>Must match <c>AddSource("Sample")</c> in Platform OpenTelemetry defaults.</summary>
     private static readonly ActivitySource ActivitySource = new("Sample", "1.0.0");
 
     private const string RedisHitsKey = "sample:demo:users:v1:hits";

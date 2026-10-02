@@ -1,6 +1,7 @@
 import type { FormEventHandler, ReactNode } from 'react'
 import { Button } from 'primereact/button'
 import { Dialog } from 'primereact/dialog'
+import { X } from 'lucide-react'
 
 const btnOutlinedClass =
   'pr-btn-outlined inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/30 disabled:cursor-not-allowed disabled:opacity-60'
@@ -33,6 +34,8 @@ export type FeatureDialogProps = {
   submitting?: boolean
   hideFooter?: boolean
   closeOnBackdrop?: boolean
+  /** Class thêm vào popup (portal) — dùng scope accent theo module. */
+  popupClassName?: string
 }
 
 /** Popup chung cho các feature — PrimeReact Dialog compound API. */
@@ -50,6 +53,7 @@ export function FeatureDialog({
   submitting = false,
   hideFooter = false,
   closeOnBackdrop = true,
+  popupClassName,
 }: FeatureDialogProps) {
   const defaultFooter = (
     <>
@@ -89,9 +93,12 @@ export function FeatureDialog({
           ) : null}
         </div>
         <Dialog.Close
-          className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+          type="button"
           aria-label="Đóng"
-        />
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border-0 bg-transparent text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+        >
+          <X className="h-4 w-4" />
+        </Dialog.Close>
       </Dialog.Header>
 
       <Dialog.Content className="max-h-[min(70vh,720px)] overflow-y-auto px-5 py-4">
@@ -117,7 +124,13 @@ export function FeatureDialog({
         <Dialog.Backdrop className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-[2px]" />
         <Dialog.Positioner className="fixed inset-0 z-[110] flex items-center justify-center p-4">
           <Dialog.Popup
-            className={`flex w-full ${sizeClass[size]} max-h-[min(92vh,900px)] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white p-0 shadow-xl`}
+            className={[
+              'flex w-full max-h-[min(92vh,900px)] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white p-0 shadow-xl',
+              sizeClass[size],
+              popupClassName,
+            ]
+              .filter(Boolean)
+              .join(' ')}
           >
             {onSubmit ? (
               <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col" noValidate>

@@ -1,6 +1,6 @@
 using Asp.Versioning;
-using Jarvis.DDD.Domain.DataStorages;
-using Jarvis.DDD.Domain.Repositories;
+using Platform.DDD.Domain.DataStorages;
+using Platform.DDD.Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sample.Entities;

@@ -1,4 +1,4 @@
-using Jarvis.Modules.Notifications.Contracts;
+using Platform.Modules.Notifications.Contracts;
 
 namespace UnitTest.SignalR;
 

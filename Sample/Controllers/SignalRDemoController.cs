@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Jarvis.Modules.Notifications.Contracts;
+using Platform.Modules.Notifications.Contracts;
 using System.Text.Json;
 
 namespace Sample.Controllers;

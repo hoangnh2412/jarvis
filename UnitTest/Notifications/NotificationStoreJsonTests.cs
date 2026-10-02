@@ -1,5 +1,5 @@
-using Jarvis.Modules.Notifications.Contracts;
-using Jarvis.Modules.Notifications.Redis.Store;
+using Platform.Modules.Notifications.Contracts;
+using Platform.Modules.Notifications.Redis.Store;
 
 namespace UnitTest.Notifications;
 

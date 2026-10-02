@@ -1,0 +1,11 @@
+[
+  {
+    "id": "form-001",
+    "name": "Customer Registration",
+    "description": "Please enter your information.",
+    "version": 1,
+    "createdAt": "2026-08-29T00:00:00.000Z",
+    "updatedAt": "2026-08-29T00:00:00.000Z",
+    "fieldCount": 3
+  }
+]

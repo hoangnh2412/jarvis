@@ -1,0 +1,35 @@
+{
+  "options": [
+    {
+      "label": "GHC Matter — T&M CAP",
+      "value": "project:prj-ghc-matter",
+      "group": "Project"
+    },
+    {
+      "label": "Lexora Platform",
+      "value": "project:prj-lexora",
+      "group": "Project"
+    },
+    {
+      "label": "Retainer — Corporate Advisory",
+      "value": "project:prj-retainer",
+      "group": "Project"
+    },
+    {
+      "label": "Nguyễn Văn A",
+      "value": "user:usr-a",
+      "group": "Member"
+    },
+    {
+      "label": "Trần Thị B",
+      "value": "user:usr-b",
+      "group": "Member"
+    },
+    {
+      "label": "Lê Minh C",
+      "value": "user:usr-c",
+      "group": "Member"
+    }
+  ],
+  "hasMore": false
+}

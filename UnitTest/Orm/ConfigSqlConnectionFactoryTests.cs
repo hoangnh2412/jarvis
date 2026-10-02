@@ -3,7 +3,7 @@ using System.Data.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using Jarvis.ORM.Dapper;
+using Platform.ORM.Dapper;
 
 namespace UnitTest.Orm;
 

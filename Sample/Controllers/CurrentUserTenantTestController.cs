@@ -1,8 +1,8 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
-using Jarvis.Authentication;
-using Jarvis.DDD.Domain.Services;
-using Jarvis.Multitenancy;
+using Platform.Authentication;
+using Platform.DDD.Domain.Services;
+using Platform.Multitenancy;
 
 namespace Sample.Controllers;
 

@@ -1,3 +1,4 @@
+import validateResultMock from '../mocks/get-validate-result.json'
 import type {
   ImportCommitPayload,
   ImportCommitResult,
@@ -5,11 +6,7 @@ import type {
   ImportValidationResult,
 } from '../types'
 
-const DEMO_VALID_ROWS = [
-  { row: 1, age: 15, name: 'Phạm Thế Anh' },
-  { row: 2, age: 22, name: 'Phạm Quốc Khánh' },
-  { row: 3, age: 21, name: 'Phạm Tuấn Ngọc' },
-] as const
+const DEMO_VALID_ROWS = validateResultMock.validRows.map((row) => ({ ...row }))
 
 const DEMO_INVALID_ROWS = [
   {

@@ -7,7 +7,7 @@ export type FilterAstRule = [string, string, unknown]
 export type FilterAstNode = [FilterAst, 'and' | 'or', FilterAst]
 
 /**
- * Nested filter AST (DevExtreme / Jarvis FilterParser).
+ * Nested filter AST (DevExtreme / Platform FilterParser).
  * Wire format: JSON.stringify(ast) → PagedListRequest.Filter
  */
 export type FilterAst = FilterAstRule | FilterAstNode
@@ -17,7 +17,7 @@ export type FilterParams = {
   filter?: FilterAst | string
 }
 
-/** Matches Jarvis.DDD.Domain.Repositories.PagedListRequest */
+/** Matches Platform.DDD.Domain.Repositories.PagedListRequest */
 export type PagedListQueryParams = {
   page: number
   size: number

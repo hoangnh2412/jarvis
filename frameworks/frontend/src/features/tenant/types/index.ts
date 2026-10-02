@@ -126,7 +126,7 @@ export type CreateTenantDomainPayload = {
 
 export type UpdateTenantDomainPayload = CreateTenantDomainPayload
 
-/** Query danh sách tenant — khớp Jarvis PagedListRequest */
+/** Query danh sách tenant — khớp Platform PagedListRequest */
 export type GetTenantListParams = {
   search?: string
   status?: TenantStatusValue

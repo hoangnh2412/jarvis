@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'jarvis.accessToken'
+const STORAGE_KEY = 'platform.accessToken'
 
 export function getAccessToken(): string | null {
   if (typeof localStorage === 'undefined') return null

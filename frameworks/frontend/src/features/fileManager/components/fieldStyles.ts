@@ -24,6 +24,8 @@ export const btnTextClass =
 export const fieldInputClass =
   'box-border h-10 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 disabled:cursor-not-allowed disabled:opacity-70'
 
+export const fieldInputInvalidClass = `${fieldInputClass} !border-red-500 focus:!border-red-500 focus:!ring-red-500/20`
+
 /** Nút Actions trên từng dòng */
 export const actionsBtnClass =
   'inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-teal-600 bg-teal-600 px-3 text-sm font-medium text-white shadow-sm transition hover:bg-teal-700 hover:border-teal-700 disabled:cursor-not-allowed disabled:opacity-60 ' +

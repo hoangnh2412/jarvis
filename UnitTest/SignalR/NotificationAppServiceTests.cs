@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Logging.Abstractions;
-using Jarvis.Authentication;
-using Jarvis.DDD.Domain.Services;
-using Jarvis.DDD.Domain.Shared.ExceptionHandling;
-using Jarvis.Modules.Notifications.Constants;
-using Jarvis.Modules.Notifications.Contracts;
-using Jarvis.Modules.Notifications.Services;
+using Platform.Authentication;
+using Platform.DDD.Domain.Services;
+using Platform.DDD.Domain.Shared.ExceptionHandling;
+using Platform.Modules.Notifications.Constants;
+using Platform.Modules.Notifications.Contracts;
+using Platform.Modules.Notifications.Services;
 
 namespace UnitTest.SignalR;
 

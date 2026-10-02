@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
-using Jarvis.Modules.Notifications.Contracts;
-using Jarvis.Realtime.Contracts;
+using Platform.Modules.Notifications.Contracts;
+using Platform.Realtime.Contracts;
 
 namespace UnitTest.SignalR;
 

@@ -12,7 +12,7 @@ function messageFromData(data: unknown, depth = 0): string | undefined {
 
   const obj = data as Record<string, unknown>
 
-  // Jarvis envelope: { error: { message: "..." }, code, traceId, ... }
+  // Platform envelope: { error: { message: "..." }, code, traceId, ... }
   const nested =
     messageFromData(obj.error, depth + 1) ??
     messageFromData(obj.Error, depth + 1) ??

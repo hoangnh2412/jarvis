@@ -8,7 +8,7 @@ import {
   Textarea,
   ToggleSwitch,
   notify,
-} from '@jarvis/core'
+} from '@platform/core'
 import { ChevronDown, RefreshCw, Save } from 'lucide-react'
 import {
   DEFAULT_SETTING_CONNECTION,

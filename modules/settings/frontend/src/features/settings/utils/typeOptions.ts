@@ -1,4 +1,4 @@
-/** Keep in sync with Jarvis.Setting.Validation.SettingTypeOptions. */
+/** Keep in sync with Platform.Setting.Validation.SettingTypeOptions. */
 
 export const DEFAULT_EMAIL_REGEX =
   "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$"

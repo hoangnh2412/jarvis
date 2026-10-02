@@ -1,4 +1,4 @@
-using Jarvis.BlobStoring.Helpers;
+using Platform.BlobStoring.Helpers;
 
 namespace UnitTest.BlobStoring;
 

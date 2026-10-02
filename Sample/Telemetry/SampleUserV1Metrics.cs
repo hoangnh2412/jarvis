@@ -3,7 +3,7 @@ using System.Diagnostics.Metrics;
 namespace Sample.Telemetry;
 
 /// <summary>
-/// Custom metrics for <see cref="Controllers.User1Controller"/> (same <see cref="Meter"/> name as Jarvis <c>AddMeter("Sample")</c>).
+/// Custom metrics for <see cref="Controllers.User1Controller"/> (same <see cref="Meter"/> name as Platform <c>AddMeter("Sample")</c>).
 /// </summary>
 public static class SampleUserV1Metrics
 {

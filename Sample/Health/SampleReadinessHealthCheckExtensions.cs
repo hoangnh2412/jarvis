@@ -1,4 +1,4 @@
-using Jarvis.HealthChecks;
+using Platform.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -16,7 +16,7 @@ public static class SampleReadinessHealthCheckExtensions
 
     /// <summary>
     /// Appends readiness checks to the shared <see cref="IHealthChecksBuilder"/> pipeline. Call after
-    /// <c>builder.AddHealthChecks()</c> from Jarvis.HealthChecks. Uses <c>HealthChecks:Readiness</c> for config key paths and
+    /// <c>builder.AddHealthChecks()</c> from Platform.HealthChecks. Uses <c>HealthChecks:Readiness</c> for config key paths and
     /// registers typed HTTP checks for sample external APIs.
     /// </summary>
     /// <param name="builder">The web application builder (configuration + services).</param>

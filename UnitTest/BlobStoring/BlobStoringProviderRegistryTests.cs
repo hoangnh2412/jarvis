@@ -1,5 +1,5 @@
-using Jarvis.BlobStoring;
-using Jarvis.BlobStoring.Hosting;
+using Platform.BlobStoring;
+using Platform.BlobStoring.Hosting;
 
 namespace UnitTest.BlobStoring;
 

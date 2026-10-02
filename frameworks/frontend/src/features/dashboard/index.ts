@@ -86,6 +86,8 @@ export {
   callGetDashboardChartCatalog,
 } from './services'
 
+export { getDashboardChartsMock } from './mocks'
+
 export {
   DASHBOARD_ROUTES,
   getDashboardHomePath,

@@ -2,7 +2,7 @@ export const enMessages = {
   form: {
     createTitle: 'Create tenant',
     editTitle: 'Update tenant',
-    createDescription: 'Add a new SaaS customer to the multi-tenant jarvis.',
+    createDescription: 'Add a new SaaS customer to the multi-tenant platform.',
     editDescription: 'Edit identity and reseller hierarchy.',
     createSubmit: 'Create tenant',
     editSubmit: 'Update tenant',

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Jarvis.DDD.Domain.Repositories;
-using Jarvis.ORM.EntityFramework.Repositories;
+using Platform.DDD.Domain.Repositories;
+using Platform.ORM.EntityFramework.Repositories;
 using Sample.Entities;
 using Sample.Persistence;
 using Asp.Versioning;

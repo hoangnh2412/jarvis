@@ -52,7 +52,7 @@ public class SampleDapperReadSampleTests
     }
 
     private sealed class DelegateSqlConnectionFactory(Func<System.Data.IDbConnection> open)
-        : Jarvis.ORM.Dapper.ISqlConnectionFactory
+        : Platform.ORM.Dapper.ISqlConnectionFactory
     {
         public Task<System.Data.IDbConnection> OpenAsync(CancellationToken cancellationToken = default)
             => Task.FromResult(open());

@@ -1,4 +1,4 @@
-using Jarvis.Caching;
+using Platform.Caching;
 
 namespace UnitTest.Caching;
 
@@ -7,7 +7,7 @@ public class CacheServiceGetOrSetTests
     [Fact]
     public async Task GetOrSetAsync_InvokesQueryOnceOnMiss_ThenHitsCache()
     {
-        var options = new JarvisCacheOptions
+        var options = new PlatformCacheOptions
         {
             Items =
             {
@@ -48,7 +48,7 @@ public class CacheServiceGetOrSetTests
     [Fact]
     public async Task TryGetAsync_ReturnsMiss_WhenNotCached()
     {
-        var options = new JarvisCacheOptions
+        var options = new PlatformCacheOptions
         {
             Items =
             {
@@ -69,7 +69,7 @@ public class CacheServiceGetOrSetTests
     [Fact]
     public async Task TryGetAsync_ReturnsHit_AfterGetOrSet()
     {
-        var options = new JarvisCacheOptions
+        var options = new PlatformCacheOptions
         {
             Items =
             {

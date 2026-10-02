@@ -1,4 +1,4 @@
-using Jarvis.Realtime.SignalR.Groups;
+using Platform.Realtime.SignalR.Groups;
 
 namespace UnitTest.Realtime;
 

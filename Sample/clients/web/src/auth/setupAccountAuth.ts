@@ -1,4 +1,4 @@
-import { accountHttp } from '@jarvis/core'
+import { accountHttp } from '@platform/core'
 import { getAccessToken } from './accessToken'
 
 let configured = false

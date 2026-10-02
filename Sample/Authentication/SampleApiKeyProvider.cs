@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using AspNetCore.Authentication.ApiKey;
 using Microsoft.Extensions.Options;
-using Jarvis.Authentication.ApiKey;
+using Platform.Authentication.ApiKey;
 
 namespace Sample.Authentication;
 

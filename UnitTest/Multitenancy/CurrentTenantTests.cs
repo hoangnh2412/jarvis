@@ -1,13 +1,13 @@
-using Jarvis.DDD.Domain.DataStorages;
-using Jarvis.DDD.Domain.Services;
-using Jarvis.Multitenancy;
-using Jarvis.Multitenancy.DataStorages;
+using Platform.DDD.Domain.DataStorages;
+using Platform.DDD.Domain.Services;
+using Platform.Multitenancy;
+using Platform.Multitenancy.DataStorages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace UnitTest.Multitenancy;
 
-/// <summary>Unit tests cho <c>Jarvis.Multitenancy</c> — accessor, R2, <see cref="ICurrentTenant{TTenant}"/>, store.</summary>
+/// <summary>Unit tests cho <c>Platform.Multitenancy</c> — accessor, R2, <see cref="ICurrentTenant{TTenant}"/>, store.</summary>
 public sealed class CurrentTenantTests
 {
     [Fact]

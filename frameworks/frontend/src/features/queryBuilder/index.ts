@@ -79,6 +79,11 @@ export {
   callGetCompanyEmployeesListCustom,
 } from './services'
 
+export {
+  getQueryBuilderFieldsMock,
+  getCompanyEmployeesMock,
+} from './mocks'
+
 export { useQueryBuilderState } from './hooks'
 export type {
   UseQueryBuilderStateOptions,

@@ -1,0 +1,380 @@
+{
+  "items": [
+    {
+      "id": "revenue-daily",
+      "name": "Doanh thu theo ngày",
+      "description": "Theo dõi doanh thu 7 ngày gần nhất (line chart).",
+      "chartType": "line",
+      "defaultW": 4,
+      "defaultH": 4,
+      "data": {
+        "labels": [
+          "T2",
+          "T3",
+          "T4",
+          "T5",
+          "T6",
+          "T7",
+          "CN"
+        ],
+        "datasets": [
+          {
+            "label": "Doanh thu (triệu)",
+            "data": [
+              42,
+              58,
+              51,
+              73,
+              66,
+              89,
+              77
+            ],
+            "borderColor": "#0d9488",
+            "backgroundColor": "rgba(13, 148, 136, 0.12)",
+            "borderWidth": 2,
+            "fill": true,
+            "tension": 0.35
+          }
+        ]
+      },
+      "settingsForm": [
+        {
+          "name": "title",
+          "label": "Tiêu đề",
+          "type": "text",
+          "required": true,
+          "placeholder": "Nhập tiêu đề biểu đồ"
+        },
+        {
+          "name": "chartType",
+          "label": "Loại biểu đồ",
+          "type": "select",
+          "required": true,
+          "options": [
+            {
+              "label": "Đường",
+              "value": "line"
+            },
+            {
+              "label": "Cột",
+              "value": "bar"
+            }
+          ]
+        },
+        {
+          "name": "cssAnimation",
+          "label": "CSS Animation",
+          "type": "select",
+          "options": [
+            {
+              "label": "Không",
+              "value": "none"
+            },
+            {
+              "label": "Fade in",
+              "value": "animate-in fade-in duration-500"
+            }
+          ]
+        },
+        {
+          "name": "showLegend",
+          "label": "Hiện chú thích",
+          "type": "switch"
+        },
+        {
+          "name": "color",
+          "label": "Màu chủ đạo",
+          "type": "color"
+        }
+      ],
+      "settings": {
+        "title": "Doanh thu theo ngày",
+        "chartType": "line",
+        "showLegend": true,
+        "color": "#0d9488",
+        "cssAnimation": "none"
+      }
+    },
+    {
+      "id": "orders-by-status",
+      "name": "Đơn hàng theo trạng thái",
+      "description": "Tỷ trọng trạng thái đơn (doughnut).",
+      "chartType": "doughnut",
+      "defaultW": 4,
+      "defaultH": 4,
+      "data": {
+        "labels": [
+          "Mới",
+          "Đang xử lý",
+          "Đang giao",
+          "Hoàn tất",
+          "Hủy"
+        ],
+        "datasets": [
+          {
+            "label": "Đơn hàng",
+            "data": [
+              48,
+              32,
+              27,
+              94,
+              11
+            ],
+            "backgroundColor": [
+              "#0d9488",
+              "#0284c7",
+              "#ca8a04",
+              "#16a34a",
+              "#dc2626"
+            ],
+            "borderColor": "#ffffff",
+            "borderWidth": 2
+          }
+        ]
+      },
+      "settingsForm": [
+        {
+          "name": "title",
+          "label": "Tiêu đề",
+          "type": "text",
+          "required": true,
+          "placeholder": "Nhập tiêu đề biểu đồ"
+        },
+        {
+          "name": "chartType",
+          "label": "Loại biểu đồ",
+          "type": "select",
+          "required": true,
+          "options": [
+            {
+              "label": "Vòng",
+              "value": "doughnut"
+            },
+            {
+              "label": "Tròn",
+              "value": "pie"
+            }
+          ]
+        },
+        {
+          "name": "cssAnimation",
+          "label": "CSS Animation",
+          "type": "select",
+          "options": [
+            {
+              "label": "Không",
+              "value": "none"
+            },
+            {
+              "label": "Fade in",
+              "value": "animate-in fade-in duration-500"
+            }
+          ]
+        },
+        {
+          "name": "showLegend",
+          "label": "Hiện chú thích",
+          "type": "switch"
+        },
+        {
+          "name": "color",
+          "label": "Màu chủ đạo",
+          "type": "color"
+        }
+      ],
+      "settings": {
+        "title": "Đơn hàng theo trạng thái",
+        "chartType": "doughnut",
+        "showLegend": true,
+        "color": "#0d9488",
+        "cssAnimation": "none"
+      }
+    },
+    {
+      "id": "new-customers",
+      "name": "Khách hàng mới",
+      "description": "Số khách đăng ký theo tháng (bar chart).",
+      "chartType": "bar",
+      "defaultW": 4,
+      "defaultH": 4,
+      "data": {
+        "labels": [
+          "Th1",
+          "Th2",
+          "Th3",
+          "Th4",
+          "Th5",
+          "Th6"
+        ],
+        "datasets": [
+          {
+            "label": "Khách mới",
+            "data": [
+              120,
+              145,
+              132,
+              178,
+              166,
+              201
+            ],
+            "backgroundColor": "#0284c7",
+            "borderColor": "#0284c7",
+            "borderWidth": 0
+          }
+        ]
+      },
+      "settingsForm": [
+        {
+          "name": "title",
+          "label": "Tiêu đề",
+          "type": "text",
+          "required": true,
+          "placeholder": "Nhập tiêu đề biểu đồ"
+        },
+        {
+          "name": "chartType",
+          "label": "Loại biểu đồ",
+          "type": "select",
+          "required": true,
+          "options": [
+            {
+              "label": "Cột",
+              "value": "bar"
+            },
+            {
+              "label": "Đường",
+              "value": "line"
+            }
+          ]
+        },
+        {
+          "name": "cssAnimation",
+          "label": "CSS Animation",
+          "type": "select",
+          "options": [
+            {
+              "label": "Không",
+              "value": "none"
+            },
+            {
+              "label": "Fade in",
+              "value": "animate-in fade-in duration-500"
+            }
+          ]
+        },
+        {
+          "name": "showLegend",
+          "label": "Hiện chú thích",
+          "type": "switch"
+        },
+        {
+          "name": "color",
+          "label": "Màu chủ đạo",
+          "type": "color"
+        }
+      ],
+      "settings": {
+        "title": "Khách hàng mới",
+        "chartType": "bar",
+        "showLegend": true,
+        "color": "#0284c7",
+        "cssAnimation": "none"
+      }
+    },
+    {
+      "id": "sales-by-category",
+      "name": "Doanh số theo danh mục",
+      "description": "Phân bổ doanh số theo nhóm sản phẩm (pie).",
+      "chartType": "pie",
+      "defaultW": 4,
+      "defaultH": 4,
+      "data": {
+        "labels": [
+          "Điện tử",
+          "Thời trang",
+          "Gia dụng",
+          "Thực phẩm",
+          "Khác"
+        ],
+        "datasets": [
+          {
+            "label": "Doanh số",
+            "data": [
+              35,
+              22,
+              18,
+              15,
+              10
+            ],
+            "backgroundColor": [
+              "#0f766e",
+              "#0369a1",
+              "#a16207",
+              "#15803d",
+              "#9333ea"
+            ],
+            "borderColor": "#ffffff",
+            "borderWidth": 2
+          }
+        ]
+      },
+      "settingsForm": [
+        {
+          "name": "title",
+          "label": "Tiêu đề",
+          "type": "text",
+          "required": true,
+          "placeholder": "Nhập tiêu đề biểu đồ"
+        },
+        {
+          "name": "chartType",
+          "label": "Loại biểu đồ",
+          "type": "select",
+          "required": true,
+          "options": [
+            {
+              "label": "Tròn",
+              "value": "pie"
+            },
+            {
+              "label": "Vòng",
+              "value": "doughnut"
+            }
+          ]
+        },
+        {
+          "name": "cssAnimation",
+          "label": "CSS Animation",
+          "type": "select",
+          "options": [
+            {
+              "label": "Không",
+              "value": "none"
+            },
+            {
+              "label": "Fade in",
+              "value": "animate-in fade-in duration-500"
+            }
+          ]
+        },
+        {
+          "name": "showLegend",
+          "label": "Hiện chú thích",
+          "type": "switch"
+        },
+        {
+          "name": "color",
+          "label": "Màu chủ đạo",
+          "type": "color"
+        }
+      ],
+      "settings": {
+        "title": "Doanh số theo danh mục",
+        "chartType": "pie",
+        "showLegend": true,
+        "color": "#0f766e",
+        "cssAnimation": "none"
+      }
+    }
+  ]
+}

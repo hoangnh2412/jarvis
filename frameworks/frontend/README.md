@@ -1,4 +1,4 @@
-# @jarvis/core
+# @platform/core
 
 React UI-kit trên **PrimeReact 11** (Account, CRUD, common helpers). Primitives re-export từ PrimeReact — không còn folder `src/ui` custom.
 
@@ -25,7 +25,7 @@ npm login
 npm publish --access public
 
 # dự án khác
-npm i @jarvis/core
+npm i @platform/core
 ```
 
 > Đổi `name` trong `package.json` (vd. `@company/ui-kit`) trước khi publish nội bộ.
@@ -42,8 +42,8 @@ npm i react react-dom lucide-react zod react-hook-form @hookform/resolvers prime
 
 ```tsx
 import { PrimeReactProvider } from '@primereact/core'
-import { kitPrimeReactConfig, Toaster } from '@jarvis/core'
-import '@jarvis/core/styles.css'
+import { kitPrimeReactConfig, Toaster } from '@platform/core'
+import '@platform/core/styles.css'
 
 createRoot(...).render(
   <PrimeReactProvider {...kitPrimeReactConfig}>
@@ -77,9 +77,9 @@ App **bắt buộc** có Tailwind và **dùng cấu hình từ package**.
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-@source "../node_modules/@jarvis/core/dist";
-@import "@jarvis/core/theme.css";
-@import "@jarvis/core/styles.css";
+@source "../node_modules/@platform/core/dist";
+@import "@platform/core/theme.css";
+@import "@platform/core/styles.css";
 ```
 
 ### Tailwind v3 (`postcss` + `tailwind.config.js`)
@@ -87,11 +87,11 @@ App **bắt buộc** có Tailwind và **dùng cấu hình từ package**.
 ```js
 // tailwind.config.js
 module.exports = {
-  presets: [require('@jarvis/core/tailwind.preset.cjs')],
+  presets: [require('@platform/core/tailwind.preset.cjs')],
   content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
-    './node_modules/@jarvis/core/dist/**/*.{js,cjs}',
+    './node_modules/@platform/core/dist/**/*.{js,cjs}',
   ],
 }
 ```
@@ -100,7 +100,7 @@ module.exports = {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import "@jarvis/core/styles.css";
+@import "@platform/core/styles.css";
 ```
 
 Thiếu `@source` / `content` → class kit không generate (UI trắng).  
@@ -115,7 +115,7 @@ Sau khi sửa kit: `npm run build` trong `frameworks/frontend`, rồi **restart*
 Package lo **UI (ItemLeft/ItemRight) + Zod + react-hook-form**. App chỉ gọi API trong `onSubmit`.
 
 ```tsx
-import { CrudPage, type TemplateFormData } from '@jarvis/core'
+import { CrudPage, type TemplateFormData } from '@platform/core'
 
 // Tạo mới
 function CreateTemplate() {
@@ -165,7 +165,7 @@ import {
   ForgotPasswordPage,
   AccountProfilePage,
   type LoginFormData,
-} from '@jarvis/core'
+} from '@platform/core'
 
 function Login() {
   return (
@@ -237,7 +237,7 @@ import {
   CraftPdfEditorPage,
   configureCraftPdfNavigate,
   CRAFT_PDF_ROUTES,
-} from '@jarvis/core'
+} from '@platform/core'
 
 // Trong router app
 configureCraftPdfNavigate((to) => navigate(to))
@@ -272,9 +272,9 @@ Rồi xóa cache Vite: xóa `node_modules/.vite` và restart `npm run dev`.
 Canvas full-page dùng **GridStack** (như [gridstackjs.com](https://gridstackjs.com/) demo): kéo / resize trên lưới 12 cột. Chart.js vẽ trong từng cell. Backend chỉ trả catalog (data + `settingsForm`); layout lưu FE (`localStorage` v2).
 
 ```tsx
-import { DashboardPage, DASHBOARD_ROUTES } from '@jarvis/core'
+import { DashboardPage, DASHBOARD_ROUTES } from '@platform/core'
 import 'gridstack/dist/gridstack.css'
-import '@jarvis/core/styles.css'
+import '@platform/core/styles.css'
 
 <Route path={DASHBOARD_ROUTES.home} element={<DashboardPage />} />
 ```

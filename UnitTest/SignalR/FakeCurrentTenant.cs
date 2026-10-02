@@ -1,4 +1,4 @@
-using Jarvis.DDD.Domain.Services;
+using Platform.DDD.Domain.Services;
 
 namespace UnitTest.SignalR;
 

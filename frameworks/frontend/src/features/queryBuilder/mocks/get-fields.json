@@ -1,0 +1,66 @@
+{
+  "fields": [
+    {
+      "name": "BaseSalary",
+      "label": "Base Salary",
+      "inputType": "number",
+      "datatype": "number"
+    },
+    {
+      "name": "IsActive",
+      "label": "Is Active",
+      "valueEditorType": "checkbox",
+      "datatype": "boolean",
+      "defaultValue": true
+    },
+    {
+      "name": "FullName",
+      "label": "Full Name"
+    },
+    {
+      "name": "Email",
+      "label": "Email"
+    },
+    {
+      "name": "HireDate",
+      "label": "Hire Date",
+      "inputType": "date",
+      "datatype": "date"
+    },
+    {
+      "name": "CreatedAt",
+      "label": "Created At",
+      "inputType": "datetime",
+      "datatype": "datetime"
+    },
+    {
+      "name": "Department",
+      "label": "Department",
+      "valueEditorType": "select",
+      "values": [
+        {
+          "name": "Engineering",
+          "label": "Engineering"
+        },
+        {
+          "name": "Sales",
+          "label": "Sales"
+        },
+        {
+          "name": "HR",
+          "label": "HR"
+        },
+        {
+          "name": "Finance",
+          "label": "Finance"
+        }
+      ]
+    },
+    {
+      "name": "Age",
+      "label": "Age",
+      "inputType": "number",
+      "datatype": "number"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
-# Hướng dẫn sử dụng Jarvis với OpenCode / AI Agent
+# Hướng dẫn sử dụng Platform với OpenCode / AI Agent
 
-> **Đã chuyển:** Bản đồ skill và hướng dẫn sử dụng nằm tại **[`.opencode/README.md`](../.opencode/README.md)** và **README.md** trong từng skill (`jarvis-dotnet`, `telemetry-dotnet`, `healthcheck-dotnet`, `code-review`). Thư mục `docs/` không còn là nguồn chính cho skill AI.
+> **Đã chuyển:** Bản đồ skill và hướng dẫn sử dụng nằm tại **[`.opencode/README.md`](../.opencode/README.md)** và **README.md** trong từng skill (`platform-dotnet`, `telemetry-dotnet`, `healthcheck-dotnet`, `code-review`). Thư mục `docs/` không còn là nguồn chính cho skill AI.
 
 Tài liệu dưới đây giữ làm tham chiếu lịch sử; ưu tiên link trong `.opencode/`.
 
@@ -37,9 +37,9 @@ Các skill nằm tại `.opencode/skills/`. Mỗi skill có cấu trúc nội b�
 
 | Skill | Vai trò | Hướng dẫn cho người |
 |-------|---------|---------------------|
-| [`jarvis-dotnet`](../.opencode/skills/jarvis-dotnet/SKILL.md) | Orchestrator: scaffold / init / add module Jarvis | [README](../.opencode/skills/jarvis-dotnet/README.md) |
-| [`healthcheck-dotnet`](../.opencode/skills/healthcheck-dotnet/SKILL.md) | `Jarvis.HealthChecks`: init + provider (PostgreSQL, Redis, …) | Xem [mục healthcheck](#healthcheck-dotnet) |
-| [`telemetry-dotnet`](../.opencode/skills/telemetry-dotnet/SKILL.md) | `Jarvis.OpenTelemetry`: trace / metric / log OTLP | Xem [mục telemetry](#telemetry-dotnet) |
+| [`platform-dotnet`](../.opencode/skills/platform-dotnet/SKILL.md) | Orchestrator: scaffold / init / add module Platform | [README](../.opencode/skills/platform-dotnet/README.md) |
+| [`healthcheck-dotnet`](../.opencode/skills/healthcheck-dotnet/SKILL.md) | `Platform.HealthChecks`: init + provider (PostgreSQL, Redis, …) | Xem [mục healthcheck](#healthcheck-dotnet) |
+| [`telemetry-dotnet`](../.opencode/skills/telemetry-dotnet/SKILL.md) | `Platform.OpenTelemetry`: trace / metric / log OTLP | Xem [mục telemetry](#telemetry-dotnet) |
 | [`code-review`](../.opencode/skills/code-review/SKILL.md) | Review PR C#/.NET trước merge | [README đầy đủ](../.opencode/skills/code-review/README.md) — **chuẩn mẫu** |
 
 **Chuẩn mẫu cho README skill:** [`.opencode/skills/code-review/README.md`](../.opencode/skills/code-review/README.md) — cấu trúc *khi nào dùng → cách gọi → chuẩn bị → prompt mẫu → đọc kết quả → tài liệu liên quan*.
@@ -57,7 +57,7 @@ docs/tutorial-index.md (file này)        → Hub: skill nào, khi nào, prompt 
 
 | Nội dung | Đặt ở đâu | Lý do |
 |----------|-----------|--------|
-| Kiến trúc 5 layer, module Jarvis, bảng NuGet | [README.md](../README.md) | Onboarding dev mới |
+| Kiến trúc 5 layer, module Platform, bảng NuGet | [README.md](../README.md) | Onboarding dev mới |
 | «Tôi muốn X → skill Y → prompt Z» | **docs/tutorial-index.md** (file này) | Tránh lẫn nhiều skill |
 | Prompt, chuẩn bị, đọc output | `skills/<name>/README.md` | Giống `code-review` |
 | Quy tắc kỹ thuật, checklist agent | `SKILL.md` + `workflows/` | Agent đọc khi thực thi |
@@ -69,9 +69,9 @@ docs/tutorial-index.md (file này)        → Hub: skill nào, khi nào, prompt 
 ## Chọn skill nào khi nào
 
 ```text
-Folder trống, tạo backend mới          → jarvis-dotnet (scaffold)
-Đã có solution, gắn Jarvis             → jarvis-dotnet (init)
-Thêm JWT / EF / Caching / …            → jarvis-dotnet (add) + skill *-dotnet
+Folder trống, tạo backend mới          → platform-dotnet (scaffold)
+Đã có solution, gắn Platform             → platform-dotnet (init)
+Thêm JWT / EF / Caching / …            → platform-dotnet (add) + skill *-dotnet
 Thêm /health/ready PostgreSQL          → healthcheck-dotnet (add)
 Bật OTLP trace / metric / log          → telemetry-dotnet (init / add)
 Trước khi mở PR                        → code-review
@@ -81,12 +81,12 @@ Trước khi mở PR                        → code-review
 
 | Tình huống | Skill | Workflow / tài liệu |
 |------------|-------|---------------------|
-| Tạo repo `{product}-backend` từ đầu, 5 project, F5 Swagger | `jarvis-dotnet` | [workflows/scaffold.md](../.opencode/skills/jarvis-dotnet/workflows/scaffold.md) |
-| Solution .NET có sẵn, muốn cài Jarvis theo layer | `jarvis-dotnet` | [workflows/init.md](../.opencode/skills/jarvis-dotnet/workflows/init.md) |
-| Đã có Jarvis, thêm module (JWT, EF, Caching, …) | `jarvis-dotnet` + skill `*-dotnet` | [workflows/add.md](../.opencode/skills/jarvis-dotnet/workflows/add.md) · [SKILLS.md](../.opencode/skills/jarvis-dotnet/templates/SKILLS.md) |
-| Chưa có health endpoint Jarvis | `healthcheck-dotnet` | [workflows/init.md](../.opencode/skills/healthcheck-dotnet/workflows/init.md) |
+| Tạo repo `{product}-backend` từ đầu, 5 project, F5 Swagger | `platform-dotnet` | [workflows/scaffold.md](../.opencode/skills/platform-dotnet/workflows/scaffold.md) |
+| Solution .NET có sẵn, muốn cài Platform theo layer | `platform-dotnet` | [workflows/init.md](../.opencode/skills/platform-dotnet/workflows/init.md) |
+| Đã có Platform, thêm module (JWT, EF, Caching, …) | `platform-dotnet` + skill `*-dotnet` | [workflows/add.md](../.opencode/skills/platform-dotnet/workflows/add.md) · [SKILLS.md](../.opencode/skills/platform-dotnet/templates/SKILLS.md) |
+| Chưa có health endpoint Platform | `healthcheck-dotnet` | [workflows/init.md](../.opencode/skills/healthcheck-dotnet/workflows/init.md) |
 | Đã có `/health/live`, thêm readiness dependency | `healthcheck-dotnet` | [workflows/add.md](../.opencode/skills/healthcheck-dotnet/workflows/add.md) + [providers/](../.opencode/skills/healthcheck-dotnet/providers/) |
-| Chưa có OpenTelemetry Jarvis | `telemetry-dotnet` | [workflows/init.md](../.opencode/skills/telemetry-dotnet/workflows/init.md) |
+| Chưa có OpenTelemetry Platform | `telemetry-dotnet` | [workflows/init.md](../.opencode/skills/telemetry-dotnet/workflows/init.md) |
 | Đã có OTEL core, thêm enrich / EF / Redis plug-in | `telemetry-dotnet` | [workflows/add.md](../.opencode/skills/telemetry-dotnet/workflows/add.md) + [providers/](../.opencode/skills/telemetry-dotnet/providers/) |
 | Review diff trước PR | `code-review` | [SKILL.md](../.opencode/skills/code-review/SKILL.md) + [README](../.opencode/skills/code-review/README.md) |
 
@@ -97,7 +97,7 @@ Trước khi mở PR                        → code-review
 Khuyến nghị **một cú pháp** cho mọi skill — tham chiếu file cụ thể để agent load đúng ngữ cảnh:
 
 ```text
-@.opencode/skills/jarvis-dotnet/workflows/scaffold.md
+@.opencode/skills/platform-dotnet/workflows/scaffold.md
 
 Scaffold solution .NET 9 tên Acme từ folder trống, dùng NuGet feed nội bộ.
 ```
@@ -105,9 +105,9 @@ Scaffold solution .NET 9 tên Acme từ folder trống, dùng NuGet feed nội b
 Hoặc gọi orchestrator:
 
 ```text
-@.opencode/skills/jarvis-dotnet/SKILL.md
+@.opencode/skills/platform-dotnet/SKILL.md
 
-Dùng skill jarvis-dotnet scaffold: Product=Acme, product=acme
+Dùng skill platform-dotnet scaffold: Product=Acme, product=acme
 ```
 
 **Lưu ý:** Trong Cursor, có thể dùng `@` kèm đường dẫn tương đương tới file skill hoặc workflow.
@@ -118,23 +118,23 @@ Dùng skill jarvis-dotnet scaffold: Product=Acme, product=acme
 
 | Mục tiêu | Prompt gợi ý |
 |----------|----------------|
-| **Scaffold** từ folder trống | `Tạo solution backend .NET 9 tên {Product}, theo @.opencode/skills/jarvis-dotnet/workflows/scaffold.md` |
-| **Init** Jarvis vào solution có sẵn | `Cài Jarvis vào solution có sẵn … theo @.opencode/skills/jarvis-dotnet/workflows/init.md` |
-| **Add** module | `Thêm {module} theo @.opencode/skills/{module}-dotnet/workflows/init.md` (xem [SKILLS.md](../.opencode/skills/jarvis-dotnet/templates/SKILLS.md)) |
+| **Scaffold** từ folder trống | `Tạo solution backend .NET 9 tên {Product}, theo @.opencode/skills/platform-dotnet/workflows/scaffold.md` |
+| **Init** Platform vào solution có sẵn | `Cài Platform vào solution có sẵn … theo @.opencode/skills/platform-dotnet/workflows/init.md` |
+| **Add** module | `Thêm {module} theo @.opencode/skills/{module}-dotnet/workflows/init.md` (xem [SKILLS.md](../.opencode/skills/platform-dotnet/templates/SKILLS.md)) |
 | **JWT** | `Thêm JWT theo @.opencode/skills/authentication-dotnet/providers/jwt/SKILL.md` |
 | **Health PostgreSQL** | `Thêm readiness PostgreSQL theo @.opencode/skills/healthcheck-dotnet/providers/postgresql/SKILL.md` |
-| **OpenTelemetry** | `Init Jarvis OpenTelemetry theo @.opencode/skills/telemetry-dotnet/workflows/init.md` |
+| **OpenTelemetry** | `Init Platform OpenTelemetry theo @.opencode/skills/telemetry-dotnet/workflows/init.md` |
 | **Review PR** | `Review PR theo @.opencode/skills/code-review/SKILL.md, base: main` |
 
 ### Prompt scaffold «đủ thông tin»
 
 ```text
-@.opencode/skills/jarvis-dotnet/workflows/scaffold.md
+@.opencode/skills/platform-dotnet/workflows/scaffold.md
 
 Scaffold backend .NET 9:
 - Product: Acme (PascalCase)
 - product: acme (kebab)
-- Jarvis: NuGet feed nội bộ (không monorepo)
+- Platform: NuGet feed nội bộ (không monorepo)
 - Mặc định: Swagger + health live + ping, chưa bật PostgreSQL readiness
 
 Sau khi xong: dotnet build và báo URL Swagger.
@@ -147,10 +147,10 @@ Review code trước PR theo @.opencode/skills/code-review/SKILL.md
 Base branch: main
 ```
 
-Solution theo kiến trúc Jarvis — bổ sung trong prompt:
+Solution theo kiến trúc Platform — bổ sung trong prompt:
 
 ```text
-Review PR theo code-review; solution theo Jarvis layered architecture
+Review PR theo code-review; solution theo Platform layered architecture
 ```
 
 ---
@@ -159,8 +159,8 @@ Review PR theo code-review; solution theo Jarvis layered architecture
 
 | Skill | Nên nêu trong prompt |
 |-------|----------------------|
-| **jarvis-dotnet** (scaffold) | `{Product}` PascalCase, `{product}` kebab, `{JarvisRoot}` monorepo **hoặc** NuGet feed |
-| **jarvis-dotnet** (init/add) | Tên solution, project Host, module cần thêm |
+| **platform-dotnet** (scaffold) | `{Product}` PascalCase, `{product}` kebab, `{PlatformRoot}` monorepo **hoặc** NuGet feed |
+| **platform-dotnet** (init/add) | Tên solution, project Host, module cần thêm |
 | **healthcheck-dotnet** | Provider (PostgreSQL, Redis, …), config path (`ConnectionStrings:MainDb`), không hardcode secret |
 | **telemetry-dotnet** | OTLP endpoint (env), có/không enrich, plug-in EF/Redis, sampling |
 | **code-review** | Base branch (`main`, `develop`), hoặc danh sách file; commit/stage trước khi review |
@@ -169,17 +169,17 @@ Review PR theo code-review; solution theo Jarvis layered architecture
 
 ## Hướng dẫn từng skill
 
-### jarvis-dotnet
+### platform-dotnet
 
-**Orchestrator chính** — scaffold solution phân lớp + cài Jarvis trên ASP.NET Core .NET 9.
+**Orchestrator chính** — scaffold solution phân lớp + cài Platform trên ASP.NET Core .NET 9.
 
-**Hướng dẫn:** [jarvis-dotnet/README.md](../.opencode/skills/jarvis-dotnet/README.md) · EF: [entityframework-dotnet](../.opencode/skills/entityframework-dotnet/README.md) · Cache: [caching-dotnet](../.opencode/skills/caching-dotnet/README.md) · Hub: [.opencode/README.md](../.opencode/README.md)
+**Hướng dẫn:** [platform-dotnet/README.md](../.opencode/skills/platform-dotnet/README.md) · EF: [entityframework-dotnet](../.opencode/skills/entityframework-dotnet/README.md) · Cache: [caching-dotnet](../.opencode/skills/caching-dotnet/README.md) · Hub: [.opencode/README.md](../.opencode/README.md)
 
 | Luồng | Workflow | Khi nào |
 |-------|----------|---------|
-| Scaffold | [workflows/scaffold.md](../.opencode/skills/jarvis-dotnet/workflows/scaffold.md) | Folder trống → solution 5 project + test |
-| Init | [workflows/init.md](../.opencode/skills/jarvis-dotnet/workflows/init.md) | Solution có sẵn, gắn Jarvis theo layer |
-| Add | [workflows/add.md](../.opencode/skills/jarvis-dotnet/workflows/add.md) | Đã có foundation, thêm module |
+| Scaffold | [workflows/scaffold.md](../.opencode/skills/platform-dotnet/workflows/scaffold.md) | Folder trống → solution 5 project + test |
+| Init | [workflows/init.md](../.opencode/skills/platform-dotnet/workflows/init.md) | Solution có sẵn, gắn Platform theo layer |
+| Add | [workflows/add.md](../.opencode/skills/platform-dotnet/workflows/add.md) | Đã có foundation, thêm module |
 
 **Cấu trúc solution chuẩn:**
 
@@ -188,9 +188,9 @@ Review PR theo code-review; solution theo Jarvis layered architecture
 ├── src/{Product}.sln
 │   ├── {Product}.Domain.Shared
 │   ├── {Product}.Domain
-│   ├── {Product}.Application      → Jarvis.DDD.Application
-│   ├── {Product}.Infrastructure   → Jarvis.EntityFramework
-│   └── {Product}.Host             → Jarvis.Mvc, OTEL, HealthChecks, Swagger
+│   ├── {Product}.Application      → Platform.DDD.Application
+│   ├── {Product}.Infrastructure   → Platform.EntityFramework
+│   └── {Product}.Host             → Platform.Mvc, OTEL, HealthChecks, Swagger
 └── tests/
 ```
 
@@ -211,16 +211,16 @@ Review PR theo code-review; solution theo Jarvis layered architecture
 | OpenTelemetry | [telemetry-dotnet](../.opencode/skills/telemetry-dotnet/README.md) |
 | Health checks | [healthcheck-dotnet](../.opencode/skills/healthcheck-dotnet/README.md) |
 
-**Hai cách cài Jarvis:**
+**Hai cách cài Platform:**
 
 | Cách | Khi nào |
 |------|---------|
-| **ProjectReference** | Monorepo cạnh repo Jarvis (`{JarvisRoot}`) |
+| **ProjectReference** | Monorepo cạnh repo Platform (`{PlatformRoot}`) |
 | **NuGet** | Repo độc lập, feed nội bộ |
 
-**Lưu ý package:** folder repo `Jarvis.Authentication.*` → NuGet **`Jarvis.Authentications.*`** (có chữ **s**).
+**Lưu ý package:** folder repo `Platform.Authentication.*` → NuGet **`Platform.Authentications.*`** (có chữ **s**).
 
-**Thứ tự DI (develop):** `AddJarvisCaching()` → `AddEntityFramework()` → `AddCoreDbContext`. Template scaffold đã áp dụng.
+**Thứ tự DI (develop):** `AddPlatformCaching()` → `AddEntityFramework()` → `AddCoreDbContext`. Template scaffold đã áp dụng.
 
 **Sau scaffold — kiểm tra:**
 
@@ -236,7 +236,7 @@ Review PR theo code-review; solution theo Jarvis layered architecture
 
 ### healthcheck-dotnet
 
-Skill chuyên **`Jarvis.HealthChecks`** — liveness, startup, readiness.
+Skill chuyên **`Platform.HealthChecks`** — liveness, startup, readiness.
 
 | Tình huống | Workflow |
 |------------|----------|
@@ -245,7 +245,7 @@ Skill chuyên **`Jarvis.HealthChecks`** — liveness, startup, readiness.
 
 **Quy tắc cốt lõi:**
 
-- `builder.AddHealthChecks()` (Jarvis) **trước** readiness registrations
+- `builder.AddHealthChecks()` (Platform) **trước** readiness registrations
 - `app.UseHealthChecks()` sau khi build pipeline
 - Liveness = process/runtime; readiness = infrastructure
 - **Không** đặt database vào liveness
@@ -289,18 +289,18 @@ Connection string: ConnectionStrings:MainDb trong appsettings.
 
 ### telemetry-dotnet
 
-Skill chuyên **`Jarvis.OpenTelemetry`** — trace, metric, log OTLP.
+Skill chuyên **`Platform.OpenTelemetry`** — trace, metric, log OTLP.
 
 | Tình huống | Workflow |
 |------------|----------|
-| Project chưa có Jarvis OTEL | [workflows/init.md](../.opencode/skills/telemetry-dotnet/workflows/init.md) |
+| Project chưa có Platform OTEL | [workflows/init.md](../.opencode/skills/telemetry-dotnet/workflows/init.md) |
 | Đã có core, thêm instrumentation | [workflows/add.md](../.opencode/skills/telemetry-dotnet/workflows/add.md) |
 
 **Quy tắc cốt lõi:**
 
-- `AddJarvisOpenTelemetry(configuration, configureServices)` → `.ConfigureResource()` → logging / trace / metric
+- `AddPlatformOpenTelemetry(configuration, configureServices)` → `.ConfigureResource()` → logging / trace / metric
 - Plug-in đăng ký **trong** callback `configureServices` (trước `Build()`)
-- `app.UseJarvisOpenTelemetry()` khi cần enrich trace/log
+- `app.UsePlatformOpenTelemetry()` khi cần enrich trace/log
 - Config: `OTEL:Tracing`, `OTEL:Metric`, `OTEL:Logging`
 - `HttpTraceEnrichment`: allowlist header — không capture toàn bộ header
 - Không hard-code OTLP secrets; dùng env / secret store
@@ -340,7 +340,7 @@ Skill chuyên **`Jarvis.OpenTelemetry`** — trace, metric, log OTLP.
 ```text
 @.opencode/skills/telemetry-dotnet/workflows/init.md
 
-Init Jarvis OpenTelemetry cho MyApp.Host.
+Init Platform OpenTelemetry cho MyApp.Host.
 OTLP endpoint qua biến môi trường, không commit secret.
 ```
 
@@ -395,18 +395,18 @@ Base branch: main
 
 1. Link tới **file này:** *«Chi tiết skill AI: [docs/tutorial-index.md](tutorial-index.md)»*
 2. Mỗi «Cách» trỏ workflow:
-   - Cách 1 (Scaffold) → `jarvis-dotnet/workflows/scaffold.md`
-   - Cách 2 (Add) → `jarvis-dotnet/workflows/add.md`
-   - Cách 3 (Init) → `jarvis-dotnet/workflows/init.md`
+   - Cách 1 (Scaffold) → `platform-dotnet/workflows/scaffold.md`
+   - Cách 2 (Add) → `platform-dotnet/workflows/add.md`
+   - Cách 3 (Init) → `platform-dotnet/workflows/init.md`
 3. Giữ prompt tiếng Việt tự nhiên, kèm `@.opencode/skills/...` để agent load đúng file
 
 **Bốn cách bắt đầu (tóm tắt từ README):**
 
 | Cách | Mô tả | Skill / workflow |
 |------|--------|------------------|
-| **1 — Scaffold** (khuyến khích) | Folder trống → solution + Jarvis → F5 Swagger | `jarvis-dotnet` / scaffold |
-| **2 — Add** | Đã có foundation, thêm module | `jarvis-dotnet` / add + modules |
-| **3 — Init** | Solution .NET có sẵn, cài Jarvis | `jarvis-dotnet` / init |
+| **1 — Scaffold** (khuyến khích) | Folder trống → solution + Platform → F5 Swagger | `platform-dotnet` / scaffold |
+| **2 — Add** | Đã có foundation, thêm module | `platform-dotnet` / add + modules |
+| **3 — Init** | Solution .NET có sẵn, cài Platform | `platform-dotnet` / init |
 | **4 — Manual** | `dotnet new`, `dotnet add package` tay | Không cần skill |
 
 ---
@@ -415,8 +415,8 @@ Base branch: main
 
 | Câu hỏi | Trả lời ở |
 |---------|-----------|
-| Jarvis là gì, 5 layer, module nào? | [README.md](../README.md) |
-| Tôi muốn tạo project mới bằng AI? | **docs/tutorial-index.md** + `jarvis-dotnet` workflows |
+| Platform là gì, 5 layer, module nào? | [README.md](../README.md) |
+| Tôi muốn tạo project mới bằng AI? | **docs/tutorial-index.md** + `platform-dotnet` workflows |
 | Thêm PostgreSQL vào `/health/ready`? | `healthcheck-dotnet` providers |
 | Bật OTLP / enrich trace? | `telemetry-dotnet` workflows |
 | Review PR trước merge? | `code-review` README |
@@ -438,7 +438,7 @@ Khi bổ sung `README.md` trong từng thư mục skill, dùng **cùng khung** n
 ### Thứ tự triển khai tài liệu (đội nội bộ)
 
 1. **docs/tutorial-index.md** (file này) — hub + decision tree + bảng prompt
-2. **`.opencode/skills/jarvis-dotnet/README.md`** — skill dùng nhiều nhất
+2. **`.opencode/skills/platform-dotnet/README.md`** — skill dùng nhiều nhất
 3. **`healthcheck-dotnet/README.md`** + **`telemetry-dotnet/README.md`**
 4. **Cập nhật README.md gốc** — đoạn link + workflow
 5. (Tuỳ chọn) **`docs/ai-workflows.md`** hoặc CONTRIBUTING nếu team lớn
@@ -450,7 +450,7 @@ Khi bổ sung `README.md` trong từng thư mục skill, dùng **cùng khung** n
 - **`SKILL.md`** = sổ tay cho **agent**; **README skill** = sổ tay cho **người**.
 - Dùng **`code-review/README.md`** làm template cho các skill còn thiếu README.
 - **`docs/tutorial-index.md`** là bản đồ trung tâm — tránh nhồi hết vào README framework.
-- Prompt nên **`@` path cụ thể** (`workflows/`, `providers/`, skill `*-dotnet`) thay vì chỉ nói «dùng skill jarvis».
+- Prompt nên **`@` path cụ thể** (`workflows/`, `providers/`, skill `*-dotnet`) thay vì chỉ nói «dùng skill platform».
 
 ---
 
@@ -459,8 +459,8 @@ Khi bổ sung `README.md` trong từng thư mục skill, dùng **cùng khung** n
 | Tài liệu | Path |
 |----------|------|
 | Framework overview | [README.md](../README.md) |
-| Jarvis orchestrator | [.opencode/skills/jarvis-dotnet/SKILL.md](../.opencode/skills/jarvis-dotnet/SKILL.md) |
-| Solution structure reference | [.opencode/skills/jarvis-dotnet/reference/solution-structure.md](../.opencode/skills/jarvis-dotnet/reference/solution-structure.md) |
+| Platform orchestrator | [.opencode/skills/platform-dotnet/SKILL.md](../.opencode/skills/platform-dotnet/SKILL.md) |
+| Solution structure reference | [.opencode/skills/platform-dotnet/reference/solution-structure.md](../.opencode/skills/platform-dotnet/reference/solution-structure.md) |
 | Code review (chuẩn README) | [.opencode/skills/code-review/README.md](../.opencode/skills/code-review/README.md) |
 | Health checks | [.opencode/skills/healthcheck-dotnet/SKILL.md](../.opencode/skills/healthcheck-dotnet/SKILL.md) |
 | OpenTelemetry | [.opencode/skills/telemetry-dotnet/SKILL.md](../.opencode/skills/telemetry-dotnet/SKILL.md) |

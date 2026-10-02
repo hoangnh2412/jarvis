@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
-using Jarvis.Modules.Setting.API.Controllers;
+using Platform.Modules.Setting.API.Controllers;
 
 namespace Sample.Settings;
 
@@ -20,7 +20,7 @@ namespace Sample.Settings;
 /// <item>Gắn <see cref="AuthorizeFilter"/> lên <see cref="SettingController"/> qua convention (xem <see cref="ApplyAuthorizeToSettingHttpApi"/>).</item>
 /// </list>
 /// <para>
-/// Không sửa package <c>Jarvis.Modules.Setting.API</c> — giữ module trung lập, host quyết định policy.
+/// Không sửa package <c>Platform.Modules.Setting.API</c> — giữ module trung lập, host quyết định policy.
 /// </para>
 /// </remarks>
 public static class SettingHttpApiAuthorizationSample

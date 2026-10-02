@@ -56,7 +56,7 @@ function ruleToAst(rule: RuleType, fields?: Field[]): FilterAstRule | null {
 }
 
 /**
- * Convert react-querybuilder query → nested AST for Jarvis FilterParser.
+ * Convert react-querybuilder query → nested AST for Platform FilterParser.
  * Empty rules → `null`.
  */
 export function toFilterAst(
@@ -121,7 +121,7 @@ export type ToPagedListParamsInput = {
   columns?: string | null
 }
 
-/** Build params matching Jarvis PagedListRequest. */
+/** Build params matching Platform PagedListRequest. */
 export function toPagedListParams(
   input: ToPagedListParamsInput,
 ): PagedListQueryParams {

@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Jarvis.Authentication;
-using Jarvis.DDD.Domain.Services;
-using Jarvis.Modules.Notifications.Redis.Extensions;
-using Jarvis.Realtime.Contracts;
-using Jarvis.Realtime.Extensions;
-using Jarvis.Realtime.SignalR.Extensions;
-using Jarvis.Realtime.SignalR.Services;
+using Platform.Authentication;
+using Platform.DDD.Domain.Services;
+using Platform.Modules.Notifications.Redis.Extensions;
+using Platform.Realtime.Contracts;
+using Platform.Realtime.Extensions;
+using Platform.Realtime.SignalR.Extensions;
+using Platform.Realtime.SignalR.Services;
 
 namespace UnitTest.Realtime;
 
@@ -63,6 +63,6 @@ public class RealtimeHostRegistrationTests
         var builder = WebApplication.CreateBuilder();
         builder.AddCoreRealtime().UseSignalR();
         using var app = builder.Build();
-        Assert.Null(app.Services.GetService(typeof(Jarvis.Modules.Notifications.Contracts.INotificationStore)));
+        Assert.Null(app.Services.GetService(typeof(Platform.Modules.Notifications.Contracts.INotificationStore)));
     }
 }

@@ -41,5 +41,5 @@ export const DASHBOARD_CHART_DEFAULT_WIDTH = DASHBOARD_CHART_DEFAULT_W
 export const DASHBOARD_CHART_DEFAULT_HEIGHT = DASHBOARD_CHART_DEFAULT_H
 
 /** Base URL axios — app set VITE_API_URL_DASHBOARD */
-/** @deprecated Use shared `BASE_URL` from `@jarvis/core` / `lib/http` */
+/** @deprecated Use shared `BASE_URL` from `@platform/core` / `lib/http` */
 export { BASE_URL as BASE_URL_DASHBOARD } from '../../../lib/http/constants'

@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using Jarvis.Modules.Notifications.Contracts;
-using Jarvis.Modules.Notifications.Serialization;
+using Platform.Modules.Notifications.Contracts;
+using Platform.Modules.Notifications.Serialization;
 
 namespace UnitTest.SignalR;
 

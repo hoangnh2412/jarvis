@@ -1,19 +1,19 @@
-import { useEffect, useRef } from 'react'
-import flatpickr from 'flatpickr'
-import 'flatpickr/dist/flatpickr.min.css'
-import {
-  parseStoredDate,
-  resolveHourFormat,
-  serializeDate,
-  serializeDateTime,
-  shouldShowSeconds,
-  toFlatpickrFormat,
-} from '../utils/dateFormat'
+// import { useEffect, useRef } from 'react'
+// import flatpickr from 'flatpickr'
+// import 'flatpickr/dist/flatpickr.min.css'
+// import {
+//   parseStoredDate,
+//   resolveHourFormat,
+//   serializeDate,
+//   serializeDateTime,
+//   shouldShowSeconds,
+//   toFlatpickrFormat,
+// } from '../utils/dateFormat'
 
-const inputClass =
-  'box-border h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-800 shadow-sm outline-none transition-[border-color,box-shadow] placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-70'
-const inputInvalidClass =
-  '!border-red-500 focus:!border-red-500 focus:!ring-red-500/20'
+// const inputClass =
+//   'box-border h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-800 shadow-sm outline-none transition-[border-color,box-shadow] placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-70'
+// const inputInvalidClass =
+//   '!border-red-500 focus:!border-red-500 focus:!ring-red-500/20'
 
 type SettingDatePickerProps = {
   value: string
@@ -26,24 +26,24 @@ type SettingDatePickerProps = {
 }
 
 export function SettingDatePicker({
-  value,
-  disabled = false,
-  invalid = false,
-  showTime = false,
-  displayFormat,
-  onChange,
+  //value,
+  //disabled = false,
+  //invalid = false,
+  //showTime = false,
+  //displayFormat,
+  //onChange,
 }: SettingDatePickerProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  const pickerRef = useRef<flatpickr.Instance | null>(null)
-  const onChangeRef = useRef(onChange)
-  onChangeRef.current = onChange
+  // const inputRef = useRef<HTMLInputElement>(null)
+  // const pickerRef = useRef<flatpickr.Instance | null>(null)
+  // const onChangeRef = useRef(onChange)
+  // onChangeRef.current = onChange
 
-  const flatpickrFormat = toFlatpickrFormat(displayFormat, showTime)
-  const withSeconds = shouldShowSeconds(displayFormat)
-  const hour12 = resolveHourFormat(displayFormat) === '12'
-  const placeholder = displayFormat || (showTime ? 'Chọn ngày giờ' : 'Chọn ngày')
+  // const flatpickrFormat = toFlatpickrFormat(displayFormat, showTime)
+  // const withSeconds = shouldShowSeconds(displayFormat)
+  // const hour12 = resolveHourFormat(displayFormat) === '12'
+  //const placeholder = displayFormat || (showTime ? 'Chọn ngày giờ' : 'Chọn ngày')
 
-  useEffect(() => {
+  /* useEffect(() => {
     if (!inputRef.current) return
 
     pickerRef.current?.destroy()
@@ -97,18 +97,19 @@ export function SettingDatePicker({
     if (!picker) return
     if (disabled) picker.close()
     picker.set('clickOpens', !disabled)
-  }, [disabled])
+  }, [disabled]) */
 
-  return (
-    <input
-      ref={inputRef}
-      type="text"
-      readOnly
-      disabled={disabled}
-      placeholder={placeholder}
-      className={[inputClass, invalid ? inputInvalidClass : '']
-        .filter(Boolean)
-        .join(' ')}
-    />
+  return ( null
+    // <input
+    //   value={value}
+    //   onChange={(event) => onChange(event.target.value)}
+    //   type="text"
+    //   readOnly
+    //   disabled={disabled}
+    //   placeholder={placeholder}
+    //   className={[inputClass, invalid ? inputInvalidClass : '']
+    //     .filter(Boolean)
+    //     .join(' ')}
+    // />
   )
 }

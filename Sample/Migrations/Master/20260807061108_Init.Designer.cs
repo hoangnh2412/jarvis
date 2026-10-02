@@ -25,7 +25,7 @@ namespace Sample.Migrations.Master
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Jarvis.Modules.Setting.EntityFramework.Entities.Setting", b =>
+            modelBuilder.Entity("Platform.Modules.Setting.EntityFramework.Entities.Setting", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

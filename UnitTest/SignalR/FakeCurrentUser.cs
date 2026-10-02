@@ -1,5 +1,5 @@
-using Jarvis.Authentication;
-using Jarvis.DDD.Domain.Services;
+using Platform.Authentication;
+using Platform.DDD.Domain.Services;
 
 namespace UnitTest.SignalR;
 

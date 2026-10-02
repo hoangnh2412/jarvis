@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<PackageId>Platform.Workflow</PackageId>
+	<AssemblyName>Platform.Workflow</AssemblyName>
+	<RootNamespace>Platform.Workflow</RootNamespace>
+	<Version>1.0.0</Version>
+	<Authors>Hoang Nguyen</Authors>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<TargetFramework>net9.0</TargetFramework>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<PackageReference Include="Elsa" Version="3.7.1" />
+	<PackageReference Include="Elsa.Expressions.JavaScript" Version="3.7.1" />
+	<PackageReference Include="Elsa.Persistence.EFCore" Version="3.7.1" />
+	<PackageReference Include="Elsa.Persistence.EFCore.PostgreSql" Version="3.7.1" />
+	<PackageReference Include="Elsa.Tenants" Version="3.7.1" />
+	<PackageReference Include="Elsa.Workflows.Api" Version="3.7.1" />
+	<PackageReference Include="Elsa.Http" Version="3.7.1" />
+	<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.13" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Platform.Caching.Redis\Platform.Caching.Redis.csproj" />
+		<ProjectReference Include="..\Platform.Multitenancy\Platform.Multitenancy.csproj" />
+	</ItemGroup>
+</Project>

@@ -1,4 +1,4 @@
-using Jarvis.BlobStoring.MinIO;
+using Platform.BlobStoring.MinIO;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 

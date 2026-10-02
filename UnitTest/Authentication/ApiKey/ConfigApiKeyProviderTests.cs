@@ -1,5 +1,5 @@
 using AspNetCore.Authentication.ApiKey;
-using Jarvis.Authentication.ApiKey;
+using Platform.Authentication.ApiKey;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;

@@ -1,6 +1,6 @@
-# Refactor Jarvis.Caching — Plan Document
+# Refactor Platform.Caching — Plan Document
 
-Tài liệu kế hoạch refactor module cache Jarvis. **Trạng thái: hoàn tất** (merge-ready).
+Tài liệu kế hoạch refactor module cache Platform. **Trạng thái: hoàn tất** (merge-ready).
 
 ---
 
@@ -17,14 +17,14 @@ Tài liệu kế hoạch refactor module cache Jarvis. **Trạng thái: hoàn t�
 
 ### 1.2 Phạm vi refactor
 
-- **In scope:** `Jarvis.Caching`, `Jarvis.Caching.Redis`, config `Cache`, Sample wiring, unit tests, skill `.opencode/skills/caching-dotnet/`
+- **In scope:** `Platform.Caching`, `Platform.Caching.Redis`, config `Cache`, Sample wiring, unit tests, skill `.opencode/skills/caching-dotnet/`
 - **Phase 5 (done):** `CachingTenantConnectionStringResolver`, OTEL distributed Redis — xem §7
 - **Out of scope:** CouchBase/Memcached providers
 
 ### 1.3 Chuẩn tham chiếu
 
 - Review checklist: `.opencode/skills/code-review/SKILL.md`
-- Style / structure: `architecture-software.md` (HealthChecks / EF / OTEL patterns)
+- Style / structure: `architecture-rules.md` (HealthChecks / EF / OTEL patterns)
 - Module skill: `.opencode/skills/caching-dotnet/SKILL.md`
 
 ---
@@ -36,11 +36,11 @@ Tài liệu kế hoạch refactor module cache Jarvis. **Trạng thái: hoàn t�
 ### 2.1 Cấu trúc project (trước refactor)
 
 ```
-Jarvis.Caching/           # Core: CacheService, options, AddJarvisCaching, MsMemoryCacheAdapter
-Jarvis.Caching.Redis/     # RedisCache, invalidation pub/sub, RedisConnectionManager
+Platform.Caching/           # Core: CacheService, options, AddPlatformCaching, MsMemoryCacheAdapter
+Platform.Caching.Redis/     # RedisCache, invalidation pub/sub, RedisConnectionManager
 ```
 
-*(Lịch sử refactor: trước đây có `CachingBuilder` + `Jarvis.Caching.Memory`; đã gỡ — chỉ còn `AddJarvisCaching`.)*
+*(Lịch sử refactor: trước đây có `CachingBuilder` + `Platform.Caching.Memory`; đã gỡ — chỉ còn `AddPlatformCaching`.)*
 
 ### 2.2 Luồng đọc/ghi hiện tại
 
@@ -69,14 +69,14 @@ flowchart TD
 
 ## 3. Bug và gap — trạng thái sau refactor
 
-*Review theo `.opencode/skills/code-review/SKILL.md` — branch `refactor-cache`, phạm vi `Jarvis.Caching`, `Jarvis.Caching.Redis`, `UnitTest/Caching`, Sample wiring.*
+*Review theo `.opencode/skills/code-review/SKILL.md` — branch `refactor-cache`, phạm vi `Platform.Caching`, `Platform.Caching.Redis`, `UnitTest/Caching`, Sample wiring.*
 
 ### 3.1 Critical — đã xử lý
 
 | ID | Vấn đề (as-is) | Trạng thái | Ghi chú triển khai |
 |----|----------------|------------|-------------------|
 | C1 | Early return khi `distType`/`distGroup` rỗng trước default | **Done** | `CacheEntryOption.GetConfigValues` + `CacheEntryConfigValues.ToItemResolution`: default chỉ khi `UseDistributed` (`DistributedSeconds > 0`) |
-| C2 | `DefaultDistgroup` ≠ `DefaultDistributedGroup` | **Done** | `JarvisCacheOptions.DefaultDistributedGroup`; Sample/UnitTest bind `Cache:DefaultDistributedGroup` |
+| C2 | `DefaultDistgroup` ≠ `DefaultDistributedGroup` | **Done** | `PlatformCacheOptions.DefaultDistributedGroup`; Sample/UnitTest bind `Cache:DefaultDistributedGroup` |
 | C3 | `if (cached != null)` / `if (data == null)` | **Done** (có ngoại lệ API) | `CacheValue<T>.HasValue` + `TryGetAsync`; `GetOrSetAsync` dùng `TryGetCore`. Xem **O1** bên dưới |
 | C4 | `RedisConnectionManager` race | **Done** | `ConcurrentDictionary` + `Lazy<IConnectionMultiplexer>` |
 
@@ -109,15 +109,15 @@ Không còn hạng mục mở. Kết quả review bổ sung sau phase chính:
 
 ### 4.1 Core vs Host-owned
 
-| Jarvis (core) | Host (Sample / app) |
+| Platform (core) | Host (Sample / app) |
 |---------------|---------------------|
-| `AddJarvisCaching`, options bind, `ICacheService` | Gọi `AddJarvisCaching` + optional `UseRedisDistributedCache` |
+| `AddPlatformCaching`, options bind, `ICacheService` | Gọi `AddPlatformCaching` + optional `UseRedisDistributedCache` |
 | Memory layer (mặc định) | `GetAsync` + query delegate → DB/repo |
 | Redis dist cache theo `DistGroups` | Readiness check Redis (đã có pattern trong Sample health) |
 | Pub/sub invalidation (Redis impl) | Sau save/delete: `ICacheService.RemoveAsync` hoặc publish invalidation |
 | `CacheParam` + key template | Giá trị param cụ thể (`tenantId`, `id`, …) |
 
-### 4.2 Sentinel TTL (theo [architecture-software.md](./architecture-software.md) §1.3)
+### 4.2 Sentinel TTL (theo [architecture-rules.md](./architecture-rules.md) §1.3)
 
 | Config | Ý nghĩa |
 |--------|---------|
@@ -185,21 +185,21 @@ flowchart LR
 ## 5. Cấu trúc project sau refactor
 
 ```
-Jarvis.Caching/
+Platform.Caching/
 ├── Abstractions/          # ICacheService, IMemoryCache, IDistributedCache, invalidation
-├── Configuration/         # JarvisCacheOptions, CacheEntryOption
-├── Extensions/            # AddJarvisCaching
+├── Configuration/         # PlatformCacheOptions, CacheEntryOption
+├── Extensions/            # AddPlatformCaching
 ├── Services/              # CacheService
 ├── Models/                # CacheParam, CacheValue, invalidation message
 └── Internal/              # CacheKeyResolver, CacheItemResolution
 
-Jarvis.Caching.Redis/Extensions/ + Invalidation/
+Platform.Caching.Redis/Extensions/ + Invalidation/
 ```
 
 **DI API mục tiêu (host):**
 
 ```csharp
-builder.AddJarvisCaching(configure: o => { })
+builder.AddPlatformCaching(configure: o => { })
     .UseRedisDistributedCache()
     .UseRedisMemoryCacheInvalidation();
 ```
@@ -223,7 +223,7 @@ builder.AddJarvisCaching(configure: o => { })
 |-------|----------|------------|
 | 0 | Document + test harness | Done |
 | 1 | Bugfix core (C1–C3, sentinel, key resolver) | Done |
-| 2 | `AddJarvisCaching`, cấu trúc thư mục | Done |
+| 2 | `AddPlatformCaching`, cấu trúc thư mục | Done |
 | 3 | Redis thread-safe, STJ, `ConfigureAwait` | Done |
 | 4 | Sample `Program.cs` wiring + skill caching + unit tests (12) | Done |
 | 5 | Cache mặc định cho connection string + OTEL distributed Redis | Done |
@@ -260,6 +260,6 @@ dotnet test UnitTest/UnitTest.csproj --filter "FullyQualifiedName~UnitTest.Cachi
 | Config keys | Dùng `DefaultDistributedGroup`, `DistributedGroups`, `DistributedSeconds` (không còn tên `Dist*` / `DefaultDistgroup`) |
 | Cache-aside loader | `GetOrSetAsync(param, async ct => ...)` — không dùng `GetAsync(param, Func<Task<T>>)` |
 | Memory-only items | Bắt đầu hoạt động (fix) |
-| `CachingBuilder` / `Jarvis.Caching.Memory` | Đã gỡ; dùng `AddJarvisCaching` |
+| `CachingBuilder` / `Platform.Caching.Memory` | Đã gỡ; dùng `AddPlatformCaching` |
 | Null-hit semantics | `CacheValue<T>`; read path ưu tiên `TryGetAsync` (O1, §3.3) |
 | Config / code legacy | Không alias key cũ (O2 dropped) |

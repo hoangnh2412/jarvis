@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using Jarvis.DDD.Domain.Repositories;
-using Jarvis.ORM.EntityFramework.Repositories;
+using Platform.DDD.Domain.Repositories;
+using Platform.ORM.EntityFramework.Repositories;
 
 namespace UnitTest.Querying;
 

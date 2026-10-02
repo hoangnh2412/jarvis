@@ -1,0 +1,249 @@
+{
+  "template": {
+    "id": "lla-idas",
+    "name": "Nội dung trao đổi LLA – IDAS",
+    "fileName": "LLA-IDAS.docx",
+    "updatedAt": "2026-09-14T10:00:00.000Z",
+    "pageSize": {
+      "format": "US Letter",
+      "widthTwips": 12240,
+      "heightTwips": 16840,
+      "widthMm": 215.9,
+      "heightMm": 279.4,
+      "widthPx96Dpi": 816,
+      "heightPx96Dpi": 1056
+    },
+    "marginsTwips": {
+      "top": 1440,
+      "right": 1440,
+      "bottom": 1440,
+      "left": 1440,
+      "header": 720,
+      "footer": 720
+    },
+    "contentWidthTwips": 9360,
+    "contentWidthPx96Dpi": 624
+  },
+  "fields": [
+    {
+      "id": "lla-documentTitle",
+      "name": "documentTitle",
+      "label": "Tiêu đề tài liệu",
+      "type": "text",
+      "placeholder": "{{documentTitle}}",
+      "required": true,
+      "group": "general"
+    },
+    {
+      "id": "lla-intro",
+      "name": "introParagraph",
+      "label": "Đoạn mở đầu",
+      "type": "textarea",
+      "placeholder": "{{introParagraph}}",
+      "required": true,
+      "group": "general"
+    },
+    {
+      "id": "lla-partner",
+      "name": "partnerOrganization",
+      "label": "Đối tác nhận tài liệu",
+      "type": "text",
+      "placeholder": "{{partnerOrganization}}",
+      "group": "general"
+    },
+    {
+      "id": "lla-platform",
+      "name": "platformName",
+      "label": "Nền tảng tích hợp",
+      "type": "text",
+      "placeholder": "{{platformName}}",
+      "group": "general"
+    },
+    {
+      "id": "lla-flow1-title",
+      "name": "flow1Title",
+      "label": "Luồng 1 — Tiêu đề",
+      "type": "text",
+      "placeholder": "{{flow1Title}}",
+      "group": "flow1"
+    },
+    {
+      "id": "lla-flow1-purpose",
+      "name": "flow1Purpose",
+      "label": "Luồng 1 — Mục đích",
+      "type": "textarea",
+      "placeholder": "{{flow1Purpose}}",
+      "group": "flow1"
+    },
+    {
+      "id": "lla-flow1-environment",
+      "name": "flow1Environment",
+      "label": "Luồng 1 — Môi trường",
+      "type": "text",
+      "placeholder": "{{flow1Environment}}",
+      "group": "flow1"
+    },
+    {
+      "id": "lla-flow1-security",
+      "name": "flow1Security",
+      "label": "Luồng 1 — Giao thức bảo mật",
+      "type": "text",
+      "placeholder": "{{flow1Security}}",
+      "group": "flow1"
+    },
+    {
+      "id": "lla-flow1-api",
+      "name": "flow1ApiEndpoint",
+      "label": "Luồng 1 — API endpoint",
+      "type": "text",
+      "placeholder": "{{flow1ApiEndpoint}}",
+      "group": "flow1"
+    },
+    {
+      "id": "lla-flow1-mechanism",
+      "name": "flow1Mechanism",
+      "label": "Luồng 1 — Cơ chế hoạt động",
+      "type": "textarea",
+      "placeholder": "{{flow1Mechanism}}",
+      "group": "flow1"
+    },
+    {
+      "id": "lla-flow2-title",
+      "name": "flow2Title",
+      "label": "Luồng 2 — Tiêu đề",
+      "type": "text",
+      "placeholder": "{{flow2Title}}",
+      "group": "flow2"
+    },
+    {
+      "id": "lla-flow2-purpose",
+      "name": "flow2Purpose",
+      "label": "Luồng 2 — Mục đích",
+      "type": "textarea",
+      "placeholder": "{{flow2Purpose}}",
+      "group": "flow2"
+    },
+    {
+      "id": "lla-flow2-security",
+      "name": "flow2Security",
+      "label": "Luồng 2 — Giao thức bảo mật",
+      "type": "text",
+      "placeholder": "{{flow2Security}}",
+      "group": "flow2"
+    },
+    {
+      "id": "lla-flow2-tokenTtl",
+      "name": "flow2TokenTtl",
+      "label": "Luồng 2 — TTL token (giây)",
+      "type": "text",
+      "placeholder": "{{flow2TokenTtl}}",
+      "group": "flow2"
+    },
+    {
+      "id": "lla-flow2-tokenFields",
+      "name": "flow2TokenFields",
+      "label": "Luồng 2 — Trường trong token",
+      "type": "text",
+      "placeholder": "{{flow2TokenFields}}",
+      "group": "flow2"
+    },
+    {
+      "id": "lla-flow2-mechanism",
+      "name": "flow2Mechanism",
+      "label": "Luồng 2 — Cơ chế hoạt động",
+      "type": "textarea",
+      "placeholder": "{{flow2Mechanism}}",
+      "group": "flow2"
+    },
+    {
+      "id": "lla-flow3-title",
+      "name": "flow3Title",
+      "label": "Luồng 3 — Tiêu đề",
+      "type": "text",
+      "placeholder": "{{flow3Title}}",
+      "group": "flow3"
+    },
+    {
+      "id": "lla-flow3-purpose",
+      "name": "flow3Purpose",
+      "label": "Luồng 3 — Mục đích",
+      "type": "textarea",
+      "placeholder": "{{flow3Purpose}}",
+      "group": "flow3"
+    },
+    {
+      "id": "lla-flow3-security",
+      "name": "flow3Security",
+      "label": "Luồng 3 — Giao thức bảo mật",
+      "type": "text",
+      "placeholder": "{{flow3Security}}",
+      "group": "flow3"
+    },
+    {
+      "id": "lla-flow3-mechanism",
+      "name": "flow3Mechanism",
+      "label": "Luồng 3 — Cơ chế hoạt động",
+      "type": "textarea",
+      "placeholder": "{{flow3Mechanism}}",
+      "group": "flow3"
+    },
+    {
+      "id": "lla-flow4-title",
+      "name": "flow4Title",
+      "label": "Luồng 4 — Tiêu đề",
+      "type": "text",
+      "placeholder": "{{flow4Title}}",
+      "group": "flow4"
+    },
+    {
+      "id": "lla-flow4-purpose",
+      "name": "flow4Purpose",
+      "label": "Luồng 4 — Mục đích",
+      "type": "textarea",
+      "placeholder": "{{flow4Purpose}}",
+      "group": "flow4"
+    },
+    {
+      "id": "lla-flow4-security",
+      "name": "flow4Security",
+      "label": "Luồng 4 — Giao thức bảo mật",
+      "type": "text",
+      "placeholder": "{{flow4Security}}",
+      "group": "flow4"
+    },
+    {
+      "id": "lla-flow4-mechanism",
+      "name": "flow4Mechanism",
+      "label": "Luồng 4 — Cơ chế hoạt động",
+      "type": "textarea",
+      "placeholder": "{{flow4Mechanism}}",
+      "group": "flow4"
+    }
+  ],
+  "sampleData": {
+    "documentTitle": "NỘI DUNG TRAO ĐỔI LLA – IDAS",
+    "introParagraph": "Nhằm đảm bảo tính an toàn, bảo mật dữ liệu tuyệt đối và tuân thủ các tiêu chuẩn kỹ thuật trong quá trình vận hành, LLA xin gửi đến IDAS phương án kiến trúc và Giao thức tích hợp bảo mật giữa hệ thống IDAS eOffice và nền tảng LLA eContract & LLA e-Sign API.",
+    "partnerOrganization": "IDAS",
+    "platformName": "LLA eContract & LLA e-Sign API",
+    "flow1Title": "Luồng Khởi tạo & Đồng bộ nhân sự (eOffice <-> LLA e-Sign API)",
+    "flow1Purpose": "eOffice gửi lệnh cấp quyền hoặc thu hồi quyền sử dụng Dấu xác nhận điện tử cho nhân sự lên máy chủ LLA e-Sign API.",
+    "flow1Environment": "Giao tiếp Server-to-Server.",
+    "flow1Security": "HMAC-SHA256 Payload Signature kết hợp IP Whitelisting.",
+    "flow1ApiEndpoint": "/api/v1/users/register",
+    "flow1Mechanism": "Khi có lệnh cấp quyền/thu hồi quyền, Backend eOffice gọi API /api/v1/users/register kèm header X-Api-Key và X-Signature (HMAC payload). LLA e-Sign chỉ nhận request từ Whitelisted IPs và xác thực HMAC.",
+    "flow2Title": "Luồng Chuyển hướng & Định danh phiên ký (eOffice -> LLA eContract)",
+    "flow2Purpose": "Người dùng bấm \"Ký tài liệu\" trên eOffice và được redirect sang module LLA eContract.",
+    "flow2Security": "Short-lived JWE (JSON Web Encryption) hoặc Opaque Token.",
+    "flow2TokenTtl": "60",
+    "flow2TokenFields": "document_id, user_id, return_url",
+    "flow2Mechanism": "eOffice sinh token mã hóa chứa document_id, user_id, return_url (TTL 60 giây). Trình duyệt redirect sang LLA eContract kèm token. Token hết hạn hoặc sai định dạng sẽ bị từ chối.",
+    "flow3Title": "Luồng Trích xuất & Cập nhật tài liệu (LLA eContract <-> eOffice API)",
+    "flow3Purpose": "Module LLA eContract gọi API eOffice để lấy nội dung tài liệu và đẩy file đã ký trả lại hệ thống.",
+    "flow3Security": "OAuth2 Client Credentials Flow kết hợp Mutual TLS (mTLS).",
+    "flow3Mechanism": "LLA eContract là Machine Client, gọi API eOffice với Client ID + Client Secret. Kết nối được chứng thực bằng mTLS ở tầng network.",
+    "flow4Title": "Luồng Thực thi Ký & Đóng dấu xác nhận (LLA eContract <-> LLA e-Sign API)",
+    "flow4Purpose": "eContract gửi thông tin phiên làm việc lên LLA để sinh Dấu xác nhận điện tử và ghi nhận Audit Log.",
+    "flow4Security": "HMAC-SHA256 Payload Signature + IP Whitelisting + Rate Limiting.",
+    "flow4Mechanism": "eContract gửi hash tài liệu gốc, IP thiết bị và UserID lên LLA e-Sign API (không truyền file vật lý). Request bảo vệ bằng X-Signature; LLA trả về thông tin Dấu xác nhận để nhúng vào tài liệu."
+  }
+}

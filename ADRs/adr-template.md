@@ -1,8 +1,8 @@
-# ADR Template — Jarvis
+# ADR Template — Platform
 
 > Template chuẩn cho Architecture Decision Record trong repo này.
 > Tham chiếu: [Nygard ADR](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions), [MADR](https://adr.github.io/madr/), Fowler [ADR](https://martinfowler.com/bliki/ArchitectureDecisionRecord.html).
-> Copy file này → `YYYY-MM-DD-adr-<slug>.md`, xóa mục hướng dẫn, điền nội dung.
+> Copy file này → `yyyy-MM-dd_{code}_{name}.md`, xóa mục hướng dẫn, điền nội dung.
 
 ---
 
@@ -11,13 +11,14 @@
 ### Tên file
 
 ```text
-YYYY-MM-DD-adr-<slug-kebab-case>.md
+yyyy-MM-dd_{code}_{name}.md
 ```
 
-Ví dụ: `2026-08-07-adr-jarvis-orm-packages.md`
+Ví dụ: `2026-08-07_platform_orm-packages.md` · `2026-09-23_hrm_luu-tham-so-theo-hieu-luc-thoi-gian.md`
 
-- `YYYY-MM-DD` = ngày **tạo** ADR (không đổi khi accept/implement).
-- `slug` = ngắn, ổn định; không đổi sau khi đã link từ ADR khác / README.
+- `yyyy-MM-dd` = ngày **tạo** ADR (không đổi khi accept/implement).
+- `{code}` = mã phạm vi: module hoặc thành phần nền mà quyết định chạm tới — `platform` · `hrm` · `dms` · `wrk` · `iam`…
+- `{name}` = ngắn, kebab-case, mô tả **quyết định**; không đổi sau khi đã link từ ADR khác / README.
 
 ### Trạng thái
 
@@ -47,7 +48,7 @@ Trong **một** ADR, mọi hàng bảng dùng prefix cố định:
 **Không** dùng prefix theo tên chủ đề (`E` = EF, `G` = generic, `M` = Multitenancy…). Cross-ref giữa ADR dùng **link file + mã**:
 
 ```markdown
-[D5 home vs current](./2026-08-01-adr-current-user-tenant.md) · [O2 R2 resolve](./2026-08-01-adr-current-user-tenant.md)
+[D5 home vs current](./2026-08-01_platform_current-user-tenant.md) · [O2 R2 resolve](./2026-08-01_platform_current-user-tenant.md)
 ```
 
 Phase triển khai đánh số riêng: `0`, `1`, `2`… hoặc `A`, `B`, `C` — **không** trùng nghĩa với D/C/O/T.
@@ -81,7 +82,7 @@ Nếu cần slice package / tech debt / follow-up API → ADR riêng, link qua m
 > **Trạng thái:** 🔴 Proposed · 🟡 Accepted · 🟢 Accepted + Implemented · ⚫ Deprecated · 🔄 Superseded by […]  
 > **Ngày:** YYYY-MM-DD · Accept: YYYY-MM-DD · Implement: YYYY-MM-DD  
 > **Loại:** {API / package boundary / Module Atomic / tech debt / naming / …}  
-> **Liên quan:** [ADR liên quan](./….md), [architecture-software.md](./architecture-software.md)  
+> **Liên quan:** [ADR liên quan](./….md), [architecture-rules.md](./architecture-rules.md)  
 > **Phạm vi:** {packages / contracts / DI / Host — cụ thể những gì ADR này quyết}  
 > **Ngoài phạm vi:** {cố ý không làm ở đây; trỏ ADR khác nếu đã có}  
 > **Chú thích icon:** 🟢 xong · 🟡 đang làm · 🔴 chưa làm
@@ -90,12 +91,12 @@ Nếu cần slice package / tech debt / follow-up API → ADR riêng, link qua m
 
 ## 1. Bối cảnh
 
-`Jarvis.EntityFramework` vừa chứa infra EF chung vừa đăng ký wiring multitenancy. Host gọi `AddEntityFramework()` là kéo luôn tenant adapter — không opt-in. Cần tách satellite Persistence theo Module Atomic.
+`Platform.EntityFramework` vừa chứa infra EF chung vừa đăng ký wiring multitenancy. Host gọi `AddEntityFramework()` là kéo luôn tenant adapter — không opt-in. Cần tách satellite Persistence theo Module Atomic.
 
 | Thành phần | Hiện tại |
 |------------|----------|
-| `Jarvis.Multitenancy` | Ambient `CurrentTenant*` + `AddCurrentTenant` |
-| `Jarvis.EntityFramework` | UoW/repos **và** tenant interceptor |
+| `Platform.Multitenancy` | Ambient `CurrentTenant*` + `AddCurrentTenant` |
+| `Platform.EntityFramework` | UoW/repos **và** tenant interceptor |
 
 ---
 
@@ -112,7 +113,7 @@ Nếu cần slice package / tech debt / follow-up API → ADR riêng, link qua m
 
 | # | Ràng buộc |
 |---|-----------|
-| C1 | `Jarvis.Multitenancy` **không** reference EF |
+| C1 | `Platform.Multitenancy` **không** reference EF |
 | C2 | Semantic resolve / interceptor **không** đổi — chỉ đổi chỗ package + DI |
 
 Chỉ ghi điều **không** mở lại trong ADR này. Tham chiếu quyết định cũ bằng link, không đổi mã cũ.
@@ -134,7 +135,7 @@ Chúng ta sẽ tách adapter tenant–EF sang package satellite; Host opt-in.
 
 | # | Quyết định | Chi tiết |
 |---|------------|----------|
-| D1 | Tên package | `Jarvis.Multitenancy.EntityFramework` |
+| D1 | Tên package | `Platform.Multitenancy.EntityFramework` |
 | D2 | DI Host | `AddEntityFramework()` không gọi `AddMultitenancy`; opt-in `AddMultitenancyEntityFramework()` |
 
 ### 5.1 Chi tiết / sơ đồ *(tuỳ chọn)*
@@ -148,8 +149,8 @@ EntityFramework → Domain  (không reference Multitenancy)
 ### 5.2 Inventory / mapping *(tuỳ chọn — khi move code / rename package)*
 
 ```text
-Jarvis.EntityFramework/TenantDbConnectionInterceptor.cs
-  → Jarvis.Multitenancy.EntityFramework/...
+Platform.EntityFramework/TenantDbConnectionInterceptor.cs
+  → Platform.Multitenancy.EntityFramework/...
 ```
 
 ---
@@ -230,7 +231,7 @@ Nếu chưa có regression phù hợp: ghi 🔴 và thêm ở §8.3 (hoặc mở
 
 ## 11. Tham chiếu thêm *(tuỳ chọn)*
 
-- [architecture-software.md](./architecture-software.md) §0.2 Core + satellite
+- [architecture-rules.md](./architecture-rules.md) §0.2 Core + satellite
 - Commit / PR implement (điền khi xong)
 
 ---

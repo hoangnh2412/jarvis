@@ -1,19 +1,26 @@
 import { useState, type ReactNode } from 'react'
 import {
   Building2,
+  CalendarClock,
+  CalendarDays,
+  ClipboardList,
   FileStack,
   FileText,
+  FileType,
   FolderOpen,
   HelpCircle,
   LayoutDashboard,
   Settings,
   Shield,
-  Upload,
   Users,
 } from 'lucide-react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { ACCOUNT_ROUTES } from '../../features/account/routes/paths'
 import { FILE_MANAGER_ROUTES } from '../../features/fileManager/routes/paths'
+import { PLANNER_ROUTES } from '../../features/planner/routes/paths'
+import { TIMESHEET_ROUTES } from '../../features/timesheet/routes/paths'
+import { DYNAMIC_FORM_ROUTES } from '../../features/dynamicForm/routes/paths'
+import { CRAFT_DOC_ROUTES } from '../../features/craftDoc/routes/paths'
 import { Header } from '../Header'
 import { SideBar } from '../SideBar'
 import { findBestNavMatch } from '../navMatch'
@@ -28,7 +35,11 @@ export const DEFAULT_ADMIN_MAIN_NAV: AdminNavItem[] = [
   { id: 'documents', label: 'Tài liệu', icon: FileText, path: '/documents' },
   { id: 'roles', label: 'Vai trò', icon: Shield, path: '/roles' },
   { id: 'files', label: 'Files', icon: FolderOpen, path: FILE_MANAGER_ROUTES.list },
-  { id: 'import', label: 'Import', icon: Upload, path: IMPORT_ROUTES.page },
+  // { id: 'import', label: 'Import', icon: Upload, path: IMPORT_ROUTES.page },
+  { id: 'planner', label: 'Planner', icon: CalendarDays, path: PLANNER_ROUTES.page },
+  { id: 'timesheet', label: 'Timesheet', icon: CalendarClock, path: TIMESHEET_ROUTES.page },
+  { id: 'dynamic-forms', label: 'Form', icon: ClipboardList, path: DYNAMIC_FORM_ROUTES.page },
+  { id: 'craft-doc', label: 'Craft DOCX', icon: FileType, path: CRAFT_DOC_ROUTES.builder },
 ]
 
 export const DEFAULT_ADMIN_SECONDARY_NAV: AdminNavItem[] = [
@@ -101,6 +112,18 @@ export function AdminLayout({
   const isImportPage =
     pathname === IMPORT_ROUTES.page ||
     pathname.startsWith(`${IMPORT_ROUTES.page}/`)
+  const isPlannerPage =
+    pathname === PLANNER_ROUTES.page ||
+    pathname.startsWith(`${PLANNER_ROUTES.page}/`)
+  const isTimesheetPage =
+    pathname === TIMESHEET_ROUTES.page ||
+    pathname.startsWith(`${TIMESHEET_ROUTES.page}/`)
+  const isDynamicFormPage =
+    pathname === DYNAMIC_FORM_ROUTES.page ||
+    pathname.startsWith(`${DYNAMIC_FORM_ROUTES.page}/`)
+  const isCraftDocPage =
+    pathname === CRAFT_DOC_ROUTES.builder ||
+    pathname.startsWith(`${CRAFT_DOC_ROUTES.builder}/`)
 
   return (
     <div
@@ -140,7 +163,9 @@ export function AdminLayout({
               'min-h-0 flex-1',
               isImportPage
                 ? 'kit-admin-main--import kit-scrollbar-hidden overflow-y-auto'
-                : 'overflow-y-auto',
+                : isPlannerPage || isTimesheetPage || isDynamicFormPage || isCraftDocPage
+                  ? 'flex flex-col overflow-hidden'
+                  : 'overflow-y-auto',
             ]
               .filter(Boolean)
               .join(' ')}

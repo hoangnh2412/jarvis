@@ -1,4 +1,4 @@
-using Jarvis.Authentication;
+using Platform.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -7,10 +7,10 @@ using UnitTest.Authentication.Helpers;
 
 namespace UnitTest.Authentication.Base;
 
-/// <summary>Test <see cref="AddJarvisAuthentication"/> — bind root options và default scheme.</summary>
+/// <summary>Test <see cref="AddPlatformAuthentication"/> — bind root options và default scheme.</summary>
 public class AuthenticationBaseTests
 {
-    /// <summary>Config hợp lệ — <c>AddJarvisAuthentication</c> bind đúng <see cref="AuthenticationRootOptions"/>.</summary>
+    /// <summary>Config hợp lệ — <c>AddPlatformAuthentication</c> bind đúng <see cref="AuthenticationRootOptions"/>.</summary>
     [Fact]
     public void AUTH_B_01_Valid_config_binds_root_options()
     {
@@ -21,7 +21,7 @@ public class AuthenticationBaseTests
         });
 
         using var host = Host.CreateDefaultBuilder()
-            .ConfigureServices(services => services.AddJarvisAuthentication(config))
+            .ConfigureServices(services => services.AddPlatformAuthentication(config))
             .Build();
 
         var options = host.Services.GetRequiredService<IOptions<AuthenticationRootOptions>>().Value;
@@ -52,7 +52,7 @@ public class AuthenticationBaseTests
         });
 
         var services = new ServiceCollection();
-        services.AddJarvisAuthentication(config);
+        services.AddPlatformAuthentication(config);
         var sp = services.BuildServiceProvider();
 
         var options = sp.GetRequiredService<IOptions<AuthenticationOptions>>().Value;

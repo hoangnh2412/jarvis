@@ -1,0 +1,91 @@
+﻿/*Application layout*/
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.my-application {
+    width: 100%;
+    min-height: 100vh;
+}
+
+.app-header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    border-bottom: 1px solid #ddd;
+}
+
+.app-body {
+    display: flex;
+    min-height: calc(100vh - 60px);
+}
+
+.app-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    padding: 16px;
+    border-right: 1px solid #ddd;
+}
+
+.app-content {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.elsa-embedded {
+    width: 100%;
+    height: 100%;
+}
+
+
+   /*Hide Elsa Studio Header*/
+
+    .elsa-embedded .mud-appbar {
+        display: none !important;
+    }
+
+   /*Hide Elsa Studio Aside / Drawer*/
+    .elsa-embedded .mud-drawer {
+        display: none !important;
+    }
+
+
+   /*Remove space reserved for Elsa drawer*/
+    .elsa-embedded .mud-main-content {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+    }
+
+
+    /*Remove top spacing reserved for Elsa AppBar*/
+
+    .elsa-embedded .mud-main-content {
+        padding-top: 0 !important;
+    }
+
+    /* MudBlazor responsive drawer classes */
+    .elsa-embedded
+    .mud-drawer-open-responsive-md-left ~ .mud-main-content {
+        margin-left: 0 !important;
+    }
+
+    .elsa-embedded
+    .mud-drawer-open-responsive-lg-left ~ .mud-main-content {
+        margin-left: 0 !important;
+    }
+
+    /* Elsa content fills application area */
+    .elsa-embedded .mud-layout {
+        min-height: 100%;
+    }
+
+    .elsa-embedded .mud-main-content {
+        min-height: 100%;
+    }

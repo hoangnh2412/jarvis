@@ -145,6 +145,8 @@ export {
   callLogout,
 } from './services'
 
+export { getCurrentUserMock } from './mocks'
+
 // Theme
 export { defaultAccountTheme } from './theme'
 export type { AccountTheme } from './theme'

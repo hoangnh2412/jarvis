@@ -11,3 +11,87 @@ GET {{Sample_HostAddress}}/api/_auth-test/whoami
 Authorization: Basic c2FtcGxldXNlcjpzYW1wbGVwYXNz
 
 ###
+
+# Phân quyền (Platform.Authorization) — database SampleAuthorization, seed lúc start
+# Chạy toàn bộ kịch bản AZ-01..AZ-13 (Expected vs Allowed, Pass)
+GET {{Sample_HostAddress}}/api/_authz-demo/scenarios
+Accept: application/json
+
+###
+
+# Operand registry: mặc định platform + operand Sample đăng ký
+GET {{Sample_HostAddress}}/api/_authz-demo/operands
+
+###
+
+# Role / policy / role claims trong store
+GET {{Sample_HostAddress}}/api/_authz-demo/store
+
+###
+
+# Kiểm tra tùy ý (Tenant: T1|T2, Department: Sales|IT|Marketing, CreatedBy: tên user demo)
+POST {{Sample_HostAddress}}/api/_authz-demo/check
+Content-Type: application/json
+
+{
+  "user": "manager.sales",
+  "permission": "Expense.Approve",
+  "tenant": "T1",
+  "department": "Sales",
+  "amount": 8000000,
+  "createdBy": "employee"
+}
+
+###
+
+# Rule dùng operand chưa đăng ký → IsValid=false
+POST {{Sample_HostAddress}}/api/_authz-demo/rules/validate
+Content-Type: application/json
+
+{
+  "left": "Resource.Password",
+  "operator": "==",
+  "right": "User.Id"
+}
+
+###
+
+# Data Scope: danh sách chứng từ user được thấy (lọc bằng SQL WHERE, trả kèm câu SQL)
+GET {{Sample_HostAddress}}/api/_authz-demo/expenses?user=manager.sales&permission=Expense.Approve
+
+###
+
+# Data Scope vs engine: mọi user × permission, danh sách SQL phải trùng quyết định từng chứng từ
+GET {{Sample_HostAddress}}/api/_authz-demo/scope-check
+
+###
+
+# Code mẫu ExpenseSampleController — user qua header X-Demo-User
+# Danh sách trong phạm vi + lọc nghiệp vụ + phân trang (một câu SQL)
+GET {{Sample_HostAddress}}/api/_authz-sample/expenses?minAmount=2000000&page=1&pageSize=10
+X-Demo-User: employee
+
+###
+
+# Thống kê theo phòng ban trong phạm vi
+GET {{Sample_HostAddress}}/api/_authz-sample/expenses/summary
+X-Demo-User: regional
+
+###
+
+# Chi tiết ngoài phạm vi → 404
+GET {{Sample_HostAddress}}/api/_authz-sample/expenses/E-03
+X-Demo-User: manager.sales
+
+###
+
+# Duyệt: E-01 (8M ≤ hạn mức 10M) → 200; E-02 (15M) → 403 kèm lý do
+POST {{Sample_HostAddress}}/api/_authz-sample/expenses/E-02/approve
+X-Demo-User: manager.sales
+
+###
+
+# Xóa và tạo lại database demo
+POST {{Sample_HostAddress}}/api/_authz-demo/reset
+
+###

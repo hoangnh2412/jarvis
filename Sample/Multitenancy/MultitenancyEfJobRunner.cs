@@ -1,5 +1,5 @@
-using Jarvis.DDD.Domain.Repositories;
-using Jarvis.DDD.Domain.Services;
+using Platform.DDD.Domain.Repositories;
+using Platform.DDD.Domain.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sample.Entities;

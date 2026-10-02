@@ -1,6 +1,6 @@
-using Jarvis.Caching;
-using Jarvis.DDD.Domain.DataStorages;
-using Jarvis.ORM.EntityFramework.DataStorages;
+using Platform.Caching;
+using Platform.DDD.Domain.DataStorages;
+using Platform.ORM.EntityFramework.DataStorages;
 using UnitTest.Caching;
 
 namespace UnitTest.DataStorages;
@@ -9,7 +9,7 @@ public sealed class CachingTenantConnectionStringResolverTests
 {
     private static ICacheService CreateCacheService()
     {
-        var options = new JarvisCacheOptions
+        var options = new PlatformCacheOptions
         {
             Items =
             {

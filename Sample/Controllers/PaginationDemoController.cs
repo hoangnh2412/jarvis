@@ -1,6 +1,6 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
-using Jarvis.DDD.Domain.Repositories;
+using Platform.DDD.Domain.Repositories;
 using Sample.Entities;
 using Sample.Persistence;
 
@@ -19,7 +19,7 @@ public class PaginationDemoController : ControllerBase
     }
 
     /// <summary>
-    /// API Demo Jarvis PagedListRequest
+    /// API Demo Platform PagedListRequest
     /// </summary>
     [HttpGet("list")]
     public async Task<IActionResult> GetListAsync([FromQuery] PagedListRequest request, CancellationToken cancellationToken)
@@ -36,7 +36,7 @@ public class PaginationDemoController : ControllerBase
             AllowedFields = allowedFields
         };
 
-        // 2. Chuyển quyền xử lý cho Jarvis Engine
+        // 2. Chuyển quyền xử lý cho Platform Engine
         var repo = await _unitOfWork.GetRepositoryAsync<IQueryRepository<Student>>();
         var (items, totalCount) = await repo.PaginationAsync(
             request,

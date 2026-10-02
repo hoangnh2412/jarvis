@@ -1,8 +1,8 @@
 # Notifications Module
 
-Module thông báo realtime cho Jarvis: lưu lịch sử trên Redis, đẩy sự kiện qua SignalR, và cung cấp UI React (`@jarvis/notifications`) để người dùng xem, lọc, đánh dấu đã đọc.
+Module thông báo realtime cho Platform: lưu lịch sử trên Redis, đẩy sự kiện qua SignalR, và cung cấp UI React (`@platform/notifications`) để người dùng xem, lọc, đánh dấu đã đọc.
 
-**Boundary ADR (hiện hành):** [2026-08-12-adr-jarvis-realtime-inbox-boundary](../../ADRs/2026-08-12-adr-jarvis-realtime-inbox-boundary.md) — Framework = `Jarvis.Realtime` / `.SignalR`; Module = inbox (Phase 3 move).
+**Boundary ADR (hiện hành):** [2026-08-12-adr-platform-realtime-inbox-boundary](../../ADRs/2026-08-12-adr-platform-realtime-inbox-boundary.md) — Framework = `Platform.Realtime` / `.SignalR`; Module = inbox (Phase 3 move).
 
 ## Tổng quan kiến trúc
 
@@ -29,7 +29,7 @@ Module thông báo realtime cho Jarvis: lưu lịch sử trên Redis, đẩy s�
               │ REST                       │ WebSocket / Long Polling
               │                            ▼
 ┌─────────────┴───────────────────────────────────────────────────────────┐
-│                    Frontend (@jarvis/notifications)                   │
+│                    Frontend (@platform/notifications)                   │
 │  useNotifications ──► REST /api/notifications                           │
 │                    ──► SignalR /hubs/notifications (event: notification)  │
 │  NotificationBell / NotificationCenter                                  │
@@ -43,15 +43,15 @@ Module thông báo realtime cho Jarvis: lưu lịch sử trên Redis, đẩy s�
 
 | Package / Assembly                   | Đường dẫn                                    | Vai trò                                                 |
 | ------------------------------------ | -------------------------------------------- | ------------------------------------------------------- |
-| `Jarvis.Realtime`                  | `frameworks/Jarvis.Realtime/`              | Options, `AddCoreRealtime`, `IRealtimeNotifier`         |
-| `Jarvis.Realtime.SignalR`          | `frameworks/Jarvis.Realtime.SignalR/`      | Hub, `UseSignalR`, `MapRealtimeHub`, backplane          |
-| `Jarvis.Notifications`             | `frameworks/Jarvis.Notifications/`         | Inbox contracts + `NotificationAppService` (tạm Phase 2)|
-| `Jarvis.Notifications.Redis`       | `frameworks/Jarvis.Notifications.Redis/`   | `RedisNotificationStore`, `UseRedisStore` (tạm)         |
-| `Jarvis.Modules.Notifications.Api` | `Jarvis.Modules.Notifications.Api/`        | REST `api/notifications`, `AddNotificationModule()`     |
-| `@jarvis/notifications`            | `frontend/`                                  | Hook React, API client, UI bell/center                  |
+| `Platform.Realtime`                  | `frameworks/Platform.Realtime/`              | Options, `AddCoreRealtime`, `IRealtimeNotifier`         |
+| `Platform.Realtime.SignalR`          | `frameworks/Platform.Realtime.SignalR/`      | Hub, `UseSignalR`, `MapRealtimeHub`, backplane          |
+| `Platform.Notifications`             | `frameworks/Platform.Notifications/`         | Inbox contracts + `NotificationAppService` (tạm Phase 2)|
+| `Platform.Notifications.Redis`       | `frameworks/Platform.Notifications.Redis/`   | `RedisNotificationStore`, `UseRedisStore` (tạm)         |
+| `Platform.Modules.Notifications.Api` | `Platform.Modules.Notifications.Api/`        | REST `api/notifications`, `AddNotificationModule()`     |
+| `@platform/notifications`            | `frontend/`                                  | Hook React, API client, UI bell/center                  |
 
 
-Namespace C#: `Jarvis.Realtime.*`, `Jarvis.Notifications.*` (inbox), `Module.Notifications.*`.
+Namespace C#: `Platform.Realtime.*`, `Platform.Notifications.*` (inbox), `Module.Notifications.*`.
 
 ---
 
@@ -64,18 +64,18 @@ modules/notifications/
 ├── Docs/
 │   ├── ADR.md
 │   └── SAD.md
-├── Jarvis.Modules.Notifications.Api/   # REST controller + module registration
+├── Platform.Modules.Notifications.Api/   # REST controller + module registration
 │   ├── Controllers/NotificationsController.cs
 │   ├── Extensions/NotificationModuleExtensions.cs
 │   └── Models/
-└── frontend/                             # npm @jarvis/notifications
+└── frontend/                             # npm @platform/notifications
     └── src/features/notifications/
         ├── hooks/useNotifications.ts
         ├── services/api.ts
         ├── components/
         └── config/index.ts
 
-frameworks/Jarvis.Realtime.SignalR/  # (ngoài thư mục module)
+frameworks/Platform.Realtime.SignalR/  # (ngoài thư mục module)
 ├── Hubs/NotificationHub.cs
 ├── Services/HubRealtimeNotifier.cs
 ├── Groups/RealtimeGroupNames.cs
@@ -124,7 +124,7 @@ app.MapRealtimeHub<CurrentUserInfo, CurrentTenantInfo>();
       "UseRedisBackplane": false,
       "Redis": {
         "Configuration": "127.0.0.1:6379",
-        "ChannelPrefix": "jarvis-realtime"
+        "ChannelPrefix": "platform-realtime"
       }
     }
   },
@@ -331,16 +331,16 @@ Tenant/user lấy từ work context — client **không** gửi scope trên quer
 
 ## Frontend
 
-Package npm: `@jarvis/notifications`  
+Package npm: `@platform/notifications`  
 Source: `frontend/`
 
 ### 1. Cài đặt & tích hợp Host
 
-**Dependencies (peer):** `react`, `@microsoft/signalr`, `@jarvis/core`, `lucide-react`
+**Dependencies (peer):** `react`, `@microsoft/signalr`, `@platform/core`, `lucide-react`
 
 ```tsx
 // Sample/clients/web/src/main.tsx
-import { configureNotificationAuth } from '@jarvis/notifications'
+import { configureNotificationAuth } from '@platform/notifications'
 import { getAccessToken, setupSampleAccountAuth } from './auth'
 
 setupSampleAccountAuth()
@@ -349,8 +349,8 @@ configureNotificationAuth(getAccessToken)
 
 ```tsx
 // App.tsx — chuông trên header
-import { NotificationBell } from '@jarvis/notifications'
-import '@jarvis/notifications/styles.css'
+import { NotificationBell } from '@platform/notifications'
+import '@platform/notifications/styles.css'
 
 <Header notificationSlot={<NotificationBell />} />
 ```
@@ -512,7 +512,7 @@ public class MyService(INotificationAppService notifications)
 ### Frontend — dùng hook trực tiếp
 
 ```tsx
-import { useNotifications, NotificationCenter } from '@jarvis/notifications'
+import { useNotifications, NotificationCenter } from '@platform/notifications'
 
 function NotificationsPage() {
   const notifications = useNotifications()
@@ -522,7 +522,7 @@ function NotificationsPage() {
 
 
 
-### Export chính từ `@jarvis/notifications`
+### Export chính từ `@platform/notifications`
 
 - **Components:** `NotificationBell`, `NotificationCenter`
 - **Hook:** `useNotifications`
@@ -545,6 +545,6 @@ npm run dev            # Vite demo standalone
 Import CSS trong host app:
 
 ```ts
-import '@jarvis/notifications/styles.css'
+import '@platform/notifications/styles.css'
 ```
 

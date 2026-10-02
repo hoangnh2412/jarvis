@@ -1,19 +1,19 @@
 import axios from 'axios'
 import { API_KEY, API_KEY_HEADER, BASE_URL, normalizeApiBaseUrl } from './constants'
 
-export type JarvisHttpConfig = {
+export type PlatformHttpConfig = {
   baseURL?: string
   apiKey?: string
   apiKeyHeader?: string
 }
 
-const runtime: JarvisHttpConfig = {}
+const runtime: PlatformHttpConfig = {}
 
 /**
  * Wire shared axios from host app (Sample `.env`).
  * Call once at bootstrap — overrides bake-time empty env in kit `dist`.
  */
-export function configureJarvisHttp(config: JarvisHttpConfig) {
+export function configurePlatformHttp(config: PlatformHttpConfig) {
   Object.assign(runtime, config)
   if (config.baseURL != null) {
     instance.defaults.baseURL = normalizeApiBaseUrl(config.baseURL)
@@ -66,7 +66,7 @@ instance.interceptors.response.use(
 
 export default instance
 
-/** @deprecated Use configureJarvisHttp */
-export const configureQueryBuilderHttp = configureJarvisHttp
-/** @deprecated Use configureJarvisHttp */
-export const configureTenantHttp = configureJarvisHttp
+/** @deprecated Use configurePlatformHttp */
+export const configureQueryBuilderHttp = configurePlatformHttp
+/** @deprecated Use configurePlatformHttp */
+export const configureTenantHttp = configurePlatformHttp

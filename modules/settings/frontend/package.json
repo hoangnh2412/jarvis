@@ -1,9 +1,9 @@
 {
-  "name": "@jarvis/setting",
+  "name": "@platform/setting",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Setting module UI feature (pages/components/services) for Jarvis hosts",
+  "description": "Setting module UI feature (pages/components/services) for Platform hosts",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
@@ -14,7 +14,7 @@
     "src"
   ],
   "peerDependencies": {
-    "@jarvis/core": "*",
+    "@platform/core": "*",
     "flatpickr": "^4.6.13",
     "lucide-react": "^1.0.0",
     "primereact": "^11.0.0",
@@ -23,7 +23,7 @@
     "react-router-dom": "^7.0.0"
   },
   "devDependencies": {
-    "@jarvis/core": "file:../../../frameworks/frontend",
+    "@platform/core": "file:../../../frameworks/frontend",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "flatpickr": "^4.6.13",

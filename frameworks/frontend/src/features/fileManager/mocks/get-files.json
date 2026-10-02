@@ -1,0 +1,50 @@
+{
+  "items": [
+    {
+      "id": "folder-docs",
+      "name": "Documents",
+      "type": "folder",
+      "parentPath": "/",
+      "updatedAt": "2026-08-06T06:00:00.000Z"
+    },
+    {
+      "id": "folder-matter",
+      "name": "Matter",
+      "type": "folder",
+      "parentPath": "/",
+      "updatedAt": "2026-08-06T06:00:00.000Z"
+    },
+    {
+      "id": "file-contract",
+      "name": "Hop-dong-dich-vu.pdf",
+      "type": "file",
+      "parentPath": "/Documents",
+      "size": 245760,
+      "sharedLink": null,
+      "updatedAt": "2026-08-06T06:00:00.000Z"
+    },
+    {
+      "id": "file-checklist",
+      "name": "Closing-checklist.xlsx",
+      "type": "file",
+      "parentPath": "/Documents",
+      "size": 18432,
+      "sharedLink": "https://share.example/checklist",
+      "updatedAt": "2026-08-06T06:00:00.000Z"
+    },
+    {
+      "id": "file-matter-brd",
+      "name": "BRD-Matter-v1.docx",
+      "type": "file",
+      "parentPath": "/Matter",
+      "size": 98304,
+      "sharedLink": null,
+      "updatedAt": "2026-08-06T06:00:00.000Z"
+    }
+  ],
+  "storage": {
+    "usedBytes": 362496,
+    "totalBytes": 10737418240
+  },
+  "total": 5
+}

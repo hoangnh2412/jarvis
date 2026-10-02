@@ -1,4 +1,4 @@
-using Jarvis.Caching;
+using Platform.Caching;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Sample.Controllers;

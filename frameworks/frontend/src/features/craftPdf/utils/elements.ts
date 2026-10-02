@@ -1,4 +1,5 @@
 import { PDF_PAGE_A4 } from '../constants'
+import templatesMock from '../mocks/get-templates.json'
 import {
   PdfElementType,
   PdfTemplateStatus,
@@ -154,116 +155,9 @@ export function createDefaultElement(
   }
 }
 
-const now = () => new Date().toISOString()
 
 export function createMockTemplates(): PdfTemplate[] {
-  const t = now()
-  return [
-    {
-      id: 'tpl-invoice',
-      name: 'Complex invoice',
-      description: 'Invoice với bảng và QR — sample CraftMyPDF-style',
-      status: PdfTemplateStatus.Published,
-      pageSize: PDF_PAGE_A4,
-      updatedAt: t,
-      createdAt: t,
-      elements: [
-        createDefaultElement(PdfElementType.Text, {
-          id: 'inv-title',
-          x: 48,
-          y: 40,
-          width: 280,
-          height: 40,
-          content: 'INVOICE',
-          fontSize: 28,
-          fontWeight: 'bold',
-          bindingKey: '',
-        } as Partial<PdfElement>),
-        createDefaultElement(PdfElementType.Text, {
-          id: 'inv-number',
-          x: 48,
-          y: 90,
-          width: 240,
-          height: 28,
-          content: '{{data.invoice_number}}',
-          fontSize: 14,
-          bindingKey: 'invoice_number',
-        } as Partial<PdfElement>),
-        createDefaultElement(PdfElementType.Table, {
-          id: 'inv-table',
-          x: 48,
-          y: 160,
-          width: 700,
-          height: 200,
-          bindingKey: 'line_items',
-        } as Partial<PdfElement>),
-        createDefaultElement(PdfElementType.QrCode, {
-          id: 'inv-qr',
-          x: 650,
-          y: 40,
-          width: 96,
-          height: 96,
-          bindingKey: 'qr_payload',
-        } as Partial<PdfElement>),
-      ],
-    },
-    {
-      id: 'tpl-certificate',
-      name: 'Certificate Sample',
-      description: 'Chứng nhận hiện đại — layout trống để customize',
-      status: PdfTemplateStatus.Draft,
-      pageSize: PDF_PAGE_A4,
-      updatedAt: t,
-      createdAt: t,
-      elements: [
-        createDefaultElement(PdfElementType.Text, {
-          id: 'cert-title',
-          x: 120,
-          y: 200,
-          width: 550,
-          height: 48,
-          content: 'Certificate of Completion',
-          fontSize: 26,
-          fontWeight: 'bold',
-          align: 'center',
-        } as Partial<PdfElement>),
-        createDefaultElement(PdfElementType.Text, {
-          id: 'cert-name',
-          x: 120,
-          y: 280,
-          width: 550,
-          height: 36,
-          content: '{{data.customer_name}}',
-          fontSize: 18,
-          align: 'center',
-          bindingKey: 'customer_name',
-        } as Partial<PdfElement>),
-      ],
-    },
-    {
-      id: 'tpl-packing',
-      name: 'Packing List',
-      description: 'Packing list với barcode',
-      status: PdfTemplateStatus.Published,
-      pageSize: PDF_PAGE_A4,
-      updatedAt: t,
-      createdAt: t,
-      elements: [
-        createDefaultElement(PdfElementType.Text, {
-          id: 'pack-title',
-          content: 'Packing List',
-          fontSize: 22,
-          fontWeight: 'bold',
-        } as Partial<PdfElement>),
-        createDefaultElement(PdfElementType.Barcode, {
-          id: 'pack-barcode',
-          x: 48,
-          y: 100,
-          bindingKey: 'tracking_code',
-        } as Partial<PdfElement>),
-      ],
-    },
-  ]
+  return structuredClone(templatesMock.items as PdfTemplate[])
 }
 
 /** In-memory store cho stub services (dev / UI-only) */

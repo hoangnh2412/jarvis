@@ -1,0 +1,49 @@
+{
+  "items": [
+    {
+      "createdAt": "2026-08-06T06:00:00.000Z",
+      "createdBy": "system",
+      "updatedAt": null,
+      "updatedBy": null,
+      "deletedId": "00000000-0000-0000-0000-000000000000",
+      "deletedAt": null,
+      "deletedBy": null,
+      "id": "00000000-0000-0000-0000-000000000001",
+      "code": "ghc",
+      "name": "GHC Law Firm",
+      "status": 1,
+      "parentId": null
+    },
+    {
+      "createdAt": "2026-08-06T06:00:00.000Z",
+      "createdBy": "system",
+      "updatedAt": null,
+      "updatedBy": null,
+      "deletedId": "00000000-0000-0000-0000-000000000000",
+      "deletedAt": null,
+      "deletedBy": null,
+      "id": "00000000-0000-0000-0000-000000000002",
+      "code": "lexora",
+      "name": "Lexora Demo Tenant",
+      "status": 1,
+      "parentId": null
+    },
+    {
+      "createdAt": "2026-08-06T06:00:00.000Z",
+      "createdBy": "system",
+      "updatedAt": null,
+      "updatedBy": null,
+      "deletedId": "00000000-0000-0000-0000-000000000000",
+      "deletedAt": null,
+      "deletedBy": null,
+      "id": "00000000-0000-0000-0000-000000000003",
+      "code": "sandbox",
+      "name": "Sandbox (Inactive)",
+      "status": 0,
+      "parentId": null
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "size": 20
+}

@@ -1,4 +1,4 @@
-using Jarvis.Caching;
+using Platform.Caching;
 
 namespace UnitTest.Caching;
 
@@ -7,7 +7,7 @@ public class CacheServiceValueTypeTests
     [Fact]
     public async Task GetAsync_CachesValueTypeZero()
     {
-        var options = new JarvisCacheOptions
+        var options = new PlatformCacheOptions
         {
             Items =
             {

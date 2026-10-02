@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Jarvis.ORM.EntityFramework.Extensions;
+using Platform.ORM.EntityFramework.Extensions;
 
 namespace UnitTest.Querying;
 

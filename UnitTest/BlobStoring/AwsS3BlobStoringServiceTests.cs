@@ -1,4 +1,4 @@
-using Jarvis.BlobStoring.AwsS3;
+using Platform.BlobStoring.AwsS3;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 

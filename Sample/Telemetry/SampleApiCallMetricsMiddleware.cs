@@ -4,7 +4,7 @@ namespace Sample.Telemetry;
 
 /// <summary>
 /// Custom metrics: counts HTTP calls to Users v1, Users v2, and Roles APIs.
-/// The meter name matches <c>AddMeter(Assembly.GetEntryAssembly().Name)</c> in Jarvis OpenTelemetry defaults.
+/// The meter name matches <c>AddMeter(Assembly.GetEntryAssembly().Name)</c> in Platform OpenTelemetry defaults.
 /// </summary>
 public sealed class SampleApiCallMetricsMiddleware(RequestDelegate next)
 {

@@ -11,12 +11,12 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@jarvis/core": ["../../../frameworks/frontend/src/index.ts"],
-      "@jarvis/notifications": [
+      "@platform/core": ["../../../frameworks/frontend/src/index.ts"],
+      "@platform/notifications": [
         "../../../modules/notifications/frontend/src/features/notifications/index.ts"
       ],
-      "@jarvis/setting": ["../../../modules/settings/frontend/src/index.ts"],
-      "@jarvis/setting/*": ["../../../modules/settings/frontend/src/*"],
+      "@platform/setting": ["../../../modules/settings/frontend/src/index.ts"],
+      "@platform/setting/*": ["../../../modules/settings/frontend/src/*"],
       "@microsoft/signalr": ["node_modules/@microsoft/signalr"],
       "lucide-react": ["node_modules/lucide-react"],
       "primereact/*": ["node_modules/primereact/*"],
@@ -25,6 +25,7 @@
     },
 
     "moduleResolution": "bundler",
+    "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",

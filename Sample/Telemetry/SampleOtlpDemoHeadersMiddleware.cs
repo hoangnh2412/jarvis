@@ -8,7 +8,7 @@ public sealed class SampleOtlpDemoHeadersMiddleware(RequestDelegate next)
 {
     public Task InvokeAsync(HttpContext context)
     {
-        context.Response.Headers.Append("x-demo-response", "jarvis-sample");
+        context.Response.Headers.Append("x-demo-response", "platform-sample");
         return next(context);
     }
 }

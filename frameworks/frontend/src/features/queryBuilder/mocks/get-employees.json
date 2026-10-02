@@ -1,0 +1,55 @@
+{
+  "total": 5,
+  "items": [
+    {
+      "id": "emp-001",
+      "FullName": "Phạm Thế Anh",
+      "Email": "anh.pt@example.com",
+      "Department": "Engineering",
+      "BaseSalary": 32000000,
+      "IsActive": true,
+      "HireDate": "2022-03-15",
+      "Age": 29
+    },
+    {
+      "id": "emp-002",
+      "FullName": "Phạm Quốc Khánh",
+      "Email": "khanh.pq@example.com",
+      "Department": "Sales",
+      "BaseSalary": 28000000,
+      "IsActive": true,
+      "HireDate": "2021-08-01",
+      "Age": 31
+    },
+    {
+      "id": "emp-003",
+      "FullName": "Phạm Tuấn Ngọc",
+      "Email": "ngoc.pt@example.com",
+      "Department": "HR",
+      "BaseSalary": 25000000,
+      "IsActive": true,
+      "HireDate": "2023-01-10",
+      "Age": 27
+    },
+    {
+      "id": "emp-004",
+      "FullName": "Nguyễn Văn A",
+      "Email": "a.nv@example.com",
+      "Department": "Finance",
+      "BaseSalary": 30000000,
+      "IsActive": false,
+      "HireDate": "2020-05-20",
+      "Age": 35
+    },
+    {
+      "id": "emp-005",
+      "FullName": "Trần Thị B",
+      "Email": "b.tt@example.com",
+      "Department": "Engineering",
+      "BaseSalary": 35000000,
+      "IsActive": true,
+      "HireDate": "2019-11-03",
+      "Age": 33
+    }
+  ]
+}

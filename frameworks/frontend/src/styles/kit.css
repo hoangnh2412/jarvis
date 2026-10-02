@@ -1,5 +1,32 @@
 /* Kit extras — Tailwind button skins + autofill + license hide */
 
+/*
+ * Flatten Windows/UA 3D button chrome only.
+ * Must stay in @layer base so Tailwind utilities (px/h/rounded/border) win.
+ * Do NOT reset padding/background/radius here — that broke .pr-btn-* skins.
+ */
+@layer base {
+  button,
+  [type='button'],
+  [type='submit'],
+  [type='reset'] {
+    -webkit-appearance: none;
+    appearance: none;
+    border-style: solid;
+    border-width: 0;
+    box-shadow: none;
+    background-color: transparent;
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [type='button']:disabled,
+  [type='submit']:disabled,
+  [type='reset']:disabled {
+    cursor: not-allowed;
+  }
+}
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -14,6 +41,18 @@ textarea:-webkit-autofill:focus {
 }
 
 /* Button skins — không phụ thuộc Aura props */
+.pr-btn-primary,
+.pr-btn-outlined,
+.pr-btn-danger,
+.pr-btn-text {
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
 .pr-btn-primary {
   background-color: #0f766e !important;
   border-color: transparent !important;
@@ -22,6 +61,11 @@ textarea:-webkit-autofill:focus {
 .pr-btn-primary:hover:not(:disabled) {
   background-color: #0d9488 !important;
   color: #ffffff !important;
+  box-shadow: 0 1px 2px rgb(15 118 110 / 0.25);
+}
+.pr-btn-primary:active:not(:disabled) {
+  background-color: #0f766e !important;
+  box-shadow: none;
 }
 
 .pr-btn-outlined {
@@ -31,7 +75,11 @@ textarea:-webkit-autofill:focus {
 }
 .pr-btn-outlined:hover:not(:disabled) {
   background-color: #f8fafc !important;
-  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+.pr-btn-outlined:active:not(:disabled) {
+  background-color: #f1f5f9 !important;
 }
 
 .pr-btn-danger {
@@ -42,6 +90,11 @@ textarea:-webkit-autofill:focus {
 .pr-btn-danger:hover:not(:disabled) {
   background-color: #b91c1c !important;
   color: #ffffff !important;
+  box-shadow: 0 1px 2px rgb(220 38 38 / 0.25);
+}
+.pr-btn-danger:active:not(:disabled) {
+  background-color: #991b1b !important;
+  box-shadow: none;
 }
 
 .pr-btn-text {
@@ -52,6 +105,9 @@ textarea:-webkit-autofill:focus {
 .pr-btn-text:hover:not(:disabled) {
   background-color: #f1f5f9 !important;
   color: #334155 !important;
+}
+.pr-btn-text:active:not(:disabled) {
+  background-color: #e2e8f0 !important;
 }
 
 #p-license-host {
@@ -1806,6 +1862,187 @@ textarea:-webkit-autofill:focus {
   color: #64748b;
 }
 
+.kit-searchable-select__loading {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #64748b;
+}
+
+.kit-searchable-select__loading-more {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  color: #94a3b8;
+  text-align: center;
+  list-style: none;
+}
+
+/* SearchableMultiSelect */
+.kit-searchable-multi-select {
+  position: relative;
+  box-sizing: border-box;
+}
+
+.kit-searchable-multi-select__values {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.kit-searchable-multi-select__values input {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 5rem;
+  min-width: 5rem;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  line-height: inherit;
+  color: inherit;
+  outline: none;
+}
+
+.kit-searchable-multi-select__values input::placeholder {
+  color: #94a3b8;
+}
+
+.kit-searchable-multi-select__chip {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.15rem;
+  border-radius: 0.375rem;
+  background: #f1f5f9;
+  padding: 0.1rem 0.15rem 0.1rem 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.kit-searchable-multi-select__chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kit-searchable-multi-select__chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  padding: 0.1rem;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.kit-searchable-multi-select__indicator {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.kit-searchable-multi-select__popup {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.25rem);
+  z-index: 200;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  box-shadow:
+    0 4px 6px -1px rgba(15, 23, 42, 0.08),
+    0 2px 4px -2px rgba(15, 23, 42, 0.06);
+}
+
+.kit-searchable-multi-select__list,
+.kit-searchable-multi-select__group-list {
+  margin: 0;
+  list-style: none;
+  padding: 0;
+}
+
+.kit-searchable-multi-select__list {
+  max-height: 16rem;
+  overflow-y: auto;
+  padding: 0.25rem;
+}
+
+.kit-searchable-multi-select__group-label {
+  padding: 0.35rem 0.65rem 0.2rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.kit-searchable-multi-select__option {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #1e293b;
+  transition: background-color 0.15s ease;
+}
+
+.kit-searchable-multi-select__check {
+  display: inline-flex;
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: #0f766e;
+}
+
+.kit-searchable-multi-select__option:hover,
+.kit-searchable-multi-select__option.is-active {
+  background: #f8fafc;
+}
+
+.kit-searchable-multi-select__option.is-selected {
+  background: #f0fdfa;
+  color: #115e59;
+}
+
+.kit-searchable-multi-select__empty {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.kit-searchable-multi-select__loading {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.kit-searchable-multi-select__loading-more {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  color: #94a3b8;
+  text-align: center;
+  list-style: none;
+}
+
 /* ── Kit file upload (PrimeReact FileUpload wrapper) ── */
 .kit-file-upload {
   display: flex;
@@ -1865,9 +2102,9 @@ textarea:-webkit-autofill:focus {
 
 .kit-file-upload__dropzone:hover,
 .kit-file-upload__dropzone:focus-visible {
-  border-color: #14b8a6;
-  background: #f0fdfa;
-  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.12);
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
 }
 
 .kit-file-upload__dropzone--basic {
@@ -2057,6 +2294,198 @@ textarea:-webkit-autofill:focus {
   background: #fef2f2;
 }
 
+.kit-file-upload__dropzone--filled {
+  gap: 0.75rem;
+  padding: 1rem;
+  cursor: pointer;
+}
+
+.kit-file-upload__dropzone-hint--filled {
+  margin-top: 0.25rem;
+}
+
+.kit-file-upload__preview-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.kit-file-upload__preview-scroll {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.kit-file-upload__preview-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.kit-file-upload__preview-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.kit-file-upload__preview-content--multiple {
+  width: 100%;
+  max-width: 140px;
+}
+
+.kit-file-upload__preview-image-wrapper,
+.kit-file-upload__preview-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+
+.kit-file-upload__preview-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.kit-file-upload__preview-icon-wrapper {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.kit-file-upload__preview-name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.kit-file-upload__preview-name--visible {
+  position: static;
+  width: 100%;
+  height: auto;
+  margin: 0.375rem 0 0;
+  padding: 0;
+  overflow: hidden;
+  clip: auto;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.125rem;
+  color: #475569;
+  text-align: center;
+}
+
+.kit-file-upload__preview-remove-button {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #64748b;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.kit-file-upload__preview-remove-button:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.kit-file-upload__preview-add-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+  color: #2563eb;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.kit-file-upload__preview-add-button:hover:not(:disabled) {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.kit-file-upload__preview-add-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* Mode-specific preview dimensions — multiple (nhỏ) vs single (to) */
+.kit-file-upload--cccd .kit-file-upload__preview-image-wrapper--multiple,
+.kit-file-upload--cccd .kit-file-upload__preview-icon-wrapper.kit-file-upload__preview-image-wrapper--multiple,
+.kit-file-upload--cccd .kit-file-upload__preview-add-button {
+  width: 120px;
+  height: 75px;
+}
+
+.kit-file-upload--cccd .kit-file-upload__preview-image-wrapper--single,
+.kit-file-upload--cccd .kit-file-upload__preview-icon-wrapper.kit-file-upload__preview-image-wrapper--single {
+  width: min(100%, 200px);
+  height: 125px;
+}
+
+.kit-file-upload--passport .kit-file-upload__preview-image-wrapper--multiple,
+.kit-file-upload--passport .kit-file-upload__preview-icon-wrapper.kit-file-upload__preview-image-wrapper--multiple,
+.kit-file-upload--passport .kit-file-upload__preview-add-button {
+  width: 105px;
+  height: 126px;
+}
+
+.kit-file-upload--passport .kit-file-upload__preview-image-wrapper--single,
+.kit-file-upload--passport .kit-file-upload__preview-icon-wrapper.kit-file-upload__preview-image-wrapper--single {
+  width: min(100%, 175px);
+  height: 210px;
+}
+
+.kit-file-upload--advanced .kit-file-upload__preview-image-wrapper--multiple,
+.kit-file-upload--advanced .kit-file-upload__preview-icon-wrapper.kit-file-upload__preview-image-wrapper--multiple,
+.kit-file-upload--advanced .kit-file-upload__preview-add-button {
+  width: 96px;
+  height: 96px;
+}
+
+.kit-file-upload--advanced .kit-file-upload__preview-image-wrapper--single,
+.kit-file-upload--advanced .kit-file-upload__preview-icon-wrapper.kit-file-upload__preview-image-wrapper--single {
+  width: min(100%, 200px);
+  height: 125px;
+}
+
 /* ── Import feature ── */
 .kit-import-section__header {
   padding: 0.625rem 1.25rem;
@@ -2101,5 +2530,48 @@ textarea:-webkit-autofill:focus {
 /* Import page — scroll trong vùng main admin, không hiện thanh scroll */
 .kit-admin-main--import {
   overflow-x: hidden;
+}
+
+/* PrimeReact DatePicker — fallback khi dùng export DatePicker trực tiếp */
+@layer primereact {
+  .p-datepicker-panel {
+    border-radius: 1rem;
+    border: 1px solid rgb(226 232 240 / 0.9);
+    box-shadow: 0 16px 48px -12px rgb(15 23 42 / 0.28);
+    overflow: hidden;
+  }
+
+  .p-datepicker-day-selected,
+  .p-datepicker-day[data-p-selected='true'] {
+    background: #2563eb !important;
+    color: #fff !important;
+    border-radius: 9999px;
+  }
+
+  .p-datepicker-day:not(.p-disabled):hover {
+    background: #f1f5f9;
+    border-radius: 9999px;
+  }
+
+  .p-datepicker-time-picker .p-datepicker-hour,
+  .p-datepicker-time-picker .p-datepicker-minute,
+  .p-datepicker-time-picker .p-datepicker-ampm {
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+  }
+
+  .p-datepicker-time-picker .p-datepicker-increment-button,
+  .p-datepicker-time-picker .p-datepicker-decrement-button {
+    border-radius: 0.5rem;
+    background: #2563eb !important;
+    color: #fff !important;
+    border: 0 !important;
+  }
+
+  .p-datepicker-buttonbar .p-button {
+    color: #2563eb;
+    font-weight: 600;
+  }
 }
 

@@ -40,6 +40,9 @@ export const fileManagerMessagesVi = {
     deleteDescription: (name: string) => `"${name}" sẽ bị xoá vĩnh viễn.`,
     confirmDelete: 'Xoá',
   },
+  validation: {
+    required: 'Vui lòng nhập tên',
+  },
   toast: {
     uploadSuccess: 'Đã tải lên tệp',
     createFolderSuccess: 'Đã tạo thư mục',

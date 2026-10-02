@@ -1,4 +1,4 @@
-using Jarvis.ORM.EntityFramework.DataStorages;
+using Platform.ORM.EntityFramework.DataStorages;
 using Microsoft.EntityFrameworkCore;
 using Sample.Entities;
 

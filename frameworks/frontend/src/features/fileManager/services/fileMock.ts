@@ -16,6 +16,7 @@ import {
   normalizePath,
   sortEntries,
 } from '../utils/fileTree'
+import { assertValidEntryName, ENTRY_NAME_MESSAGES } from '../validation'
 
 let seq = 100
 const store: FileEntry[] = FAKE_FILE_ENTRIES.map((e) => ({ ...e }))
@@ -59,8 +60,15 @@ export async function mockUploadFiles(
   const created: FileEntry[] = []
 
   for (const file of payload.files) {
-    const name = file.name.trim()
-    if (!name) continue
+    let name: string
+    try {
+      name = assertValidEntryName(file.name)
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : ENTRY_NAME_MESSAGES.invalid
+      throw new Error(`"${file.name}" — ${message}`)
+    }
+
     if (
       store.some(
         (e) =>
@@ -68,7 +76,7 @@ export async function mockUploadFiles(
           e.name.toLowerCase() === name.toLowerCase(),
       )
     ) {
-      throw new Error(`"${name}" đã tồn tại trong thư mục này`)
+      throw new Error(`"${name}" already exists in this folder`)
     }
     const entry: FileEntry = {
       id: `file-${++seq}`,
@@ -91,11 +99,8 @@ export async function mockCreateFolder(
 ): Promise<FileEntry> {
   await delay()
   const parentPath = normalizePath(payload.path)
-  const name = payload.name.trim()
-  if (!name) throw new Error('Tên thư mục không được để trống')
-  if (name.includes('/') || name.includes('\\')) {
-    throw new Error('Tên thư mục không hợp lệ')
-  }
+  const name = assertValidEntryName(payload.name)
+
   if (
     store.some(
       (e) =>
@@ -103,7 +108,7 @@ export async function mockCreateFolder(
         e.name.toLowerCase() === name.toLowerCase(),
     )
   ) {
-    throw new Error(`Thư mục "${name}" đã tồn tại`)
+    throw new Error(`Folder "${name}" already exists`)
   }
 
   const entry: FileEntry = {
@@ -120,7 +125,7 @@ export async function mockCreateFolder(
 export async function mockDeleteEntry(entry: FileEntry): Promise<void> {
   await delay()
   const index = store.findIndex((e) => e.id === entry.id)
-  if (index < 0) throw new Error('Không tìm thấy mục')
+  if (index < 0) throw new Error('Entry not found')
 
   if (entry.type === 'folder') {
     const folderPath = joinPath(entry.parentPath, entry.name)
@@ -128,7 +133,7 @@ export async function mockDeleteEntry(entry: FileEntry): Promise<void> {
       (e) => normalizePath(e.parentPath) === normalizePath(folderPath),
     )
     if (hasChildren) {
-      throw new Error('Thư mục không rỗng — xoá nội dung trước')
+      throw new Error('Folder is not empty — delete contents first')
     }
   }
 
@@ -140,13 +145,9 @@ export async function mockRenameEntry(
 ): Promise<FileEntry> {
   await delay()
   const item = store.find((e) => e.id === payload.entry.id)
-  if (!item) throw new Error('Không tìm thấy mục')
+  if (!item) throw new Error('Entry not found')
 
-  const name = payload.name.trim()
-  if (!name) throw new Error('Tên không được để trống')
-  if (name.includes('/') || name.includes('\\')) {
-    throw new Error('Tên không hợp lệ')
-  }
+  const name = assertValidEntryName(payload.name)
 
   const parentPath = normalizePath(item.parentPath)
   if (
@@ -157,7 +158,7 @@ export async function mockRenameEntry(
         e.name.toLowerCase() === name.toLowerCase(),
     )
   ) {
-    throw new Error(`"${name}" đã tồn tại`)
+    throw new Error(`"${name}" already exists`)
   }
 
   if (item.type === 'folder') {
@@ -187,12 +188,12 @@ export async function mockMoveEntry(
 ): Promise<FileEntry> {
   await delay()
   const item = store.find((e) => e.id === payload.entry.id)
-  if (!item) throw new Error('Không tìm thấy mục')
+  if (!item) throw new Error('Entry not found')
 
   const targetPath = normalizePath(payload.targetPath)
   const currentParent = normalizePath(item.parentPath)
   if (currentParent === targetPath) {
-    throw new Error('Mục đã nằm trong thư mục đích')
+    throw new Error('Already in the destination folder')
   }
 
   if (item.type === 'folder') {
@@ -201,7 +202,7 @@ export async function mockMoveEntry(
       targetPath === normalizePath(sourcePath) ||
       targetPath.startsWith(`${normalizePath(sourcePath)}/`)
     ) {
-      throw new Error('Không thể di chuyển thư mục vào chính nó hoặc thư mục con')
+      throw new Error('Cannot move a folder into itself or its subfolder')
     }
   }
 
@@ -213,7 +214,7 @@ export async function mockMoveEntry(
         e.name.toLowerCase() === item.name.toLowerCase(),
     )
   ) {
-    throw new Error(`"${item.name}" đã tồn tại trong thư mục đích`)
+    throw new Error(`"${item.name}" already exists in the destination`)
   }
 
   const oldFolderPath =

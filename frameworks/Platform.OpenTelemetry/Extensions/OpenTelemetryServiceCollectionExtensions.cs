@@ -1,0 +1,54 @@
+using Platform.OpenTelemetry.Abstractions;
+using Platform.OpenTelemetry.Configuration;
+using Platform.OpenTelemetry.Enrichment;
+using Platform.OpenTelemetry.Hosting;
+using Platform.OpenTelemetry.Instrumentations;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
+namespace Platform.OpenTelemetry.Extensions;
+
+public static class OpenTelemetryServiceCollectionExtensions
+{
+    /// <summary>
+    /// Registers Platform OpenTelemetry services and options from configuration section <c>OTEL</c>.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configuration">Application configuration.</param>
+    /// <param name="configureServices">Optional callback to register enrichers, plug-ins (<see cref="Abstractions.ITraceInstrumentation"/>, <see cref="Abstractions.ITraceExporter"/>, etc.), and other services.</param>
+    /// <returns>A fluent builder for resource, trace, metrics, and logging.</returns>
+    public static PlatformOpenTelemetryHostBuilder AddPlatformOpenTelemetry(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        Action<IServiceCollection>? configureServices = null)
+    {
+        var configurationSection = configuration.GetSection("OTEL");
+        services.Configure<PlatformOpenTelemetryOptions>(configurationSection);
+
+        var options = configurationSection.Get<PlatformOpenTelemetryOptions>() ?? new PlatformOpenTelemetryOptions();
+        var builder = new PlatformOpenTelemetryHostBuilder(services, options, configurationSection);
+
+        services.AddSingleton<IAspNetCoreEnrichHttpRequest, HttpRequestHeaderEnrichment>();
+        services.AddSingleton<IAspNetCoreEnrichHttpRequest, UserRequestEnrichment>();
+
+        services.AddSingleton<IAspNetCoreEnrichHttpResponse, HttpResponseHeaderEnrichment>();
+        services.AddSingleton<IAspNetCoreEnrichHttpResponse, UserResponseEnrichment>();
+
+        configureServices?.Invoke(services);
+        return builder;
+    }
+
+    /// <summary>
+    /// Registers default <see cref="IEnrichLogService"/> and <see cref="IEnrichTraceService"/>
+    /// that merge all <see cref="IEnrichmentSource"/> registrations.
+    /// </summary>
+    public static IServiceCollection AddTelemetryEnrichment(this IServiceCollection services)
+    {
+        services.TryAddEnumerable(
+            ServiceDescriptor.Scoped<IEnrichLogService, EnrichLogService>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Scoped<IEnrichTraceService, EnrichTraceService>());
+        return services;
+    }
+}

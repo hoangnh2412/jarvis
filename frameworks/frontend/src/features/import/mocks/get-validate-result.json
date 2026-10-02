@@ -1,0 +1,26 @@
+{
+  "success": true,
+  "message": "Kiểm tra file hoàn tất, không có lỗi.",
+  "processed": 3,
+  "validCount": 3,
+  "invalidCount": 0,
+  "sheetName": "Sheet1",
+  "validRows": [
+    {
+      "row": 1,
+      "age": 15,
+      "name": "Phạm Thế Anh"
+    },
+    {
+      "row": 2,
+      "age": 22,
+      "name": "Phạm Quốc Khánh"
+    },
+    {
+      "row": 3,
+      "age": 21,
+      "name": "Phạm Tuấn Ngọc"
+    }
+  ],
+  "invalidRows": []
+}

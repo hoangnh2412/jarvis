@@ -1,14 +1,14 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Jarvis.DDD.Domain.Repositories;
+using Platform.DDD.Domain.Repositories;
 using Sample.Entities;
 using Sample.Persistence;
 
 namespace Sample.Controllers;
 
 /// <summary>
-/// Sample CRUD against Master <c>Tenant</c> via <c>Jarvis.ORM.EntityFramework</c>
+/// Sample CRUD against Master <c>Tenant</c> via <c>Platform.ORM.EntityFramework</c>
 /// (<see cref="IMasterUnitOfWork"/> + <see cref="IRepository{TEntity}"/>).
 /// </summary>
 [ApiController]

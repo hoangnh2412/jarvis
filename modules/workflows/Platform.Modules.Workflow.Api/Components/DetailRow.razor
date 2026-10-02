@@ -1,0 +1,25 @@
+<div class="detail-row">
+    <div class="detail-label">@Label</div>
+    <div class="detail-value @(Mono ? "detail-value-mono" : "")">
+        @if (string.IsNullOrWhiteSpace(Value))
+        {
+            <span class="detail-empty-value">-</span>
+        }
+        else
+        {
+            @Value
+        }
+    </div>
+</div>
+
+@code
+{
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public bool Mono { get; set; }
+}

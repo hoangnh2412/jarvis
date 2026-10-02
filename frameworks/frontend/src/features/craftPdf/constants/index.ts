@@ -26,5 +26,5 @@ export {
   toBindingExpression,
 } from './dataFields'
 
-/** @deprecated Use shared `BASE_URL` from `@jarvis/core` / `lib/http` */
+/** @deprecated Use shared `BASE_URL` from `@platform/core` / `lib/http` */
 export { BASE_URL as BASE_URL_CRAFT_PDF } from '../../../lib/http/constants'

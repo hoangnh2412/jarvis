@@ -1,11 +1,11 @@
-using Jarvis.Caching.Extensions;
-using Jarvis.DDD.Domain.DataStorages;
-using Jarvis.DDD.Domain.Repositories;
-using Jarvis.DDD.Domain.Services;
-using Jarvis.ORM.EntityFramework;
-using Jarvis.Multitenancy;
-using Jarvis.Multitenancy.EntityFramework;
-using Jarvis.Multitenancy.EntityFramework.DataStorages;
+using Platform.Caching.Extensions;
+using Platform.DDD.Domain.DataStorages;
+using Platform.DDD.Domain.Repositories;
+using Platform.DDD.Domain.Services;
+using Platform.ORM.EntityFramework;
+using Platform.Multitenancy;
+using Platform.Multitenancy.EntityFramework;
+using Platform.Multitenancy.EntityFramework.DataStorages;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -27,9 +27,9 @@ internal static class MultitenancyEfTestServiceFactory
     {
         var root = sharedRoot ?? new InMemoryDatabaseRoot();
         var builder = Host.CreateApplicationBuilder();
-        builder.AddJarvisCaching(o =>
+        builder.AddPlatformCaching(o =>
         {
-            o.Items["ConnectionString"] = new Jarvis.Caching.CacheEntryOption
+            o.Items["ConnectionString"] = new Platform.Caching.CacheEntryOption
             {
                 Key = "conn:{dbid}",
                 MemSeconds = 3600,

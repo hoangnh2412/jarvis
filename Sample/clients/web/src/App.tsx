@@ -1,16 +1,16 @@
 /**
- * Host SPA — AdminLayout + modules từ @jarvis/core.
- * Setting UI từ @jarvis/setting (modules/settings/frontend).
+ * Host SPA — AdminLayout + modules từ @platform/core.
+ * Setting UI từ @platform/setting (modules/settings/frontend).
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 import {
   Navigate,
   Route,
   Routes,
   useNavigate,
   useParams,
-} from 'react-router-dom'
+} from "react-router-dom";
 import {
   ACCOUNT_ROUTES,
   AdminLayout,
@@ -40,66 +40,76 @@ import {
   ImportPage,
   IMPORT_ROUTES,
   configureImportNavigate,
+  PlannerPage,
+  PLANNER_ROUTES,
+  configurePlannerNavigate,
+  TimesheetPage,
+  TIMESHEET_ROUTES,
+  configureTimesheetNavigate,
+  DynamicFormBuilderPage,
+  DYNAMIC_FORM_ROUTES,
+  DYNAMIC_FORM_DEMO_ID,
+  configureDynamicFormNavigate,
+  CraftDocBuilderPage,
+  CRAFT_DOC_ROUTES,
+  configureCraftDocNavigate,
   callLogin,
   notify,
-} from '@jarvis/core'
-import {
-  clearAccessToken,
-  isAuthenticated,
-  setAccessToken,
-} from './auth'
-import { NotificationBell } from '@jarvis/notifications'
-import { SettingPage } from '@jarvis/setting'
-import { extractLoginResult } from './auth/apiHelpers'
-import { RequireAuth } from './auth/RequireAuth'
-import {
-  isMockAccountCredentials,
-  mockLogin,
-} from './constants'
+  DEFAULT_ADMIN_MAIN_NAV,
+  type AdminNavItem,
+} from "@platform/core";
+import { Layers } from "lucide-react";
+import { clearAccessToken, isAuthenticated, setAccessToken } from "./auth";
+import { NotificationBell } from "@platform/notifications";
+import { SettingPage } from "@platform/setting";
+import { extractLoginResult } from "./auth/apiHelpers";
+import { RequireAuth } from "./auth/RequireAuth";
+import { isMockAccountCredentials, mockLogin } from "./constants";
+import { OnboardingDemoPage } from "./pages/OnboardingDemoPage";
 
 const demoApiKey =
-  import.meta.env.VITE_NOTIFICATION_API_KEY ?? 'dev-notifications-demo-key'
+  import.meta.env.VITE_NOTIFICATION_API_KEY ?? "dev-notifications-demo-key";
 
 async function sendDemoNotification() {
-  const response = await fetch('/api/signalr-demo/me', {
-    method: 'POST',
+  const response = await fetch("/api/signalr-demo/me", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'X-API-KEY': demoApiKey,
+      "Content-Type": "application/json",
+      "X-API-KEY": demoApiKey,
     },
     body: JSON.stringify({
-      type: 'demo',
-      title: 'Thông báo demo',
-      body: `Gửi lúc ${new Date().toLocaleTimeString('vi-VN')}`,
-      data: { actionUrl: '/notifications-demo' },
+      type: "demo",
+      title: "Thông báo demo",
+      body: `Gửi lúc ${new Date().toLocaleTimeString("vi-VN")}`,
+      data: { actionUrl: "/notifications-demo" },
     }),
-  })
+  });
 
   if (!response.ok) {
-    const payload = await response.json().catch(() => null)
+    const payload = await response.json().catch(() => null);
     throw new Error(
       (payload as { message?: string } | null)?.message ??
-        'Không thể gửi thông báo demo.',
-    )
+        "Không thể gửi thông báo demo.",
+    );
   }
 }
 
 function NotificationDemoPage() {
-  const [sending, setSending] = useState(false)
+  const [sending, setSending] = useState(false);
 
   const handleSend = async () => {
-    setSending(true)
+    setSending(true);
     try {
-      await sendDemoNotification()
-      notify.success('Đã gửi thông báo demo — xem chuông góc phải.')
+      await sendDemoNotification();
+      notify.success("Đã gửi thông báo demo — xem chuông góc phải.");
     } catch (error) {
       notify.error(
-        error instanceof Error ? error.message : 'Gửi thông báo demo thất bại.',
-      )
+        error instanceof Error ? error.message : "Gửi thông báo demo thất bại.",
+      );
     } finally {
-      setSending(false)
+      setSending(false);
     }
-  }
+  };
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -116,30 +126,41 @@ function NotificationDemoPage() {
         disabled={sending}
         onClick={() => void handleSend()}
       >
-        {sending ? 'Đang gửi…' : 'Gửi thông báo demo'}
+        {sending ? "Đang gửi…" : "Gửi thông báo demo"}
       </button>
     </div>
-  )
+  );
 }
 
+const SAMPLE_ADMIN_MAIN_NAV: AdminNavItem[] = [
+  ...DEFAULT_ADMIN_MAIN_NAV,
+  {
+    id: "onboarding-demo",
+    label: "Onboarding Demo",
+    icon: Layers,
+    path: "/onboarding-demo",
+  },
+];
+
 function SampleAdminLayout() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   return (
     <AdminLayout
+      mainNav={SAMPLE_ADMIN_MAIN_NAV}
       notificationSlot={<NotificationBell />}
       onLogout={async () => {
-        clearAccessToken()
-        navigate(ACCOUNT_ROUTES.login, { replace: true })
-        return false
+        clearAccessToken();
+        navigate(ACCOUNT_ROUTES.login, { replace: true });
+        return false;
       }}
     />
-  )
+  );
 }
 
 function GuestLoginPage() {
   if (isAuthenticated()) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -148,90 +169,125 @@ function GuestLoginPage() {
         onSubmit: async (payload) => {
           // Tài khoản mock → không gọi API
           if (isMockAccountCredentials(payload)) {
-            const result = await mockLogin(payload)
-            setAccessToken(result.token)
-            return result
+            const result = await mockLogin(payload);
+            setAccessToken(result.token);
+            return result;
           }
 
           // Tài khoản thật → gọi BE
-          
-          const response = await callLogin(payload)
-          const result = extractLoginResult(response)
-          const token = result.tokens?.accessToken
+          const response = await callLogin(payload);
+          const result = extractLoginResult(response);
+          const token = result.tokens?.accessToken;
           if (!token) {
-            throw new Error('Server không trả access token.')
+            throw new Error("Server không trả access token.");
           }
-          setAccessToken(token)
-          return result
+          setAccessToken(token);
+          return result;
         },
       }}
     />
-  )
+  );
 }
 
 function TenantNavigateBridge() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   useEffect(() => {
-    configureTenantNavigate((to) => navigate(to))
-  }, [navigate])
-  return null
+    configureTenantNavigate((to) => navigate(to));
+  }, [navigate]);
+  return null;
 }
 
 function CraftPdfNavigateBridge() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   useEffect(() => {
-    configureCraftPdfNavigate((to) => navigate(to))
-  }, [navigate])
-  return null
+    configureCraftPdfNavigate((to) => navigate(to));
+  }, [navigate]);
+  return null;
 }
 
 function RoleNavigateBridge() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   useEffect(() => {
-    configureRoleNavigate((to) => navigate(to))
-  }, [navigate])
-  return null
+    configureRoleNavigate((to) => navigate(to));
+  }, [navigate]);
+  return null;
 }
 
 function FileManagerNavigateBridge() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   useEffect(() => {
-    configureFileManagerNavigate((to) => navigate(to))
-  }, [navigate])
-  return null
+    configureFileManagerNavigate((to) => navigate(to));
+  }, [navigate]);
+  return null;
 }
 
 function ImportNavigateBridge() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   useEffect(() => {
-    configureImportNavigate((to) => navigate(to))
-  }, [navigate])
-  return null
+    configureImportNavigate((to) => navigate(to));
+  }, [navigate]);
+  return null;
+}
+
+function PlannerNavigateBridge() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    configurePlannerNavigate((to) => navigate(to));
+  }, [navigate]);
+  return null;
+}
+
+function TimesheetNavigateBridge() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    configureTimesheetNavigate((to) => navigate(to));
+  }, [navigate]);
+  return null;
+}
+
+function DynamicFormNavigateBridge() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    configureDynamicFormNavigate((to) => navigate(to));
+  }, [navigate]);
+  return null;
+}
+
+function CraftDocNavigateBridge() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    configureCraftDocNavigate((to) => navigate(to));
+  }, [navigate]);
+  return null;
 }
 
 function TenantDetailRoute() {
-  const { id = '' } = useParams()
-  return <TenantDetailPage tenantId={id} />
+  const { id = "" } = useParams();
+  return <TenantDetailPage tenantId={id} />;
 }
 
 function TenantEditRoute() {
-  const { id = '' } = useParams()
-  return <TenantFormPage mode="edit" tenantId={id} />
+  const { id = "" } = useParams();
+  return <TenantFormPage mode="edit" tenantId={id} />;
 }
 
 function TenantConnectionsRoute() {
-  const { id = '' } = useParams()
-  return <TenantConnectionsPage tenantId={id} />
+  const { id = "" } = useParams();
+  return <TenantConnectionsPage tenantId={id} />;
 }
 
 function TenantDomainsRoute() {
-  const { id = '' } = useParams()
-  return <TenantDomainsPage tenantId={id} />
+  const { id = "" } = useParams();
+  return <TenantDomainsPage tenantId={id} />;
 }
 
 function CraftPdfEditorRoute() {
-  const { id = '' } = useParams()
-  return <CraftPdfEditorPage templateId={id} />
+  const { id = "" } = useParams();
+  return <CraftPdfEditorPage templateId={id} />;
+}
+
+function DynamicFormBuilderRoute() {
+  return <DynamicFormBuilderPage formId={DYNAMIC_FORM_DEMO_ID} locale="vi" />;
 }
 
 function PlaceholderPage({ title }: { title: string }) {
@@ -242,7 +298,7 @@ function PlaceholderPage({ title }: { title: string }) {
         Trang placeholder — thay bằng page module của app.
       </p>
     </div>
-  )
+  );
 }
 
 export default function App() {
@@ -253,6 +309,10 @@ export default function App() {
       <RoleNavigateBridge />
       <FileManagerNavigateBridge />
       <ImportNavigateBridge />
+      <PlannerNavigateBridge />
+      <TimesheetNavigateBridge />
+      <DynamicFormNavigateBridge />
+      <CraftDocNavigateBridge />
 
       <Routes>
         <Route path={ACCOUNT_ROUTES.login} element={<GuestLoginPage />} />
@@ -288,8 +348,12 @@ export default function App() {
         >
           <Route index element={<DashboardPage title="Tổng quan" />} />
           <Route path={DASHBOARD_ROUTES.home} element={<DashboardPage />} />
+          <Route path="onboarding-demo" element={<OnboardingDemoPage />} />
           <Route path="notifications-demo" element={<NotificationDemoPage />} />
-          <Route path="users" element={<PlaceholderPage title="Người dùng" />} />
+          <Route
+            path="users"
+            element={<PlaceholderPage title="Người dùng" />}
+          />
           <Route
             path="templates"
             element={<PlaceholderPage title="Biểu mẫu" />}
@@ -298,7 +362,7 @@ export default function App() {
             path="documents"
             element={<PlaceholderPage title="Tài liệu" />}
           />
-          <Route path="settings" element={<SettingPage />} />
+          {/* <Route path="settings" element={<SettingPage />} /> */}
           <Route path="help" element={<PlaceholderPage title="Trợ giúp" />} />
 
           <Route path="profile" element={<AccountProfilePage />} />
@@ -315,23 +379,46 @@ export default function App() {
             path="tenants/:id/connections"
             element={<TenantConnectionsRoute />}
           />
-          <Route
-            path="tenants/:id/domains"
-            element={<TenantDomainsRoute />}
-          />
+          <Route path="tenants/:id/domains" element={<TenantDomainsRoute />} />
 
-          <Route path={ROLE_ROUTES.list} element={<RoleListPage locale="vi" />} />
+          <Route
+            path={ROLE_ROUTES.list}
+            element={<RoleListPage locale="vi" />}
+          />
 
           <Route
             path={FILE_MANAGER_ROUTES.list}
             element={<FileManagerPage locale="vi" />}
           />
 
-          <Route path={IMPORT_ROUTES.page} element={<ImportPage locale="vi" />} />
+          <Route
+            path={IMPORT_ROUTES.page}
+            element={<ImportPage locale="vi" />}
+          />
+
+          <Route
+            path={PLANNER_ROUTES.page}
+            element={<PlannerPage locale="vi" />}
+          />
+
+          <Route
+            path={TIMESHEET_ROUTES.page}
+            element={<TimesheetPage locale="vi" />}
+          />
+
+          <Route
+            path={DYNAMIC_FORM_ROUTES.page}
+            element={<DynamicFormBuilderRoute />}
+          />
+
+          <Route
+            path={CRAFT_DOC_ROUTES.builder}
+            element={<CraftDocBuilderPage locale="vi" />}
+          />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
     </>
-  )
+  );
 }

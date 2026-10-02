@@ -1,10 +1,10 @@
-using Jarvis.Caching;
+using Platform.Caching;
 
 namespace UnitTest.Caching;
 
 public class CacheServiceMultiTierTests
 {
-    private static JarvisCacheOptions CreateLayeredOptions() => new()
+    private static PlatformCacheOptions CreateLayeredOptions() => new()
     {
         DefaultDistributedType = "Redis",
         DefaultDistributedGroup = "Default",
