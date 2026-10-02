@@ -84,6 +84,20 @@
   </Target>
 
   <!--
+    tsconfig paths compile linked packages from source; each needs its own node_modules.
+    Runs before SPA build/publish when node_modules is missing.
+  -->
+  <Target Name="EnsureLinkedFrontendDeps" BeforeTargets="DebugBuildFrontend;PublishRunWebpack" Condition="'$(SkipFrontendBuild)' != 'true'">
+    <ItemGroup>
+      <_FrontendPackageJson Include="$(MSBuildProjectDirectory)\..\frameworks\frontend\package.json" />
+      <_FrontendPackageJson Include="$(MSBuildProjectDirectory)\..\modules\*\frontend\package.json" />
+      <LinkedFrontendPackage Include="@(_FrontendPackageJson->'%(RootDir)%(Directory)')" />
+    </ItemGroup>
+    <Message Importance="high" Text="Restoring linked frontend dependencies in %(LinkedFrontendPackage.Identity) (npm install)..." Condition="!Exists('%(LinkedFrontendPackage.Identity)\node_modules')" />
+    <Exec WorkingDirectory="%(LinkedFrontendPackage.Identity)" Command="npm install" Condition="!Exists('%(LinkedFrontendPackage.Identity)\node_modules')" />
+  </Target>
+
+  <!--
     One-command run: build SPA into wwwroot on Debug build (no SpaProxy).
     Skip with: -p:SkipFrontendBuild=true
   -->
