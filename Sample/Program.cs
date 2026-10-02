@@ -36,6 +36,14 @@ using Platform.Modules.Notifications.Redis.Extensions;
 using Platform.Realtime.Extensions;
 using Platform.Realtime.SignalR.Extensions;
 using Sample.Services;
+using Sample.Workflows;
+using Platform.Workflow.Configuration;
+using Platform.Workflow.Extensions;
+using Platform.Modules.ElsaWorkflow.Api.Extensions;
+using Platform.Modules.ElsaWorkflow.EntityFramework.Extensions;
+using Platform.Modules.ElsaWorkflow.Extensions;
+using Elsa.Persistence.EFCore.Modules.Management;
+using Elsa.Persistence.EFCore.Modules.Runtime;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -115,7 +123,43 @@ builder.Services.AddApiVersioning(options =>
 
 builder.AddSampleAuthentication();
 builder.AddSampleAuthorization();
-builder.AddSampleWorkflow();
+
+// Workflow (Elsa) — bật/tắt bằng Elsa:Enabled (mặc định true).
+// Embedded: Sample chạy engine + persistence + API + Studio (thay cho Workflow Server riêng trước đây).
+// Standalone: Sample là client, gọi Workflow Server tại Elsa:ServerUrl.
+var workflowEnabled = builder.Configuration.GetValue("Elsa:Enabled", true);
+var workflowOptions = ElsaWorkflowOptions.FromConfiguration(builder.Configuration);
+if (workflowEnabled)
+{
+    var redisConfiguration = builder.Configuration["Cache:DistributedGroups:Redis:Default:Configuration"]
+        ?? throw new InvalidOperationException("Cache:DistributedGroups:Redis:Default:Configuration is not configured.");
+
+    builder.Services.AddPlatformWorkflowServices(
+        redisConfiguration,
+        options => options.ConfigureFromSection(builder.Configuration));
+
+    var workflowModule = builder.AddElsaWorkflowModule();
+    if (workflowOptions.Mode == WorkflowExecutionMode.Embedded)
+    {
+        workflowModule
+            .UseEntityFramework()
+            .UseHttpApi()
+            .UseStudio()
+            .AddWorkflow<OnboardingProcessWorkflow>()
+            .AddWorkflow<HrHandoverDeviceWorkflow>()
+            .AddWorkflow<ItCreateAdWorkflow>()
+            .AddWorkflow<ItCreateJiraWorkflow>()
+            .AddWorkflow<ItCreateConfluenceWorkflow>()
+            .AddWorkflow<ItCreateBitbucketWorkflow>()
+            .AddWorkflow<HrSignProbationContractWorkflow>()
+            .AddWorkflow<EmployeeConfirmOnboardWorkflow>()
+            .ApplyEmbedded();
+    }
+    else
+    {
+        workflowModule.ApplyStandaloneClient();
+    }
+}
 
 builder.AddNotificationModule();
 builder.AddCoreRealtime()
@@ -148,7 +192,31 @@ app.UseCoreCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseSampleWorkflow();
+
+if (workflowEnabled)
+{
+    if (workflowOptions.Mode == WorkflowExecutionMode.Embedded)
+    {
+        app.UseWorkflowApi();
+        app.UseWorkflowStudio();
+    }
+    else
+    {
+        var workflowStudioUrl = workflowOptions.GetResolvedStudioUrl()
+            ?? throw new InvalidOperationException(
+                "Elsa Workflow Studio URL is not configured. Configure 'Elsa:StudioUrl' or 'Elsa:ServerUrl'.");
+
+        app.MapGet("/preview/{definitionId}/{instanceId?}",
+            (string definitionId, string? instanceId) =>
+            {
+                var previewPath = $"/preview/{Uri.EscapeDataString(definitionId)}";
+                if (!string.IsNullOrWhiteSpace(instanceId))
+                    previewPath += $"/{Uri.EscapeDataString(instanceId)}";
+
+                return Results.Redirect($"{workflowStudioUrl}{previewPath}");
+            });
+    }
+}
 
 // Demo headers for OTEL trace enrichment (request: send x-demo-request; response: x-demo-response).
 app.UseMiddleware<SampleOtlpDemoHeadersMiddleware>();
@@ -167,5 +235,19 @@ app.MapRealtimeHub<CurrentUserInfo, CurrentTenantInfo>();
 
 app.EnsureMigrateDb<IMasterUnitOfWork>();
 app.EnsureMigrateTemplateDb<TenantDbContext>((config, options) => options.UseNpgsql(config.GetConnectionString("TenantDbContext")));
+
+if (workflowEnabled && workflowOptions.Mode == WorkflowExecutionMode.Embedded)
+{
+    var elsaConnectionString = app.Configuration.GetConnectionString(workflowOptions.ConnectionStringName);
+    if (string.IsNullOrWhiteSpace(elsaConnectionString))
+    {
+        throw new InvalidOperationException(
+            $"Connection string '{workflowOptions.ConnectionStringName}' is not configured or empty.");
+    }
+
+    app.EnsureMigrateTemplateDb<ManagementElsaDbContext>((_, options) => options.UseNpgsql(elsaConnectionString));
+    app.EnsureMigrateTemplateDb<RuntimeElsaDbContext>((_, options) => options.UseNpgsql(elsaConnectionString));
+}
+
 await app.SeedSampleAuthorizationAsync();
 app.Run();
