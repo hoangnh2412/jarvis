@@ -6,7 +6,8 @@ type ProcessLike = { env: Record<string, string | undefined> }
 
 export function ensureBrowserProcess(): void {
   if (typeof globalThis === 'undefined') return
-  const g = globalThis as typeof globalThis & { process?: ProcessLike }
+  // Tránh merge với NodeJS.Process khi Vite typecheck file Jarvis cùng frontend.
+  const g = globalThis as unknown as { process?: ProcessLike }
   if (!g.process) {
     g.process = { env: { NODE_ENV: 'production' } }
     return
