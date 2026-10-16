@@ -344,7 +344,7 @@ function NotificationCenterView({
           >
             Chưa đọc
             {unreadCount > 0 && (
-              <span>{Math.min(unreadCount, 99)}</span>
+              <span>{unreadCount > 9 ? '9+' : unreadCount}</span>
             )}
           </button>
         </nav>
@@ -591,7 +591,6 @@ function NotificationRow({
         selected ? 'is-selected' : '',
         selectionMode ? 'notification-row--selecting' : '',
         compact ? 'notification-row--compact' : '',
-        actionUrl ? 'notification-row--has-link' : '',
       ]
         .filter(Boolean)
         .join(' ')}
@@ -632,7 +631,9 @@ function NotificationRow({
             </span>
           </span>
           <span className="notification-row__copy">
-            <span className="notification-row__title">{item.title}</span>
+            <span className="notification-row__title" title={item.title}>
+              {item.title}
+            </span>
             {item.body && (
               <span
                 className={[
@@ -663,53 +664,18 @@ function NotificationRow({
 
         <div className="notification-row__side" ref={menuRef}>
           {!selectionMode && (
-            <div className="notification-row__actions">
-              {actionUrl && (
-                <button
-                  type="button"
-                  className="notification-action notification-action--link"
-                  aria-label={`Mở liên kết: ${item.title}`}
-                  title="Mở liên kết"
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    handleOpenLink()
-                  }}
-                >
-                  <ExternalLink size={compact ? 16 : 18} aria-hidden />
-                </button>
-              )}
-              <button
-                type="button"
-                className="notification-action"
-                aria-label={
-                  item.isRead
-                    ? `Đánh dấu ${item.title} là chưa đọc`
-                    : `Đánh dấu ${item.title} là đã đọc`
-                }
-                onClick={(event) => {
-                  event.stopPropagation()
-                  onToggleRead()
-                }}
-              >
-                {item.isRead ? (
-                  <BellOff size={compact ? 16 : 18} aria-hidden />
-                ) : (
-                  <Check size={compact ? 16 : 18} aria-hidden />
-                )}
-              </button>
-              <button
-                type="button"
-                className="notification-more"
-                aria-label={`Tùy chọn cho ${item.title}`}
-                aria-expanded={menuOpen}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  setMenuOpen((open) => !open)
-                }}
-              >
-                <MoreHorizontal size={compact ? 18 : 20} aria-hidden />
-              </button>
-            </div>
+            <button
+              type="button"
+              className="notification-more"
+              aria-label={`Tùy chọn cho ${item.title}`}
+              aria-expanded={menuOpen}
+              onClick={(event) => {
+                event.stopPropagation()
+                setMenuOpen((open) => !open)
+              }}
+            >
+              <MoreHorizontal size={compact ? 18 : 20} aria-hidden />
+            </button>
           )}
           {menuOpen && (
             <div className="notification-menu" role="menu">
@@ -750,6 +716,7 @@ function NotificationRow({
 
       {expanded && (
         <div className="notification-row__detail">
+          <p className="notification-row__detail-title">{item.title}</p>
           {item.data?.actorName && (
             <p className="notification-row__detail-actor">
               {String(item.data.actorName)}
@@ -766,19 +733,6 @@ function NotificationRow({
             <span>{formatDateTime(item.createdAtUtc)}</span>
             <span className="notification-row__detail-type">{item.type}</span>
           </div>
-          {actionUrl && (
-            <button
-              type="button"
-              className="notification-row__detail-link"
-              onClick={(event) => {
-                event.stopPropagation()
-                handleOpenLink()
-              }}
-            >
-              Mở liên kết
-              <ExternalLink size={14} aria-hidden />
-            </button>
-          )}
         </div>
       )}
     </article>

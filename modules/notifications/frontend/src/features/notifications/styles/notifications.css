@@ -654,10 +654,13 @@
 }
 
 .notification-row__title {
+  overflow: hidden;
   color: #0f172a;
   font-size: 0.9375rem;
   font-weight: 600;
   letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .notification-row__body {
@@ -697,6 +700,15 @@
   padding-inline: 12px 14px;
   padding-bottom: 12px;
   padding-left: 70px;
+}
+
+.notification-row__detail-title {
+  margin: 0 0 8px;
+  color: #0f172a;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.45;
+  word-break: break-word;
 }
 
 .notification-row__detail-actor {
@@ -752,26 +764,6 @@
   text-transform: uppercase;
 }
 
-.notification-row__detail-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 10px;
-  padding: 0;
-  border: none;
-  background: none;
-  color: #0866ff;
-  font: inherit;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.notification-row__detail-link:hover {
-  text-decoration: underline;
-}
-
 @keyframes notification-expand {
   from {
     opacity: 0;
@@ -793,43 +785,24 @@
 }
 
 .notification-row__side {
-  position: relative;
+  position: absolute;
+  z-index: 4;
+  top: 8px;
+  right: 8px;
   display: flex;
-  flex-shrink: 0;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 0;
-  overflow: hidden;
-  padding-right: 0;
+  align-items: flex-end;
+  width: auto;
+  pointer-events: none;
   opacity: 0;
-  transition:
-    width 160ms ease,
-    opacity 160ms ease,
-    padding 160ms ease;
+  transition: opacity 140ms ease;
 }
 
 .notification-row:hover .notification-row__side,
 .notification-row:focus-within .notification-row__side,
 .notification-row__side:has(.notification-more[aria-expanded='true']) {
-  width: 84px;
-  padding-right: 8px;
-  overflow: visible;
+  pointer-events: auto;
   opacity: 1;
-}
-
-.notification-row--has-link:hover .notification-row__side,
-.notification-row--has-link:focus-within .notification-row__side,
-.notification-row--has-link
-  .notification-row__side:has(.notification-more[aria-expanded='true']) {
-  width: 120px;
-}
-
-.notification-row__actions {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 6px;
 }
 
 .notification-unread-dot {
@@ -842,24 +815,16 @@
   border-radius: 50%;
   background: #0866ff;
   pointer-events: none;
-  transition: right 160ms ease;
+  transition: opacity 140ms ease;
 }
 
 .notification-row:hover .notification-unread-dot,
 .notification-row:focus-within .notification-unread-dot,
 .notification-row:has(.notification-more[aria-expanded='true'])
   .notification-unread-dot {
-  right: 92px;
+  opacity: 0;
 }
 
-.notification-row--has-link:hover .notification-unread-dot,
-.notification-row--has-link:focus-within .notification-unread-dot,
-.notification-row--has-link:has(.notification-more[aria-expanded='true'])
-  .notification-unread-dot {
-  right: 128px;
-}
-
-.notification-action,
 .notification-more {
   display: grid;
   width: 36px;
@@ -870,17 +835,12 @@
   border-radius: 50%;
   background: #fff;
   color: #65676b;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   cursor: pointer;
 }
 
-.notification-action:hover,
 .notification-more:hover {
   background: #e4e6eb;
-}
-
-.notification-action {
-  color: #0866ff;
 }
 
 .notification-menu {
@@ -1155,34 +1115,6 @@
     right: 8px;
   }
 
-  .notification-row:hover .notification-unread-dot,
-  .notification-row:focus-within .notification-unread-dot,
-  .notification-row:has(.notification-more[aria-expanded='true'])
-    .notification-unread-dot {
-    right: 78px;
-  }
-
-  .notification-row--has-link:hover .notification-unread-dot,
-  .notification-row--has-link:focus-within .notification-unread-dot,
-  .notification-row--has-link:has(.notification-more[aria-expanded='true'])
-    .notification-unread-dot {
-    right: 108px;
-  }
-
-  .notification-row:hover .notification-row__side,
-  .notification-row:focus-within .notification-row__side,
-  .notification-row__side:has(.notification-more[aria-expanded='true']) {
-    width: 70px;
-  }
-
-  .notification-row--has-link:hover .notification-row__side,
-  .notification-row--has-link:focus-within .notification-row__side,
-  .notification-row--has-link
-    .notification-row__side:has(.notification-more[aria-expanded='true']) {
-    width: 100px;
-  }
-
-  .notification-action,
   .notification-more {
     width: 30px;
     height: 30px;

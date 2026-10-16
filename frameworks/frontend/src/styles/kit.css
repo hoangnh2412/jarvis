@@ -1653,9 +1653,13 @@ textarea:-webkit-autofill:focus {
   gap: 0.375rem;
   border-radius: 0.375rem;
   padding: 0.125rem 0.375rem 0.125rem 0;
-  padding-left: calc((var(--px-tree-node-level, 1) - 1) * 1.125rem);
   color: #334155;
   transition: background-color 0.15s ease;
+}
+
+.file-manager-tree-drop-row {
+  width: 100%;
+  min-width: 0;
 }
 
 .file-manager-tree-row:hover {
@@ -1697,7 +1701,8 @@ textarea:-webkit-autofill:focus {
   height: 1.125rem;
 }
 
-.file-manager-tree [data-part='toggle-spacer'] {
+.file-manager-tree [data-part='toggle-spacer'],
+.file-manager-tree-toggle-spacer {
   display: inline-block;
   width: 1.125rem;
   height: 1.125rem;
@@ -1720,12 +1725,40 @@ textarea:-webkit-autofill:focus {
   cursor: pointer;
 }
 
-.file-manager-tree-row--active .file-manager-tree-label {
-  font-weight: 500;
+.file-manager-tree-row--drop-target {
+  background: #ecfdf5;
+  outline: 1px dashed #14b8a6;
+}
+
+.file-manager-tree-row--drop-target:hover {
+  background: #d1fae5;
 }
 
 .file-manager-tree [data-part='drop-point'] {
   display: none;
+}
+
+.file-manager-shell .file-manager-entry-link {
+  border: 0;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.file-manager-shell .file-manager-entry-link:hover,
+.file-manager-shell .file-manager-entry-link:focus,
+.file-manager-shell .file-manager-entry-link:focus-visible,
+.file-manager-shell .file-manager-entry-link:active {
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.file-manager-row-drag {
+  cursor: grab;
+}
+
+.file-manager-row-drag:active {
+  cursor: grabbing;
 }
 
 /* SearchableSelect combobox */

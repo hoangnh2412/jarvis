@@ -4,7 +4,7 @@ import {
   HubConnectionState,
   LogLevel,
 } from '@microsoft/signalr'
-import { buildNotificationHubOptions, notificationHubUrl } from '../config'
+import { buildNotificationHubOptions, getNotificationRealtimeConfig } from '../config'
 import type { NotificationItem } from '../types'
 
 export type NotificationHubMessage = Omit<NotificationItem, 'isRead'>
@@ -42,12 +42,12 @@ function ensureConnection() {
   registerPageUnloadHook()
 
   connection = new HubConnectionBuilder()
-    .withUrl(notificationHubUrl, buildNotificationHubOptions())
+    .withUrl(getNotificationRealtimeConfig().hubUrl, buildNotificationHubOptions())
     .withAutomaticReconnect()
     .configureLogging(LogLevel.Error)
     .build()
 
-  connection.on('notification', (message: NotificationHubMessage) => {
+  connection.on(getNotificationRealtimeConfig().eventName, (message: NotificationHubMessage) => {
     for (const listener of messageListeners) {
       listener(message)
     }

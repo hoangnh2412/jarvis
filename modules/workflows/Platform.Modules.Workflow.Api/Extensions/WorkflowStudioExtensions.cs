@@ -21,6 +21,7 @@ using Platform.Modules.ElsaWorkflow.Extensions;
 using Platform.Workflow.Multitenancy;
 using Platform.Workflow.Configuration;
 using MudBlazor.Services;
+using Microsoft.Extensions.Hosting;
 
 namespace Platform.Modules.ElsaWorkflow.Api.Extensions;
 
@@ -41,7 +42,7 @@ public static class WorkflowStudioExtensions
             .AddApplicationPart(typeof(WorkflowStudioExtensions).Assembly);
         webBuilder.Services.AddServerSideBlazor(options =>
         {
-            options.DetailedErrors = string.Equals(webBuilder.Environment.EnvironmentName,"Development",StringComparison.OrdinalIgnoreCase);
+            options.DetailedErrors = string.Equals(webBuilder.Environment.EnvironmentName, "Development", StringComparison.OrdinalIgnoreCase);
             options.RootComponents.RegisterCustomElsaStudioElements();
             options.RootComponents.MaxJSRootComponents = 1000; // tăng kích thước để hỗ trợ nhiều component hơn trong Elsa Studio
         });
@@ -61,8 +62,10 @@ public static class WorkflowStudioExtensions
 
         var resolvedApiUrl = backendApiUrl
             ?? workflowOptions.GetResolvedApiUrl()
-            ?? ResolveSameHostElsaApiUrl(webBuilder, workflowOptions.ApiPathPrefix)
-            ?? $"http://localhost:5167{workflowOptions.ApiPathPrefix.TrimEnd('/')}";
+            ?? throw new InvalidOperationException(
+                "Elsa API URL is not configured. "
+                + "Set 'Elsa:BaseUrl' (e.g. \"https://myapp.example.com\") or 'Elsa:ApiUrl' "
+                + "(e.g. \"https://myapp.example.com/elsa/api\") in appsettings.json.");
 
         webBuilder.Services.AddRemoteBackend(new BackendApiConfig
         {
@@ -72,9 +75,9 @@ public static class WorkflowStudioExtensions
         webBuilder.Services.AddTransient<WorkflowPreviewHttpMessageHandler>();
         webBuilder.Services.TryAddTransient<PlatformTenantDelegatingHandler>();
         webBuilder.Services.AddHttpClient("WorkflowPreview", client =>
-            {
-                client.Timeout = TimeSpan.FromSeconds(30);
-            })
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
+        })
             .AddHttpMessageHandler<WorkflowPreviewHttpMessageHandler>()
             .AddHttpMessageHandler<PlatformTenantDelegatingHandler>();
 
@@ -83,25 +86,6 @@ public static class WorkflowStudioExtensions
         webBuilder.Services.AddHttpContextAccessor();
 
         return builder;
-    }
-
-    private static string? ResolveSameHostElsaApiUrl(WebApplicationBuilder webBuilder, string apiPathPrefix)
-    {
-        var urls = webBuilder.WebHost.GetSetting(WebHostDefaults.ServerUrlsKey)
-                   ?? webBuilder.Configuration["ASPNETCORE_URLS"]
-                   ?? webBuilder.Configuration["urls"];
-        if (string.IsNullOrWhiteSpace(urls))
-            return null;
-
-        var hostUrl = urls
-            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .FirstOrDefault();
-
-        if (string.IsNullOrWhiteSpace(hostUrl))
-            return null;
-
-        var prefix = string.IsNullOrWhiteSpace(apiPathPrefix) ? "/elsa/api" : (apiPathPrefix.StartsWith('/') ? apiPathPrefix : $"/{apiPathPrefix}");
-        return $"{hostUrl.TrimEnd('/')}{prefix}";
     }
 
     public static WebApplication UseWorkflowStudio(this WebApplication app, string? loginPath = null)

@@ -243,3 +243,46 @@
     align-items: center;
     justify-content: center;
 }
+
+
+.workflow-status-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eeeeee;
+    font-size: 11px;
+    color: #666666;
+}
+
+
+.workflow-status-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+
+.workflow-status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+
+.workflow-status-dot-success {
+    background-color: #2e7d32;
+}
+
+
+.workflow-status-dot-faulted {
+    background-color: #c62828;
+}
+
+
+.workflow-status-dot-pending {
+    background-color: #ed6c02;
+}

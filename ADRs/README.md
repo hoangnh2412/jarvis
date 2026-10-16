@@ -24,9 +24,12 @@ Chỉ mục Architecture Decision Records và tài liệu kế hoạch trong `AD
 | 🔴 Proposed | 2026-08-07 | [FluentValidation cho Application input](./2026-08-07-adr-platform-fluentvalidation.md) — chuẩn validate CQRS/CRUD; map 400 `BaseResponse` |
 | 🟢 MVP + D12 implemented · 🔄 boundary superseded | 2026-08-11 · amend 2026-08-12 | [In-app Notification Core](./2026-08-11-adr-platform-notifications.md) — MVP persist-first + SignalR + REST/FE; **layout D12 superseded** bởi [Realtime vs Inbox](./2026-08-12-adr-platform-realtime-inbox-boundary.md) |
 | 🟡 Accepted (chưa implement code) | 2026-08-12 | [Framework Realtime vs Module Inbox](./2026-08-12-adr-platform-realtime-inbox-boundary.md) — framework = `Platform.Realtime*`; inbox store + AppService → `modules/notifications` |
+| 🟡 Accepted (chưa implement code) | 2026-08-17 · Accept 2026-08-17 | [`Platform.Realtime.Sse`](./2026-08-17-adr-platform-realtime-sse.md) — satellite SSE + core refactor + `Realtime:Redis` chung + composite notifier |
 | 🟢 Accepted + Implemented | 2026-08-12 · Accept §7 + implement | [`IStorageContext.TenantId` private](./2026-08-12-adr-storage-context-tenant-id-private.md) — app = `ICurrentTenant`; `HasTenantId` internal; regression `MultitenancyEfTests` 🟢 |
 | 🟡 Accepted (chưa implement code) | 2026-08-13 | [Tách `Platform.Modules.Setting.Abstractions`](./2026-08-13-adr-platform-setting-abstractions.md) — SPI Library mỏng; **không** đưa vào DDD.Domain |
 | 🟡 Accepted · đang implement | 2026-08-14 · Accept §7 2026-09-29 · cập nhật 2026-10-03 | [RBAC + ABAC Authorization + ranh giới Account / IdentityAdmin](./2026-08-14_platform_rbac-abac-authorization.md) — phân quyền `Platform.Authorization` (core không EF) + `Platform.Authorization.EntityFramework`, store danh tính `Platform.Authentication.Identity`, `modules/identity` (Account, IdentityAdmin). Engine RBAC+ABAC + Role Governance 🟢; operand registry + seed nghiệp vụ do sản phẩm đóng góp (C7, V5) 🟢; Data Scope → SQL `WHERE` (§5.11) 🟢; Sample demo + code mẫu endpoint chạy trên PostgreSQL (§11.8) 🟢; API, cache, endpoint Lexora, seed lúc start Lexora 🔴 (xem §10) |
+| 🟢 Accepted + Implemented | 2026-08-15 · tổng hợp Accept/Implement 2026-08-05 → 2026-08-11 | [Module ImportExport (Module Atomic GĐ1)](./2026-08-15-adr-platform-importexport-module.md) — packages + host-owned template + multi-tenant + entity registry + core validation + tests trong `UnitTest/ImportExport` |
+| 🔴 Proposed | 2026-10-14 | [Script build linked-frontend module theo dependency graph](./2026-10-14_platform_frontend-linked-module-build-tool.md) — `platform/tools/frontend/build-linked-frontend.mjs`, topo-sort theo `file:` dependency; dùng chung cho mọi Host (Lexora trước tiên) |
 
 ### Ưu tiên đang mở
 
@@ -34,11 +37,13 @@ Chỉ mục Architecture Decision Records và tài liệu kế hoạch trong `AD
 2. 🔴 [FluentValidation](./2026-08-07_platform_fluentvalidation.md) — validate input Application (nên làm cùng / trước hook CRUD)  
 3. 🔴 Split Phase 6 — Skill / README Host (`AddCurrentUser` + `AddCurrentTenant`)  
 4. 🔴 [`Platform.Tenants`](./2026-08-07-adr-platform-tenants-module.md) — module catalog/CRUD (độc lập lịch; làm khi có nhu cầu sản phẩm)  
-5. 🟡 [Realtime vs Inbox boundary](./2026-08-12-adr-platform-realtime-inbox-boundary.md) — Accepted; refactor code (move store + rename Realtime)  
+5. 🟡 [Realtime vs Inbox boundary](./2026-08-12-adr-platform-realtime-inbox-boundary.md) — Accepted; refactor code (move store + rename Realtime)
+5b. 🟡 [Realtime SSE satellite](./2026-08-17-adr-platform-realtime-sse.md) — Accepted 2026-08-17; implement Phase 1–4 pending  
 6. 🟡 [Setting.Abstractions](./2026-08-13-adr-platform-setting-abstractions.md) — Accepted; tách SPI trước/cùng module Notifications Define  
 7. 🟢 [`TenantId` private trên storage](./2026-08-12-adr-storage-context-tenant-id-private.md) — Implemented 2026-08-12  
 8. 🟢 [Notification MVP](./2026-08-11-adr-platform-notifications.md) — runtime 🟢; layout xem ADR Realtime/Inbox
 9. 🟡 [RBAC + ABAC Authorization](./2026-08-14_platform_rbac-abac-authorization.md) — còn: API Account / IdentityAdmin, endpoint Lexora gọi engine + `DataScopeFilter` (mẫu: Sample §11.8), áp migration Identity + gọi seed lúc start (Lexora), cache/snapshot, chốt vấn đề mở V1–V4 (§7.2) và role/policy nghiệp vụ Lexora (Phụ lục D)
+10. 🔴 [Script build linked-frontend module theo dependency graph](./2026-10-14_platform_frontend-linked-module-build-tool.md) — chờ anh Hoàng Confirm §7; Lexora đang chờ để build `@platform/core` tự rebuild `dist/` theo thứ tự dependency
 
 ---
 

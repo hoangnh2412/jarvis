@@ -50,7 +50,7 @@ public static class ElsaWorkflowHostBuilderExtensions
         var resolvedApiUrl = workflowOptions.GetResolvedApiUrl()
                              ?? throw new InvalidOperationException(
                                  "Elsa Workflow Server URL is not configured. " +
-                                 "In Standalone mode, you must configure 'Elsa:ServerUrl' (e.g. \"https://workflow-server:7000\") " +
+                                  "In Standalone mode, you must configure 'Elsa:BaseUrl' (e.g. \"https://workflow-server:7000\") " +
                                  "or 'Elsa:ApiUrl' (e.g. \"https://workflow-server:7000/elsa/api\") in appsettings.json.");
 
         var apiBaseUri = new Uri(

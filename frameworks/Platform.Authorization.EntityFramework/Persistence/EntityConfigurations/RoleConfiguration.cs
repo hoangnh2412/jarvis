@@ -13,7 +13,7 @@ public sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
     public void Configure(EntityTypeBuilder<Role> builder)
     {
         // Sử dụng bảng AspNetRoles mặc định; chỉ cấu hình các thuộc tính bổ sung
-        builder.ToTable("AspNetRoles");
+        builder.ToTable("AspNetRoles", "identity");
 
         builder.Property(r => r.RoleLevel)
             .HasDefaultValue(100);

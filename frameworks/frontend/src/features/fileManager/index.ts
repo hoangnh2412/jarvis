@@ -10,14 +10,12 @@ export {
   FileManagerSidebar,
   FileManagerToolbar,
   FileManagerTable,
-  FileManagerStorageBar,
   FileRowActions,
 } from './components'
 export type {
   FileManagerSidebarProps,
   FileManagerToolbarProps,
   FileManagerTableProps,
-  FileManagerStorageBarProps,
   FileRowActionsProps,
 } from './components'
 
@@ -25,7 +23,6 @@ export type {
 export type {
   FileEntry,
   FileEntryType,
-  StorageInfo,
   ListFilesParams,
   ListFilesResult,
   UploadFilesPayload,
@@ -35,24 +32,8 @@ export type {
   ActionProps,
 } from './types'
 
-// Services (mock — demo mặc định)
-export {
-  mockListFiles,
-  mockUploadFiles,
-  mockCreateFolder,
-  mockDeleteEntry,
-  mockMoveEntry,
-  mockRenameEntry,
-  mockResetFiles,
-  mockGetAllEntries,
-} from './services'
-
 // Constants
-export {
-  FAKE_FILE_ENTRIES,
-  FAKE_STORAGE,
-  FILE_MANAGER_ROOT_PATH,
-} from './constants'
+export { FILE_MANAGER_ROOT_PATH } from './constants'
 
 export { getFilesMock } from './mocks'
 
@@ -92,8 +73,6 @@ export type { EntryNameData } from './validation'
 // Utils
 export {
   formatFileSize,
-  formatStoragePercent,
-  formatAvailableBytes,
   getBreadcrumbSegments,
   getChildren,
   getEntryPath,

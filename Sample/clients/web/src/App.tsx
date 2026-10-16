@@ -1,9 +1,10 @@
 /**
  * Host SPA — AdminLayout + modules từ @platform/core.
  * Setting UI từ @platform/setting (modules/settings/frontend).
+ * Files UI từ @platform/files (modules/files/frontend).
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Navigate,
   Route,
@@ -11,6 +12,7 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
+import { FileSpreadsheet, GraduationCap, Layers } from "lucide-react";
 import {
   ACCOUNT_ROUTES,
   AdminLayout,
@@ -34,8 +36,6 @@ import {
   RoleListPage,
   ROLE_ROUTES,
   configureRoleNavigate,
-  FileManagerPage,
-  FILE_MANAGER_ROUTES,
   configureFileManagerNavigate,
   ImportPage,
   IMPORT_ROUTES,
@@ -58,10 +58,10 @@ import {
   DEFAULT_ADMIN_MAIN_NAV,
   type AdminNavItem,
 } from "@platform/core";
-import { Layers } from "lucide-react";
 import { clearAccessToken, isAuthenticated, setAccessToken } from "./auth";
 import { NotificationBell } from "@platform/notifications";
 import { SettingPage } from "@platform/setting";
+import { FilesPage, FILE_MANAGER_ROUTES } from "@platform/files";
 import { extractLoginResult } from "./auth/apiHelpers";
 import { RequireAuth } from "./auth/RequireAuth";
 import { isMockAccountCredentials, mockLogin } from "./constants";
@@ -89,7 +89,7 @@ async function sendDemoNotification() {
     const payload = await response.json().catch(() => null);
     throw new Error(
       (payload as { message?: string } | null)?.message ??
-        "Không thể gửi thông báo demo.",
+      "Không thể gửi thông báo demo.",
     );
   }
 }
@@ -132,22 +132,12 @@ function NotificationDemoPage() {
   );
 }
 
-const SAMPLE_ADMIN_MAIN_NAV: AdminNavItem[] = [
-  ...DEFAULT_ADMIN_MAIN_NAV,
-  {
-    id: "onboarding-demo",
-    label: "Onboarding Demo",
-    icon: Layers,
-    path: "/onboarding-demo",
-  },
-];
-
-function SampleAdminLayout() {
+function SampleAdminLayout({ mainNav }: { mainNav: AdminNavItem[] }) {
   const navigate = useNavigate();
 
   return (
     <AdminLayout
-      mainNav={SAMPLE_ADMIN_MAIN_NAV}
+      mainNav={mainNav}
       notificationSlot={<NotificationBell />}
       onLogout={async () => {
         clearAccessToken();
@@ -188,6 +178,18 @@ function GuestLoginPage() {
     />
   );
 }
+import {
+  IMPORT_EXPORT_ROUTES,
+  TemplateListPage,
+  TemplateFormPage,
+  TemplateMetadataPage,
+  TemplateConfigurationPage,
+  configureImportExportNavigate,
+} from '@platform/importexport'
+import { StudentListPage } from './pages/StudentListPage'
+import { StudentFormPage } from './pages/StudentFormPage'
+import { StudentImportPage } from './pages/StudentImportPage'
+import { ImportExportSettingPage } from './pages/ImportExportSettingPage'
 
 function TenantNavigateBridge() {
   const navigate = useNavigate();
@@ -261,6 +263,14 @@ function CraftDocNavigateBridge() {
   return null;
 }
 
+function ImportExportNavigateBridge() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    configureImportExportNavigate((to) => navigate(to));
+  }, [navigate]);
+  return null;
+}
+
 function TenantDetailRoute() {
   const { id = "" } = useParams();
   return <TenantDetailPage tenantId={id} />;
@@ -285,9 +295,19 @@ function CraftPdfEditorRoute() {
   const { id = "" } = useParams();
   return <CraftPdfEditorPage templateId={id} />;
 }
-
 function DynamicFormBuilderRoute() {
   return <DynamicFormBuilderPage formId={DYNAMIC_FORM_DEMO_ID} locale="vi" />;
+}
+
+
+function ImportExportTemplateEditRoute() {
+  const { code = '' } = useParams()
+  return <TemplateMetadataPage code={decodeURIComponent(code)} />
+}
+
+function ImportExportTemplateConfigurationRoute() {
+  const { code = '' } = useParams()
+  return <TemplateConfigurationPage code={decodeURIComponent(code)} />
 }
 
 function PlaceholderPage({ title }: { title: string }) {
@@ -302,6 +322,32 @@ function PlaceholderPage({ title }: { title: string }) {
 }
 
 export default function App() {
+  const mainNav = useMemo(
+    () =>
+      [
+        ...DEFAULT_ADMIN_MAIN_NAV.filter((n) => n.id !== 'templates'),
+        {
+          id: 'students',
+          label: 'Học sinh',
+          icon: GraduationCap,
+          path: '/students',
+        },
+        {
+          id: 'ie-templates',
+          label: 'Excel templates',
+          icon: FileSpreadsheet,
+          path: IMPORT_EXPORT_ROUTES.templates,
+        },
+        {
+          id: 'onboarding-demo',
+          label: 'Onboarding Demo',
+          icon: Layers,
+          path: '/onboarding-demo',
+        },
+      ] as AdminNavItem[],
+    [],
+  )
+
   return (
     <>
       <TenantNavigateBridge />
@@ -313,6 +359,7 @@ export default function App() {
       <TimesheetNavigateBridge />
       <DynamicFormNavigateBridge />
       <CraftDocNavigateBridge />
+      <ImportExportNavigateBridge />
 
       <Routes>
         <Route path={ACCOUNT_ROUTES.login} element={<GuestLoginPage />} />
@@ -342,12 +389,13 @@ export default function App() {
         <Route
           element={
             <RequireAuth>
-              <SampleAdminLayout />
+              <SampleAdminLayout mainNav={mainNav} />
             </RequireAuth>
           }
         >
           <Route index element={<DashboardPage title="Tổng quan" />} />
           <Route path={DASHBOARD_ROUTES.home} element={<DashboardPage />} />
+          <Route path="users" element={<PlaceholderPage title="Người dùng" />} />
           <Route path="onboarding-demo" element={<OnboardingDemoPage />} />
           <Route path="notifications-demo" element={<NotificationDemoPage />} />
           <Route
@@ -362,7 +410,11 @@ export default function App() {
             path="documents"
             element={<PlaceholderPage title="Tài liệu" />}
           />
-          {/* <Route path="settings" element={<SettingPage />} /> */}
+          <Route path="settings" element={<SettingPage />} />
+          <Route
+            path="settings/import-export"
+            element={<ImportExportSettingPage />}
+          />
           <Route path="help" element={<PlaceholderPage title="Trợ giúp" />} />
 
           <Route path="profile" element={<AccountProfilePage />} />
@@ -388,7 +440,7 @@ export default function App() {
 
           <Route
             path={FILE_MANAGER_ROUTES.list}
-            element={<FileManagerPage locale="vi" />}
+            element={<FilesPage locale="vi" />}
           />
 
           <Route
@@ -414,6 +466,34 @@ export default function App() {
           <Route
             path={CRAFT_DOC_ROUTES.builder}
             element={<CraftDocBuilderPage locale="vi" />}
+          />
+
+          <Route
+            path={IMPORT_EXPORT_ROUTES.templates}
+            element={<TemplateListPage />}
+          />
+          <Route
+            path={IMPORT_EXPORT_ROUTES.templateCreate}
+            element={<TemplateFormPage />}
+          />
+          <Route
+            path={IMPORT_EXPORT_ROUTES.templateEdit}
+            element={<ImportExportTemplateEditRoute />}
+          />
+          <Route
+            path={IMPORT_EXPORT_ROUTES.templateConfiguration}
+            element={<ImportExportTemplateConfigurationRoute />}
+          />
+
+          <Route path="students" element={<StudentListPage />} />
+          <Route path="students/import" element={<StudentImportPage />} />
+          <Route
+            path="students/create"
+            element={<StudentFormPage mode="create" />}
+          />
+          <Route
+            path="students/:id/edit"
+            element={<StudentFormPage mode="edit" />}
           />
 
           <Route path="*" element={<Navigate to="/" replace />} />

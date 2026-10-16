@@ -19,7 +19,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Platform.Realtime\Platform.Realtime.csproj" />
     <ProjectReference Include="..\Platform.DDD.Domain\Platform.DDD.Domain.csproj" />
-    <ProjectReference Include="..\..\modules\notifications\Platform.Modules.Notifications\Platform.Modules.Notifications.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,6 +2,8 @@ using Sample;
 using Sample.AuthorizationDemo;
 using Sample.Extensions;
 using Sample.Health;
+using Sample.ImportExport;
+using Sample.ImportExport.Middleware;
 using Sample.Multitenancy;
 using Sample.Persistence;
 using Sample.Telemetry;
@@ -27,14 +29,17 @@ using Platform.HealthChecks;
 using Serilog;
 using StackExchange.Redis;
 using OpenTelemetry.Trace;
-using Platform.BlobStoring.Extensions;
 using Platform.Caching.Extensions;
 using Platform.Caching.Redis;
 using Platform.Caching.Redis.Extensions;
 using Module.Notifications.Extensions;
+using Platform.Modules.Notifications.Extensions;
 using Platform.Modules.Notifications.Redis.Extensions;
+using Platform.Realtime.Configuration;
 using Platform.Realtime.Extensions;
+using Platform.Realtime.Sse.Extensions;
 using Platform.Realtime.SignalR.Extensions;
+using Microsoft.Extensions.Options;
 using Sample.Services;
 using Sample.Workflows;
 using Platform.Workflow.Configuration;
@@ -88,8 +93,10 @@ builder.AddPlatformCaching()
     .UseRedisMemoryCacheInvalidation();
 
 builder.AddSampleSettings();
+builder.Services.AddScoped<ImportExportSettingReader>();
+builder.Services.AddScoped<IStudentService, StudentService>();
 
-builder.AddCoreBlobStoring();
+builder.AddSampleFiles();
 
 builder.AddEntityFramework();
 builder.AddMultitenancyEntityFramework();
@@ -100,6 +107,7 @@ builder.AddOrmDapper(options =>
 });
 builder.Services.AddScoped<SampleDapperReadSample>();
 builder.AddSampleDbContext();
+builder.AddSampleImportExport();
 builder.AddMultitenancyEfTestHostedService();
 
 // Redis (StackExchange) for Sample demos - same config shape as Cache:DistributedGroups:Redis:Default.
@@ -126,7 +134,7 @@ builder.AddSampleAuthorization();
 
 // Workflow (Elsa) — bật/tắt bằng Elsa:Enabled (mặc định true).
 // Embedded: Sample chạy engine + persistence + API + Studio (thay cho Workflow Server riêng trước đây).
-// Standalone: Sample là client, gọi Workflow Server tại Elsa:ServerUrl.
+// Standalone: Sample là client, gọi Workflow Server tại Elsa:BaseUrl.
 var workflowEnabled = builder.Configuration.GetValue("Elsa:Enabled", true);
 var workflowOptions = ElsaWorkflowOptions.FromConfiguration(builder.Configuration);
 if (workflowEnabled)
@@ -162,9 +170,13 @@ if (workflowEnabled)
 }
 
 builder.AddNotificationModule();
-builder.AddCoreRealtime()
-    .UseSignalR()
-    .UseRedisInboxStore()
+var realtime = builder.AddCoreRealtime();
+if (realtime.Options.SignalR.Enabled)
+    realtime.UseSignalR<CurrentUserInfo, CurrentTenantInfo>();
+if (realtime.Options.Sse.Enabled)
+    realtime.UseSse<CurrentUserInfo, CurrentTenantInfo>();
+
+realtime.UseRedisInboxStore()
     .AddNotificationAppServiceWithRealtime<CurrentUserInfo, CurrentTenantInfo>();
 
 builder.AddCoreSwagger();
@@ -188,7 +200,7 @@ app.UseHttpsRedirection();
 
 app.UseCoreSpa();
 
-app.UseCoreCors(); 
+app.UseCoreCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -204,7 +216,7 @@ if (workflowEnabled)
     {
         var workflowStudioUrl = workflowOptions.GetResolvedStudioUrl()
             ?? throw new InvalidOperationException(
-                "Elsa Workflow Studio URL is not configured. Configure 'Elsa:StudioUrl' or 'Elsa:ServerUrl'.");
+                "Elsa Workflow Studio URL is not configured. Configure 'Elsa:StudioUrl' or 'Elsa:BaseUrl'.");
 
         app.MapGet("/preview/{definitionId}/{instanceId?}",
             (string definitionId, string? instanceId) =>
@@ -228,8 +240,13 @@ app.UseSerilogRequestLogging();
 
 app.UsePlatformOpenTelemetry();
 app.UseCoreMiddleware<ApiResponseWrapperMiddleware>();
+app.UseMiddleware<ImportExportExceptionMiddleware>();
 app.MapControllers();
-app.MapRealtimeHub<CurrentUserInfo, CurrentTenantInfo>();
+var realtimeOptions = app.Services.GetRequiredService<IOptions<PlatformRealtimeOptions>>().Value;
+if (realtimeOptions.SignalR.Enabled)
+    app.MapRealtimeHub<CurrentUserInfo, CurrentTenantInfo>();
+if (realtimeOptions.Sse.Enabled)
+    app.MapRealtimeSse<CurrentUserInfo, CurrentTenantInfo>();
 // app.UseHealthChecks();
 
 

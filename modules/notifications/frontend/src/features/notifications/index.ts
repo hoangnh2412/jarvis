@@ -33,7 +33,14 @@ export {
   notificationHubOptions,
   buildNotificationHubOptions,
   configureNotificationAuth,
+  configureNotificationRealtime,
   configureNotificationTenant,
   getNotificationAuthHeaders,
+  getNotificationRealtimeConfig,
   notificationHubUrl,
+  notificationSseUrl,
+} from './config'
+export type {
+  NotificationRealtimeConfig,
+  NotificationTransport,
 } from './config'

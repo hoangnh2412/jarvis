@@ -36,7 +36,7 @@ route relative `/preview/{definitionId}/{instanceId?}` đến Studio, nên khôn
 build lại `OnboardingDemoPage`.
 
 Khi chạy frontend bằng Vite độc lập, đặt `VITE_WORKFLOW_SERVER_URL` bằng origin của
-Workflow Studio (ví dụ `https://localhost:56259`) để iframe và liên kết preview gọi đúng
+Workflow Studio (ví dụ `https://workflow-server:7000` — Sample khác chạy `Embedded`) để iframe và liên kết preview gọi đúng
 standalone host. Có thể dùng `VITE_WORKFLOW_PREVIEW_PROXY_TARGET` nếu chỉ muốn đổi target
 proxy `/preview` trong môi trường development.
 

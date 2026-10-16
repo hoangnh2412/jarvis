@@ -9,6 +9,10 @@ import { craftDocApiMockPlugin } from './vite.plugins/craftDocApiMock.js'
 
 const root = path.dirname(fileURLToPath(import.meta.url))
 const nm = (...segs: string[]) => path.resolve(root, 'node_modules', ...segs)
+const ieLib = path.resolve(
+  root,
+  '../../../modules/importexport/frontend/src',
+)
 const platformCoreSrc = path.resolve(root, '../../../frameworks/frontend/src')
 const plannerBoardMockJson = path.resolve(
   platformCoreSrc,
@@ -45,6 +49,7 @@ const notificationsSrc = path.resolve(
   '../../../modules/notifications/frontend/src',
 )
 const settingsSrc = path.resolve(root, '../../../modules/settings/frontend/src')
+const filesSrc = path.resolve(root, '../../../modules/files/frontend/src')
 
 /**
  * Linked @platform/core có node_modules riêng — dedupe React + Prime core.
@@ -94,6 +99,7 @@ export default defineConfig(({ mode }) => {
       ),
       'import.meta.env.VITE_NOTIFICATION_API_KEY': JSON.stringify(demoApiKey),
       'import.meta.env.VITE_NOTIFICATION_TENANT_ID': JSON.stringify(demoTenantId),
+      'import.meta.env.VITE_NOTIFICATION_TRANSPORT': JSON.stringify('sse'),
     },
     resolve: {
       dedupe: [
@@ -122,6 +128,10 @@ export default defineConfig(({ mode }) => {
         {
           find: /^@platform\/core\/styles\.css$/,
           replacement: path.resolve(platformCoreSrc, 'styles/kit.css'),
+        },
+        {
+          find: /^@platform\/core\/sources\.css$/,
+          replacement: path.resolve(platformCoreSrc, 'styles/sources.css'),
         },
         {
           find: /^@platform\/core\/dashboard\.css$/,
@@ -176,6 +186,10 @@ export default defineConfig(({ mode }) => {
           find: /^@platform\/setting$/,
           replacement: path.resolve(settingsSrc, 'index.ts'),
         },
+        {
+          find: /^@platform\/importexport$/,
+          replacement: path.resolve(ieLib, 'index.ts'),
+        },
         { find: '@', replacement: path.resolve(root, 'src') },
         { find: 'react', replacement: nm('react') },
         { find: 'react-dom', replacement: nm('react-dom') },
@@ -191,6 +205,11 @@ export default defineConfig(({ mode }) => {
           replacement: nm('@primereact/headless'),
         },
         { find: '@microsoft/signalr', replacement: nm('@microsoft/signalr') },
+        {
+          find: '@microsoft/fetch-event-source',
+          replacement: nm('@microsoft/fetch-event-source'),
+        },
+        { find: 'axios', replacement: nm('axios') },
       ],
     },
     optimizeDeps: {
@@ -201,6 +220,8 @@ export default defineConfig(({ mode }) => {
         '@primeuix/styled',
         'flatpickr',
         '@microsoft/signalr',
+        '@microsoft/fetch-event-source',
+        'axios',
         'ag-grid-community',
         'ag-grid-react',
       ],
@@ -210,7 +231,7 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       strictPort: true,
       fs: {
-        allow: [root, platformCoreSrc, notificationsSrc, settingsSrc],
+        allow: [root, platformCoreSrc, notificationsSrc, settingsSrc, ieLib],
       },
       proxy: {
         '/api': {
@@ -256,6 +277,12 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: false,
           ws: true,
+          headers: demoProxyHeaders,
+        },
+        '/sse/notifications': {
+          target: apiTarget,
+          changeOrigin: true,
+          secure: false,
           headers: demoProxyHeaders,
         },
       },

@@ -3,11 +3,13 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-/* Scan @platform/core src — không dùng node_modules (Tailwind bỏ qua / gitignore). */
+/* Scan linked platform packages — Tailwind ignores gitignored node_modules paths. */
 @source "../../../../frameworks/frontend/src";
 @source "./";
 @source "../../../../modules/notifications/frontend/src";
-@source "../../../../modules/settings/frontend/src";
+@source "../node_modules/@platform/core/dist";
+@source "../../../modules/settings/frontend/src";
+@source "../../../modules/importexport/frontend/src";
 
 @import "@platform/core/theme.css";
 @import "@platform/core/styles.css";
@@ -17,6 +19,9 @@
 @import "@platform/core/dynamicForm.css";
 @import "@platform/core/craftDoc.css";
 @import "@platform/notifications/styles.css";
+@import "../../../../frameworks/frontend/src/styles/theme.css";
+@import "../../../../frameworks/frontend/src/styles/kit.css";
+@import "../../../../frameworks/frontend/src/features/dashboard/styles/dashboard.css";
 
 :root {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;

@@ -6,5 +6,9 @@ public enum BlobStoringType
 
     MinIO = 2,
 
-    AwsS3 = 3
+    AwsS3 = 3,
+
+    SharePoint = 4,
+
+    Synology = 5
 }

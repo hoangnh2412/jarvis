@@ -80,7 +80,7 @@ function updateXmlParts(
 
 export function replaceFields(
   buffer: ArrayBuffer,
-  data: Record<string, string>,
+  data: Record<string, any>,
 ): Blob {
   const nextBuffer = updateXmlParts(buffer, (xml) =>
     replacePlaceholdersInXml(xml, data, { keepMissing: true }),
@@ -90,7 +90,7 @@ export function replaceFields(
 
 export function generateDocument(
   buffer: ArrayBuffer,
-  data: Record<string, string>,
+  data: Record<string, any>,
 ): Blob {
   return replaceFields(buffer, data)
 }

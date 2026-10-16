@@ -14,11 +14,14 @@ public class TenantDbContext(
     public DbSet<Position> Positions => Set<Position>();
     public DbSet<Employee> Employees => Set<Employee>();
 
+    public DbSet<SampleExcelTemplate> ExcelTemplates => Set<SampleExcelTemplate>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfiguration(new StudentEntityConfiguration());
         modelBuilder.ApplyConfiguration(new BasicAuthUserEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SampleExcelTemplateEntityConfiguration());
     }
 }

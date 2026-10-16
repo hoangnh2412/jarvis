@@ -20,13 +20,16 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.20" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="9.0.0" />
+    <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.20" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.20" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.20" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.20" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.20" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
+    <PackageReference Include="MiniExcel" Version="1.43.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.6.1" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
@@ -46,19 +49,40 @@
     <ProjectReference Include="..\frameworks\Platform.Authentication.ApiKey\Platform.Authentication.ApiKey.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Authentication.Jwt\Platform.Authentication.Jwt.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Authentication.Basic\Platform.Authentication.Basic.csproj" />
-    <ProjectReference Include="..\frameworks\Platform.Workflow\Platform.Workflow.csproj" />
+    <ProjectReference Include="..\modules\files\Platform.Modules.Files\Platform.Modules.Files.csproj" />
+    <ProjectReference Include="..\modules\files\Platform.Modules.Files.API\Platform.Modules.Files.API.csproj" />
     <ProjectReference Include="..\Sample\Sample.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Workflow\Platform.Workflow.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Realtime\Platform.Realtime.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Realtime.SignalR\Platform.Realtime.SignalR.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Realtime.Sse\Platform.Realtime.Sse.csproj" />
     <ProjectReference Include="..\modules\notifications\Platform.Modules.Notifications\Platform.Modules.Notifications.csproj" />
     <ProjectReference Include="..\modules\notifications\Platform.Modules.Notifications.Redis\Platform.Modules.Notifications.Redis.csproj" />
     <ProjectReference Include="..\modules\notifications\Platform.Modules.Notifications.Api\Platform.Modules.Notifications.Api.csproj" />
     <ProjectReference Include="..\modules\identity\Platform.Modules.Account\Platform.Modules.Account.csproj" />
     <ProjectReference Include="..\modules\identity\Platform.Modules.IdentityAdmin\Platform.Modules.IdentityAdmin.csproj" />
+    <ProjectReference Include="..\modules\importexport\Platform.Modules.ImportExport.EntityFramework\Platform.Modules.ImportExport.EntityFramework.csproj" />
+    <ProjectReference Include="..\modules\importexport\Platform.Modules.ImportExport.Api\Platform.Modules.ImportExport.Api.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.ImportExport.MiniExcel\Platform.ImportExport.MiniExcel.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="Platform.Modules.ImportExport.Domain.Constants" />
+    <Using Include="Platform.Modules.ImportExport.Domain.Entities" />
+    <Using Include="Platform.Modules.ImportExport.Domain.Enums" />
+    <Using Include="Platform.Modules.ImportExport.Domain.Exceptions" />
+    <Using Include="Platform.Modules.ImportExport.Domain.Models" />
+    <Using Include="Platform.Modules.ImportExport.Application.Templates" />
+    <Using Include="Platform.Modules.ImportExport.Application.Templates.Models" />
+    <Using Include="Platform.Modules.ImportExport.Application.Import" />
+    <Using Include="Platform.Modules.ImportExport.Application.Import.Models" />
+    <Using Include="Platform.Modules.ImportExport.Application.Export" />
+    <Using Include="Platform.Modules.ImportExport.Application.Export.Models" />
+    <Using Include="Platform.Modules.ImportExport.Application.Schemas" />
+    <Using Include="Platform.Modules.ImportExport.Application.Schemas.Models" />
+    <Using Include="Platform.Modules.ImportExport.Application.Common.Options" />
+    <Using Include="Platform.Modules.ImportExport.Application.Common.Validation" />
   </ItemGroup>
 
 </Project>

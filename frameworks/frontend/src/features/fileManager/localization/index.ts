@@ -27,6 +27,7 @@ export const fileManagerMessagesEn = {
     createFolderSuccess: 'Folder created',
     renameSuccess: 'Renamed',
     moveSuccess: 'Moved',
+    moveInvalid: 'Cannot move to this folder',
     deleteSuccess: 'Deleted',
     copyLinkSuccess: 'Link copied',
     openFile: 'Opening file',

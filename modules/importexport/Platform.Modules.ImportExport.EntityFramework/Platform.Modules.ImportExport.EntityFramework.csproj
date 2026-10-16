@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>Platform.Modules.ImportExport.EntityFramework</PackageId>
+    <IsPackable>true</IsPackable>
+    <Version>1.2.0</Version>
+    <Description>EF Core template store for Platform ImportExport.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <Using Include="Platform.Modules.ImportExport.Domain.Constants" />
+    <Using Include="Platform.Modules.ImportExport.Domain.Entities" />
+    <Using Include="Platform.Modules.ImportExport.Domain.Enums" />
+    <Using Include="Platform.Modules.ImportExport.Domain.Exceptions" />
+    <Using Include="Platform.Modules.ImportExport.Domain.Models" />
+    <Using Include="Platform.Modules.ImportExport.Application.Common.Options" />
+    <Using Include="Platform.Modules.ImportExport.Application.Templates" />
+    <Using Include="Platform.Modules.ImportExport.Application.Templates.Models" />
+    <Using Include="Platform.Modules.ImportExport.Application.Import.Models" />
+    <Using Include="Platform.Modules.ImportExport.Application.Export.Models" />
+    <Using Include="Platform.Modules.ImportExport.Application.Schemas.Models" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="UnitTest" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Platform.Modules.ImportExport\Platform.Modules.ImportExport.csproj" />
+    <ProjectReference Include="..\..\..\frameworks\Platform.DDD.Domain\Platform.DDD.Domain.csproj" />
+  </ItemGroup>
+</Project>

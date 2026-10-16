@@ -25,7 +25,7 @@ public sealed class ElsaWorkflowOptions
 
     /// <summary>
     /// Đường dẫn tương đối hoặc tiền tố route của Elsa API (mặc định là "/elsa/api").
-    /// Dùng cho cả Embedded API endpoint mapping và ghép với ServerUrl trong Standalone client.
+    /// Dùng cho cả Embedded API endpoint mapping và ghép với BaseUrl trong Standalone client.
     /// Ví dụ: "/elsa/api"
     /// </summary>
     public string ApiPathPrefix { get; init; } = "/elsa/api";
@@ -36,17 +36,17 @@ public sealed class ElsaWorkflowOptions
     /// - Mode Embedded (Studio): Blazor Studio kết nối API backend nếu chạy tách biệt.
     /// Ví dụ: "https://workflow-server:7000"
     /// </summary>
-    public string? ServerUrl { get; init; }
+    public string? BaseUrl { get; init; }
 
     /// <summary>
     /// URL gốc của Elsa Studio dùng cho route preview khi ứng dụng client chạy Standalone.
-    /// Nếu không cấu hình, sẽ dùng ServerUrl.
+    /// Nếu không cấu hình, sẽ dùng BaseUrl.
     /// </summary>
     public string? StudioUrl { get; init; }
 
     /// <summary>
     /// URL đầy đủ trực tiếp đến Elsa API endpoint (bao gồm cả scheme + host + port + path).
-    /// Thường dùng để override tùy biến toàn bộ URL khi không tuân theo quy chuẩn ServerUrl + ApiPathPrefix.
+    /// Thường dùng để override tùy biến toàn bộ URL khi không tuân theo quy chuẩn BaseUrl + ApiPathPrefix.
     /// Ví dụ: "https://workflow-server:7000/custom-path/elsa/api"
     /// </summary>
     public string? ApiUrl { get; init; }
@@ -60,7 +60,7 @@ public sealed class ElsaWorkflowOptions
     /// <summary>
     /// Lấy URL API hoàn chỉnh dựa trên cấu hình:
     /// 1. Ưu tiên ApiUrl nếu được chỉ định trực tiếp.
-    /// 2. Ghép ServerUrl + ApiPathPrefix nếu ServerUrl có giá trị.
+    /// 2. Ghép BaseUrl + ApiPathPrefix nếu BaseUrl có giá trị.
     /// 3. Trả về null nếu cả hai đều chưa được cấu hình.
     /// </summary>
     public string? GetResolvedApiUrl()
@@ -70,9 +70,9 @@ public sealed class ElsaWorkflowOptions
             return ApiUrl.TrimEnd('/');
         }
 
-        if (!string.IsNullOrWhiteSpace(ServerUrl))
+        if (!string.IsNullOrWhiteSpace(BaseUrl))
         {
-            var server = ServerUrl.Trim().TrimEnd('/');
+            var server = BaseUrl.Trim().TrimEnd('/');
             var prefix = ApiPathPrefix.Trim().Trim('/');
             return string.IsNullOrEmpty(prefix) ? server : $"{server}/{prefix}";
         }
@@ -83,7 +83,7 @@ public sealed class ElsaWorkflowOptions
     public string? GetResolvedStudioUrl()
     {
         return string.IsNullOrWhiteSpace(StudioUrl)
-            ? ServerUrl?.Trim().TrimEnd('/')
+            ? BaseUrl?.Trim().TrimEnd('/')
             : StudioUrl.Trim().TrimEnd('/');
     }
 
@@ -151,7 +151,7 @@ public sealed class ElsaWorkflowOptions
             PersistenceSchema = NormalizeOptionalString(section.GetValue<string>(nameof(PersistenceSchema))) ?? "elsa",
             ApiPathPrefix = apiPathPrefix,
             ApiUrl = NormalizeOptionalString(section.GetValue<string>(nameof(ApiUrl))),
-            ServerUrl = NormalizeOptionalString(section.GetValue<string>(nameof(ServerUrl))),
+            BaseUrl = NormalizeOptionalString(section.GetValue<string>(nameof(BaseUrl))),
             StudioUrl = NormalizeOptionalString(section.GetValue<string>(nameof(StudioUrl))),
             ApiKey = NormalizeOptionalString(section.GetValue<string>(nameof(ApiKey))),
             StudioPathPrefixes = prefixes,

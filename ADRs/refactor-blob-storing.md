@@ -1,6 +1,9 @@
 # Refactor Platform.BlobStoring — Code Review & Kế hoạch
 
-Review branch **`refactor-blob-storing`** so với **`develop`** theo [code-review-dotnet skill](../.opencode/skills/code-review-dotnet/SKILL.md) và [architecture-rules.md](./architecture-rules.md).
+> ⚠️ **Superseded** — xem ADR chính thức: [2026-08-15-adr-platform-blob-storing.md](./2026-08-15-adr-platform-blob-storing.md).  
+> File này giữ lại làm lịch sử review/plan branch `refactor-blob-storing`.
+
+Review branch **`refactor-blob-storing`** so với **`develop`** theo [code-review-dotnet skill](../.opencode/skills/code-review-dotnet/SKILL.md) và [refactoring-rules.md](./refactoring-rules.md).
 
 **Phạm vi review:** toàn bộ source hiện tại (không chỉ diff PR).
 

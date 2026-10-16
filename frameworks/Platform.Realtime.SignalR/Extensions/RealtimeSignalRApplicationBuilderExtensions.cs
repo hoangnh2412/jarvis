@@ -24,9 +24,9 @@ public static class RealtimeSignalRApplicationBuilderExtensions
         var options = endpoints.ServiceProvider
             .GetRequiredService<IOptions<PlatformRealtimeOptions>>().Value;
 
-        var path = string.IsNullOrWhiteSpace(options.HubPath)
-            ? new PlatformRealtimeOptions().HubPath
-            : options.HubPath;
+        var path = string.IsNullOrWhiteSpace(options.SignalR.SignalRPath)
+            ? new RealtimeSignalROptions().SignalRPath
+            : options.SignalR.SignalRPath;
 
         endpoints.MapHub<NotificationHub<TUser, TTenant>>(path);
         return endpoints;

@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Platform.Modules.ImportExport.API</PackageId>
+    <AssemblyName>Platform.Modules.ImportExport.API</AssemblyName>
+    <RootNamespace>Platform.Modules.ImportExport.API</RootNamespace>
+    <Version>1.2.0</Version>
+    <Authors>Platform Team</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="Platform.Modules.ImportExport.Domain.Constants" />
+    <Using Include="Platform.Modules.ImportExport.Domain.Entities" />
+    <Using Include="Platform.Modules.ImportExport.Domain.Enums" />
+    <Using Include="Platform.Modules.ImportExport.Domain.Exceptions" />
+    <Using Include="Platform.Modules.ImportExport.Domain.Models" />
+    <Using Include="Platform.Modules.ImportExport.Application.Templates" />
+    <Using Include="Platform.Modules.ImportExport.Application.Templates.Models" />
+    <Using Include="Platform.Modules.ImportExport.Application.Import" />
+    <Using Include="Platform.Modules.ImportExport.Application.Import.Models" />
+    <Using Include="Platform.Modules.ImportExport.Application.Export" />
+    <Using Include="Platform.Modules.ImportExport.Application.Export.Models" />
+    <Using Include="Platform.Modules.ImportExport.Application.Schemas" />
+    <Using Include="Platform.Modules.ImportExport.Application.Schemas.Models" />
+    <Using Include="Platform.Modules.ImportExport.Application.Common.Validation" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Platform.Modules.ImportExport\Platform.Modules.ImportExport.csproj" />
+    <ProjectReference Include="..\..\..\frameworks\Platform.DDD.Domain.Shared\Platform.DDD.Domain.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

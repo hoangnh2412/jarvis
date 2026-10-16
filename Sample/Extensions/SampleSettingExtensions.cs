@@ -28,7 +28,8 @@ public static class SampleSettingExtensions
             .AddProvider<NotificationSettingDefinition>()
             .AddProvider<NotificationInboxSettingDefinition>()
             .AddProvider<TimezoneDefinition>()
-            .AddProvider<LocalizationSettingDefinition>();
+            .AddProvider<LocalizationSettingDefinition>()
+            .AddProvider<ImportExportSettingDefinition>();
 
         // Auth mẫu (không bật):
         // builder.Services.AddAuthorization(o =>

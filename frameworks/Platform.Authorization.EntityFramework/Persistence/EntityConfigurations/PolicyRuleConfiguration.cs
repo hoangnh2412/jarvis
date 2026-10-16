@@ -6,13 +6,13 @@ using Platform.Authorization.Domain;
 
 /// <summary>
 /// Cấu hình EF cho thực thể PolicyRule.
-/// Ánh xạ tới schema PostgreSQL "lexora" bảng "policy_rules".
+/// Ánh xạ tới schema PostgreSQL "identity" bảng "policy_rules".
 /// </summary>
 public sealed class PolicyRuleConfiguration : IEntityTypeConfiguration<PolicyRule>
 {
     public void Configure(EntityTypeBuilder<PolicyRule> builder)
     {
-        builder.ToTable("policy_rules", "lexora");
+        builder.ToTable("policy_rules", "identity");
 
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Id).ValueGeneratedNever();

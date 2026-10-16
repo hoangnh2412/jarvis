@@ -6,11 +6,14 @@ export function escapeXmlText(text: string): string {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+    .replace(/\n/g, '</w:t><w:br/><w:t xml:space="preserve">')
 }
 
 type TextSegment = {
   attr: string
   text: string
+  xmlStart: number
+  xmlEnd: number
 }
 
 function collectTextSegments(xml: string): TextSegment[] {
@@ -18,7 +21,12 @@ function collectTextSegments(xml: string): TextSegment[] {
   let match: RegExpExecArray | null
   const regex = new RegExp(WT_REGEX.source, 'g')
   while ((match = regex.exec(xml)) !== null) {
-    segments.push({ attr: match[1] ?? '', text: match[2] })
+    segments.push({
+      attr: match[1] ?? '',
+      text: match[2],
+      xmlStart: match.index,
+      xmlEnd: match.index + match[0].length,
+    })
   }
   return segments
 }
@@ -102,11 +110,73 @@ export function extractPlaceholderNamesFromXml(xml: string): string[] {
   return [...names]
 }
 
+export function processTableLoops(
+  xml: string, 
+  data: Record<string, any>,
+  options?: { keepMissing?: boolean }
+): string {
+  let result = xml
+  for (const [key, value] of Object.entries(data)) {
+    if (!Array.isArray(value) || value.length === 0) continue
+    
+    while (true) {
+      const segments = collectTextSegments(result)
+      const combined = getCombinedText(segments)
+      
+      const startMatch = new RegExp(`\\{\\{#${key}\\}\\}`).exec(combined)
+      const endMatch = new RegExp(`\\{\\{/${key}\\}\\}`).exec(combined)
+      
+      if (!startMatch || !endMatch || startMatch.index > endMatch.index) break
+      
+      const startRange = findSegmentRange(segments, startMatch.index, startMatch.index + startMatch[0].length)
+      const endRange = findSegmentRange(segments, endMatch.index, endMatch.index + endMatch[0].length)
+      
+      if (!startRange || !endRange) break
+      
+      const startXmlIdx = segments[startRange.firstIdx].xmlStart
+      const endXmlIdx = segments[endRange.lastIdx].xmlEnd
+      
+      const trStartIdx = result.lastIndexOf('<w:tr>', startXmlIdx)
+      const altTrStartIdx = result.lastIndexOf('<w:tr ', startXmlIdx)
+      const actualTrStart = Math.max(trStartIdx, altTrStartIdx)
+      
+      const trEndIdx = result.indexOf('</w:tr>', endXmlIdx)
+      
+      if (actualTrStart === -1 || trEndIdx === -1) break
+      
+      const trFullBlock = result.substring(actualTrStart, trEndIdx + '</w:tr>'.length)
+      
+      let cleanRow = trFullBlock
+      let rowSegments = collectTextSegments(cleanRow)
+      let sMatch = new RegExp(`\\{\\{#${key}\\}\\}`).exec(getCombinedText(rowSegments))
+      if (sMatch) {
+        applySpanReplacement(rowSegments, sMatch.index, sMatch.index + sMatch[0].length, '')
+        cleanRow = rebuildXmlWithSegments(cleanRow, rowSegments)
+      }
+      
+      rowSegments = collectTextSegments(cleanRow)
+      let eMatch = new RegExp(`\\{\\{/${key}\\}\\}`).exec(getCombinedText(rowSegments))
+      if (eMatch) {
+        applySpanReplacement(rowSegments, eMatch.index, eMatch.index + eMatch[0].length, '')
+        cleanRow = rebuildXmlWithSegments(cleanRow, rowSegments)
+      }
+      
+      const duplicatedRows = value.map((item, index) => {
+        const itemData = typeof item === 'object' && item !== null ? { ...item, _index: index + 1 } : { _index: index + 1 }
+        return replacePlaceholdersInXml(cleanRow, itemData, options)
+      })
+      result = result.substring(0, actualTrStart) + duplicatedRows.join('') + result.substring(trEndIdx + '</w:tr>'.length)
+    }
+  }
+  return result
+}
+
 export function replacePlaceholdersInXml(
   xml: string,
-  data: Record<string, string>,
+  data: Record<string, any>,
   options?: { keepMissing?: boolean },
 ): string {
+  xml = processTableLoops(xml, data, options)
   const segments = collectTextSegments(xml)
   if (!segments.length) return xml
 
@@ -121,7 +191,7 @@ export function replacePlaceholdersInXml(
       if (options?.keepMissing) continue
       continue
     }
-    const value = data[key] ?? ''
+    const value = String(data[key] ?? '')
     if (!value.trim() && options?.keepMissing) continue
     replacements.push({
       start: match.index,

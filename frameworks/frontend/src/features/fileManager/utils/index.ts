@@ -1,7 +1,6 @@
 export {
-  formatAvailableBytes,
+  applyMovesToTreeEntries,
   formatFileSize,
-  formatStoragePercent,
   filterEntries,
   getBreadcrumbSegments,
   getChildren,

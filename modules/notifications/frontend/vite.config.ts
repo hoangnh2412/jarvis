@@ -24,6 +24,11 @@ export default defineConfig(({ mode }) => {
           secure: false,
           ws: true,
         },
+        '/sse/notifications': {
+          target: env.NOTIFICATION_API_URL || 'http://localhost:5167',
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
   }

@@ -1,0 +1,44 @@
+<!-- SDK-style project: Microsoft.NET.Sdk tự nhập build targets, compiler tasks và quy ước file C# mặc định. -->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Nhóm metadata đóng gói và các thiết lập biên dịch áp dụng cho toàn project. -->
+  <PropertyGroup>
+    <!-- ID duy nhất của gói NuGet được tạo từ project này. -->
+    <PackageId>Platform.BlobStoring.SharePoint</PackageId>
+    <!-- Phiên bản package; giữ cố định để consumer và quy trình phát hành nhận diện artifact. -->
+    <Version>1.0.0</Version>
+    <!-- Metadata tác giả được ghi vào file .nupkg và hiển thị trên NuGet feed. -->
+    <Authors>Hoang Nguyen</Authors>
+    <!-- Yêu cầu MSBuild tự tạo NuGet package mỗi lần build thay vì phải gọi pack riêng. -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <!-- Biên dịch thư viện cho .NET 9; consumer phải chạy trên target framework tương thích. -->
+    <TargetFramework>net9.0</TargetFramework>
+    <!-- Tự sinh các global using phổ biến theo SDK, giảm các using lặp lại trong từng file C#. -->
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Bật nullable reference types để compiler cảnh báo rủi ro null trên string, DTO và public API. -->
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="UnitTest" />
+  </ItemGroup>
+
+  <!-- Tham chiếu source project nội bộ để dùng abstraction, builder và registry cốt lõi của Blob Storing. -->
+  <ItemGroup>
+    <!-- ProjectReference bảo đảm Platform.BlobStoring được build trước và assembly đầu ra được tham chiếu trực tiếp. -->
+    <ProjectReference Include="..\Platform.BlobStoring\Platform.BlobStoring.csproj" />
+  </ItemGroup>
+
+  <!-- Các PackageReference khai báo dependency NuGet cần restore và đưa vào dependency graph của thư viện. -->
+  <ItemGroup>
+    <!-- Azure.Identity cung cấp ClientSecretCredential và luồng client credentials với Microsoft Entra ID. -->
+    <PackageReference Include="Azure.Identity" Version="1.13.2" />
+    <!-- Microsoft.Graph cung cấp GraphServiceClient và model/API để thao tác SharePoint site, drive, file và upload session. -->
+    <PackageReference Include="Microsoft.Graph" Version="5.77.0" />
+    <!-- Logging.Abstractions cung cấp ILogger mà không ép consumer dùng một logging provider cụ thể. -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+    <!-- Options.ConfigurationExtensions cung cấp BindConfiguration/Configure để bind IConfiguration vào Options pattern qua DI. -->
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0" />
+  </ItemGroup>
+
+</Project>

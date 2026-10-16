@@ -12,11 +12,6 @@ export type FileEntry = {
   updatedAt?: string
 }
 
-export type StorageInfo = {
-  usedBytes: number
-  totalBytes: number
-}
-
 export type ListFilesParams = {
   path: string
   filter?: string
@@ -26,7 +21,6 @@ export type ListFilesParams = {
 
 export type ListFilesResult = {
   items: FileEntry[]
-  storage: StorageInfo
   total: number
 }
 

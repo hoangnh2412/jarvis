@@ -4,6 +4,7 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Platform.BlobStoring.Helpers;
 
 namespace Platform.BlobStoring.AwsS3;
 
@@ -46,8 +47,17 @@ public class AwsS3BlobStoringService : IBlobStoringService, IDisposable
             : new AmazonS3Client(_options.AccessKey, _options.SecretKey, config);
     }
 
-    private string ResolveBucket(string bucket) =>
-        string.IsNullOrWhiteSpace(bucket) ? _defaultBucket : bucket;
+    private string ResolveBucket(string bucket)
+    {
+        var resolved = string.IsNullOrWhiteSpace(bucket) ? _defaultBucket : bucket;
+        if (string.IsNullOrWhiteSpace(resolved))
+        {
+            throw new InvalidOperationException(
+                "S3 bucket is required. Set BlobStoring:AwsS3:BucketName or pass bucket in the route.");
+        }
+
+        return resolved;
+    }
 
     public virtual async Task UploadAsync(
         string bucket,
@@ -55,20 +65,39 @@ public class AwsS3BlobStoringService : IBlobStoringService, IDisposable
         byte[] bytes,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(bytes);
+        await using var stream = new MemoryStream(bytes);
+        await UploadStreamAsync(bucket, fileName, stream, bytes.Length, cancellationToken).ConfigureAwait(false);
+    }
+
+    public virtual async Task UploadStreamAsync(
+        string bucket,
+        string fileName,
+        Stream content,
+        long? contentLength = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+
         var resolvedBucket = ResolveBucket(bucket);
+        var size = BlobStoringStreamHelper.ResolveUploadSize(content, contentLength);
         _logger.LogDebug(
-            "Uploading {FileName} to S3 bucket {Bucket}, {ByteCount} bytes",
+            "Uploading stream for {FileName} to S3 bucket {Bucket}, contentLength={ContentLength}",
             fileName,
             resolvedBucket,
-            bytes.Length);
+            size?.ToString() ?? "(unknown)");
 
-        using var stream = new MemoryStream(bytes);
         var request = new PutObjectRequest
         {
             BucketName = resolvedBucket,
             Key = fileName,
-            InputStream = stream
+            InputStream = content,
+            AutoCloseStream = false
         };
+
+        if (size is > 0)
+            request.Headers.ContentLength = size.Value;
+
         await Client.PutObjectAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
@@ -77,25 +106,34 @@ public class AwsS3BlobStoringService : IBlobStoringService, IDisposable
         string fileName,
         CancellationToken cancellationToken = default)
     {
+        await using var result = await OpenReadAsync(bucket, fileName, cancellationToken).ConfigureAwait(false);
+        return await BlobStoringStreamHelper.ReadAllBytesAsync(result.Content, cancellationToken).ConfigureAwait(false);
+    }
+
+    public virtual async Task<BlobReadResult> OpenReadAsync(
+        string bucket,
+        string fileName,
+        CancellationToken cancellationToken = default)
+    {
         var resolvedBucket = ResolveBucket(bucket);
-        _logger.LogDebug("Downloading {FileName} from S3 bucket {Bucket}", fileName, resolvedBucket);
+        _logger.LogDebug("Opening read stream for {FileName} from S3 bucket {Bucket}", fileName, resolvedBucket);
 
         var request = new GetObjectRequest
         {
             BucketName = resolvedBucket,
             Key = fileName
         };
-        using var response = await Client.GetObjectAsync(request, cancellationToken).ConfigureAwait(false);
-        using var memory = new MemoryStream();
-        await response.ResponseStream.CopyToAsync(memory, cancellationToken).ConfigureAwait(false);
 
-        var result = memory.ToArray();
-        _logger.LogDebug(
-            "Downloaded {FileName} from S3 bucket {Bucket}, {ByteCount} bytes",
-            fileName,
-            resolvedBucket,
-            result.Length);
-        return result;
+        var response = await Client.GetObjectAsync(request, cancellationToken).ConfigureAwait(false);
+        return BlobReadResult.FromStream(
+            response.ResponseStream,
+            contentType: response.Headers.ContentType,
+            contentLength: response.ContentLength,
+            disposeAsync: () =>
+            {
+                response.Dispose();
+                return ValueTask.CompletedTask;
+            });
     }
 
     public virtual async Task DeleteAsync(
@@ -156,6 +194,18 @@ public class AwsS3BlobStoringService : IBlobStoringService, IDisposable
         }
     }
 
+    Task IBlobStoringService.DeleteFileAsync(
+        string bucket,
+        string fileName,
+        CancellationToken cancellationToken)
+        => DeleteAsync(bucket, fileName, cancellationToken);
+
+    Task IBlobStoringService.DeleteFilesAsync(
+        string bucket,
+        IEnumerable<string> fileNames,
+        CancellationToken cancellationToken)
+        => DeletesAsync(bucket, fileNames, cancellationToken);
+
     public virtual Task<string> ViewAsync(
         string bucket,
         string fileName,
@@ -214,6 +264,103 @@ public class AwsS3BlobStoringService : IBlobStoringService, IDisposable
             prefix ?? string.Empty);
 
         return names;
+    }
+
+    public virtual async Task RenameAsync(
+        string bucket,
+        string path,
+        string newName,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(newName);
+
+        if (string.IsNullOrEmpty(ObjectStoragePathHelper.NormalizeKey(path)))
+        {
+            throw new NotSupportedException(
+                "Renaming the object storage bucket/container itself is not supported by this provider.");
+        }
+
+        var normalized = ObjectStoragePathHelper.NormalizeKey(path);
+        var parent = ObjectStoragePathHelper.GetParentPrefix(normalized);
+        var destination = ObjectStoragePathHelper.CombineKey(
+            string.IsNullOrEmpty(parent) ? null : parent,
+            newName);
+
+        await CopyPrefixAsync(bucket, normalized, destination, deleteSource: true, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public virtual Task MoveAsync(
+        string bucket,
+        string sourcePath,
+        string destinationFolder,
+        CancellationToken cancellationToken = default)
+    {
+        if (ObjectStoragePathHelper.IsDestinationInsideSource(sourcePath, destinationFolder))
+        {
+            throw new InvalidOperationException(
+                "Cannot move an item into itself or one of its subfolders.");
+        }
+
+        var destinationPath = ObjectStoragePathHelper.BuildMoveDestinationPath(sourcePath, destinationFolder);
+        return CopyPrefixAsync(bucket, sourcePath, destinationPath, deleteSource: true, cancellationToken);
+    }
+
+    public virtual async Task MoveFilesAsync(
+        string bucket,
+        string destinationFolder,
+        IEnumerable<string> sourcePaths,
+        CancellationToken cancellationToken = default)
+    {
+        foreach (var sourcePath in ObjectStoragePathHelper.OrderForBatchMove(sourcePaths))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await MoveAsync(bucket, sourcePath, destinationFolder, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private async Task CopyPrefixAsync(
+        string bucket,
+        string sourcePath,
+        string destinationPath,
+        bool deleteSource,
+        CancellationToken cancellationToken)
+    {
+        var source = ObjectStoragePathHelper.NormalizeKey(sourcePath);
+        var destination = ObjectStoragePathHelper.NormalizeKey(destinationPath);
+
+        if (string.Equals(source, destination, StringComparison.Ordinal))
+            return;
+
+        var resolvedBucket = ResolveBucket(bucket);
+        var allKeys = await GetFileNamesAsync(bucket, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var affected = ObjectStoragePathHelper.CollectKeysUnderPrefix(allKeys, source).ToList();
+
+        if (affected.Count == 0 && allKeys.Any(k => k.Equals(source, StringComparison.Ordinal)))
+            affected.Add(source);
+
+        if (affected.Count == 0)
+            throw new InvalidOperationException(
+                $"Object or prefix '{sourcePath}' was not found in bucket '{resolvedBucket}'.");
+
+        foreach (var key in affected)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var targetKey = ObjectStoragePathHelper.ReplacePrefix(key, source, destination);
+
+            var request = new CopyObjectRequest
+            {
+                SourceBucket = resolvedBucket,
+                SourceKey = key,
+                DestinationBucket = resolvedBucket,
+                DestinationKey = targetKey
+            };
+
+            await Client.CopyObjectAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        if (deleteSource)
+            await DeletesAsync(bucket, affected, cancellationToken).ConfigureAwait(false);
     }
 
     public void Dispose()

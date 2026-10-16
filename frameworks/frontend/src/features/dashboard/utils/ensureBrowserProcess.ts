@@ -6,7 +6,9 @@ type ProcessLike = { env: Record<string, string | undefined> }
 
 export function ensureBrowserProcess(): void {
   if (typeof globalThis === 'undefined') return
-  const g = globalThis as typeof globalThis & { process?: ProcessLike }
+  // `as unknown as` tránh giao (intersection) với type `Process` đầy đủ mà
+  // @types/node gắn vào `globalThis` (qua pizzip → "/// <reference types=\"node\" />").
+  const g = globalThis as unknown as { process?: ProcessLike }
   if (!g.process) {
     g.process = { env: { NODE_ENV: 'production' } }
     return

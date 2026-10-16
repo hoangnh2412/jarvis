@@ -8,6 +8,41 @@ export const notificationApiBase = (
 export const notificationHubUrl =
   import.meta.env.VITE_NOTIFICATION_HUB_URL || '/hubs/notifications'
 
+export const notificationSseUrl =
+  import.meta.env.VITE_NOTIFICATION_SSE_URL || '/sse/notifications'
+
+export type NotificationTransport = 'signalr' | 'sse'
+
+export type NotificationRealtimeConfig = {
+  transport: NotificationTransport
+  hubUrl: string
+  sseUrl: string
+  eventName: string
+}
+
+function resolveDefaultTransport(): NotificationTransport {
+  const raw = import.meta.env.VITE_NOTIFICATION_TRANSPORT?.trim().toLowerCase()
+  return raw === 'sse' ? 'sse' : 'signalr'
+}
+
+let realtimeConfig: NotificationRealtimeConfig = {
+  transport: resolveDefaultTransport(),
+  hubUrl: notificationHubUrl,
+  sseUrl: notificationSseUrl,
+  eventName: 'notification',
+}
+
+/** Host chọn transport khớp BE: SignalR → hubUrl, SSE → sseUrl. */
+export function configureNotificationRealtime(
+  options: Partial<NotificationRealtimeConfig>,
+) {
+  realtimeConfig = { ...realtimeConfig, ...options }
+}
+
+export function getNotificationRealtimeConfig(): Readonly<NotificationRealtimeConfig> {
+  return realtimeConfig
+}
+
 const apiKey = import.meta.env.VITE_NOTIFICATION_API_KEY ?? ''
 
 let accessTokenGetter: (() => string | null) | null = null
@@ -34,7 +69,7 @@ function resolveTenantId() {
 }
 
 /**
- * Header REST + SignalR — ưu tiên API key (demo), không thì Bearer JWT.
+ * Header REST + SignalR + SSE — ưu tiên API key (demo), không thì Bearer JWT.
  * Gửi kèm `X-Tenant-Id` khi host/env cung cấp tenant.
  */
 export function getNotificationAuthHeaders(): Record<string, string> {

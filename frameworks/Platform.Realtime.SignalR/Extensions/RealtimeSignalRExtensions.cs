@@ -1,9 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Platform.DDD.Domain.Services;
-using Platform.Modules.Notifications.Extensions;
 using Platform.Realtime.Contracts;
 using Platform.Realtime.Hosting;
+using Platform.Realtime.Identity;
+using Platform.Realtime.SignalR.Hosting;
 using Platform.Realtime.SignalR.Services;
 
 namespace Platform.Realtime.SignalR.Extensions;
@@ -16,30 +17,40 @@ public static class RealtimeSignalRExtensions
     public static RealtimeBuilder UseSignalR(this RealtimeBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
-        builder.SignalRServerBuilder = builder.HostBuilder.Services.AddSignalR();
-
-        if (builder.Options.UseRedisBackplane)
-            builder.UseRedisBackplane();
-
+        RegisterSignalRInfrastructure(builder);
         return builder;
     }
 
     /// <summary>
-    /// Đăng ký inbox <c>INotificationAppService</c> + <see cref="IRealtimeNotifier"/>.
+    /// Đăng ký SignalR + hub transport cho user/tenant types của Host.
     /// </summary>
-    public static RealtimeBuilder AddNotificationAppServiceWithRealtime<TUser, TTenant>(
-        this RealtimeBuilder builder)
+    public static RealtimeBuilder UseSignalR<TUser, TTenant>(this RealtimeBuilder builder)
         where TUser : class, ICurrentUserIdentity
         where TTenant : class, ICurrentTenantIdentity
     {
         ArgumentNullException.ThrowIfNull(builder);
+        RegisterSignalRInfrastructure(builder);
 
-        builder.AddNotificationAppService<TUser, TTenant>();
-        builder.HostBuilder.Services.TryAddSingleton<
-            IRealtimeNotifier,
-            HubRealtimeNotifier<TUser, TTenant>>();
+        builder.HostBuilder.Services.TryAddScoped<
+            RealtimeConnectionIdentityResolver<TUser, TTenant>>();
+        builder.HostBuilder.Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IRealtimeTransport, HubRealtimeNotifier<TUser, TTenant>>());
 
         return builder;
+    }
+
+    private static void RegisterSignalRInfrastructure(RealtimeBuilder builder)
+    {
+        if (builder.HostBuilder.Services.All(d => d.ServiceType != typeof(RealtimeSignalRBuilderHolder)))
+        {
+            var holder = new RealtimeSignalRBuilderHolder
+            {
+                ServerBuilder = builder.HostBuilder.Services.AddSignalR()
+            };
+            builder.HostBuilder.Services.AddSingleton(holder);
+        }
+
+        if (builder.Options.SignalR.UseRedisBackplane)
+            builder.UseRedisBackplane();
     }
 }

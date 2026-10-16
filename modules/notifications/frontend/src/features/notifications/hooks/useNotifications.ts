@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { subscribeNotificationHub } from './notificationHubConnection'
+import { subscribeNotificationRealtime } from './notificationRealtimeConnection'
 import {
   getNotifications,
   markAllNotificationsRead,
@@ -32,7 +32,7 @@ export function useNotifications() {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [hubError, setHubError] = useState<string | null>(null)
+  const [realtimeError, setRealtimeError] = useState<string | null>(null)
   const requestId = useRef(0)
   const filterRef = useRef(filter)
 
@@ -96,7 +96,7 @@ export function useNotifications() {
   }, [load])
 
   useEffect(() => {
-    return subscribeNotificationHub({
+    return subscribeNotificationRealtime({
       onMessage: (message) => {
         const item = toNotificationItem(message)
         setUnreadCount((count) => count + 1)
@@ -107,7 +107,7 @@ export function useNotifications() {
             : current,
         )
       },
-      onHubError: setHubError,
+      onError: setRealtimeError,
     })
   }, [])
 
@@ -253,7 +253,8 @@ export function useNotifications() {
     loadingMore,
     hasMore,
     error,
-    hubError,
+    hubError: realtimeError,
+    realtimeError,
     reload: () => load(),
     loadMore: () => load(page + 1, true),
     markRead,

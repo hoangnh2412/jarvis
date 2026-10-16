@@ -11,7 +11,7 @@ public class PlatformBlobStoringOptions
 
     /// <summary>
     /// Keyed provider name for default <see cref="IBlobStoringService"/> resolve
-    /// (e.g. FileSystem, MinIO, AwsS3). Empty = highest-priority registered provider.
+    /// (e.g. FileSystem, MinIO, AwsS3, SharePoint). Empty = highest-priority registered provider.
     /// </summary>
     public string DefaultProvider { get; set; } = string.Empty;
 }

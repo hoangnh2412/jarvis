@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, type ReactNode } from 'react'
+import { memo, useCallback, useMemo, type DragEvent, type ReactNode } from 'react'
 import {
   ArrowDown,
   ArrowUp,
@@ -15,6 +15,7 @@ import { notify } from '../../../../common/Toaster'
 import type { FileEntry } from '../../types'
 import type { FileManagerMessages } from '../../localization'
 import { formatFileSize, getShareLink } from '../../utils/fileTree'
+import { setDraggedEntryIds, endDragEntryIds } from '../../utils/fileManagerDnD'
 import { FileRowActions } from '../FileRowActions'
 import { navBtnClass } from '../fieldStyles'
 
@@ -24,6 +25,8 @@ export type FileManagerTableProps = {
   total: number
   messages: FileManagerMessages
   disabled?: boolean
+  selectedIds?: string[]
+  onSelectedIdsChange?: (ids: string[]) => void
   onOpen?: (entry: FileEntry) => void
   onRename?: (entry: FileEntry) => void
   onMove?: (entry: FileEntry) => void
@@ -43,6 +46,9 @@ type FilterSlot = {
 
 const filterInputClass =
   'box-border mt-1.5 h-9 w-full min-w-[7rem] rounded-lg border border-solid border-slate-200 bg-white px-2.5 text-sm font-normal normal-case tracking-normal text-slate-800 shadow-sm outline-none transition-[border-color,box-shadow] placeholder:text-slate-400 hover:border-slate-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20'
+
+const rowCheckboxClass =
+  'size-4 shrink-0 cursor-pointer rounded border-slate-300 text-teal-600 focus:ring-teal-600/30 disabled:cursor-not-allowed disabled:opacity-60'
 
 function TextColumnFilter({ value, onChange, onClear }: FilterSlot) {
   const text = value == null ? '' : String(value)
@@ -130,6 +136,8 @@ export const FileManagerTable = memo(function FileManagerTable({
   total,
   messages,
   disabled = false,
+  selectedIds = [],
+  onSelectedIdsChange,
   onOpen,
   onRename,
   onMove,
@@ -156,6 +164,44 @@ export const FileManagerTable = memo(function FileManagerTable({
     }),
     [messages],
   )
+
+  const allSelected =
+    rows.length > 0 && selectedIds.length > 0 && selectedIds.length === rows.length
+  const someSelected = selectedIds.length > 0 && !allSelected
+
+  const toggleAll = useCallback(() => {
+    if (!onSelectedIdsChange) return
+    onSelectedIdsChange(allSelected ? [] : rows.map((row) => row.id))
+  }, [allSelected, onSelectedIdsChange, rows])
+
+  const toggleOne = useCallback(
+    (id: string) => {
+      if (!onSelectedIdsChange) return
+      onSelectedIdsChange(
+        selectedIds.includes(id)
+          ? selectedIds.filter((value) => value !== id)
+          : [...selectedIds, id],
+      )
+    },
+    [onSelectedIdsChange, selectedIds],
+  )
+
+  const handleRowDragStart = useCallback(
+    (entry: FileEntry, event: DragEvent<HTMLElement>) => {
+      if (disabled) return
+
+      const dragIds =
+        selectedIds.includes(entry.id) && selectedIds.length > 0
+          ? selectedIds
+          : [entry.id]
+      setDraggedEntryIds(event.dataTransfer, dragIds)
+    },
+    [disabled, selectedIds],
+  )
+
+  const handleRowDragEnd = useCallback(() => {
+    endDragEntryIds()
+  }, [])
 
   const handleCopySharedLink = useCallback(
     async (entry: FileEntry) => {
@@ -189,6 +235,20 @@ export const FileManagerTable = memo(function FileManagerTable({
           <DataTable.Table className="w-full min-w-[640px] border-collapse text-sm">
             <DataTable.THead>
               <DataTable.THeadRow className="sticky top-0 z-[1] border-b border-slate-200 bg-slate-50/95 backdrop-blur-sm">
+                <DataTable.THeadCell className="w-10 px-2 py-3 align-top">
+                  <input
+                    type="checkbox"
+                    aria-label="Chọn tất cả"
+                    className={rowCheckboxClass}
+                    checked={allSelected}
+                    ref={(element) => {
+                      if (element) element.indeterminate = someSelected
+                    }}
+                    disabled={disabled || rows.length === 0 || !onSelectedIdsChange}
+                    onChange={toggleAll}
+                  />
+                </DataTable.THeadCell>
+
                 <HeaderWithFilter label={messages.list.name} sortField="name">
                   <DataTable.Filter field="name" display="row" dataType="text">
                     {(ctx: FilterSlot) => <TextColumnFilter {...ctx} />}
@@ -214,26 +274,65 @@ export const FileManagerTable = memo(function FileManagerTable({
               {({ item }) => {
                 const entry = item as FileTableRow
                 const hasLink = Boolean(entry.sharedLink)
+                const isSelected = selectedIds.includes(entry.id)
 
                 return (
-                  <DataTable.Row className="border-b border-slate-100 transition hover:bg-slate-50/80">
+                  <DataTable.Row
+                    className={[
+                      'border-b border-slate-100 transition hover:bg-slate-50/80',
+                      isSelected ? 'bg-teal-50/40' : '',
+                    ].join(' ')}
+                  >
+                    <DataTable.Cell className="w-10 px-2 py-2.5 align-middle">
+                      <input
+                        type="checkbox"
+                        aria-label={`Chọn ${entry.name}`}
+                        className={rowCheckboxClass}
+                        checked={isSelected}
+                        disabled={disabled || !onSelectedIdsChange}
+                        draggable={false}
+                        onChange={() => toggleOne(entry.id)}
+                        onClick={(event) => event.stopPropagation()}
+                      />
+                    </DataTable.Cell>
                     <DataTable.Cell className="px-4 py-2.5 align-middle">
-                      {entry.type === 'folder' ? (
-                        <button
-                          type="button"
-                          disabled={disabled}
-                          onClick={() => onOpen?.(entry)}
-                          className={`inline-flex max-w-full items-center gap-2 rounded-lg px-1 py-0.5 text-left font-medium text-slate-800 hover:text-teal-700 ${navBtnClass}`}
-                        >
-                          <Folder className="size-4 shrink-0 text-sky-500" />
-                          <span className="truncate">{entry.name}</span>
-                        </button>
-                      ) : (
-                        <span className="inline-flex max-w-full items-center gap-2 text-slate-800">
-                          <FileText className="size-4 shrink-0 text-slate-400" />
-                          <span className="truncate">{entry.name}</span>
-                        </span>
-                      )}
+                      <div
+                        draggable={!disabled}
+                        onDragStart={(event: DragEvent<HTMLDivElement>) =>
+                          handleRowDragStart(entry, event)
+                        }
+                        onDragEnd={handleRowDragEnd}
+                        className="file-manager-row-drag inline-flex max-w-full items-center gap-2"
+                      >
+                        {entry.type === 'folder' ? (
+                          <>
+                            <Folder className="size-4 shrink-0 text-sky-500" aria-hidden />
+                            <span
+                              role="button"
+                              tabIndex={disabled ? -1 : 0}
+                              aria-disabled={disabled}
+                              onClick={() => {
+                                if (!disabled) onOpen?.(entry)
+                              }}
+                              onKeyDown={(event) => {
+                                if (disabled) return
+                                if (event.key === 'Enter' || event.key === ' ') {
+                                  event.preventDefault()
+                                  onOpen?.(entry)
+                                }
+                              }}
+                              className={`file-manager-entry-link inline-flex min-w-0 max-w-full cursor-pointer items-center rounded-lg px-1 py-0.5 text-left text-slate-800 hover:text-teal-700 ${navBtnClass}`}
+                            >
+                              <span className="truncate">{entry.name}</span>
+                            </span>
+                          </>
+                        ) : (
+                          <span className="inline-flex max-w-full items-center gap-2 text-slate-800">
+                            <FileText className="size-4 shrink-0 text-slate-400" />
+                            <span className="truncate">{entry.name}</span>
+                          </span>
+                        )}
+                      </div>
                     </DataTable.Cell>
                     <DataTable.Cell className="px-4 py-2.5 align-middle tabular-nums text-slate-600">
                       {entry.displaySize}
@@ -274,7 +373,7 @@ export const FileManagerTable = memo(function FileManagerTable({
 
             <DataTable.EmptyTBody>
               <tr>
-                <td colSpan={4} className="px-4 py-16 text-center">
+                <td colSpan={5} className="px-4 py-16 text-center">
                   {!loading ? (
                     <p className="m-0 text-sm text-slate-500">
                       {messages.list.empty}

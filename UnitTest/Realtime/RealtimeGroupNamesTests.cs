@@ -1,4 +1,4 @@
-using Platform.Realtime.SignalR.Groups;
+using Platform.Realtime.Groups;
 
 namespace UnitTest.Realtime;
 

@@ -12,7 +12,7 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
   const notifications = useNotifications()
   const { unreadCount, reload } = notifications
   const badgeLabel =
-    unreadCount > 99 ? '99+' : unreadCount > 0 ? String(unreadCount) : null
+    unreadCount > 9 ? '9+' : unreadCount > 0 ? String(unreadCount) : null
 
   const handleBellClick = () => {
     void reload()

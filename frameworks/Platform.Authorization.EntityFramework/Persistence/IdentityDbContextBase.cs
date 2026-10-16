@@ -66,23 +66,23 @@ public abstract class IdentityDbContextBase : DbContext
         base.OnModelCreating(modelBuilder);
 
         // Shared ASP.NET Identity store (ADR C14): same tables as IdentityDbContext<User, Role, Guid>.
-        modelBuilder.Entity<User>().ToTable("AspNetUsers");
+        modelBuilder.Entity<User>().ToTable("AspNetUsers", "identity");
 
         modelBuilder.Entity<IdentityUserRole<Guid>>(entity =>
         {
-            entity.ToTable("AspNetUserRoles");
+            entity.ToTable("AspNetUserRoles", "identity");
             entity.HasKey(ur => new { ur.UserId, ur.RoleId });
         });
 
         modelBuilder.Entity<IdentityRoleClaim<Guid>>(entity =>
         {
-            entity.ToTable("AspNetRoleClaims");
+            entity.ToTable("AspNetRoleClaims", "identity");
             entity.HasKey(rc => rc.Id);
         });
 
         modelBuilder.Entity<IdentityUserClaim<Guid>>(entity =>
         {
-            entity.ToTable("AspNetUserClaims");
+            entity.ToTable("AspNetUserClaims", "identity");
             entity.HasKey(c => c.Id);
         });
 

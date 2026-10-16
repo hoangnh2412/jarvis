@@ -3,14 +3,14 @@ using Microsoft.Extensions.Options;
 using Platform.DDD.Domain.Services;
 using Platform.Realtime.Configuration;
 using Platform.Realtime.Contracts;
-using Platform.Realtime.SignalR.Groups;
+using Platform.Realtime.Groups;
 using Platform.Realtime.SignalR.Hubs;
 
 namespace Platform.Realtime.SignalR.Services;
 
 public sealed class HubRealtimeNotifier<TUser, TTenant>(
     IHubContext<NotificationHub<TUser, TTenant>> hubContext,
-    IOptions<PlatformRealtimeOptions> options) : IRealtimeNotifier
+    IOptions<PlatformRealtimeOptions> options) : IRealtimeTransport
     where TUser : class, ICurrentUserIdentity
     where TTenant : class, ICurrentTenantIdentity
 {

@@ -27,12 +27,7 @@
 </head>
 <body>
     <div class="preview-page">
-        <header class="preview-header">
-            <div>Workflow Preview</div>
-            <a href="/workflows/definitions/@definitionId/edit" class="open-studio-button">
-                Open Studio
-            </a>
-        </header>
+  
         <main class="preview-content">
             <component type="typeof(WorkflowPreview)"
                        render-mode="Server"
@@ -46,6 +41,7 @@
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
     <script src="_content/CodeBeam.MudBlazor.Extensions/MudExtensions.min.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+    <script src="/_content/Platform.Modules.ElsaWorkflow.Api/js/workflow-preview.js"></script>
     <script src="_framework/blazor.server.js"></script>
 </body>
 </html>

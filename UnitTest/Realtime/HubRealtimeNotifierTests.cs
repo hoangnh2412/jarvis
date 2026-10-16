@@ -4,7 +4,7 @@ using Platform.Authentication;
 using Platform.DDD.Domain.Services;
 using Platform.Modules.Notifications.Contracts;
 using Platform.Realtime.Configuration;
-using Platform.Realtime.SignalR.Groups;
+using Platform.Realtime.Groups;
 using Platform.Realtime.SignalR.Hubs;
 using Platform.Realtime.SignalR.Services;
 

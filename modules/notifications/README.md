@@ -358,11 +358,16 @@ import '@platform/notifications/styles.css'
 **Biến môi trường (tùy chọn):**
 
 
-| Biến                        | Mặc định              | Mô tả                            |
-| --------------------------- | --------------------- | -------------------------------- |
-| `VITE_NOTIFICATION_API_URL` | `/api/notifications`  | Base REST                        |
-| `VITE_NOTIFICATION_HUB_URL` | `/hubs/notifications` | SignalR hub URL                  |
-| `VITE_NOTIFICATION_API_KEY` | (trống)               | Demo — dùng `X-API-KEY` thay JWT |
+| Biến                            | Mặc định                 | Mô tả                                      |
+| ------------------------------- | ------------------------ | ------------------------------------------ |
+| `VITE_NOTIFICATION_API_URL`     | `/api/notifications`     | Base REST                                  |
+| `VITE_NOTIFICATION_HUB_URL`     | `/hubs/notifications`    | SignalR hub URL (`Realtime:SignalR:SignalRPath`) |
+| `VITE_NOTIFICATION_SSE_URL`       | `/sse/notifications`     | SSE endpoint (`Realtime:Sse:SsePath`)      |
+| `VITE_NOTIFICATION_TRANSPORT`   | `signalr`                | `signalr` hoặc `sse` — khớp transport BE  |
+| `VITE_NOTIFICATION_API_KEY`     | (trống)                  | Demo — dùng `X-API-KEY` thay JWT           |
+| `VITE_NOTIFICATION_TENANT_ID`   | (trống)                  | Header `X-Tenant-Id` cho REST + realtime   |
+
+Host có thể gọi `configureNotificationRealtime({ transport: 'sse' })` thay env (ưu tiên sau env default).
 
 
 

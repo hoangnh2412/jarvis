@@ -13,6 +13,7 @@ export default defineConfig({
     'react-dom',
     'react/jsx-runtime',
     'lucide-react',
+    '@microsoft/fetch-event-source',
     '@microsoft/signalr',
     '@platform/core',
     'primereact',

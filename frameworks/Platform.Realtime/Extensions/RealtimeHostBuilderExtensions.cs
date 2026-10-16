@@ -28,6 +28,7 @@ public static class RealtimeHostBuilderExtensions
         if (configure is not null)
             builder.Services.Configure(configure);
 
+        // Snapshot for fluent builder(UseSignalR, UseSse)
         var snapshot = new PlatformRealtimeOptions();
         builder.Configuration.GetSection(PlatformRealtimeOptions.SectionName).Bind(snapshot);
         configure?.Invoke(snapshot);

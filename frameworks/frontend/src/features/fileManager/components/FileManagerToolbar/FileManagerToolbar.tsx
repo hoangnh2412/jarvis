@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { CornerUpLeft, Home } from 'lucide-react'
 import { Breadcrumb } from 'primereact/breadcrumb'
 import { Button } from 'primereact/button'
@@ -7,6 +8,7 @@ import { btnOutlinedClass, navBtnClass } from '../fieldStyles'
 
 export type FileManagerToolbarProps = {
   currentPath: string
+  rootLabel: string
   messages: FileManagerMessages
   disabled?: boolean
   onNavigate: (path: string) => void
@@ -15,14 +17,13 @@ export type FileManagerToolbarProps = {
 
 export function FileManagerToolbar({
   currentPath,
+  rootLabel,
   messages,
   disabled = false,
   onNavigate,
   onGoUp,
 }: FileManagerToolbarProps) {
-  const crumbs = getBreadcrumbSegments(currentPath).map((crumb, index) =>
-    index === 0 ? { ...crumb, label: messages.list.allFiles } : crumb,
-  )
+  const crumbs = getBreadcrumbSegments(currentPath, rootLabel)
   const canGoUp = normalizePath(currentPath) !== ''
 
   return (
@@ -44,34 +45,33 @@ export function FileManagerToolbar({
           {crumbs.map((crumb, index) => {
             const isLast = index === crumbs.length - 1
             return (
-              <Breadcrumb.Item
-                key={crumb.path || 'root'}
-                className="inline-flex items-center gap-1"
-              >
+              <Fragment key={crumb.path || 'root'}>
                 {index > 0 ? (
                   <Breadcrumb.Separator className="text-slate-400">
                     /
                   </Breadcrumb.Separator>
                 ) : null}
-                {index === 0 ? (
-                  <Home className="size-3.5 text-slate-400" aria-hidden />
-                ) : null}
-                {isLast ? (
-                  <Breadcrumb.Current className="font-medium text-slate-900">
-                    {crumb.label}
-                  </Breadcrumb.Current>
-                ) : (
-                  <Breadcrumb.Link
-                    as="button"
-                    type="button"
-                    disabled={disabled}
-                    onClick={() => onNavigate(crumb.path)}
-                    className={`rounded-lg border-0 bg-transparent px-1.5 py-0.5 text-slate-600 hover:bg-slate-100 hover:text-teal-700 ${navBtnClass}`}
-                  >
-                    {crumb.label}
-                  </Breadcrumb.Link>
-                )}
-              </Breadcrumb.Item>
+                <Breadcrumb.Item className="inline-flex items-center gap-1">
+                  {index === 0 ? (
+                    <Home className="size-3.5 text-slate-400" aria-hidden />
+                  ) : null}
+                  {isLast ? (
+                    <Breadcrumb.Current className="font-medium text-slate-900">
+                      {crumb.label}
+                    </Breadcrumb.Current>
+                  ) : (
+                    <Breadcrumb.Link
+                      as="button"
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => onNavigate(crumb.path)}
+                      className={`rounded-lg border-0 bg-transparent px-1.5 py-0.5 text-slate-600 hover:bg-slate-100 hover:text-teal-700 ${navBtnClass}`}
+                    >
+                      {crumb.label}
+                    </Breadcrumb.Link>
+                  )}
+                </Breadcrumb.Item>
+              </Fragment>
             )
           })}
         </Breadcrumb.List>

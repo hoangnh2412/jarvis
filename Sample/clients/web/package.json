@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:nocache": "tsc -b --force && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "msw:init": "msw init public/ --save"
@@ -20,10 +21,13 @@
     "@fullcalendar/resource-timeline": "6.1.21",
     "@fullcalendar/timegrid": "^6.1.21",
     "@hookform/resolvers": "^5.4.0",
+    "@microsoft/fetch-event-source": "^2.0.1",
     "@microsoft/signalr": "^10.0.0",
     "@platform/core": "file:../../../frameworks/frontend",
+    "@platform/files": "file:../../../modules/files/frontend",
     "@platform/notifications": "file:../../../modules/notifications/frontend",
     "@platform/setting": "file:../../../modules/settings/frontend",
+    "@platform/importexport": "file:../../../modules/importexport/frontend",
     "@primereact/core": "^11.0.0",
     "@primeuix/themes": "^3.0.0",
     "@react-querybuilder/dnd": "^8.22.0",

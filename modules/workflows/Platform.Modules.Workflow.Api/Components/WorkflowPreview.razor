@@ -6,10 +6,13 @@
 @using Elsa.Workflows.Runtime
 @using Elsa.Workflows.Runtime.Filters
 @using Elsa.Workflows.Runtime.Entities
+@using Elsa.Studio.Workflows.Domain.Models
 @using Elsa.Studio.Workflows.DiagramDesigners.Flowcharts
 @using MudBlazor
+@using Microsoft.JSInterop
 
 @inherits LayoutComponentBase
+@implements IAsyncDisposable
 
 @inject IWorkflowDefinitionStore WorkflowDefinitionStore
 @inject IWorkflowInstanceStore WorkflowInstanceStore
@@ -17,6 +20,7 @@
 @inject IActivityExecutionStore ActivityExecutionStore
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <MudThemeProvider />
 <MudPopoverProvider />
@@ -87,12 +91,30 @@
                             No waiting activity.
                         </div>
                     }
+
+                    <div class="workflow-status-legend" aria-label="Workflow node status legend">
+                        <span class="workflow-status-legend-item">
+                            <span class="workflow-status-dot workflow-status-dot-success"></span>
+                            Completed
+                        </span>
+                        <span class="workflow-status-legend-item">
+                            <span class="workflow-status-dot workflow-status-dot-faulted"></span>
+                            Failed
+                        </span>
+                        <span class="workflow-status-legend-item">
+                            <span class="workflow-status-dot workflow-status-dot-pending"></span>
+                            Running / waiting
+                        </span>
+                    </div>
                 </div>
             }
-            <div style="position:absolute;inset:0;width:100%;height:100%;">
+            <div @ref="_designerHost" class="workflow-designer-host" style="position:absolute;inset:0;width:100%;height:100%;">
                 <FlowchartDesignerWrapper
                     @ref="_designer"
-                    Flowchart="@_flowchart" IsReadOnly="true" ActivitySelected="@OnActivitySelected" />
+                    Flowchart="@_flowchart"
+                    ActivityStats="@_activityStats"
+                    IsReadOnly="true"
+                    ActivitySelected="@OnActivitySelected" />
             </div>
         }
     </div>
@@ -433,11 +455,15 @@
     private bool _loading = true;
     private bool _clearingSelection;
     private bool _needLoadDesigner;
+    private bool _backgroundClickAttached;
     private string? _error;
+    private ElementReference _designerHost;
+    private DotNetObjectReference<WorkflowPreview>? _dotNetReference;
     private readonly List<CurrentWorkflowStep> _currentSteps = new();
     private readonly List<ActivityExecutionRecord> _executionRecords = new();
     private readonly List<StoredBookmark> _bookmarks = new();
     private readonly List<StoredBookmark> _selectedBookmarks = new();
+    private readonly Dictionary<string, ActivityStats> _activityStats = new(StringComparer.OrdinalIgnoreCase);
 
     // Custom node info from external source (Redis)
     private readonly Dictionary<string, string> _nodeInfoCache = new(StringComparer.OrdinalIgnoreCase);
@@ -464,6 +490,10 @@
         return null;
     }
 
+
+    [JSInvokable]
+    public Task ClearSelectedActivityFromBackground() => ClearSelectedActivity();
+
     protected override async Task OnParametersSetAsync()
     {
         _loading = true;
@@ -476,6 +506,7 @@
         _executionRecords.Clear();
         _bookmarks.Clear();
         _selectedBookmarks.Clear();
+        _activityStats.Clear();
         _needLoadDesigner = false;
         try
         {
@@ -614,6 +645,8 @@
         _executionRecords.AddRange(
             executionRecords);
 
+        BuildActivityStats();
+
 
         foreach (var bookmark in _bookmarks)
         {
@@ -728,10 +761,44 @@
     }
 
 
+    private void BuildActivityStats()
+    {
+        _activityStats.Clear();
+
+        var latestRecords = _executionRecords
+            .Where(x => !string.IsNullOrWhiteSpace(x.ActivityId))
+            .GroupBy(x => x.ActivityId, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.OrderByDescending(x => x.StartedAt).First());
+
+        foreach (var record in latestRecords)
+        {
+            var isFaulted = record.Exception is not null;
+            var isCompleted = !isFaulted && record.CompletedAt is not null;
+            var isWaiting = !isFaulted && !isCompleted;
+            var isBlocked = isWaiting && _bookmarks.Any(bookmark =>
+                string.Equals(bookmark.ActivityInstanceId, record.Id, StringComparison.OrdinalIgnoreCase));
+
+            var stats = new ActivityStats
+            {
+                Started = 1,
+                Completed = isCompleted ? 1 : 0,
+                Uncompleted = isWaiting ? 1 : 0,
+                Blocked = isBlocked,
+                Faulted = isFaulted
+            };
+
+            _activityStats[record.ActivityId] = stats;
+
+            if (!string.IsNullOrWhiteSpace(record.ActivityNodeId))
+                _activityStats[record.ActivityNodeId] = stats;
+        }
+    }
+
+
     private Task OnActivitySelected(
         JsonObject activity)
     {
-        if (_clearingSelection)
+        if (_clearingSelection || activity.Count == 0)
             return Task.CompletedTask;
 
         _selectedActivity =
@@ -886,7 +953,8 @@
 
 
             await _designer.LoadFlowchartAsync(
-                _flowchart);
+                _flowchart,
+                _activityStats);
 
 
             await Task.Delay(500);
@@ -904,6 +972,13 @@
                     currentStep.ActivityId);
             }
 
+            _dotNetReference ??= DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync(
+                "workflowPreview.attachBackgroundClick",
+                _designerHost,
+                _dotNetReference);
+            _backgroundClickAttached = true;
+
 
             // await _designer.ZoomToFitAsync();
         }
@@ -915,6 +990,27 @@
 
             await InvokeAsync(
                 StateHasChanged);
+        }
+    }
+
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_backgroundClickAttached)
+            {
+                await JS.InvokeVoidAsync(
+                    "workflowPreview.detachBackgroundClick",
+                    _designerHost);
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+        finally
+        {
+            _dotNetReference?.Dispose();
         }
     }
 

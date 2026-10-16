@@ -9,17 +9,23 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
     <SpaRoot>clients\web\</SpaRoot>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
-    <SpaProxyServerUrl>http://127.0.0.1:5173</SpaProxyServerUrl>
-    <SpaProxyLaunchCommand>npm run dev:spa</SpaProxyLaunchCommand>
-    <SpaProxyTimeoutInSeconds>180</SpaProxyTimeoutInSeconds>
     <SkipFrontendBuild>false</SkipFrontendBuild>
+    <!-- Dev: dotnet run auto-starts Vite (HMR). Browser opens SpaProxyServerUrl, API stays on applicationUrl. -->
+    <SpaProxyServerUrl>http://127.0.0.1:5173</SpaProxyServerUrl>
+    <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
+    <SpaProxyLaunchCommandWorkingDirectory>$(MSBuildProjectDirectory)\$(SpaRoot)</SpaProxyLaunchCommandWorkingDirectory>
+    <SpaProxyTimeoutInSeconds>120</SpaProxyTimeoutInSeconds>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SpaProxy">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <Version>9.0.3</Version>
+    </PackageReference>
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.20">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -52,6 +58,7 @@
     <ProjectReference Include="..\frameworks\Platform.Authentication.Basic\Platform.Authentication.Basic.csproj" />
     <ProjectReference Include="..\frameworks\Platform.BlobStoring\Platform.BlobStoring.csproj" />
     <ProjectReference Include="..\frameworks\Platform.BlobStoring.MinIO\Platform.BlobStoring.MinIO.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.BlobStoring.SharePoint\Platform.BlobStoring.SharePoint.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Authentication.Cognito\Platform.Authentication.Cognito.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Authorization\Platform.Authorization.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Authorization.EntityFramework\Platform.Authorization.EntityFramework.csproj" />
@@ -67,11 +74,17 @@
     <ProjectReference Include="..\modules\settings\Platform.Modules.Setting.EntityFramework\Platform.Modules.Setting.EntityFramework.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Realtime\Platform.Realtime.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Realtime.SignalR\Platform.Realtime.SignalR.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Realtime.Sse\Platform.Realtime.Sse.csproj" />
     <ProjectReference Include="..\modules\notifications\Platform.Modules.Notifications\Platform.Modules.Notifications.csproj" />
     <ProjectReference Include="..\modules\notifications\Platform.Modules.Notifications.Redis\Platform.Modules.Notifications.Redis.csproj" />
     <ProjectReference Include="..\modules\notifications\Platform.Modules.Notifications.Api\Platform.Modules.Notifications.Api.csproj" />
+    <ProjectReference Include="..\modules\files\Platform.Modules.Files.API\Platform.Modules.Files.API.csproj" />
     <ProjectReference Include="..\modules\workflows\Platform.Modules.Workflow.Api\Platform.Modules.Workflow.Api.csproj" />
     <ProjectReference Include="..\modules\workflows\Platform.Modules.Workflow.EntityFramework\Platform.Modules.Workflow.EntityFramework.csproj" />
+    <ProjectReference Include="..\modules\importexport\Platform.Modules.ImportExport\Platform.Modules.ImportExport.csproj" />
+    <ProjectReference Include="..\modules\importexport\Platform.Modules.ImportExport.Api\Platform.Modules.ImportExport.Api.csproj" />
+    <ProjectReference Include="..\modules\importexport\Platform.Modules.ImportExport.EntityFramework\Platform.Modules.ImportExport.EntityFramework.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.ImportExport.MiniExcel\Platform.ImportExport.MiniExcel.csproj" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') And '$(SkipFrontendBuild)' != 'true'">

@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Platform.DDD.Domain.Services;
 using Platform.Modules.Notifications.Contracts;
 using Platform.Modules.Notifications.Services;
+using Platform.Realtime.Extensions;
 using Platform.Realtime.Hosting;
 
 namespace Platform.Modules.Notifications.Extensions;
@@ -22,5 +23,19 @@ public static class NotificationsHostBuilderExtensions
             INotificationAppService,
             NotificationAppService<TUser, TTenant>>();
         return realtimeBuilder;
+    }
+
+    /// <summary>
+    /// Đăng ký inbox <c>INotificationAppService</c> + composite <see cref="Platform.Realtime.Contracts.IRealtimeNotifier"/>.
+    /// </summary>
+    public static RealtimeBuilder AddNotificationAppServiceWithRealtime<TUser, TTenant>(
+        this RealtimeBuilder builder)
+        where TUser : class, ICurrentUserIdentity
+        where TTenant : class, ICurrentTenantIdentity
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.AddNotificationAppService<TUser, TTenant>();
+        builder.EnsureCompositeRealtimeNotifier();
+        return builder;
     }
 }

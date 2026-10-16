@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties, type DragEvent } from 'react'
 import {
   ChevronDown,
   ChevronRight,
@@ -18,7 +18,17 @@ import {
   normalizePath,
   type FileTreeNode,
 } from '../../utils/fileTree'
+import { parseDraggedEntryIds, endDragEntryIds, isFileManagerDragActive } from '../../utils/fileManagerDnD'
 import { btnOutlinedClass, btnPrimaryClass, navBtnClass } from '../fieldStyles'
+
+const TREE_INDENT_REM = 1.4
+
+function treeNodeIndentStyle(level = 1): CSSProperties {
+  const depth = Math.max(0, level - 1)
+  return {
+    paddingLeft: `${depth * TREE_INDENT_REM}rem`,
+  }
+}
 
 export type FileManagerSidebarProps = {
   entries: FileEntry[]
@@ -31,6 +41,9 @@ export type FileManagerSidebarProps = {
   onOpen?: (entry: FileEntry) => void
   onUploadClick: () => void
   onCreateFolderClick: () => void
+  onDropEntries?: (targetPath: string, entryIds: string[]) => void
+  dropDisabled?: boolean
+  onLoadFolderChildren?: (parentPath: string) => void | Promise<void>
 }
 
 function isNodeActive(treeNode: FileTreeNode, currentPath: string): boolean {
@@ -59,6 +72,150 @@ function TreeNodeIcon({
   return <Folder className="size-4 shrink-0 text-sky-500" aria-hidden />
 }
 
+function getNodeTargetPath(treeNode: FileTreeNode): string {
+  if (treeNode.entryType === 'root') return ''
+  return normalizePath(treeNode.path)
+}
+
+function renderTreeNode({
+  node,
+  leaf,
+  level = 1,
+  expanded = false,
+  currentPath,
+  disabled,
+  dropDisabled = false,
+  dropTargetPath,
+  onSelect,
+  onToggleExpand,
+  onDropEntries,
+  onDropTargetChange,
+}: {
+  node: FileTreeNode
+  leaf?: boolean
+  level?: number
+  expanded?: boolean
+  currentPath: string
+  disabled: boolean
+  dropDisabled?: boolean
+  dropTargetPath?: string | null
+  onSelect: (key: string) => void
+  onToggleExpand: (key: string, folderPath?: string) => void
+  onDropEntries?: (targetPath: string, entryIds: string[]) => void
+  onDropTargetChange?: (targetPath: string | null) => void
+}) {
+  const treeNode = node
+  const entryType = treeNode.entryType ?? (leaf ? 'file' : 'folder')
+  const isFolderNode = entryType === 'folder' || entryType === 'root'
+  const active = isNodeActive(treeNode, currentPath)
+  const nodeKey = String(node.key)
+  const targetPath = isFolderNode ? getNodeTargetPath(treeNode) : null
+  const isDropTarget =
+    isFolderNode &&
+    targetPath != null &&
+    dropTargetPath != null &&
+    normalizePath(dropTargetPath) === normalizePath(targetPath)
+
+  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+    if (dropDisabled || !isFolderNode || targetPath == null || !onDropEntries) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    event.dataTransfer.dropEffect = 'move'
+    onDropTargetChange?.(targetPath)
+  }
+
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+    if (dropDisabled || !isFolderNode || targetPath == null || !onDropEntries) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    onDropTargetChange?.(null)
+
+    const entryIds = parseDraggedEntryIds(event.dataTransfer)
+    endDragEntryIds()
+    if (entryIds.length > 0) {
+      onDropEntries(targetPath, entryIds)
+    }
+  }
+
+  const rowDropHandlers = isFolderNode && onDropEntries && !dropDisabled
+    ? {
+        onDragOver: handleDragOver,
+        onDragLeave: (event: DragEvent<HTMLDivElement>) => {
+          const next = event.relatedTarget
+          if (next instanceof Node && event.currentTarget.contains(next)) return
+          onDropTargetChange?.(null)
+        },
+        onDrop: handleDrop,
+      }
+    : undefined
+
+  return (
+    <Tree.Node uKey={nodeKey}>
+      <Tree.Content
+        className={[
+          'file-manager-tree-row',
+          active ? 'file-manager-tree-row--active' : '',
+          isDropTarget ? 'file-manager-tree-row--drop-target' : '',
+        ].join(' ')}
+        style={treeNodeIndentStyle(level)}
+      >
+        <div
+          className="file-manager-tree-drop-row flex min-w-0 flex-1 items-center gap-1.5"
+          {...rowDropHandlers}
+        >
+          {isFolderNode ? (
+            <button
+              type="button"
+              className="file-manager-tree-toggle"
+              aria-expanded={expanded}
+              aria-label={expanded ? 'Thu gọn' : 'Mở rộng'}
+              disabled={disabled}
+              onClick={(e) => {
+                e.stopPropagation()
+                onToggleExpand(
+                  nodeKey,
+                  entryType === 'root' ? '' : normalizePath(treeNode.path),
+                )
+              }}
+            >
+              {expanded ? (
+                <ChevronDown className="size-3.5" strokeWidth={2.5} />
+              ) : (
+                <ChevronRight className="size-3.5" strokeWidth={2.5} />
+              )}
+            </button>
+          ) : (
+            <span className="file-manager-tree-toggle-spacer" aria-hidden />
+          )}
+
+          <span
+            role="button"
+            tabIndex={disabled ? -1 : 0}
+            aria-disabled={disabled}
+            onClick={(e) => {
+              e.stopPropagation()
+              onSelect(nodeKey)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                e.stopPropagation()
+                onSelect(nodeKey)
+              }
+            }}
+            className={`file-manager-tree-label ${navBtnClass} ${disabled ? 'pointer-events-none opacity-60' : ''}`}
+          >
+            <TreeNodeIcon entryType={entryType} active={active} />
+            <Tree.Label className="truncate">{node.label}</Tree.Label>
+          </span>
+        </div>
+      </Tree.Content>
+    </Tree.Node>
+  )
+}
+
 export function FileManagerSidebar({
   entries,
   currentPath,
@@ -70,6 +227,9 @@ export function FileManagerSidebar({
   onOpen,
   onUploadClick,
   onCreateFolderClick,
+  onDropEntries,
+  dropDisabled = false,
+  onLoadFolderChildren,
 }: FileManagerSidebarProps) {
   const treeNodes = useMemo(
     () => buildFileTreeNodes(entries, allFilesLabel),
@@ -89,6 +249,20 @@ export function FileManagerSidebar({
     }))
   }, [entries, currentPath])
 
+  const [dropTargetPath, setDropTargetPath] = useState<string | null>(null)
+
+  const handleToggleExpand = (key: string, folderPath?: string) => {
+    const willExpand = !expandedKeys[key]
+    setExpandedKeys((prev) => ({
+      __root__: true,
+      ...prev,
+      [key]: !prev[key],
+    }))
+    if (willExpand && onLoadFolderChildren) {
+      void onLoadFolderChildren(folderPath ?? '')
+    }
+  }
+
   const handleTreeSelect = (key: string) => {
     if (disabled) return
 
@@ -101,7 +275,9 @@ export function FileManagerSidebar({
     if (!entry) return
 
     if (entry.type === 'folder') {
-      onNavigate(getEntryPath(entry))
+      const folderPath = getEntryPath(entry)
+      void onLoadFolderChildren?.(folderPath)
+      onNavigate(folderPath)
       return
     }
 
@@ -134,7 +310,14 @@ export function FileManagerSidebar({
         </Button>
       </div>
 
-      <div className="file-manager-tree min-h-0 flex-1 overflow-y-auto">
+      <div
+        className="file-manager-tree min-h-0 flex-1 overflow-y-auto"
+        onDragOver={(event: DragEvent<HTMLDivElement>) => {
+          if (dropDisabled || !onDropEntries || !isFileManagerDragActive()) return
+          event.preventDefault()
+          event.dataTransfer.dropEffect = 'move'
+        }}
+      >
         <Tree.Root
           value={treeNodes}
           expandedKeys={expandedKeys}
@@ -144,54 +327,22 @@ export function FileManagerSidebar({
           className="w-full border-0 bg-transparent p-0 text-sm"
         >
           <Tree.Nodes>
-            {({ node, leaf }) => {
-              const treeNode = node as FileTreeNode
-              const entryType =
-                treeNode.entryType ?? (leaf ? 'file' : 'folder')
-              const active = isNodeActive(treeNode, currentPath)
-              const nodeKey = String(node.key)
-
-              return (
-                <Tree.Node uKey={nodeKey}>
-                  <Tree.Content
-                    className={[
-                      'file-manager-tree-row',
-                      active ? 'file-manager-tree-row--active' : '',
-                    ].join(' ')}
-                  >
-                    <Tree.Toggle className="file-manager-tree-toggle">
-                      <Tree.ToggleIndicator match="expanded">
-                        <ChevronDown className="size-3.5" strokeWidth={2.5} />
-                      </Tree.ToggleIndicator>
-                      <Tree.ToggleIndicator match="collapsed">
-                        <ChevronRight className="size-3.5" strokeWidth={2.5} />
-                      </Tree.ToggleIndicator>
-                    </Tree.Toggle>
-
-                    <span
-                      role="button"
-                      tabIndex={disabled ? -1 : 0}
-                      aria-disabled={disabled}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleTreeSelect(nodeKey)
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          handleTreeSelect(nodeKey)
-                        }
-                      }}
-                      className={`file-manager-tree-label ${navBtnClass} ${disabled ? 'pointer-events-none opacity-60' : ''}`}
-                    >
-                      <TreeNodeIcon entryType={entryType} active={active} />
-                      <Tree.Label className="truncate">{node.label}</Tree.Label>
-                    </span>
-                  </Tree.Content>
-                </Tree.Node>
-              )
-            }}
+            {(slot) =>
+              renderTreeNode({
+                node: slot.node as FileTreeNode,
+                leaf: slot.leaf,
+                level: slot.level ?? 1,
+                expanded: slot.expanded,
+                currentPath,
+                disabled,
+                dropDisabled,
+                dropTargetPath,
+                onSelect: handleTreeSelect,
+                onToggleExpand: handleToggleExpand,
+                onDropEntries,
+                onDropTargetChange: setDropTargetPath,
+              })
+            }
           </Tree.Nodes>
           <Tree.Empty />
         </Tree.Root>

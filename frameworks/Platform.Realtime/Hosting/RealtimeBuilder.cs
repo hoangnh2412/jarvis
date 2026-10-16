@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Platform.Realtime.Configuration;
 
@@ -19,5 +18,4 @@ public sealed class RealtimeBuilder
 
     public IHostApplicationBuilder HostBuilder { get; }
     public PlatformRealtimeOptions Options { get; }
-    internal ISignalRServerBuilder? SignalRServerBuilder { get; set; }
 }

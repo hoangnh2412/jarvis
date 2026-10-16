@@ -15,9 +15,6 @@ export const fileManagerMessagesVi = {
     sharedLink: 'Shared link',
     total: (n: number) => `${n} total`,
     empty: 'Thư mục trống',
-    storageUsage: (used: string, total: string) =>
-      `Storage usage: ${used} / ${total}`,
-    available: (value: string) => `Available: ${value}`,
     folderTree: 'Folders',
   },
   actions: {
@@ -33,6 +30,7 @@ export const fileManagerMessagesVi = {
     renameTitle: 'Rename',
     renameLabel: 'New name',
     moveTitle: 'Move to',
+    moveTitleMultiple: (count: number) => `Move ${count} items to`,
     moveLabel: 'Destination folder',
     cancel: 'Hủy',
     save: 'Save',
@@ -48,6 +46,7 @@ export const fileManagerMessagesVi = {
     createFolderSuccess: 'Đã tạo thư mục',
     renameSuccess: 'Đã đổi tên',
     moveSuccess: 'Đã di chuyển',
+    moveInvalid: 'Không thể di chuyển vào thư mục này',
     deleteSuccess: 'Đã xoá',
     copyLinkSuccess: 'Đã sao chép liên kết',
     openFile: 'Đang mở tệp',

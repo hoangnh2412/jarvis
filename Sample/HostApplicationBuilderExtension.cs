@@ -2,7 +2,7 @@ using Platform.ORM.EntityFramework;
 using Platform.Multitenancy.EntityFramework;
 using Platform.Multitenancy.EntityFramework.DataStorages;
 using Microsoft.EntityFrameworkCore;
-using Sample.Entities;
+using Sample.Multitenancy;
 using Sample.Persistence;
 
 namespace Sample;
@@ -17,7 +17,10 @@ public static class HostApplicationBuilderExtension
         builder.Services.AddCoreDbContext<MasterDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("MasterDbContext")));
 
-        builder.Services.AddCoreDbContext<TenantDbContext, DbTenantConnectionStringResolver<MasterDbContext, Tenant>>(options =>
+        // TEMP: bypass SampleMaster.Tenant lookup — see DevBypassTenantConnectionStringResolver.
+        // builder.Services.AddCoreDbContext<TenantDbContext, DbTenantConnectionStringResolver<MasterDbContext, Tenant>>(options =>
+        //     options.UseNpgsql(builder.Configuration.GetConnectionString("TenantDbContext")));
+        builder.Services.AddCoreDbContext<TenantDbContext, DevBypassTenantConnectionStringResolver>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("TenantDbContext")));
 
         return builder;

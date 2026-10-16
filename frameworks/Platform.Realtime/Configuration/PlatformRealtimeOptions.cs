@@ -1,18 +1,10 @@
 namespace Platform.Realtime.Configuration;
 
-/// <summary>
-/// Tùy chọn transport Realtime / SignalR, bind từ <c>Realtime:SignalR</c>.
-/// </summary>
 public sealed class PlatformRealtimeOptions
 {
-    public const string SectionName = "Realtime:SignalR";
-
-    public string HubPath { get; set; } = "/hubs/notifications";
-
-    /// <summary>Tên method client nhận message realtime (mặc định <c>notification</c>).</summary>
+    public const string SectionName = "Realtime";
     public string ClientMethodName { get; set; } = "notification";
-
-    public bool UseRedisBackplane { get; set; }
-
-    public RealtimeSignalRRedisOptions Redis { get; set; } = new();
+    public RealtimeSignalROptions SignalR { get; set; } = new();
+    public RealtimeSseOptions Sse { get; set; } = new();
+    public RealtimeRedisOptions Redis { get; set; } = new();
 }

@@ -94,11 +94,19 @@ public sealed class SettingManager<TSetting, TUnitOfWork, TTenant> : ISettingMan
         ArgumentException.ThrowIfNullOrWhiteSpace(group);
 
         var canonicalGroup = ResolveCanonicalGroup(group);
+        var definitions = _registry.GetSettings(canonicalGroup);
+        if (definitions.Count == 0)
+            return Array.Empty<SettingModel>();
+
         var tenantId = await RequireTenantIdAsync(cancellationToken).ConfigureAwait(false);
         var persisted = await GetPersistedGroupAsync(tenantId, canonicalGroup, cancellationToken).ConfigureAwait(false);
+        var byKey = persisted.ToDictionary(x => x.Key, StringComparer.OrdinalIgnoreCase);
 
-        return persisted
-            .Select(x => ToPlaintextModel(x))
+        // Library là source of truth: chỉ trả Key còn đăng ký, metadata lấy từ definition.
+        return definitions
+            .Where(d => byKey.ContainsKey(d.Key))
+            .Select(d => ToPlaintextModel(byKey[d.Key], d))
+            .OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
 
@@ -293,7 +301,10 @@ public sealed class SettingManager<TSetting, TUnitOfWork, TTenant> : ISettingMan
 
         var tenantId = await RequireTenantIdAsync(cancellationToken).ConfigureAwait(false);
         var repo = await _unitOfWork.GetRepositoryAsync<IRepository<TSetting>>(cancellationToken).ConfigureAwait(false);
-        var existing = await repo.LoadAsync(x => x.Group == canonicalGroup, cancellationToken).ConfigureAwait(false);
+        // LoadAsync (tracked) — entity bị mutate rồi SaveChanges; lọc TenantId vì entity không có global query filter.
+        var existing = await repo
+            .LoadAsync(x => x.TenantId == tenantId && x.Group == canonicalGroup, cancellationToken)
+            .ConfigureAwait(false);
         var existingByKey = existing.ToDictionary(x => x.Key, StringComparer.OrdinalIgnoreCase);
 
         var results = new List<SettingModel>(values.Count);
@@ -422,8 +433,11 @@ public sealed class SettingManager<TSetting, TUnitOfWork, TTenant> : ISettingMan
             cacheParam,
             async ct =>
             {
+                // Lọc theo cột Group — cùng predicate với SaveGroupAsync để read/write không lệch nhau.
                 var repo = await _unitOfWork.GetRepositoryAsync<IRepository<TSetting>>(ct).ConfigureAwait(false);
-                var entities = await repo.ListAsync(x => x.Group == canonicalGroup, ct).ConfigureAwait(false);
+                var entities = await repo
+                    .ListAsync(x => x.TenantId == tenantId && x.Group == canonicalGroup, ct)
+                    .ConfigureAwait(false);
                 return entities
                     .OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase)
                     .Select(ToPersistedModel)

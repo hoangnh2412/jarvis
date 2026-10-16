@@ -302,3 +302,12 @@ docs/
 
 modules/notifications/frontend/dist/
 modules/notifications/frontend/.env.local
+
+
+# Frontend env (secrets / local overrides) — keep *.example tracked
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+!**/.env.example
