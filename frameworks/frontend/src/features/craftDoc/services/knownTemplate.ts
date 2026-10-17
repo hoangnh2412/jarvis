@@ -1,11 +1,11 @@
 import type { DocumentField } from '../types'
-import { getLlaIdasTemplateDetailMock } from '../mocks'
+import { getSampleBriefTemplateDetailMock } from '../mocks'
 import { extractFields } from './docxTemplateService'
 
 /** Nhận diện mẫu có metadata API/mock (DOCX không chứa {{placeholder}}). */
 export function resolveKnownCraftDocTemplateId(fileName: string): string | null {
   const base = fileName.trim().toLowerCase().replace(/\.docx$/i, '')
-  if (base === 'lla-idas') return 'lla-idas'
+  if (base === 'sample-brief') return 'sample-brief'
   return null
 }
 
@@ -21,8 +21,8 @@ export type KnownCraftDocTemplateMetadata = {
 export function getKnownCraftDocTemplateMetadata(
   templateId: string,
 ): KnownCraftDocTemplateMetadata | null {
-  if (templateId !== 'lla-idas') return null
-  const mock = getLlaIdasTemplateDetailMock()
+  if (templateId !== 'sample-brief') return null
+  const mock = getSampleBriefTemplateDetailMock()
   return {
     id: mock.template.id,
     name: mock.template.name,

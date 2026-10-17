@@ -311,3 +311,8 @@ modules/notifications/frontend/.env.local
 **/.env
 **/.env.local
 !**/.env.example
+
+.cursor/
+.codegraph/
+.minipower/
+.vscode/

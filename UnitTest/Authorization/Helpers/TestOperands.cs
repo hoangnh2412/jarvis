@@ -3,7 +3,7 @@ using Platform.Authorization.Operands;
 namespace UnitTest.Authorization.Helpers;
 
 /// <summary>
-/// Platform defaults + the business operands a product registers (mirrors Lexora's
+/// Platform defaults + the business operands a product registers (mirrors Sample's
 /// AuthorizationOperandsExtension, which platform tests cannot reference).
 /// </summary>
 internal static class TestOperands

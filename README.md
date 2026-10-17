@@ -95,7 +95,7 @@ platform/
 |---------|---------|
 | `frameworks/` | Thư viện hạ tầng Atomic — publish NuGet, reference từ Host/Infrastructure product |
 | `modules/` | Module domain (Setting, Account, IdentityAdmin…); mỗi folder một bounded context + optional frontend |
-| `Sample/` | App chạy thử: framework + Setting; SPA Vite/React. Chưa compose Authorization / Account / IdentityAdmin (hiện chỉ `Lexora.Host` dùng) |
+| `Sample/` | App chạy thử: framework + Setting; SPA Vite/React. Chưa compose Authorization / Account / IdentityAdmin. |
 | `UnitTest/` | Unit / integration test cho framework và module |
 | `ADRs/` | Quyết định kiến trúc & tiến độ — [ADRs/README.md](ADRs/README.md) |
 | `ai-skills/` | Skill / hook AI SDLC (submodule) — [ai-skills/README.md](ai-skills/README.md) |
@@ -361,7 +361,7 @@ Nền tảng bảo mật & admin → Dữ liệu & multitenancy → Kiến trúc
 
 | | Hạng mục | Mô tả |
 |---|----------|--------|
-| 🟡 | ASP.NET Core Identity | `Platform.Authentications.Identity` — `User` (`TenantId`/`OrgId` cột) + `Role`; migration Identity ở product (`Lexora.Infrastructure`); lockout áp khi login ✅; refresh token, wire `UserManager`/`SignInManager` trong package 📋 |
+| 🟡 | ASP.NET Core Identity | `Platform.Authentications.Identity` — `User` (`TenantId`/`OrgId` cột) + `Role`; migration Identity ở product (`Sample.Infrastructure`); lockout áp khi login ✅; refresh token, wire `UserManager`/`SignInManager` trong package 📋 |
 | 📋 | Đồng bộ auth | Subject JWT/OIDC ↔ `User` |
 
 #### B.3 Authorization (phân quyền)

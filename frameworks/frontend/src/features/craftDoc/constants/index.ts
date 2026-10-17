@@ -1,8 +1,8 @@
 import { getLaborContractSampleData, LABOR_CONTRACT_SAMPLE_DATA } from './sampleContractData'
-import { getLlaIdasSampleData, LLA_IDAS_SAMPLE_DATA } from './llaIdasSampleData'
+import { getSampleBriefSampleData, SAMPLE_BRIEF_SAMPLE_DATA } from './sampleBriefSampleData'
 
 export { getLaborContractSampleData, LABOR_CONTRACT_SAMPLE_DATA } from './sampleContractData'
-export { getLlaIdasSampleData, LLA_IDAS_SAMPLE_DATA } from './llaIdasSampleData'
+export { getSampleBriefSampleData, SAMPLE_BRIEF_SAMPLE_DATA } from './sampleBriefSampleData'
 export { CRAFT_DOC_PAGE_LETTER, CRAFT_DOC_PAGE_A4 } from './pageSize'
 
 export const BASE_URL_CRAFT_DOC = '/craft-doc'
@@ -17,7 +17,7 @@ export const FAKE_FILLED_SAMPLE_DATA = LABOR_CONTRACT_SAMPLE_DATA
 
 /** Giá trị mặc định theo template (legacy map — merge vào fields[].value). */
 export function getDefaultFieldValuesMap(templateId?: string | null): Record<string, string> {
-  if (templateId === 'lla-idas') return getLlaIdasSampleData()
+  if (templateId === 'sample-brief') return getSampleBriefSampleData()
   if (templateId?.startsWith('upload-')) return {}
   return getLaborContractSampleData()
 }

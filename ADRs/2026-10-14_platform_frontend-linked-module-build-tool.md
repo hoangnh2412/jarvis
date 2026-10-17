@@ -3,9 +3,9 @@
 > **Trạng thái:** 🔴 Proposed
 > **Ngày:** 2026-10-14
 > **Loại:** build tooling / dev infra
-> **Liên quan:** ADR sản phẩm Lexora (repo `lexora`, submodule `documents`, không link trực tiếp được vì khác repo): `documents/staging/ADRs/proposed_2026-10-14_lexora-host-build-linked-frontend-modules.md`
-> **Phạm vi:** thư mục mới `platform/tools/frontend/` — script CLI độc lập, mọi Host (Lexora, tương lai khác) gọi qua path tương đối.
-> **Ngoài phạm vi:** không đổi `vite.config.ts` của bất kỳ Host nào (Lexora, Sample); không đổi `Sample.csproj`/`EnsureLinkedFrontendDeps`; không viết test runner JS riêng cho `tools/`; không publish script thành npm package.
+> **Liên quan:** ADR sản phẩm Sample (repo `sample`, submodule `documents`, không link trực tiếp được vì khác repo): `documents/staging/ADRs/proposed_2026-10-14_sample-host-build-linked-frontend-modules.md`
+> **Phạm vi:** thư mục mới `platform/tools/frontend/` — script CLI độc lập, mọi Host (Sample, tương lai khác) gọi qua path tương đối.
+> **Ngoài phạm vi:** không đổi `vite.config.ts` của bất kỳ Host nào (Sample, Sample); không đổi `Sample.csproj`/`EnsureLinkedFrontendDeps`; không viết test runner JS riêng cho `tools/`; không publish script thành npm package.
 > **Chú thích icon:** 🟢 xong · 🟡 đang làm · 🔴 chưa làm
 
 ---
@@ -14,7 +14,7 @@
 
 Sản phẩm dùng Platform qua `file:` dependency (vd. `@platform/core` build bằng `tsup` → `dist/`). Khi Host build SPA chính, nó dùng `dist/` có sẵn của package liên kết — **không tự rebuild** nếu source Platform vừa đổi. `Sample` không gặp vấn đề này vì alias Vite trỏ thẳng source (`EnsureLinkedFrontendDeps` chỉ `npm install`, không build).
 
-Lexora (ADR liên quan ở trên) muốn: trong `.csproj` chỉ khai **danh sách** module liên kết, tool tự tính thứ tự build theo quan hệ phụ thuộc `file:` giữa các module đó, build trước khi build SPA chính — không tự sắp thứ tự tay. Vì vấn đề "dist cũ không tự rebuild" không riêng gì Lexora (Host nào dùng `file:` dependency tới Platform cũng gặp), script nên đặt dùng chung ở `platform` thay vì copy riêng từng sản phẩm.
+Sample (ADR liên quan ở trên) muốn: trong `.csproj` chỉ khai **danh sách** module liên kết, tool tự tính thứ tự build theo quan hệ phụ thuộc `file:` giữa các module đó, build trước khi build SPA chính — không tự sắp thứ tự tay. Vì vấn đề "dist cũ không tự rebuild" không riêng gì Sample (Host nào dùng `file:` dependency tới Platform cũng gặp), script nên đặt dùng chung ở `platform` thay vì copy riêng từng sản phẩm.
 
 ## 2. Vấn đề
 
@@ -22,7 +22,7 @@ Lexora (ADR liên quan ở trên) muốn: trong `.csproj` chỉ khai **danh sác
 |---|--------|--------|
 | P1 | `file:` dependency không tự rebuild khi source Platform đổi | Host dùng nhầm `dist` cũ, không báo lỗi |
 | P2 | Nhiều module liên kết có quan hệ phụ thuộc chéo (A phụ thuộc B) | Người viết `.csproj` phải tự biết thứ tự đúng — dễ sai, không scale |
-| P3 | Logic build-theo-thứ-tự-phụ-thuộc là generic, không riêng Lexora | Nếu viết trong `lexora/`, Host khác dùng Platform sau này phải copy lại |
+| P3 | Logic build-theo-thứ-tự-phụ-thuộc là generic, không riêng Sample | Nếu viết trong `sample/`, Host khác dùng Platform sau này phải copy lại |
 
 ## 3. Ràng buộc
 
@@ -36,8 +36,8 @@ Lexora (ADR liên quan ở trên) muốn: trong `.csproj` chỉ khai **danh sác
 
 | # | Phương án | Tóm tắt | Ưu | Nhược |
 |---|-----------|---------|----|-------|
-| O1 | Mỗi Host tự copy script riêng (trong `lexora/`) | Script sống cùng sản phẩm dùng nó | Nhanh, không đụng repo `platform` | Trùng lặp logic nếu Host khác (dùng Platform) cần y hệt |
-| O2 | Đặt script dùng chung trong `platform/tools/` | Một chỗ maintain, mọi Host gọi qua path tương đối | Không trùng lặp; đúng vai trò "framework dùng chung" của Platform | Đổi phải qua 3-repo chain (platform → bump erp_core → bump lexora) |
+| O1 | Mỗi Host tự copy script riêng (trong `sample/`) | Script sống cùng sản phẩm dùng nó | Nhanh, không đụng repo `platform` | Trùng lặp logic nếu Host khác (dùng Platform) cần y hệt |
+| O2 | Đặt script dùng chung trong `platform/tools/` | Một chỗ maintain, mọi Host gọi qua path tương đối | Không trùng lặp; đúng vai trò "framework dùng chung" của Platform | Đổi phải qua 3-repo chain (platform → bump erp_core → bump sample) |
 
 ## 5. Quyết định
 
@@ -61,7 +61,7 @@ platform/tools/frontend/build-linked-frontend.mjs
   → topo-sort, build lần lượt theo thứ tự đã tính (không theo thứ tự argv)
 ```
 
-Cách gọi từ phía Host (ví dụ Lexora — chi tiết đầy đủ nằm ở ADR sản phẩm liên quan, không lặp lại ở đây):
+Cách gọi từ phía Host (ví dụ Sample — chi tiết đầy đủ nằm ở ADR sản phẩm liên quan, không lặp lại ở đây):
 
 ```xml
 <Target Name="BuildLinkedFrontendModules" BeforeTargets="DebugBuildFrontend;PublishRunWebpack" Condition="'$(SkipFrontendBuild)' != 'true'">
@@ -76,7 +76,7 @@ Cách gọi từ phía Host (ví dụ Lexora — chi tiết đầy đủ nằm �
 | Hướng | Hệ quả |
 |-------|--------|
 | Tốt | Một chỗ maintain cho mọi Host dùng Platform qua `file:` dependency; tự tính thứ tự build theo dependency graph, không cần sắp tay; lỗi rõ ràng khi cycle hoặc build fail thay vì build sai thứ tự âm thầm |
-| Xấu / chi phí | Thay đổi script phải đi qua 3 repo (`platform` → bump con trỏ `erp_core` → bump con trỏ `lexora`) để Host cuối thấy được; thêm 1 file CLI cần maintain, review riêng trong repo `platform` |
+| Xấu / chi phí | Thay đổi script phải đi qua 3 repo (`platform` → bump con trỏ `erp_core` → bump con trỏ `sample`) để Host cuối thấy được; thêm 1 file CLI cần maintain, review riêng trong repo `platform` |
 | Trung lập | `Sample` chưa dùng script này (vẫn giữ `EnsureLinkedFrontendDeps` cũ) — có thể chuyển sau nếu muốn, ở ADR riêng |
 
 ---
@@ -128,7 +128,7 @@ Sau khi chốt: cập nhật **Trạng thái** → 🟡 Accepted, ghi ngày Acce
 | 0 | Confirm §7 | Status → Accepted | — |
 | 1 | Viết `build-linked-frontend.mjs` + T1, T3, T4 xanh | §8.1, §8.3 🟢 | 0 |
 | 2 | Xác nhận Sample không bị ảnh hưởng (T2) | §8.2 🟢 | 1 |
-| 3 | Host (Lexora) gọi script — chi tiết ở ADR sản phẩm riêng (repo `lexora`) | ADR sản phẩm Accepted + Implemented | 1 |
+| 3 | Host (Sample) gọi script — chi tiết ở ADR sản phẩm riêng (repo `sample`) | ADR sản phẩm Accepted + Implemented | 1 |
 
 ---
 
@@ -144,5 +144,5 @@ Sau khi chốt: cập nhật **Trạng thái** → 🟡 Accepted, ghi ngày Acce
 
 ## 11. Tham chiếu thêm
 
-- ADR sản phẩm Lexora (repo `lexora`, submodule `documents`): `documents/staging/ADRs/proposed_2026-10-14_lexora-host-build-linked-frontend-modules.md`
+- ADR sản phẩm Sample (repo `sample`, submodule `documents`): `documents/staging/ADRs/proposed_2026-10-14_sample-host-build-linked-frontend-modules.md`
 - `erp_core/platform/Sample/Sample.csproj` — target `EnsureLinkedFrontendDeps`, pattern tham khảo (chỉ `npm install`, không build)

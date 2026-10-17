@@ -23,8 +23,8 @@
       "deletedAt": null,
       "deletedBy": null,
       "id": "00000000-0000-0000-0000-000000000002",
-      "code": "lexora",
-      "name": "Lexora Demo Tenant",
+      "code": "sample",
+      "name": "Sample Demo Tenant",
       "status": 1,
       "parentId": null
     },

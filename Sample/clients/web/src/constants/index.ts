@@ -88,6 +88,6 @@ export function configureSampleHttp() {
  * Dev mock API (Vite middleware, khi `VITE_USE_MOCK` ≠ false):
  * - Planner: `vite.plugins/plannerApiMock.ts` → `features/planner/mocks/get-board.json`
  * - Timesheet: `vite.plugins/timesheetApiMock.ts` → `features/timesheet/mocks/*.json`
- * - CraftDoc: `vite.plugins/craftDocApiMock.ts` → `features/craftDoc/mocks/*.json` + `LLA-IDAS.docx`
+ * - CraftDoc: `vite.plugins/craftDocApiMock.ts` → `features/craftDoc/mocks/*.json` + `Sample-Brief.docx`
  * Axios gọi `/api/v1/planner/*`, `/api/v1/timesheet/*`, `/api/v1/craft-doc/*` — Network tab hiện XHR bình thường.
  */

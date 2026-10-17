@@ -5,7 +5,7 @@
 
 ## Context
 
-Module GĐ1 tồn tại dưới tên `LLA.ExcelEngine.*` trong `modules/ImportExportModule/`. Cần chuẩn hóa theo convention Platform (cùng mô hình với `Platform.Modules.Setting`).
+Module GĐ1 tồn tại dưới tên `Sample.ExcelEngine.*` trong `modules/ImportExportModule/`. Cần chuẩn hóa theo convention Platform (cùng mô hình với `Platform.Modules.Setting`).
 
 ## Decision
 
@@ -33,7 +33,7 @@ Module GĐ1 tồn tại dưới tên `LLA.ExcelEngine.*` trong `modules/ImportEx
 
 ## Consequences
 
-- Breaking rename từ `LLA.ExcelEngine.*`
+- Breaking rename từ `Sample.ExcelEngine.*`
 - Consumer reference từng package riêng (giống Setting)
 - Multi-tenant không nằm trong rename này
 - Thư mục legacy `modules/ImportExportModule` **đã gỡ** — chỉ còn `modules/importexport/`

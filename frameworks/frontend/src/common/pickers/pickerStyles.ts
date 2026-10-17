@@ -1,4 +1,4 @@
-/** Accent xanh Lexora / kit form — dùng cho date & time picker. */
+/** Accent xanh Sample / kit form — dùng cho date & time picker. */
 export const pickerAccentClass = 'text-[#2563EB]'
 export const pickerAccentBgClass = 'bg-[#2563EB]'
 export const pickerAccentRingClass = 'ring-[#2563EB]/20'

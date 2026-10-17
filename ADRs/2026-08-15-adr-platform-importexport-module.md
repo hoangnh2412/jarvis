@@ -5,18 +5,18 @@
 > **Loại:** Module Atomic / package boundary / persistence / multitenancy / API / testing  
 > **Liên quan:** *(self-contained — không phụ thuộc ADR/SAD bên ngoài)*  
 > **Phạm vi:** Naming & packages; host-owned template persistence; multi-tenant isolation; entity registry & schema API; unit test trong `UnitTest` (processor + store/schema); core validation/layout boundary.  
-> **Ngoài phạm vi:** FE product đầy đủ; WebApplicationFactory / E2E product; shared cross-tenant templates; đổi import pipeline runtime (map sang entity EF); dual-package legacy `LLA.ExcelEngine`; project test riêng dưới `modules/importexport`.  
+> **Ngoài phạm vi:** FE product đầy đủ; WebApplicationFactory / E2E product; shared cross-tenant templates; đổi import pipeline runtime (map sang entity EF); dual-package legacy `Sample.ExcelEngine`; project test riêng dưới `modules/importexport`.  
 > **Chú thích icon:** 🟢 xong · 🟡 đang làm · 🔴 chưa làm
 
 ---
 
 ## 1. Bối cảnh
 
-Module import/export Excel (GĐ1) từng tồn tại dưới tên `LLA.ExcelEngine.*` trong `modules/ImportExportModule/`, với meta-package 4 layer và ConsumerDemo tách khỏi monorepo. Cần chuẩn hóa theo Module Atomic của Platform, rồi khóa các ranh giới persistence, tenant, schema UI, validation, và chiến lược test.
+Module import/export Excel (GĐ1) từng tồn tại dưới tên `Sample.ExcelEngine.*` trong `modules/ImportExportModule/`, với meta-package 4 layer và ConsumerDemo tách khỏi monorepo. Cần chuẩn hóa theo Module Atomic của Platform, rồi khóa các ranh giới persistence, tenant, schema UI, validation, và chiến lược test.
 
 | Thành phần | Trước chuẩn hóa |
 |------------|-----------------|
-| Naming | `LLA.ExcelEngine.*` — lệch Platform |
+| Naming | `Sample.ExcelEngine.*` — lệch Platform |
 | Persistence | Module sở hữu `ExcelEngineDbContext` + migrations + concrete entity |
 | Tenant | Rủi ro đọc HTTP header trong package; template/file dễ lẫn tenant |
 | Template UI | User gõ `fieldName` tay hoặc `Type.GetType` từ Settings |
@@ -31,7 +31,7 @@ Tài liệu này **tổng hợp** các quyết định đã Accept + Implement t
 
 | # | Vấn đề | Hệ quả |
 |---|--------|--------|
-| P1 | Prefix `LLA.ExcelEngine` + layer packages cứng | Consumer khó align Platform; khó tách adapter MiniExcel / EF |
+| P1 | Prefix `Sample.ExcelEngine` + layer packages cứng | Consumer khó align Platform; khó tách adapter MiniExcel / EF |
 | P2 | Không fluent DI builder | Host wiring dài, dễ thiếu adapter |
 | P3 | Module sở hữu schema DB template | Consumer không control migration/catalog; khó cùng DbContext domain |
 | P4 | Rủi ro đưa `IExcelTemplateEntity` vào `Platform.DDD.Domain` | Ô nhiễm DDD lõi |
@@ -67,7 +67,7 @@ Tài liệu này **tổng hợp** các quyết định đã Accept + Implement t
 
 | # | Phương án | Tóm tắt | Ưu | Nhược |
 |---|-----------|---------|----|-------|
-| O1 | Giữ `LLA.ExcelEngine` + module-owned DbContext + resolve header trong package | Ít churn ngắn hạn | Coupling; lệch Platform forever |
+| O1 | Giữ `Sample.ExcelEngine` + module-owned DbContext + resolve header trong package | Ít churn ngắn hạn | Coupling; lệch Platform forever |
 | O2 | Module Atomic + host-owned entity + ambient tenant + code-first registry + unit test trong `UnitTest` + validation trong Core | Rõ boundary; giống Setting; reusable | Breaking; Host boilerplate hơn |
 | O3 | Contract template trong DDD.Domain / Settings-only catalog / OpenAPI schema tĩnh / integration-only test | “Chuẩn” bề mặt hoặc đơn giản | Ô nhiễm DDD; drift; chậm/flake |
 

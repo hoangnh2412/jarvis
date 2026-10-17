@@ -11,7 +11,7 @@
       "id": "conn-001",
       "tenantId": "00000000-0000-0000-0000-000000000001",
       "providerType": 0,
-      "connectionString": "Host=localhost;Port=5432;Database=ghc_lexora;Username=app;Password=***",
+      "connectionString": "Host=localhost;Port=5432;Database=ghc_sample;Username=app;Password=***",
       "partitionFrom": null,
       "partitionTo": null,
       "isDefault": true

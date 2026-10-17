@@ -72,7 +72,7 @@ const SETTINGS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
   </w:compat>
 </w:settings>`
 
-/** US Letter — lề 1 inch (2.54cm) mỗi cạnh (giống LLA-IDAS.docx) */
+/** US Letter — lề 1 inch (2.54cm) mỗi cạnh (giống Sample-Brief.docx) */
 const PAGE = {
   width: 12240,
   height: 16840,

@@ -100,7 +100,7 @@ export const TEMPLATE_FIELD_GROUPS: Record<string, FieldGroupDef[]> = {
     { id: 'terms', label: 'Điều khoản chính' },
     { id: 'sign', label: 'Ký kết' },
   ],
-  'lla-idas': [
+  'sample-brief': [
     { id: 'general', label: 'Thông tin chung' },
     { id: 'flow1', label: 'Luồng 1 — Đồng bộ nhân sự' },
     { id: 'flow2', label: 'Luồng 2 — Chuyển hướng phiên ký' },

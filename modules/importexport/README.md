@@ -1,6 +1,6 @@
 # Platform ImportExport
 
-Excel import/export module (chuẩn hóa từ `LLA.ExcelEngine`).
+Excel import/export module (chuẩn hóa từ `Sample.ExcelEngine`).
 
 **Version NuGet:** `1.2.0` (core + satellite cùng version)
 

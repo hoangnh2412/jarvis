@@ -241,7 +241,7 @@ export async function callUploadCraftDocTemplate(file: File): Promise<DocumentTe
   }
 }
 
-/** Phân tích file upload cục bộ — gắn metadata cho mẫu đã biết (vd. LLA-IDAS.docx). */
+/** Phân tích file upload cục bộ — gắn metadata cho mẫu đã biết (vd. Sample-Brief.docx). */
 export async function resolveCraftDocTemplateFromFile(file: File): Promise<DocumentTemplate> {
   const buffer = await readDocxInput(file)
   const knownId = resolveKnownCraftDocTemplateId(file.name)

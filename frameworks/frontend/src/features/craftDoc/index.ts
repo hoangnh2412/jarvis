@@ -168,9 +168,9 @@ export {
 
   getDefaultFieldValuesMap,
 
-  LLA_IDAS_SAMPLE_DATA,
+  SAMPLE_BRIEF_SAMPLE_DATA,
 
-  getLlaIdasSampleData,
+  getSampleBriefSampleData,
 
   CRAFT_DOC_PAGE_LETTER,
 
@@ -272,7 +272,7 @@ export type {
 
 
 
-export { getCraftDocTemplatesMock, getLlaIdasTemplateDetailMock, getCraftDocTemplatesListMock } from './mocks'
+export { getCraftDocTemplatesMock, getSampleBriefTemplateDetailMock, getCraftDocTemplatesListMock } from './mocks'
 
 export type { CraftDocTemplateDetailMock } from './mocks'
 

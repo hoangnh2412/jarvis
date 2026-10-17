@@ -275,7 +275,7 @@ erp_core/platform/modules/identity/
   Platform.Modules.Account                  ← Login, Logout, Profile, Forgot/Change Password
   Platform.Modules.IdentityAdmin            ← CRUD User (lock/unlock), CRUD Role, gán Permission/Policy
 
-Host (Lexora.Host) = composition root
+Host (Sample.Host) = composition root
   AddPlatformAuthentication(...)            // + AddIdentity<User, Role>()
   AddPlatformAuthorization()
   AddPlatformAuthorizationEntityFramework()
@@ -501,7 +501,7 @@ Operand whitelist — **operand registry** (2026-10-02; thay danh sách hardcode
 ```text
 Platform (mặc định, generic):   User.Id (subject) · User.TenantId · User.OrgId (cột AspNetUsers — Q3)
                                 Resource.TenantId · Resource.OrgId · Resource.CreatedBy
-Sản phẩm / module (đăng ký):    Lexora — AddLexoraAuthorizationOperands():
+Sản phẩm / module (đăng ký):    Sample — AddSampleAuthorizationOperands():
                                 User.DepartmentId · User.ApproveLimit · User.ManagedProjectIds[] · User.ManagedDepartmentIds[] (UserClaim)
                                 Resource.DepartmentId · Resource.Amount · Resource.ProjectId · Resource.EmployeeId
 ```
@@ -780,7 +780,7 @@ Ví dụ CFO: `Expense.Approve` + SameOrg + ApproveLimit + attributes `OrgId` / 
 | Q6 | `ManagedProject` v1? | **B: Domain relationship** | Project có ProjectMember + ProjectPosition; resolve `ManagedProjectIds` từ DB |
 | Q7 | Admin bypass ABAC? | ✅ YES | `Permission = *` → skip ABAC (global) |
 | Q8 | Multi-role policy evaluation? | **C: Per-role path (union)** | Mỗi role = 1 path; result = any path pass → ALLOW |
-| Q9 | Account + IdentityAdmin ở đâu? | **Gộp (1 Host Lexora.Host)** | Đơn giản v1; tách sau nếu cần scaling |
+| Q9 | Account + IdentityAdmin ở đâu? | **Gộp (1 Host Sample.Host)** | Đơn giản v1; tách sau nếu cần scaling |
 | Q10 | Satellite ASP.NET Identity? | **Phase 5 (ngay)** | `Platform.Authentication.Identity` wire UserManager/SignInManager *(tên chốt ban đầu `Platform.Authentication.AspNetIdentity`; đổi 2026-10-02 — xem D20)* |
 
 ### 7.1 Làm rõ thêm
@@ -816,7 +816,7 @@ Result = Path1 OR Path2 (nếu ≥1 thỏa → ALLOW)
 
 #### Q9: Host Architecture (Gộp 1 Host)
 ```
-Lexora.Host (1 process)
+Sample.Host (1 process)
 ├─ Authentication (JWT + ApiKey + Basic)
 ├─ Authorization (RBAC + ABAC engine)
 ├─ Account module (/api/account/*)
@@ -841,12 +841,12 @@ Icon: 🟢 code đúng quyết định · 🟡 đúng một phần · 🔴 chưa
 | # | Trạng thái | Hiện trạng trong code |
 |---|------------|-----------------------|
 | C1 | 🟢 | Dùng `AspNetUsers/Roles/UserRoles/UserClaims/RoleClaims` (`IdentityDbContext<User, Role, Guid>`) |
-| C2 | 🟢 | Chỉ thêm `lexora.policies`, `lexora.policy_rules` |
+| C2 | 🟢 | Chỉ thêm `sample.policies`, `sample.policy_rules` |
 | C3 | 🟢 | Không có bảng `Permissions` / `RolePermissions` / `UserPermissions` |
 | C4 | 🟡 | Assign/Remove permission/policy chặn `IsSystemRole`; `CreateRole` luôn tạo business role. Chưa có lệnh sửa/xoá role nên chưa có luồng nào cần chặn đổi tên/xoá; hằng số `SystemRoles` chưa có |
 | C5 | 🟢 | `RoleGovernanceValidator`: level actor **>** level đích, áp cho mọi lệnh IdentityAdmin |
 | C6 | 🟡 | Grant-scope cho Permission (wildcard theo quyền đang có) và Policy 🟢. Admin (không có policy nào) **không gán được policy** — cần chốt ngoại lệ cho `*` |
-| C7 | 🟢 | Policy chỉ đến từ seed; chưa có API custom policy. Operand qua registry (platform generic + Lexora nghiệp vụ), không còn hardcode nghiệp vụ trong `Platform.Authorization*` |
+| C7 | 🟢 | Policy chỉ đến từ seed; chưa có API custom policy. Operand qua registry (platform generic + Sample nghiệp vụ), không còn hardcode nghiệp vụ trong `Platform.Authorization*` |
 | C8 | 🟢 | JWT chỉ có `sub`, `jti`, `name`, tenant claim — không chứa collection |
 | C9 | 🟡 | RBAC fail-fast trước ABAC 🟢. Permission chỉ cần RBAC (vd `HealthCheck.View`, §1) chỉ chạy được qua `AuthorizeAsync(resource: null)`; nếu có resource mà role không gán policy thì **DENY** — xem vấn đề mở V2 |
 | C10 | 🟢 | `Platform.Authentication.*` không chứa Login/Profile/Password |
@@ -867,7 +867,7 @@ Icon: 🟢 code đúng quyết định · 🟡 đúng một phần · 🔴 chưa
 | D6 | 🟢 | `Role.IsSystemRole`, `Role.RoleLevel` |
 | D7 | 🟡 | Seed dùng tên ổn định `ADMIN` / `TENANT_ADMIN` / `ORG_ADMIN`; chưa có hằng số dùng chung |
 | D8 | 🟡 | Chấp nhận cả `*` và `System.All`; Admin bypass ABAC 🟢; "TenantAdmin/OrgAdmin vẫn qua ABAC scope" **không** đạt nếu seed `System.All` cho họ — ⚠️ V1 |
-| D9 | 🟡 | Seed 7 policy: có `P_OWNER_OR_SAME_DEPT` (Q5), **thiếu** `P_MANAGED_DEPARTMENT`; `P_MANAGED_PROJECT` dùng `DepartmentId IN User.ManagedDepartmentIds` (khác D.2 và Q6). Từ 2026-10-02 (V5): platform chỉ seed 3 policy chung (`P_SAME_TENANT`, `P_SAME_ORG`, `P_OWNER_ONLY`); 4 policy nghiệp vụ do Lexora seed (`AddLexoraAuthorizationSeed`) |
+| D9 | 🟡 | Seed 7 policy: có `P_OWNER_OR_SAME_DEPT` (Q5), **thiếu** `P_MANAGED_DEPARTMENT`; `P_MANAGED_PROJECT` dùng `DepartmentId IN User.ManagedDepartmentIds` (khác D.2 và Q6). Từ 2026-10-02 (V5): platform chỉ seed 3 policy chung (`P_SAME_TENANT`, `P_SAME_ORG`, `P_OWNER_ONLY`); 4 policy nghiệp vụ do Sample seed (`AddSampleAuthorizationSeed`) |
 | D10 | 🟢 | Operator whitelist cố định; operand whitelist = `IOperandRegistry` — `OperandValidator` và `OperandResolver` dùng chung, resolver từ chối operand chưa đăng ký lúc evaluate (kể cả khi resource có property đó). Resource vẫn đọc bằng reflection (chỉ property đã đăng ký) |
 | D11 | 🟢 | AND giữa policy trong một role; OR giữa role (Q8); OR giữa rule trong policy theo `Order` (Q5) |
 | D12 | 🟢 | Lớp 1 Permission 🟢 · Lớp 2 evaluate trên 1 resource 🟢 · query filter cho list 🟢 (`DataScopeFilter` → SQL WHERE, 2026-10-03); endpoint nghiệp vụ chưa gọi |
@@ -892,7 +892,7 @@ Icon: 🟢 code đúng quyết định · 🟡 đúng một phần · 🔴 chưa
 | Q6 | 🔴 | `ManagedProjectIds` chưa resolve từ ProjectMember — đang đọc UserClaim CSV (registry đã parse đúng collection; còn thiếu `OperandSource` dạng truy vấn domain để cắm resolver ProjectMember) |
 | Q7 | 🟢 | Có `*` → bỏ qua ABAC (xem ⚠️ V1) |
 | Q8 | 🟢 | Per-role path (union) — `AuthorizationEngine` |
-| Q9 | 🟡 | Một Host `Lexora.Host` đăng ký đủ 4 khối; chưa map `/api/account/*`, `/api/identity-admin/*` |
+| Q9 | 🟡 | Một Host `Sample.Host` đăng ký đủ 4 khối; chưa map `/api/account/*`, `/api/identity-admin/*` |
 | Q10 | 🟡 | Package `Platform.Authentication.Identity` có entity; chưa wire `UserManager`/`SignInManager` (Host tự gọi `AddIdentity<User, Role>()`) |
 
 #### Vấn đề mở cần chốt
@@ -903,7 +903,7 @@ Icon: 🟢 code đúng quyết định · 🟡 đúng một phần · 🔴 chưa
 | V2 | Permission chỉ-RBAC khi kèm resource | Role cấp permission nhưng không gán policy → DENY (deny-by-default). Cần chốt: giữ deny, hay cho phép "role không policy = toàn quyền theo RBAC" | SA |
 | V3 | C6 với Admin | Admin có `*` nhưng không có policy nên không gán được policy cho role khác | SA |
 | V4 | D19 catalog permission | Chưa có nguồn whitelist; cần chốt nơi khai báo (code từng module) trước khi mở API gán permission. Có thể dùng cùng cơ chế đóng góp như operand registry | SA / Dev |
-| V5 | ~~Seed policy nghiệp vụ nằm ở platform~~ 🟢 **Đã xử lý 2026-10-02** | Platform `AuthorizationSeeder.AddPlatformDefaults` chỉ seed role `ADMIN`/`TENANT_ADMIN`/`ORG_ADMIN` + policy `P_SAME_TENANT`/`P_SAME_ORG`/`P_OWNER_ONLY`. Sản phẩm đóng góp qua `AddPlatformAuthorizationSeed(...)` (Lexora: `AddLexoraAuthorizationSeed()` — role `DIRECTOR`/`CFO`/`DEPARTMENT_MANAGER`/`EMPLOYEE`, policy `P_SAME_DEPARTMENT`/`P_APPROVE_LIMIT`/`P_MANAGED_PROJECT`/`P_OWNER_OR_SAME_DEPT`). `AuthorizationDataSeeder` kiểm tra mọi rule với operand registry **trước khi ghi** (operand chưa đăng ký → lỗi lúc seed), chỉ thêm bản ghi còn thiếu (theo `NormalizedName` / `Code`), không ghi đè bản ghi đã có. Còn mở: Lexora chưa gọi seed lúc start (chờ migration/AutoMigrate) | SA / Dev |
+| V5 | ~~Seed policy nghiệp vụ nằm ở platform~~ 🟢 **Đã xử lý 2026-10-02** | Platform `AuthorizationSeeder.AddPlatformDefaults` chỉ seed role `ADMIN`/`TENANT_ADMIN`/`ORG_ADMIN` + policy `P_SAME_TENANT`/`P_SAME_ORG`/`P_OWNER_ONLY`. Sản phẩm đóng góp qua `AddPlatformAuthorizationSeed(...)` (Sample: `AddSampleAuthorizationSeed()` — role `DIRECTOR`/`CFO`/`DEPARTMENT_MANAGER`/`EMPLOYEE`, policy `P_SAME_DEPARTMENT`/`P_APPROVE_LIMIT`/`P_MANAGED_PROJECT`/`P_OWNER_OR_SAME_DEPT`). `AuthorizationDataSeeder` kiểm tra mọi rule với operand registry **trước khi ghi** (operand chưa đăng ký → lỗi lúc seed), chỉ thêm bản ghi còn thiếu (theo `NormalizedName` / `Code`), không ghi đè bản ghi đã có. Còn mở: host chưa gọi seed lúc start (chờ migration/AutoMigrate) | SA / Dev |
 | V6 🟡 *Proposed* | Login không ghi nhận lần sai mật khẩu (§7.3 A) | Lockout tự động không bao giờ kích hoạt; brute-force không bị chặn | Dev |
 | V7 🟡 *Proposed* | IdentityAdmin không kiểm tenant/org (§7.3 B) | TenantAdmin T001 tạo/khoá/xoá/liệt kê user T002 | SA / Dev |
 | V8 🟡 *Proposed* | Gỡ policy mở rộng phạm vi không bị kiểm soát (§7.3 C) | Actor gỡ `P_SAME_ORG` khỏi role thấp hơn → role đó vượt Org | SA |
@@ -912,11 +912,11 @@ Icon: 🟢 code đúng quyết định · 🟡 đúng một phần · 🔴 chưa
 | V11 🟡 *Proposed* | `CachedPolicyProvider` invalidate là no-op (§7.3 F) | Nếu đăng ký DI như hiện tại, policy cũ còn hiệu lực tới 1 giờ | Dev |
 | V12 🟡 *Proposed* | API engine dễ dùng sai + so sánh lệch kiểu (§7.3 G) | `AuthorizeAsync(resource: null)` bỏ ABAC; `Compare` trả 0 → `<=`/`>=` đạt; claim đoán kiểu → deny âm thầm | SA / Dev |
 | V13 🟡 *Proposed* | Chưa có bootstrap quyền ban đầu (§7.3 H) | Sau migrate không ai có permission; IdentityAdmin không dùng được | SA / Dev |
-| V14 🟡 *Proposed* | JWT thiếu `iss`/`aud`, RefreshToken rỗng, hạn token hardcode (§7.3 I) | Lexora phải tắt `ValidateIssuer`/`ValidateAudience` | Dev |
+| V14 🟡 *Proposed* | JWT thiếu `iss`/`aud`, RefreshToken rỗng, hạn token hardcode (§7.3 I) | Sample phải tắt `ValidateIssuer`/`ValidateAudience` | Dev |
 
 ### 7.3 Amendment 2026-10-03 — Phát hiện rà soát code *(🟡 Proposed — chờ duyệt)*
 
-Rà soát 2026-10-03 đối chiếu ADR ↔ code (`Platform.Authorization*`, `Platform.Modules.*`, `Lexora.Infrastructure`, `Sample`, `UnitTest`). Suite `UnitTest.Authorization|Account|IdentityAdmin`: **178/178 xanh** — các lỗi dưới đây **không** bị test hiện có bắt. Mục này **chưa** là quyết định implement: hướng xử lý chỉ là đề xuất; khi được duyệt mới chuyển 🟢 và code theo.
+Rà soát 2026-10-03 đối chiếu ADR ↔ code (`Platform.Authorization*`, `Platform.Modules.*`, `Sample.Infrastructure`, `Sample`, `UnitTest`). Suite `UnitTest.Authorization|Account|IdentityAdmin`: **178/178 xanh** — các lỗi dưới đây **không** bị test hiện có bắt. Mục này **chưa** là quyết định implement: hướng xử lý chỉ là đề xuất; khi được duyệt mới chuyển 🟢 và code theo.
 
 #### 7.3.1 Lỗi / lỗ hổng chưa được ADR ghi nhận
 
@@ -929,8 +929,8 @@ Rà soát 2026-10-03 đối chiếu ADR ↔ code (`Platform.Authorization*`, `Pl
 | E | V10 | TB | C6 kiểm "actor có permission X" và "actor có policy P" **riêng rẽ** trên toàn bộ role của actor. Actor duyệt chỉ trong phòng (role A: `Expense.Approve` + `P_SAME_DEPARTMENT`) nhưng có `P_SAME_TENANT` ở role B → tạo được role `Expense.Approve` + `P_SAME_TENANT` | `AssignPermissionToRoleCommandHandler.cs`, `AssignPolicyToRoleCommandHandler.cs` | v1: chấp nhận rủi ro và ghi rõ, **hoặc** kiểm theo path: tồn tại role của actor cấp X với tập policy ⊆ tập policy của role đích (role đích hẹp hơn hoặc bằng) |
 | F | V11 | TB | `ClearPolicyCaches()` rỗng, `InvalidateCacheAsync` không xoá gì; `GetPoliciesByRoleAsync` (đường engine dùng) không cache | `Platform.Authorization/Services/CachedPolicyProvider.cs` | Không đăng ký DI cho tới Phase 7; khi làm: cache theo `roleId` + key-version/`CancellationChangeToken` để invalidate được; IdentityAdmin gọi invalidate sau mọi lệnh ghi |
 | G | V12 | TB | (1) `AuthorizeAsync(userId, perm, resource: null)` trả RBAC-only kể cả khi role có policy → quên truyền resource là lọt ABAC. (2) `PolicyEvaluator.Compare` trả 0 khi không `IComparable` → `<=`/`>=` đạt (fail-open). (3) `OperandResolver.ParseScalar` đoán kiểu Guid → decimal → string; resource `int`/`long`/`string` lệch kiểu → deny âm thầm | `AuthorizationEngine.cs`, `PolicyEvaluator.cs`, `Platform.Authorization.EntityFramework/Services/OperandResolver.cs` | (1) Tách rõ `HasPermissionAsync` (RBAC) và `AuthorizeAsync(resource bắt buộc)`, hoặc `AuthorizeAsync(null)` deny khi role cấp permission có policy — gộp quyết định với V2. (2) `Compare` không so được → rule không đạt. (3) Khai báo kiểu trong `OperandDefinition` (Guid/decimal/string) → parse theo kiểu, validator chặn `<`/`>` trên Guid/string (T37) |
-| H | V13 | TB | Seeder không seed RoleClaims và không tạo user nào → sau migrate `ADMIN` không có `*`, không actor nào chạy được IdentityAdmin | `AuthorizationSeeder.cs`, Lexora Host | Seed RoleClaim `ADMIN` = `*`; tạo admin đầu tiên bằng lệnh/endpoint bootstrap một lần (mật khẩu từ user-secrets/env, không commit) — chốt cơ chế cụ thể khi duyệt |
-| I | V14 | Thấp | JWT không có `iss`/`aud`; `RefreshToken = ""`; hạn 1 giờ hardcode; Lexora `appsettings.json` tắt `ValidateIssuer`/`ValidateAudience` | `LoginCommandHandler.cs`, `Lexora.Host/appsettings.json` | Phát `iss`/`aud` theo `AuthenticationJwtOption`, bật lại validate; hạn token lấy từ config; RefreshToken để phase Account API |
+| H | V13 | TB | Seeder không seed RoleClaims và không tạo user nào → sau migrate `ADMIN` không có `*`, không actor nào chạy được IdentityAdmin | `AuthorizationSeeder.cs`, Sample Host | Seed RoleClaim `ADMIN` = `*`; tạo admin đầu tiên bằng lệnh/endpoint bootstrap một lần (mật khẩu từ user-secrets/env, không commit) — chốt cơ chế cụ thể khi duyệt |
+| I | V14 | Thấp | JWT không có `iss`/`aud`; `RefreshToken = ""`; hạn 1 giờ hardcode; Sample `appsettings.json` tắt `ValidateIssuer`/`ValidateAudience` | `LoginCommandHandler.cs`, `Sample.Host/appsettings.json` | Phát `iss`/`aud` theo `AuthenticationJwtOption`, bật lại validate; hạn token lấy từ config; RefreshToken để phase Account API |
 
 Ghi nhận phụ (không tạo V riêng): `OperandResolver.ResolveUserClaimAsync` dùng `FirstOrDefault` → user có 2 claim cùng type cho kết quả không xác định; `UpdateProfile` đổi email không đặt lại `EmailConfirmed`; `GetUsersQueryHandler` N+1 (`GetRolesAsync` từng user).
 
@@ -995,7 +995,7 @@ Phạm vi: CRUD/validate/seed/cache của bảng `Policies` / `PolicyRules`; gá
 
 | # | Case | Input / bước | Expect | Trạng thái |
 |---|------|--------------|--------|------------|
-| T20 | Seed idempotent Policies P001–P008 | Chạy seed 2 lần | Không duplicate `Code`; đủ 8 policy `IsSystemPolicy=true` | 🔴 Test idempotent xanh nhưng seed mới **7/8** (thiếu `P_MANAGED_DEPARTMENT`) — `Authorization/AuthorizationSeederTests.T20_*`; 7 = 3 platform + 4 đóng góp nghiệp vụ (V5, test dùng `Helpers/TestSeeds` mô phỏng Lexora) |
+| T20 | Seed idempotent Policies P001–P008 | Chạy seed 2 lần | Không duplicate `Code`; đủ 8 policy `IsSystemPolicy=true` | 🔴 Test idempotent xanh nhưng seed mới **7/8** (thiếu `P_MANAGED_DEPARTMENT`) — `Authorization/AuthorizationSeederTests.T20_*`; 7 = 3 platform + 4 đóng góp nghiệp vụ (V5, test dùng `Helpers/TestSeeds` mô phỏng Sample) |
 | T21 | Seed idempotent PolicyRules PR01–PR09 | Chạy seed 2 lần | Mỗi Policy đủ rules; `Order` đúng Phụ lục D.2 | 🔴 Test xanh với **8/9** rule (thiếu PR07); PR06 seed là `DepartmentId IN ManagedDepartmentIds`, khác D.2 |
 | T22 | `IPolicyProvider.GetAsync("P_SAME_ORG")` | Code `P_SAME_ORG` | Trả Policy + 1 rule `Resource.OrgId == User.OrgId` | 🟢 `T22_*` |
 | T23 | `GetAsync` policy không tồn tại | Code `P_UNKNOWN` | `null` / NotFound — không throw unhandled | 🟢 `T23_*` |
@@ -1140,8 +1140,8 @@ Viết cùng lúc sửa V6–V14 (§7.3). Cột "Hiện tại" = kết quả d�
 | T106 | Seed: role `ADMIN` có RoleClaim `*`; bootstrap admin chạy 1 lần, idempotent | Có đúng 1 admin; chạy lại không tạo thêm | `Authorization/AuthorizationSeederTests` | V13 | đỏ |
 | T107 | Token Login có `iss`/`aud` khớp cấu hình; JwtBearer bật validate đọc được | Validate pass; sai `aud` → reject | `Account/LoginCommandHandlerTests` | V14 | đỏ |
 | T108 | Data Scope chạy trên PostgreSQL thật (Testcontainers) — đối chiếu engine từng bản ghi, có null | Khớp 100% | `UnitTest` integration (hoặc project integration riêng) | T10 | chưa có (Sample kiểm tay 21/21) |
-| T109 | Lexora: seed `AddLexoraAuthorizationSeed` hợp lệ với `AddLexoraAuthorizationOperands` | `AuthorizationDataSeeder.SeedAsync` không throw | `lexora/tests/Lexora.Application.Tests` (hoặc Infrastructure test) | V5 | chưa có |
-| T110 | Lexora Host compose: resolve `IAuthorizationEngine`, `IDataScopeFilter`, handler Account/IdentityAdmin | Không throw (smoke T1 đầy đủ) | `lexora/tests` (WebApplicationFactory) | T1 | chưa có |
+| T109 | Sample: seed `AddSampleAuthorizationSeed` hợp lệ với `AddSampleAuthorizationOperands` | `AuthorizationDataSeeder.SeedAsync` không throw | `sample/tests/Sample.Application.Tests` (hoặc Infrastructure test) | V5 | chưa có |
+| T110 | Sample Host compose: resolve `IAuthorizationEngine`, `IDataScopeFilter`, handler Account/IdentityAdmin | Không throw (smoke T1 đầy đủ) | `sample/tests` (WebApplicationFactory) | T1 | chưa có |
 
 ---
 
@@ -1171,7 +1171,7 @@ Viết cùng lúc sửa V6–V14 (§7.3). Cột "Hiện tại" = kết quả d�
 |---|------|------------|---------|
 | 1 | Confirm §7 | 🟢 | Accepted 2026-09-29 |
 | 2 | `Platform.Authorization` + Identity extension | 🟢 | Engine `Platform.Authorization` (không EF) + store EF `Platform.Authorization.EntityFramework` + `Platform.Authentication.Identity` (`User`, `Role`); migration `InitialIdentitySchema` đã tạo, **chưa áp DB** |
-| 3 | Seed System Role/Policy (+ T20–T25) | 🟡 | Seeder + T20–T25 + 6 test V5 xanh; seed tách platform / sản phẩm (V5); Sample gọi seed lúc start; thiếu `P_MANAGED_DEPARTMENT`, chưa seed RoleClaims, Lexora chưa gọi lúc start |
+| 3 | Seed System Role/Policy (+ T20–T25) | 🟡 | Seeder + T20–T25 + 6 test V5 xanh; seed tách platform / sản phẩm (V5); app Sample gọi seed lúc start; thiếu `P_MANAGED_DEPARTMENT`, chưa seed RoleClaims, host chưa gọi lúc start |
 | 4 | RBAC + ABAC runtime + Data Scope | 🟡 | Engine 🟢 (per-role path AND/OR, wildcard, fail-closed khi thiếu policy/thuộc tính); Data Scope 🟢 (SQL WHERE, 2026-10-03); endpoint nghiệp vụ chưa gọi engine / data scope |
 | 5 | Cấu hình/validate Policy & PolicyRule (§8.5) | 🟡 | Validator whitelist có; chưa có API CRUD custom Policy (Phase 4b) |
 | 6 | Module Account (chức năng 4–8) | 🟡 | Handler đủ 4–8 (lockout, tenant claim); 🔴 API `/api/account/*`, email thật, revoke token |
@@ -1185,7 +1185,7 @@ Viết cùng lúc sửa V6–V14 (§7.3). Cột "Hiện tại" = kết quả d�
 ## 11. Project Structure — Cấu trúc triển khai
 
 > **Cập nhật 2026-10-02** theo code thực tế (thay cho cấu trúc dự kiến ban đầu). Icon: 🟢 xong · 🟡 có nhưng chưa đủ · 🔴 chưa làm.
-> Khác với bản dự kiến: (1) module đặt trong `erp_core/platform/modules/identity/` và đặt tên `Platform.Modules.*` (không dùng `Lexora.*` — module platform không mang tên sản phẩm); (2) `ApplicationRole` đổi thành `Role` và cùng `User` chuyển sang satellite `Platform.Authentication.Identity` (Q10) để Account không phải reference engine phân quyền (C12/T13); (3) mỗi module hiện là **một project** (chưa tách Domain / Application / Infrastructure / Api); (4) migration nằm ở `Lexora.Infrastructure`, không ở framework; (5) engine phân quyền tên `Platform.Authorization` (Q4 amendment 2026-10-02 — trước đó `Platform.IdentityAccessManagement`); (6) phần EF của phân quyền tách thành `Platform.Authorization.EntityFramework` để core, Account, IdentityAdmin không phụ thuộc EF Core; (7) store danh tính đổi tên `Platform.Authentication.AspNetIdentity` → `Platform.Authentication.Identity` (D20, Q10).
+> Khác với bản dự kiến: (1) module đặt trong `erp_core/platform/modules/identity/` và đặt tên `Platform.Modules.*` (không dùng `Sample.*` — module platform không mang tên sản phẩm); (2) `ApplicationRole` đổi thành `Role` và cùng `User` chuyển sang satellite `Platform.Authentication.Identity` (Q10) để Account không phải reference engine phân quyền (C12/T13); (3) mỗi module hiện là **một project** (chưa tách Domain / Application / Infrastructure / Api); (4) migration nằm ở `Sample.Infrastructure`, không ở framework; (5) engine phân quyền tên `Platform.Authorization` (Q4 amendment 2026-10-02 — trước đó `Platform.IdentityAccessManagement`); (6) phần EF của phân quyền tách thành `Platform.Authorization.EntityFramework` để core, Account, IdentityAdmin không phụ thuộc EF Core; (7) store danh tính đổi tên `Platform.Authentication.AspNetIdentity` → `Platform.Authentication.Identity` (D20, Q10).
 
 ### 11.0 Bố cục & phụ thuộc
 
@@ -1196,8 +1196,8 @@ Viết cùng lúc sửa V6–V14 (§7.3). Cột "Hiện tại" = kết quả d�
 | Phân quyền — store EF (D14) | `Platform.Authorization.EntityFramework` | `erp_core/platform/frameworks/Platform.Authorization.EntityFramework/` | 🟢 tách 2026-10-02 |
 | Account (D17) | `Platform.Modules.Account` | `erp_core/platform/modules/identity/Platform.Modules.Account/` | 🟡 handler xong · 🔴 API |
 | IdentityAdmin (D18) | `Platform.Modules.IdentityAdmin` | `erp_core/platform/modules/identity/Platform.Modules.IdentityAdmin/` | 🟡 handler xong · 🔴 API |
-| Persistence + migration | `Lexora.Infrastructure` | `lexora/src/Lexora.Infrastructure/Persistence/` | 🟡 migration đã tạo, chưa áp DB |
-| Composition root (Q9) | `Lexora.Host` | `lexora/src/Lexora.Host/` | 🟡 |
+| Persistence + migration | `Sample.Infrastructure` | `sample/src/Sample.Infrastructure/Persistence/` | 🟡 migration đã tạo, chưa áp DB |
+| Composition root (Q9) | `Sample.Host` | `sample/src/Sample.Host/` | 🟡 |
 | Test | `UnitTest` (platform) | `erp_core/platform/UnitTest/{Authorization,Account,IdentityAdmin}/` | 🟢 178 test xanh |
 | Demo & code mẫu phân quyền | `Sample` (platform) | `erp_core/platform/Sample/{AuthorizationDemo,Controllers}/` | 🟢 chạy trên PostgreSQL thật — xem §11.8 |
 
@@ -1207,8 +1207,8 @@ Platform.Authorization                  → (không project nào) — chỉ Micr
 Platform.Authorization.EntityFramework  → Platform.Authorization + Platform.Authentication.Identity + Platform.ORM.EntityFramework, EF Core
 Platform.Modules.Account                → Platform.Authentication(.Jwt) + Platform.Authentication.Identity   (KHÔNG → Platform.Authorization; không EF)
 Platform.Modules.IdentityAdmin          → Platform.Authentication + Platform.Authentication.Identity + Platform.Authorization   (không EF)
-Lexora.Infrastructure                   → Platform.Authorization.EntityFramework (AppIdentityDbContext, LexoraIdentityStoreContext)
-Lexora.Host                             → các khối trên; gọi AddPlatformAuthorization() + AddPlatformAuthorizationEntityFramework()
+Sample.Infrastructure                   → Platform.Authorization.EntityFramework (AppIdentityDbContext, SampleIdentityStoreContext)
+Sample.Host                             → các khối trên; gọi AddPlatformAuthorization() + AddPlatformAuthorizationEntityFramework()
 ```
 
 Kiểm chứng 2026-10-02 bằng `dotnet list package --include-transitive`: chỉ `Platform.Authorization.EntityFramework` có `Microsoft.EntityFrameworkCore*`; `Platform.Authorization`, `Platform.Authentication.Identity`, Account, IdentityAdmin đều không (kể cả bắc cầu).
@@ -1267,8 +1267,8 @@ erp_core/platform/frameworks/Platform.Authorization.EntityFramework/  ← store 
 │   ├── AuthorizationDataSeeder.cs              🟢 gộp mặc định + đóng góp AddPlatformAuthorizationSeed(...), validate bằng OperandValidator
 │   └── EntityConfigurations/
 │       ├── RoleConfiguration.cs                🟢 AspNetRoles + RoleLevel/IsSystemRole/DisplayName/CreatedAt, index RoleLevel
-│       ├── PolicyConfiguration.cs              🟢 lexora.policies, unique Code
-│       └── PolicyRuleConfiguration.cs          🟢 lexora.policy_rules, unique (PolicyId, Order)
+│       ├── PolicyConfiguration.cs              🟢 sample.policies, unique Code
+│       └── PolicyRuleConfiguration.cs          🟢 sample.policy_rules, unique (PolicyId, Order)
 └── Services/
     ├── PermissionProvider.cs                   🟢
     ├── PolicyProvider.cs                       🟢
@@ -1347,18 +1347,18 @@ dotnet test erp_core/platform/UnitTest/UnitTest.csproj -p:SkipFrontendBuild=true
 
 Lưu ý: tên test trong `AuthorizationEngineTests` / `PolicyEvaluatorTests` (T2, T5, T77…) có từ trước và **không trùng nghĩa** với mã test §8; test mới ghi mã §8 trong `DisplayName`. 🔴 T13 (arch test chặn Account reference Authorization) chưa có — hiện chỉ bảo đảm bằng csproj.
 
-### 11.6 Lexora.Host — Composition
+### 11.6 Sample.Host — Composition
 
 ```csharp
-// lexora/src/Lexora.Host/DependencyInjection/HostLayerExtension.cs (AddHostLayer)
+// sample/src/Sample.Host/DependencyInjection/HostLayerExtension.cs (AddHostLayer)
 builder.Services.AddIdentity<User, Role>()
   .AddEntityFrameworkStores<AppIdentityDbContext>()
   .AddDefaultTokenProviders();
 builder.Services.AddPlatformAuthentication(builder.Configuration, auth => auth.AddCoreJwtBearer(builder.Configuration));
 builder.AddPlatformAuthorization();                 // Platform.Authorization (engine)
 builder.AddPlatformAuthorizationEntityFramework();  // Platform.Authorization.EntityFramework (provider EF)
-builder.AddLexoraAuthorizationOperands();           // operand nghiệp vụ Lexora (Lexora.Infrastructure/DependencyInjection/AuthorizationOperandsExtension.cs)
-builder.AddLexoraAuthorizationSeed();               // role/policy nghiệp vụ Lexora (AuthorizationSeedExtension.cs, V5)
+builder.AddSampleAuthorizationOperands();           // operand nghiệp vụ Sample (Sample.Infrastructure/DependencyInjection/AuthorizationOperandsExtension.cs)
+builder.AddSampleAuthorizationSeed();               // role/policy nghiệp vụ Sample (AuthorizationSeedExtension.cs, V5)
 builder.Services.AddAccountApplication();       // Platform.Modules.Account
 builder.Services.AddIdentityAdminApplication(); // Platform.Modules.IdentityAdmin
 
@@ -1374,32 +1374,32 @@ app.MapControllers();
 | `TenantClaimName` (mặc định `GroupSid`) — Login phát, `HttpCurrentUserStore` / `UserTenantIdResolver` đọc | 🟢 |
 | Map API Account / IdentityAdmin | 🔴 |
 | Endpoint nghiệp vụ gọi engine (RBAC + ABAC) | 🔴 |
-| Gọi seeder lúc start | 🔴 Lexora đã đăng ký đóng góp seed nhưng chưa gọi `AuthorizationDataSeeder.SeedAsync()` (chờ áp migration); Sample đã gọi |
+| Gọi seeder lúc start | 🔴 Host đã đăng ký đóng góp seed nhưng chưa gọi `AuthorizationDataSeeder.SeedAsync()` (chờ áp migration); app Sample đã gọi |
 | Tự áp migration Identity lúc start | 🔴 cố ý chưa gắn — `appsettings.json` đang bật `AutoMigrate` |
 | Cấu hình `PlatformAuthorization:CacheDuration` / `AllowCustomPolicies` | 🔴 |
 
-### 11.7 Persistence & Migration (Lexora.Infrastructure)
+### 11.7 Persistence & Migration (Sample.Infrastructure)
 
 ```text
-lexora/src/Lexora.Infrastructure/DependencyInjection/
-├── AuthorizationOperandsExtension.cs           🟢 AddLexoraAuthorizationOperands(): User.DepartmentId/ApproveLimit/ManagedProjectIds[]/ManagedDepartmentIds[], Resource.DepartmentId/Amount/ProjectId/EmployeeId
-└── AuthorizationSeedExtension.cs               🟢 AddLexoraAuthorizationSeed(): role DIRECTOR/CFO/DEPARTMENT_MANAGER/EMPLOYEE, policy P_SAME_DEPARTMENT/P_APPROVE_LIMIT/P_MANAGED_PROJECT/P_OWNER_OR_SAME_DEPT (V5)
+sample/src/Sample.Infrastructure/DependencyInjection/
+├── AuthorizationOperandsExtension.cs           🟢 AddSampleAuthorizationOperands(): User.DepartmentId/ApproveLimit/ManagedProjectIds[]/ManagedDepartmentIds[], Resource.DepartmentId/Amount/ProjectId/EmployeeId
+└── AuthorizationSeedExtension.cs               🟢 AddSampleAuthorizationSeed(): role DIRECTOR/CFO/DEPARTMENT_MANAGER/EMPLOYEE, policy P_SAME_DEPARTMENT/P_APPROVE_LIMIT/P_MANAGED_PROJECT/P_OWNER_OR_SAME_DEPT (V5)
 
-lexora/src/Lexora.Infrastructure/Persistence/
+sample/src/Sample.Infrastructure/Persistence/
 ├── AppIdentityDbContext.cs                     🟢 IdentityDbContext<User, Role, Guid> + Policies/PolicyRules — SỞ HỮU schema & migration
 ├── AppIdentityDbContextDesignTimeFactory.cs    🟢 cho dotnet ef; không nhúng credential
-├── LexoraIdentityStoreContext.cs               🟢 : IdentityDbContextBase (Platform.Authorization.EntityFramework) — provider đọc cùng bảng; KHÔNG sinh migration
+├── SampleIdentityStoreContext.cs               🟢 : IdentityDbContextBase (Platform.Authorization.EntityFramework) — provider đọc cùng bảng; KHÔNG sinh migration
 └── IdentityMigrations/
-    ├── 20261002135313_InitialIdentitySchema.cs 🟢 tạo toàn bộ AspNet* + lexora.policies/policy_rules
+    ├── 20261002135313_InitialIdentitySchema.cs 🟢 tạo toàn bộ AspNet* + sample.policies/policy_rules
     ├── 20261002135313_InitialIdentitySchema.Designer.cs
     └── AppIdentityDbContextModelSnapshot.cs
 ```
 
-- Bảng lịch sử riêng: `__EFMigrationsHistory_Identity` (cùng database với ErpCore / Lexora `AppDbContext`).
-- Chưa áp vào DB nào. Áp thủ công (chạy từ `lexora/src`):
+- Bảng lịch sử riêng: `__EFMigrationsHistory_Identity` (cùng database với ErpCore / Sample `AppDbContext`).
+- Chưa áp vào DB nào. Áp thủ công (chạy từ `sample/src`):
 
 ```bash
-dotnet ef database update --project Lexora.Infrastructure --startup-project Lexora.Host --context AppIdentityDbContext
+dotnet ef database update --project Sample.Infrastructure --startup-project Sample.Host --context AppIdentityDbContext
 ```
 
 Schema thực tế (PostgreSQL; bảng Identity ở schema mặc định, tên PascalCase theo ASP.NET Identity — khác mẫu snake_case dự kiến cũ):
@@ -1417,8 +1417,8 @@ Schema thực tế (PostgreSQL; bảng Identity ở schema mặc định, tên P
 
 -- AspNetUserRoles, AspNetUserClaims, AspNetRoleClaims, AspNetUserLogins, AspNetUserTokens: chuẩn ASP.NET Identity
 
--- lexora.policies:     Id, Code (unique), Name, ResourceType, Action, IsSystemPolicy, CreatedAt, UpdatedAt
--- lexora.policy_rules: Id, PolicyId (FK cascade), LeftOperand, Operator, RightOperand, Order, CreatedAt — unique (PolicyId, Order)
+-- sample.policies:     Id, Code (unique), Name, ResourceType, Action, IsSystemPolicy, CreatedAt, UpdatedAt
+-- sample.policy_rules: Id, PolicyId (FK cascade), LeftOperand, Operator, RightOperand, Order, CreatedAt — unique (PolicyId, Order)
 ```
 
 🔴 Còn lại: chuyển dữ liệu cũ nếu DB đã có claim `GroupSid` / `OrgId` trên user; gộp hai DbContext Identity nếu không cần tách đọc/ghi.
@@ -1473,12 +1473,12 @@ builder.Services.AddScoped<IdentityDbContextBase>(sp => sp.GetRequiredService<Sa
 | **1** | Framework | ✅ `Platform.Authorization` package (lúc đó tên `Platform.IdentityAccessManagement`, đổi 2026-10-02 — Q4): Domain (Policy, PolicyRule; `Role` — trước đây ApplicationRole — chuyển sang `Platform.Authentication.Identity` cùng `User`), EF mappings, base DbContext; Abstractions (IAuthorizationEngine, IOperandResolver, etc.); Services (PermissionProvider, PolicyProvider, PolicyEvaluator, OperandResolver, AuthorizationEngine); HostExtension for DI | **22m 40s** (2026-09-29 21:46–22:08) | ✅ Build xanh; 39 unit tests pass (thời điểm đó) | 🟢 Migration `InitialIdentitySchema` đã tạo (chưa áp DB) |
 | **2** | Seed | ✅ System Roles (R_ADMIN, R_TENANT_ADMIN, R_ORG_ADMIN, R_DIRECTOR, R_CFO, R_DEPARTMENT_MANAGER, R_EMPLOYEE) + Policies (P_SAME_TENANT, P_SAME_ORG, P_SAME_DEPARTMENT, P_OWNER_ONLY, P_APPROVE_LIMIT, P_MANAGED_PROJECT, P_OWNER_OR_SAME_DEPT) + PolicyRules (seed extension method AuthorizationSeeder) | **~3m** (2026-09-29 22:10–22:13) | ✅ T20–T25, T1b pass (7 tests); total 46 tests 🟢 (thời điểm đó) | 🟡 Thiếu `P_MANAGED_DEPARTMENT`; chưa seed RoleClaims; chưa gọi lúc start |
 | **3** | Engine | `PermissionProvider`, `PolicyProvider`, `PolicyEvaluator`, `OperandResolver`, `AuthorizationEngine` (Permission + ABAC check + Admin bypass); Operand whitelist (T9); validation on save | 5–7 ngày | T4–T6, T9, T33–T36, T60–T71 🟢; unit tests; benchmark | 🟡 Engine đúng D11/Q8 (AND trong role, OR giữa role), wildcard theo quyền đang có, `User.*` theo Q3, fail-closed khi thiếu policy/thuộc tính — 94 test Authorization xanh; chưa benchmark; resolver vẫn reflection + 1 query/operand |
-| **4** | Data Scope | Policy group OR (Employee: P_OWNER_OR_SAME_DEPT = Owner ∨ SameDept); `IDataScopeFilter` impl; query filtering helpers | 3–4 ngày | T6, T10, T74–T76 🟢 | 🟡 OR trong policy 🟢 (T74–T76); `DataScopeFilter` 🟢 (SQL WHERE); Sample có endpoint mẫu (§11.8); Lexora chưa có endpoint list dùng |
+| **4** | Data Scope | Policy group OR (Employee: P_OWNER_OR_SAME_DEPT = Owner ∨ SameDept); `IDataScopeFilter` impl; query filtering helpers | 3–4 ngày | T6, T10, T74–T76 🟢 | 🟡 OR trong policy 🟢 (T74–T76); `DataScopeFilter` 🟢 (SQL WHERE); Sample có endpoint mẫu (§11.8); Sample chưa có endpoint list dùng |
 | **4b** | Policy Config API | (Optional v1) API endpoints: Create/Update/Delete custom Policy + PolicyRule; immutability guard (system policies reject); validate operand/operator on save | 5–7 ngày | T26–T32, T41–T43, T52 🟢 (nếu enabled) | 🔴 |
 | **5** | Account | Module: `Platform.Modules.Account` (`erp_core/platform/modules/identity/`) + Handlers (Login, Logout, ChangePassword, ForgotPassword, ResetPassword, GetProfile, UpdateProfile); Email service; Controller `/api/account/*` | 4–5 ngày | T11, T13 🟢; E2E login + logout OK | 🟡 Handler xong (lockout, tenant claim — 9 test); 🔴 API, email thật, revoke token, T13 tự động |
 | **6** | IdentityAdmin | Module: `Platform.Modules.IdentityAdmin` (`erp_core/platform/modules/identity/`) + Handlers (CreateUser, AssignPermission, AssignPolicy, CreatePolicyRule); scope validation (C6); Controller `/api/identity-admin/*` with [Authorize(Roles="Admin")] | 5–7 ngày | T7–T8, T12, T45–T51, T77–T80 🟢 | 🟡 Handler + C5/C6 trên mọi lệnh (35 test); 🔴 API, tenant/org scope, CreatePolicyRule |
 | **7** | Caching | `CachedPolicyProvider` decorator; TTL-based + event invalidation on PolicyRule change; `IMemoryCache` or distributed | 2–3 ngày | T52–T54 🟢 | 🟡 Decorator có nhưng chưa đăng ký DI; chưa có snapshot/invalidation |
-| **8** | Demo + Docs | Sample compose (Lexora.Host with all 4 khối); end-to-end smoke test (login → create expense → cffo approves); README + ADR index; Phụ lục D data seeded | 2–3 ngày | E2E demo passes; docs reviewed | 🟡 Lexora.Host đăng ký DI đủ 4 khối; README platform đồng bộ; Sample: demo + code mẫu phân quyền chạy trên PostgreSQL (§11.8); 🔴 E2E, seed Phụ lục D |
+| **8** | Demo + Docs | Sample compose (Sample.Host with all 4 khối); end-to-end smoke test (login → create expense → cffo approves); README + ADR index; Phụ lục D data seeded | 2–3 ngày | E2E demo passes; docs reviewed | 🟡 Sample.Host đăng ký DI đủ 4 khối; README platform đồng bộ; Sample: demo + code mẫu phân quyền chạy trên PostgreSQL (§11.8); 🔴 E2E, seed Phụ lục D |
 | **9+** | (Later) | DSL expression tree for OR (Policy Group); wire UserManager/SignInManager trong `Platform.Authentication.Identity` (package + entity đã có — Q10); ADR riêng nếu scope mở rộng | TBD | Separate ADR; scope/timeline chốt sau | 🔴 |
 
 ---
@@ -1566,9 +1566,9 @@ Seed minh họa cho Tenant `T001`, hai Org `O001` / `O002`, và các role nghi�
 
 > **So với seed thực tế (`AuthorizationSeeder`, 2026-10-02):**
 > - D.1/D.2: seed **7 policy / 8 rule** — thiếu `P_MANAGED_DEPARTMENT` (P007 / PR07); `P_MANAGED_PROJECT` seed là `Resource.DepartmentId IN User.ManagedDepartmentIds` thay vì PR06 `==`.
-> - Nguồn seed (V5): platform seed `ADMIN`/`TENANT_ADMIN`/`ORG_ADMIN` + `P_SAME_TENANT`/`P_SAME_ORG`/`P_OWNER_ONLY`; phần còn lại do Lexora đóng góp (`AuthorizationSeedExtension`).
+> - Nguồn seed (V5): platform seed `ADMIN`/`TENANT_ADMIN`/`ORG_ADMIN` + `P_SAME_TENANT`/`P_SAME_ORG`/`P_OWNER_ONLY`; phần còn lại do Sample đóng góp (`AuthorizationSeedExtension`).
 > - D.3: seed **7 role** (`ADMIN`, `TENANT_ADMIN`, `ORG_ADMIN`, `DIRECTOR`, `CFO`, `DEPARTMENT_MANAGER`, `EMPLOYEE`); chưa có `IT_CORP`, `CHIEF_ACCOUNTANT`, `CTO`, `TECHNICAL_MANAGER`, `SALES_MANAGER`, `SALES_EMPLOYEE`.
-> - D.4–D.7: **chưa seed** RoleClaims, user mẫu, UserClaims, UserRoles. Seeder chưa được gọi lúc Lexora.Host start.
+> - D.4–D.7: **chưa seed** RoleClaims, user mẫu, UserClaims, UserRoles. Seeder chưa được gọi lúc Sample.Host start.
 > - Sample (`erp_core/platform/Sample/AuthorizationDemo`) có bộ dữ liệu demo riêng (role `SAMPLE_*`, 7 user, RoleClaims/UserClaims) trên database `SampleAuthorization` và 13 kịch bản AZ-01..AZ-13 chạy qua `GET api/_authz-demo/scenarios` — kiểm thử trực tiếp 2026-10-02: 13/13 pass trên Postgres.
 > - Test dùng dữ liệu tương đương Phụ lục D nhưng tự dựng trong `Authorization/AuthorizationEnginePerRolePathTests` (§8.5.6).
 

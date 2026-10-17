@@ -52,7 +52,7 @@
   --color-accent-soft-bright: #ccfbf1;
   --color-accent-hover: #0d9488;
 
-  /* CROSS-MODULE 2026-09-26 · slice Lexora HRM typography
+  /* CROSS-MODULE 2026-09-26 · slice Sample HRM typography
      Nguyên nhân: --font-sans (Segoe UI) lệch .hrm-app (Inter) — menu con sidebar khác bảng/nút.
      Lý do: SSOT Inter trên token kit + load font; giữ serif/mono riêng cho in/code.
      Owner: Platform kit. Không đụng PrimeReact theme preset. */

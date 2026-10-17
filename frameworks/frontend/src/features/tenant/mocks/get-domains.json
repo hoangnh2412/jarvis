@@ -10,7 +10,7 @@
       "deletedBy": null,
       "id": "dom-001",
       "tenantId": "00000000-0000-0000-0000-000000000001",
-      "domain": "ghc.lexora.local",
+      "domain": "ghc.sample.local",
       "isPrimary": true
     },
     {

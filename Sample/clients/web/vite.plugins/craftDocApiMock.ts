@@ -79,15 +79,15 @@ function readJsonFile<T>(filePath: string): T {
 
 /**
  * Vite middleware mock `/api/v1/craft-doc/*`.
- * Seed: `@platform/core` → `features/craftDoc/mocks/*.json` + `mocks/assets/LLA-IDAS.docx`
+ * Seed: `@platform/core` → `features/craftDoc/mocks/*.json` + `mocks/assets/Sample-Brief.docx`
  */
 export function craftDocApiMockPlugin(options: {
   enabled: boolean
   templatesListJsonPath: string
-  llaIdasTemplateJsonPath: string
-  llaIdasDocxPath: string
+  sampleBriefTemplateJsonPath: string
+  sampleBriefDocxPath: string
 }): Plugin {
-  const { enabled, templatesListJsonPath, llaIdasTemplateJsonPath, llaIdasDocxPath } =
+  const { enabled, templatesListJsonPath, sampleBriefTemplateJsonPath, sampleBriefDocxPath } =
     options
 
   return {
@@ -96,16 +96,16 @@ export function craftDocApiMockPlugin(options: {
       if (!enabled) return
 
       let templatesList = readJsonFile<CraftDocTemplatesListSeed>(templatesListJsonPath)
-      let llaIdasDetail = readJsonFile<CraftDocTemplateDetailSeed>(llaIdasTemplateJsonPath)
+      let sampleBriefDetail = readJsonFile<CraftDocTemplateDetailSeed>(sampleBriefTemplateJsonPath)
 
       const reloadSeed = () => {
         templatesList = readJsonFile<CraftDocTemplatesListSeed>(templatesListJsonPath)
-        llaIdasDetail = readJsonFile<CraftDocTemplateDetailSeed>(llaIdasTemplateJsonPath)
+        sampleBriefDetail = readJsonFile<CraftDocTemplateDetailSeed>(sampleBriefTemplateJsonPath)
       }
 
       try {
         fs.watchFile(templatesListJsonPath, { interval: 800 }, reloadSeed)
-        fs.watchFile(llaIdasTemplateJsonPath, { interval: 800 }, reloadSeed)
+        fs.watchFile(sampleBriefTemplateJsonPath, { interval: 800 }, reloadSeed)
       } catch {
         /* ignore */
       }
@@ -131,14 +131,14 @@ export function craftDocApiMockPlugin(options: {
           const detailMatch = pathname.match(/^\/api\/v1\/craft-doc\/templates\/([^/]+)$/)
           if (method === 'GET' && detailMatch) {
             const templateId = decodeURIComponent(detailMatch[1] ?? '')
-            if (templateId !== 'lla-idas') {
+            if (templateId !== 'sample-brief') {
               sendJson(res, 404, {
                 Message: `CraftDoc mock: chưa có metadata cho template "${templateId}"`,
               })
               return
             }
             await delay(300)
-            sendJson(res, 200, llaIdasDetail)
+            sendJson(res, 200, sampleBriefDetail)
             return
           }
 
@@ -147,24 +147,24 @@ export function craftDocApiMockPlugin(options: {
           )
           if (method === 'GET' && fileMatch) {
             const templateId = decodeURIComponent(fileMatch[1] ?? '')
-            if (templateId !== 'lla-idas') {
+            if (templateId !== 'sample-brief') {
               sendJson(res, 404, {
                 Message: `CraftDoc mock: chưa có file DOCX cho template "${templateId}"`,
               })
               return
             }
-            if (!fs.existsSync(llaIdasDocxPath)) {
-              sendJson(res, 404, { Message: 'Không tìm thấy LLA-IDAS.docx trong mocks/assets' })
+            if (!fs.existsSync(sampleBriefDocxPath)) {
+              sendJson(res, 404, { Message: 'Không tìm thấy Sample-Brief.docx trong mocks/assets' })
               return
             }
             await delay(400)
-            const buffer = fs.readFileSync(llaIdasDocxPath)
+            const buffer = fs.readFileSync(sampleBriefDocxPath)
             sendBinary(
               res,
               200,
               buffer,
               'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-              'LLA-IDAS.docx',
+              'Sample-Brief.docx',
             )
             return
           }
@@ -174,14 +174,14 @@ export function craftDocApiMockPlugin(options: {
           )
           if (method === 'GET' && sampleDataMatch) {
             const templateId = decodeURIComponent(sampleDataMatch[1] ?? '')
-            if (templateId !== 'lla-idas') {
+            if (templateId !== 'sample-brief') {
               sendJson(res, 404, {
                 Message: `CraftDoc mock: chưa có sample-data cho template "${templateId}"`,
               })
               return
             }
             await delay(150)
-            sendJson(res, 200, { sampleData: llaIdasDetail.sampleData })
+            sendJson(res, 200, { sampleData: sampleBriefDetail.sampleData })
             return
           }
 
@@ -198,19 +198,19 @@ export function craftDocApiMockPlugin(options: {
 
             await delay(700)
 
-            const isLlaIdas =
-              fileName.trim().toLowerCase().replace(/\.docx$/i, '') === 'lla-idas'
+            const isSampleBrief =
+              fileName.trim().toLowerCase().replace(/\.docx$/i, '') === 'sample-brief'
 
-            if (isLlaIdas) {
+            if (isSampleBrief) {
               sendJson(res, 200, {
-                id: llaIdasDetail.template.id,
-                name: llaIdasDetail.template.name,
+                id: sampleBriefDetail.template.id,
+                name: sampleBriefDetail.template.name,
                 fileName,
                 updatedAt:
-                  llaIdasDetail.template.updatedAt ?? new Date().toISOString(),
+                  sampleBriefDetail.template.updatedAt ?? new Date().toISOString(),
                 fileBase64,
-                fields: llaIdasDetail.fields,
-                sampleData: llaIdasDetail.sampleData,
+                fields: sampleBriefDetail.fields,
+                sampleData: sampleBriefDetail.sampleData,
               })
               return
             }

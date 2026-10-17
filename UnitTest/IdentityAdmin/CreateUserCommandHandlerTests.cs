@@ -38,7 +38,7 @@ public sealed class CreateUserCommandHandlerTests
             new CreateUserCommand
             {
                 Username = "new.lawyer",
-                Email = "new.lawyer@lexora.vn",
+                Email = "new.lawyer@sample.vn",
                 Password = "P@ssw0rd!",
                 RoleId = role.Id,
                 TenantId = tenantId,
@@ -71,7 +71,7 @@ public sealed class CreateUserCommandHandlerTests
             new CreateUserCommand
             {
                 Username = "x",
-                Email = "x@lexora.vn",
+                Email = "x@sample.vn",
                 Password = "P@ssw0rd!",
                 RoleId = Guid.NewGuid()
             },
@@ -96,7 +96,7 @@ public sealed class CreateUserCommandHandlerTests
             new CreateUserCommand
             {
                 Username = "x",
-                Email = "x@lexora.vn",
+                Email = "x@sample.vn",
                 Password = "P@ssw0rd!",
                 RoleId = Guid.NewGuid()
             },
@@ -127,7 +127,7 @@ public sealed class CreateUserCommandHandlerTests
             new CreateUserCommand
             {
                 Username = "x",
-                Email = "x@lexora.vn",
+                Email = "x@sample.vn",
                 Password = "weak",
                 RoleId = role.Id
             },
@@ -157,7 +157,7 @@ public sealed class CreateUserCommandHandlerTests
             new CreateUserCommand
             {
                 Username = "escalated",
-                Email = "escalated@lexora.vn",
+                Email = "escalated@sample.vn",
                 Password = "P@ssw0rd!",
                 RoleId = role.Id
             },
@@ -186,7 +186,7 @@ public sealed class CreateUserCommandHandlerTests
             new CreateUserCommand
             {
                 Username = "x",
-                Email = "x@lexora.vn",
+                Email = "x@sample.vn",
                 Password = "P@ssw0rd!",
                 RoleId = role.Id
             },

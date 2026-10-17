@@ -18,7 +18,7 @@ public sealed class LoginCommandHandlerTests
     {
         var option = new AuthenticationJwtOption
         {
-            IssuerSigningKeys = signingKeys ?? ["Lexora-Test-DevSigningKey-32bit!"]
+            IssuerSigningKeys = signingKeys ?? ["Sample-Test-DevSigningKey-32bit!"]
         };
 
         var monitor = new Mock<IOptionsMonitor<AuthenticationJwtOption>>();
@@ -42,7 +42,7 @@ public sealed class LoginCommandHandlerTests
         {
             ValidateIssuer = false,
             ValidateAudience = false,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Lexora-Test-DevSigningKey-32bit!"))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Sample-Test-DevSigningKey-32bit!"))
         });
 
         Assert.True(result.IsValid, result.Exception?.Message);

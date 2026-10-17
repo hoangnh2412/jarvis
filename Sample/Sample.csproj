@@ -9,7 +9,7 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
     <SpaRoot>clients\web\</SpaRoot>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
-    <SkipFrontendBuild>false</SkipFrontendBuild>
+    <SkipFrontendBuild>true</SkipFrontendBuild>
     <!-- Dev: dotnet run auto-starts Vite (HMR). Browser opens SpaProxyServerUrl, API stays on applicationUrl. -->
     <SpaProxyServerUrl>http://127.0.0.1:5173</SpaProxyServerUrl>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>

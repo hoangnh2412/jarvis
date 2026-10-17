@@ -54,7 +54,7 @@ public class OnboardingDemoController(
                 Id = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
                 Username = "nguyenvana",
                 FullName = "Nguyễn Văn A",
-                Email = "nguyenvana@lexora.vn",
+                Email = "nguyenvana@sample.vn",
                 Department = "Kỹ thuật",
                 Position = "Backend Software Engineer",
                 IsActive = true,

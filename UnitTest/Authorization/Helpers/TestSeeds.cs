@@ -6,7 +6,7 @@ using Platform.Authorization.Services;
 namespace UnitTest.Authorization.Helpers;
 
 /// <summary>
-/// Platform defaults + the business roles/policies a product seeds (mirrors Lexora's
+/// Platform defaults + the business roles/policies a product seeds (mirrors Sample's
 /// AuthorizationSeedExtension, which platform tests cannot reference).
 /// </summary>
 internal static class TestSeeds

@@ -104,7 +104,7 @@ type DocumentTemplate = {
 - Upload `.docx`, chỉnh sửa placeholder (drawer), chọn mẫu (dialog).
 - **Lưu** — stub `callSaveCraftDocDocument` (host override qua `callback.save`).
 - **Xuất** — tải DOCX đã điền qua `callExportCraftDocDocument` (client-side).
-- Mẫu đã biết (`labor-contract`, `lla-idas`) dùng metadata từ `fieldMeta.ts`; upload khác tự group field động.
+- Mẫu đã biết (`labor-contract`, `sample-brief`) dùng metadata từ `fieldMeta.ts`; upload khác tự group field động.
 
 ---
 
@@ -476,13 +476,13 @@ Mock metadata: `getCraftDocTemplatesMock()` — chỉ id/name/fileName, không c
 
 ```ts
 // Load đầy đủ template + fields (value merged) + Blob file
-const loaded = await callLoadCraftDocTemplateFromApi('lla-idas')
+const loaded = await callLoadCraftDocTemplateFromApi('sample-brief')
 
 // Chỉ metadata + fields (không tải file)
-const detail = await callGetCraftDocTemplateDetail('lla-idas')
+const detail = await callGetCraftDocTemplateDetail('sample-brief')
 
 // Offline / unit test
-const mock = getLlaIdasTemplateDetailMock()
+const mock = getSampleBriefTemplateDetailMock()
 ```
 
 ---
@@ -495,15 +495,15 @@ Plugin `Sample/clients/web/vite.plugins/craftDocApiMock.ts` — bật khi `VITE_
 | Method | Path                                          | Response seed                         |
 | ------ | --------------------------------------------- | ------------------------------------- |
 | GET    | `v1/craft-doc/templates`                      | `mocks/get-templates-list.json`       |
-| GET    | `v1/craft-doc/templates/lla-idas`             | `mocks/get-lla-idas-template.json`    |
-| GET    | `v1/craft-doc/templates/lla-idas/sample-data` | `{ sampleData }` từ cùng file         |
-| GET    | `v1/craft-doc/templates/lla-idas/file`        | `mocks/assets/LLA-IDAS.docx`          |
+| GET    | `v1/craft-doc/templates/sample-brief`             | `mocks/get-sample-brief-template.json`    |
+| GET    | `v1/craft-doc/templates/sample-brief/sample-data` | `{ sampleData }` từ cùng file         |
+| GET    | `v1/craft-doc/templates/sample-brief/file`        | `mocks/assets/Sample-Brief.docx`          |
 | POST   | `v1/craft-doc/templates/upload`               | Trả id + fileBase64 + fields (~700ms) |
 
 
-**Kích thước trang LLA-IDAS:** US Letter `12240×16840` twips, lề `1440` twips (1 inch) → preview ~`816×1056`px @ 96 DPI. Hằng số:`CRAFT_DOC_PAGE_LETTER`.
+**Kích thước trang Sample-Brief:** US Letter `12240×16840` twips, lề `1440` twips (1 inch) → preview ~`816×1056`px @ 96 DPI. Hằng số:`CRAFT_DOC_PAGE_LETTER`.
 
-**Lưu ý:** File `LLA-IDAS.docx` gốc không có placeholder `{{field}}` — các field trong mock mô tả nội dung tài liệu để form/API demo; preview filled không thay thế text trừ khi thêm placeholder vào DOCX.
+**Lưu ý:** File `Sample-Brief.docx` gốc không có placeholder `{{field}}` — các field trong mock mô tả nội dung tài liệu để form/API demo; preview filled không thay thế text trừ khi thêm placeholder vào DOCX.
 
 ---
 

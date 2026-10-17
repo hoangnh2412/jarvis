@@ -30,13 +30,13 @@ const craftDocTemplatesListMockJson = path.resolve(
   platformCoreSrc,
   'features/craftDoc/mocks/get-templates-list.json',
 )
-const craftDocLlaIdasTemplateMockJson = path.resolve(
+const craftDocSampleBriefTemplateMockJson = path.resolve(
   platformCoreSrc,
-  'features/craftDoc/mocks/get-lla-idas-template.json',
+  'features/craftDoc/mocks/get-sample-brief-template.json',
 )
-const craftDocLlaIdasDocxPath = path.resolve(
+const craftDocSampleBriefDocxPath = path.resolve(
   platformCoreSrc,
-  'features/craftDoc/mocks/assets/LLA-IDAS.docx',
+  'features/craftDoc/mocks/assets/Sample-Brief.docx',
 )
 const demoApiKey = 'dev-notifications-demo-key'
 const demoTenantId = '00000000-0000-0000-0000-000000000001'
@@ -88,8 +88,8 @@ export default defineConfig(({ mode }) => {
       craftDocApiMockPlugin({
         enabled: useMock,
         templatesListJsonPath: craftDocTemplatesListMockJson,
-        llaIdasTemplateJsonPath: craftDocLlaIdasTemplateMockJson,
-        llaIdasDocxPath: craftDocLlaIdasDocxPath,
+        sampleBriefTemplateJsonPath: craftDocSampleBriefTemplateMockJson,
+        sampleBriefDocxPath: craftDocSampleBriefDocxPath,
       }),
     ],
     define: {

@@ -1,6 +1,6 @@
 import { SAMPLE_DOCX_DEFINITIONS } from '../utils'
 import templatesListSeed from './get-templates-list.json'
-import llaIdasTemplateSeed from './get-lla-idas-template.json'
+import sampleBriefTemplateSeed from './get-sample-brief-template.json'
 import type { DocumentField } from '../types'
 
 export type CraftDocTemplateDetailMock = {
@@ -33,14 +33,14 @@ export function getCraftDocTemplatesListMock() {
   return templatesListSeed.templates
 }
 
-/** Metadata + fields + sampleData LLA-IDAS (`get-lla-idas-template.json`). */
-export function getLlaIdasTemplateDetailMock(): CraftDocTemplateDetailMock {
+/** Metadata + fields + sampleData Sample-Brief (`get-sample-brief-template.json`). */
+export function getSampleBriefTemplateDetailMock(): CraftDocTemplateDetailMock {
   return {
-    template: llaIdasTemplateSeed.template,
-    fields: llaIdasTemplateSeed.fields as DocumentField[],
-    sampleData: llaIdasTemplateSeed.sampleData,
+    template: sampleBriefTemplateSeed.template,
+    fields: sampleBriefTemplateSeed.fields as DocumentField[],
+    sampleData: sampleBriefTemplateSeed.sampleData,
   }
 }
 
 export { LABOR_CONTRACT_SAMPLE_DATA, getLaborContractSampleData } from '../constants/sampleContractData'
-export { LLA_IDAS_SAMPLE_DATA, getLlaIdasSampleData } from '../constants/llaIdasSampleData'
+export { SAMPLE_BRIEF_SAMPLE_DATA, getSampleBriefSampleData } from '../constants/sampleBriefSampleData'

@@ -1,4 +1,4 @@
-/** US Letter — khớp LLA-IDAS.docx và docx-preview @ 96 DPI */
+/** US Letter — khớp Sample-Brief.docx và docx-preview @ 96 DPI */
 export const CRAFT_DOC_PAGE_LETTER = {
   format: 'US Letter' as const,
   widthTwips: 12240,
