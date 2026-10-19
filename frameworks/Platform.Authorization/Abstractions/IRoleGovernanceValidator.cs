@@ -2,11 +2,12 @@ namespace Platform.Authorization.Abstractions;
 
 /// <summary>
 /// Role Governance (ADR C5, §5.4): an actor may only act on roles/users whose level is
-/// strictly lower than the actor's highest RoleLevel. Tenant/Org scope is not checked here.
+/// strictly lower than the actor's highest RoleLevel.
+/// <see cref="IsWithinActorScopeAsync"/> enforces tenant/org scope (§5.4 items 4–5).
 /// </summary>
 /// <remarks>
 /// Quản trị vai trò: một người dùng chỉ có thể hành động trên các vai trò/người dùng có cấp độ
-/// THẤP HƠN cấp độ vai trò cao nhất của họ. Scope của Tenant/Org không được kiểm tra ở đây.
+/// THẤP HƠN cấp độ vai trò cao nhất của họ. Tenant/Org được kiểm tra bởi IsWithinActorScopeAsync.
 /// </remarks>
 public interface IRoleGovernanceValidator
 {
@@ -25,6 +26,16 @@ public interface IRoleGovernanceValidator
     /// <summary>Actor may create a role with the given level only if actor level &gt; that level.</summary>
     /// <remarks>Kiểm tra người dùng có quyền tạo vai trò mới với cấp độ nhất định không. Chỉ được phép nếu cấp độ của họ CAO HƠN cấp độ vai trò mà họ muốn tạo.</remarks>
     Task<bool> CanCreateRoleWithLevelAsync(Guid actorUserId, int roleLevel, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Actor with a tenant may only touch that tenant. Actor with an org may only touch that org.
+    /// Actor with no tenant (global admin) may cross tenants. Missing actor row → false.
+    /// </summary>
+    Task<bool> IsWithinActorScopeAsync(
+        Guid actorUserId,
+        Guid? targetTenantId,
+        Guid? targetOrgId,
+        CancellationToken cancellationToken = default);
 
     /// <summary>Actor may lock/unlock/delete a user only if actor level &gt; the user's highest role level.</summary>
     /// <remarks>Kiểm tra người dùng có quyền quản lý người dùng khác (khóa/mở khóa/xóa) không. Chỉ được phép nếu cấp độ cao nhất của họ CAO HƠN cấp độ cao nhất của người dùng đó.</remarks>

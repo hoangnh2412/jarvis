@@ -34,10 +34,10 @@ public class CacheServiceGetOrSetTests
             return 42;
         });
 
-        var second = await service.GetOrSetAsync(param, async _ =>
+        var second = await service.GetOrSetAsync(param, _ =>
         {
             queryCount++;
-            return 99;
+            return Task.FromResult(99);
         });
 
         Assert.Equal(42, first);

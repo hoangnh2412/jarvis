@@ -14,88 +14,96 @@ namespace Platform.Authentication.ApiKey;
 public static class AuthenticationBuilderExtension
 {
     /// <summary>
-    /// Đăng ký xác thực API Key với provider <typeparamref name="T"/> (ví dụ <see cref="ConfigApiKeyProvider"/>).
+    /// Đăng ký xác thực API Key với provider <typeparamref name="TProvider"/> (ví dụ <see cref="ConfigApiKeyProvider"/>).
     /// </summary>
     /// <remarks>
-    /// <para><see cref="ConfigApiKeyProvider"/> — đọc key từ config; type khác — DB, vault, cache, …</para>
-    /// <para>
-    /// <paramref name="authenticationScheme"/> phải trùng section <c>Authentication:ApiKey:{scheme}</c>
-    /// và tên dùng trong <c>[Authorize(AuthenticationSchemes = "...")]</c>.
-    /// </para>
+    /// <para>Scheme ASP.NET Core: <see cref="PlatformAuthenticationSchemes.ApiKey"/>.</para>
+    /// <para><paramref name="profile"/> — profile active (<c>Schemes:ApiKey:Profile</c>); bind <c>Profiles:{profile}</c>, realm mặc định khi header không có <c>realm:</c>.</para>
     /// </remarks>
-    /// <remarks>
-    /// <para><b>Khi <paramref name="configureOptions"/> là <c>null</c> (mặc định — khuyến nghị):</b></para>
-    /// <list type="bullet">
-    /// <item>Bind section <c>Authentication:ApiKey:{authenticationScheme}</c> (ví dụ <c>Authentication:ApiKey:Default</c>).</item>
-    /// <item>Đăng ký mọi realm con dưới <c>Authentication:ApiKey</c> (multi-realm / <c>realm:secret</c>).</item>
-    /// <item>Đặt <c>KeyName</c> header từ config; validate options lúc startup.</item>
-    /// </list>
-    /// <para><b>Khi truyền <paramref name="configureOptions"/>:</b></para>
-    /// <list type="bullet">
-    /// <item>Bỏ qua bind <c>appsettings</c> cho <see cref="ApiKeyOptions"/>; cấu hình hoàn toàn bằng delegate.</item>
-    /// <item>Dùng cho test, prototype, hoặc khi header name/realm không nằm trong config.</item>
-    /// </list>
-    /// <para>
-    /// Luôn đăng ký <typeparamref name="T"/> vào DI (<see cref="IApiKeyProvider"/>).
-    /// <paramref name="authenticationScheme"/> phải trùng key section config và tên dùng trong
-    /// <c>[Authorize(AuthenticationSchemes = "...")]</c>.
-    /// </para>
-    /// <example>
-    /// <code>
-    /// // Production — bind appsettings:
-    /// auth.AddCoreApiKey&lt;ConfigApiKeyProvider&gt;(config, "Default", "API Key");
-    ///
-    /// // Test / code-first:
-    /// auth.AddCoreApiKey&lt;ConfigApiKeyProvider&gt;(config, "Default", "API Key", o => o.KeyName = "X-API-KEY");
-    /// </code>
-    /// </example>
-    /// </remarks>
-    public static AuthenticationBuilder AddCoreApiKey<T>(
+    public static AuthenticationBuilder AddCoreApiKey<TProvider>(
         this AuthenticationBuilder builder,
         IConfiguration configuration,
+        string? profile = null,
         string authenticationScheme = PlatformAuthenticationSchemes.ApiKey,
-        string displayName = PlatformAuthenticationSchemes.ApiKey,
+        string displayName = "API Key",
         Action<ApiKeyOptions>? configureOptions = null)
-        where T : class, IApiKeyProvider
+        where TProvider : class, IApiKeyProvider
     {
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<AuthenticationApiKeyOption>, AuthenticationApiKeyOptionValidator>());
 
         if (configureOptions != null)
         {
-            builder.Services.TryAddSingleton<IApiKeyProvider, T>();
-            return builder.AddApiKeyInHeader<T>(authenticationScheme, displayName, configureOptions);
+            builder.Services.TryAddSingleton<IApiKeyProvider, TProvider>();
+            return builder.AddApiKeyInHeader<TProvider>(authenticationScheme, displayName, configureOptions);
         }
 
-        ConfigureApiKeyRealms(builder.Services, configuration, authenticationScheme);
+        var activeProfile = ResolveActiveApiKeyProfile(configuration, profile);
+        ConfigureApiKeyRealms(builder.Services, configuration);
+        builder.Services.Configure<ApiKeyProviderOptions>(o => o.DefaultRealm = activeProfile);
 
-        builder.Services.Configure<ApiKeyProviderOptions>(o => o.DefaultRealm = authenticationScheme);
-
-        var section = configuration.GetSection($"Authentication:ApiKey:{authenticationScheme}");
-        builder.Services.TryAddSingleton<IApiKeyProvider, T>();
+        var section = configuration.GetSection(AuthenticationSchemeProfileConfiguration.ProfileSection("ApiKey", activeProfile));
+        builder.Services.TryAddSingleton<IApiKeyProvider, TProvider>();
 
         var authOption = section.Get<AuthenticationApiKeyOption>();
 
-        return builder.AddApiKeyInHeader<T>(authenticationScheme, displayName, options =>
+        return builder.AddApiKeyInHeader<TProvider>(authenticationScheme, displayName, options =>
         {
-            options.Realm = authenticationScheme;
+            options.Realm = activeProfile;
             options.KeyName = authOption?.KeyName;
         });
     }
 
     /// <summary>
-    /// Bind mọi realm con dưới <c>Authentication:ApiKey</c> thành named options.
+    /// API Key — mỗi profile có <see cref="AuthenticationApiKeyOption.Source"/> riêng (config vs <typeparamref name="TStorage"/>).
     /// </summary>
-    private static void ConfigureApiKeyRealms(
-        IServiceCollection services,
+    public static AuthenticationBuilder AddCoreApiKeyWithProfileSources<TStorage>(
+        this AuthenticationBuilder builder,
         IConfiguration configuration,
-        string primaryScheme)
+        string? profile = null,
+        string authenticationScheme = PlatformAuthenticationSchemes.ApiKey,
+        string displayName = "API Key")
+        where TStorage : class, IApiKeyProvider
     {
-        var apiKeySection = configuration.GetSection("Authentication:ApiKey");
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<AuthenticationApiKeyOption>, AuthenticationApiKeyOptionValidator>());
+        var activeProfile = ResolveActiveApiKeyProfile(configuration, profile);
+        ConfigureApiKeyRealms(builder.Services, configuration);
+        builder.Services.Configure<ApiKeyProviderOptions>(o => o.DefaultRealm = activeProfile);
+
+        builder.Services.TryAddSingleton<ConfigApiKeyProvider>();
+        builder.Services.TryAddSingleton<TStorage>();
+        builder.Services.TryAddSingleton<ProfileSourcedApiKeyProvider<TStorage>>();
+        builder.Services.TryAddSingleton<IApiKeyProvider>(sp => sp.GetRequiredService<ProfileSourcedApiKeyProvider<TStorage>>());
+
+        var section = configuration.GetSection(AuthenticationSchemeProfileConfiguration.ProfileSection("ApiKey", activeProfile));
+        var authOption = section.Get<AuthenticationApiKeyOption>();
+
+        return builder.AddApiKeyInHeader<ProfileSourcedApiKeyProvider<TStorage>>(authenticationScheme, displayName, options =>
+        {
+            options.Realm = activeProfile;
+            options.KeyName = authOption?.KeyName;
+        });
+    }
+
+    private static string ResolveActiveApiKeyProfile(IConfiguration configuration, string? profile)
+    {
+        if (!string.IsNullOrWhiteSpace(profile))
+            return profile.Trim();
+
+        var root = configuration.GetSection("Authentication").Get<AuthenticationRootOptions>() ?? new AuthenticationRootOptions();
+        return AuthenticationSchemeProfileConfiguration.ResolveApiKeyProfile(root, configuration);
+    }
+
+    /// <summary>
+    /// Bind mọi profile dưới <c>Authentication:Schemes:ApiKey:Profiles</c> thành named options.
+    /// </summary>
+    private static void ConfigureApiKeyRealms(IServiceCollection services, IConfiguration configuration)
+    {
+        var apiKeySection = configuration.GetSection(AuthenticationSchemeProfileConfiguration.ProfilesSection("ApiKey"));
         foreach (var child in apiKeySection.GetChildren())
         {
             var realmName = child.Key;
             var snapshot = child.Get<AuthenticationApiKeyOption>();
-            if (realmName != primaryScheme && string.IsNullOrWhiteSpace(snapshot?.Key))
+            if (string.IsNullOrWhiteSpace(snapshot?.KeyName))
                 continue;
 
             services.Configure<AuthenticationApiKeyOption>(realmName, child);

@@ -60,22 +60,21 @@ public sealed class OperandResolver : IOperandResolver
         var claimType = definition.ClaimType ?? definition.Attribute;
         var value = await _context.UserClaims
             .Where(c => c.UserId == userId && c.ClaimType == claimType)
+            .OrderBy(c => c.Id)
             .Select(c => c.ClaimValue)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (value is null)
-        {
             return null;
-        }
 
         if (definition.Kind == OperandValueKind.Collection)
         {
             return value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(ParseScalar)
+                .Select(part => ParseScalar(part, definition.ValueType))
                 .ToList();
         }
 
-        return ParseScalar(value);
+        return ParseScalar(value, definition.ValueType);
     }
 
     private static object? ResolveResource(OperandDefinition definition, object? resource)
@@ -88,18 +87,26 @@ public sealed class OperandResolver : IOperandResolver
         return resource.GetType().GetProperty(definition.Attribute)?.GetValue(resource);
     }
 
-    private static object ParseScalar(string value)
+    private static object? ParseScalar(string value, OperandValueType valueType)
     {
-        if (Guid.TryParse(value, out var guid))
+        switch (valueType)
         {
-            return guid;
-        }
+            case OperandValueType.Guid:
+                return Guid.TryParse(value, out var typedGuid) ? typedGuid : null;
+            case OperandValueType.Decimal:
+                return decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var typedNumber)
+                    ? typedNumber
+                    : null;
+            case OperandValueType.String:
+                return value;
+            default:
+                if (Guid.TryParse(value, out var guid))
+                    return guid;
 
-        if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var number))
-        {
-            return number;
-        }
+                if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var number))
+                    return number;
 
-        return value;
+                return value;
+        }
     }
 }

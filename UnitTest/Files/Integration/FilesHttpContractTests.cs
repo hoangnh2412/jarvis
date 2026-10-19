@@ -136,7 +136,7 @@ public class FilesHttpContractTests
 
         var app = builder.Build();
         app.MapControllers();
-        await app.StartAsync().ConfigureAwait(false);
+        await app.StartAsync();
 
         try
         {
@@ -151,8 +151,8 @@ public class FilesHttpContractTests
         }
         finally
         {
-            await app.StopAsync().ConfigureAwait(false);
-            await app.DisposeAsync().ConfigureAwait(false);
+            await app.StopAsync();
+            await app.DisposeAsync();
             if (Directory.Exists(rootPath))
                 Directory.Delete(rootPath, recursive: true);
         }

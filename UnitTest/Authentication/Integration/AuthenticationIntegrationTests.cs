@@ -15,7 +15,7 @@ public class AuthenticationIntegrationTests
     public async Task AK_I_01_Valid_api_key_authenticates()
     {
         var config = AuthenticationConfigurationBuilder.BuildApiKeyConfig(key: "test-secret-key");
-        await using var server = await AuthenticationTestServer.CreateAsync(config, composite: false, jwt: false, apiKey: true);
+        await using var server = await AuthenticationTestServer.CreateAsync(config, jwt: false, apiKey: true);
 
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/_auth-test/whoami");
         request.Headers.Add("X-API-KEY", "test-secret-key");
@@ -31,7 +31,7 @@ public class AuthenticationIntegrationTests
     public async Task AK_I_02_Missing_or_wrong_api_key_not_authenticated()
     {
         var config = AuthenticationConfigurationBuilder.BuildApiKeyConfig(key: "test-secret-key");
-        await using var server = await AuthenticationTestServer.CreateAsync(config, composite: false, jwt: false, apiKey: true);
+        await using var server = await AuthenticationTestServer.CreateAsync(config, jwt: false, apiKey: true);
 
         var noHeader = await server.Client.GetAsync("/api/_auth-test/whoami");
         noHeader.EnsureSuccessStatusCode();
@@ -58,27 +58,23 @@ public class AuthenticationIntegrationTests
         Assert.IsType<ConfigApiKeyProvider>(provider);
     }
 
-    /// <summary>Scheme <c>Composite</c> — request có <c>X-API-KEY</c> forward sang ApiKey.</summary>
+    /// <summary>Default scheme ApiKey — request có <c>X-API-KEY</c> được authenticate.</summary>
     [Fact]
-    public async Task MIX_I_01_Composite_forwards_api_key()
+    public async Task MIX_I_01_Default_scheme_api_key_authenticates()
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Authentication:Type"] = "ApiKey",
-                ["Authentication:DefaultAuthenticateScheme"] = "Composite",
-                ["Authentication:DefaultChallengeScheme"] = "Composite",
-                ["Authentication:Schemes:Jwt:Enabled"] = "true",
+                ["Authentication:DefaultAuthenticateScheme"] = "ApiKey",
+                ["Authentication:DefaultChallengeScheme"] = "ApiKey",
                 ["Authentication:Schemes:ApiKey:Enabled"] = "true",
-                ["Authentication:ApiKey:Default:KeyName"] = "X-API-KEY",
-                ["Authentication:ApiKey:Default:Key"] = "mix-secret",
-                ["Authentication:Jwt:Bearer:IssuerSigningKeys:0"] = "test-signing-key-at-least-32-chars-long",
-                ["Authentication:Jwt:Bearer:ValidateAudience"] = "false",
-                ["Authentication:Jwt:Bearer:RequireHttpsMetadata"] = "false",
+                ["Authentication:Schemes:ApiKey:Profiles:Default:Source"] = "Configuration",
+                ["Authentication:Schemes:ApiKey:Profiles:Default:KeyName"] = "X-API-KEY",
+                ["Authentication:Schemes:ApiKey:Profiles:Default:Key"] = "mix-secret",
             })
             .Build();
 
-        await using var server = await AuthenticationTestServer.CreateAsync(config, composite: true, jwt: true, apiKey: true, basic: false);
+        await using var server = await AuthenticationTestServer.CreateAsync(config, jwt: false, apiKey: true, basic: false);
 
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/_auth-test/whoami");
         request.Headers.Add("X-API-KEY", "mix-secret");
@@ -99,8 +95,8 @@ public class AuthenticationIntegrationTests
         Assert.DoesNotContain("ZofkXgxwiO6F2s1JJCX5L6Wa7JctPmpO", json);
 
         var config = new ConfigurationBuilder().AddJsonFile(path, optional: false).Build();
-        Assert.True(string.IsNullOrEmpty(config["Authentication:ApiKey:Default:Key"]));
-        Assert.True(string.IsNullOrEmpty(config["Authentication:ApiKey:Integration:Key"]));
+        Assert.Equal("X-API-KEY", config["Authentication:Schemes:ApiKey:Profiles:Default:KeyName"]);
+        Assert.Null(config["Authentication:Schemes:ApiKey:Profiles:Default:Key"]);
     }
 
     private static async Task AssertAuthenticatedAsync(HttpResponseMessage response, bool expected)

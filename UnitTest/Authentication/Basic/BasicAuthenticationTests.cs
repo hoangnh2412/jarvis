@@ -17,7 +17,7 @@ public class BasicAuthenticationTests
     public async Task BASIC_I_01_Valid_credentials_authenticate()
     {
         var config = AuthenticationConfigurationBuilder.BuildBasicConfig();
-        await using var server = await AuthenticationTestServer.CreateAsync(config, composite: false, jwt: false, apiKey: false, basic: true);
+        await using var server = await AuthenticationTestServer.CreateAsync(config, jwt: false, apiKey: false, basic: true);
 
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/_auth-test/whoami");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
@@ -34,7 +34,7 @@ public class BasicAuthenticationTests
     public async Task BASIC_I_02_Invalid_or_missing_credentials_not_authenticated()
     {
         var config = AuthenticationConfigurationBuilder.BuildBasicConfig();
-        await using var server = await AuthenticationTestServer.CreateAsync(config, composite: false, jwt: false, apiKey: false, basic: true);
+        await using var server = await AuthenticationTestServer.CreateAsync(config, jwt: false, apiKey: false, basic: true);
 
         var noHeader = await server.Client.GetAsync("/api/_auth-test/whoami");
         noHeader.EnsureSuccessStatusCode();
@@ -49,24 +49,25 @@ public class BasicAuthenticationTests
         await AssertAuthenticatedAsync(wrongResponse, expected: false);
     }
 
-    /// <summary>Policy <c>Composite</c> — forward sang Basic khi header <c>Authorization: Basic</c>.</summary>
+    /// <summary>Default scheme <c>Basic</c> — header <c>Authorization: Basic</c> authenticate.</summary>
     [Fact]
-    public async Task MIX_I_02_Composite_forwards_basic()
+    public async Task MIX_I_02_Basic_scheme_authenticates()
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Authentication:DefaultAuthenticateScheme"] = "Composite",
-                ["Authentication:DefaultChallengeScheme"] = "Composite",
-                ["Authentication:Basic:Default:Realm"] = "Test",
-                ["Authentication:Basic:Default:Users:mix:Password"] = "mix-pass",
-                ["Authentication:Basic:Default:Users:mix:Roles:0"] = "mix",
+                ["Authentication:DefaultAuthenticateScheme"] = "Basic",
+                ["Authentication:DefaultChallengeScheme"] = "Basic",
+                ["Authentication:Schemes:Basic:Enabled"] = "true",
+                ["Authentication:Schemes:Basic:Profiles:Default:Source"] = "Configuration",
+                ["Authentication:Schemes:Basic:Profiles:Default:Realm"] = "Test",
+                ["Authentication:Schemes:Basic:Profiles:Default:Users:mix:Password"] = "mix-pass",
+                ["Authentication:Schemes:Basic:Profiles:Default:Users:mix:Roles:0"] = "mix",
             })
             .Build();
 
         await using var server = await AuthenticationTestServer.CreateAsync(
             config,
-            composite: true,
             jwt: false,
             apiKey: false,
             basic: true);
@@ -115,7 +116,8 @@ public class BasicAuthenticationTests
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Authentication:Basic:Default:Realm"] = "Test",
+                ["Authentication:Schemes:Basic:Profiles:Default:Source"] = "Configuration",
+                ["Authentication:Schemes:Basic:Profiles:Default:Realm"] = "Test",
             })
             .Build();
 

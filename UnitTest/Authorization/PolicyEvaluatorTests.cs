@@ -289,6 +289,42 @@ public sealed class PolicyEvaluatorTests
         Assert.False(result);
     }
 
+    [Fact(DisplayName = "T103: ordering comparison that cannot be made does not pass")]
+    public async Task T103_IncomparableOrderingDoesNotPass()
+    {
+        var policy = CreateTestPolicy("P_TEST", "Test");
+        policy.Rules.Add(CreateTestRule(policy.Id, 1, "Resource.Amount", "<=", "User.ApproveLimit"));
+        var userId = Guid.NewGuid();
+        var resource = new { };
+
+        _resolverMock
+            .Setup(r => r.ResolveAsync("Resource.Amount", userId, resource, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new object());
+        _resolverMock
+            .Setup(r => r.ResolveAsync("User.ApproveLimit", userId, resource, It.IsAny<CancellationToken>()))
+            .ReturnsAsync("not-a-number");
+
+        Assert.False(await _evaluator.EvaluateAsync(userId, policy, resource));
+    }
+
+    [Fact(DisplayName = "T104: int resource compares with decimal claim")]
+    public async Task T104_IntComparesWithDecimal()
+    {
+        var policy = CreateTestPolicy("P_APPROVE_LIMIT", "Limit");
+        policy.Rules.Add(CreateTestRule(policy.Id, 1, "Resource.Amount", "<=", "User.ApproveLimit"));
+        var userId = Guid.NewGuid();
+        var resource = new { Amount = 8 };
+
+        _resolverMock
+            .Setup(r => r.ResolveAsync("Resource.Amount", userId, resource, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(8);
+        _resolverMock
+            .Setup(r => r.ResolveAsync("User.ApproveLimit", userId, resource, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(10m);
+
+        Assert.True(await _evaluator.EvaluateAsync(userId, policy, resource));
+    }
+
     #endregion
 
     #region Helpers

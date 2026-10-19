@@ -2,7 +2,6 @@ using Platform.Authentication;
 using Platform.Authentication.ApiKey;
 using Platform.Authentication.Basic;
 using Platform.Authentication.Jwt;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -30,11 +29,12 @@ public sealed class AuthenticationTestServer : IAsyncDisposable
 
     public static async Task<AuthenticationTestServer> CreateAsync(
         IConfiguration configuration,
-        bool composite,
         bool jwt,
         bool apiKey,
         bool basic = false)
     {
+        configuration = MergeSchemeEnableFlags(configuration, jwt, apiKey, basic);
+
         var host = new HostBuilder()
             .ConfigureWebHost(webBuilder =>
             {
@@ -45,20 +45,35 @@ public sealed class AuthenticationTestServer : IAsyncDisposable
                     services.AddControllers()
                         .PartManager.ApplicationParts.Add(new AssemblyPart(typeof(TestAuthProbeController).Assembly));
 
-                    services.AddPlatformAuthentication(configuration, auth =>
-                    {
-                        if (composite)
-                            auth.AddPlatformCompositeScheme(includeBasic: basic);
+                    var root = configuration.GetSection("Authentication").Get<AuthenticationRootOptions>()
+                        ?? new AuthenticationRootOptions();
 
-                        if (jwt)
-                            auth.AddCoreJwtBearer(configuration, JwtBearerDefaults.AuthenticationScheme);
+                    services.AddPlatformAuthentication(
+                        configuration,
+                        auth =>
+                        {
+                            if (jwt)
+                            {
+                                var bearerProfile = AuthenticationSchemeProfileConfiguration.ResolveBearerProfile(root, configuration);
+                                auth.AddCoreJwtBearer(
+                                    configuration,
+                                    PlatformAuthenticationSchemes.Bearer,
+                                    bearerProfile);
+                            }
 
-                        if (apiKey)
-                            auth.AddCoreApiKey<ConfigApiKeyProvider>(configuration, PlatformAuthenticationSchemes.ApiKey);
+                            if (apiKey)
+                            {
+                                var apiKeyProfile = AuthenticationSchemeProfileConfiguration.ResolveApiKeyProfile(root, configuration);
+                                auth.AddCoreApiKeyWithProfileSources<NullApiKeyStorageProvider>(configuration, apiKeyProfile);
+                            }
 
-                        if (basic)
-                            auth.AddCoreBasic<ConfigBasicCredentialProvider>(configuration, AuthenticationBasicOption.DefaultScheme);
-                    });
+                            if (basic)
+                            {
+                                var basicProfile = AuthenticationSchemeProfileConfiguration.ResolveBasicProfile(root, configuration);
+                                var basicScheme = AuthenticationSchemeProfileConfiguration.ResolveBasicScheme(root, configuration);
+                                auth.AddCoreBasicWithProfileSources<NullBasicStorageProvider>(configuration, basicScheme, basicProfile);
+                            }
+                        });
                 });
                 webBuilder.Configure(app =>
                 {
@@ -72,6 +87,23 @@ public sealed class AuthenticationTestServer : IAsyncDisposable
 
         await host.StartAsync().ConfigureAwait(false);
         return new AuthenticationTestServer(host, host.GetTestClient());
+    }
+
+    private static IConfiguration MergeSchemeEnableFlags(
+        IConfiguration configuration,
+        bool jwt,
+        bool apiKey,
+        bool basic)
+    {
+        return new ConfigurationBuilder()
+            .AddConfiguration(configuration)
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Authentication:Schemes:Bearer:Enabled"] = jwt.ToString(),
+                ["Authentication:Schemes:ApiKey:Enabled"] = apiKey.ToString(),
+                ["Authentication:Schemes:Basic:Enabled"] = basic.ToString(),
+            })
+            .Build();
     }
 
     public async ValueTask DisposeAsync()

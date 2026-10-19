@@ -8,7 +8,7 @@ namespace Platform.Authentication.ApiKey;
 /// Provider mặc định validate API key từ header, đọc cấu hình <see cref="AuthenticationApiKeyOption"/> theo realm.
 /// </summary>
 /// <remarks>
-/// <para>Header <c>my-secret</c> → realm <see cref="PlatformAuthenticationSchemes.ApiKey"/> (<c>Default</c>).</para>
+/// <para>Header <c>my-secret</c> → realm <see cref="PlatformAuthenticationSchemes.DefaultProfile"/>.</para>
 /// <para>Header <c>Integration:partner-key</c> → realm <c>Integration</c>, so khớp <c>Key</c> của realm đó.</para>
 /// </remarks>
 public class ConfigApiKeyProvider(

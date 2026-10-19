@@ -40,6 +40,9 @@ public sealed class CreateUserCommandHandler : IAsyncCommandHandler<CreateUserCo
         if (!canAssign)
             throw new UnauthorizedAccessException("You do not have permission to assign this role");
 
+        if (!await _roleGovernanceValidator.IsWithinActorScopeAsync(actor.UserId.Value, command.TenantId, command.OrgId, cancellationToken))
+            throw new UnauthorizedAccessException("You cannot create a user outside your tenant or organization");
+
         var user = new User
         {
             Id = Guid.NewGuid(),
@@ -57,7 +60,10 @@ public sealed class CreateUserCommandHandler : IAsyncCommandHandler<CreateUserCo
 
         var addRoleResult = await _userManager.AddToRoleAsync(user, targetRole.Name ?? string.Empty);
         if (!addRoleResult.Succeeded)
+        {
+            await _userManager.DeleteAsync(user);
             throw new InvalidOperationException($"Failed to assign role: {string.Join("; ", addRoleResult.Errors.Select(e => e.Description))}");
+        }
 
         return new CreateUserResponse
         {

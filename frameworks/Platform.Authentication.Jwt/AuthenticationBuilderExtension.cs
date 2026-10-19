@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Platform.Authentication;
 
 namespace Platform.Authentication.Jwt;
 
@@ -16,47 +17,43 @@ namespace Platform.Authentication.Jwt;
 public static class AuthenticationBuilderExtension
 {
     /// <summary>
-    /// Đăng ký JwtBearer với scheme mặc định <c>Bearer</c>, bind config từ <c>Authentication:Jwt:Bearer</c>.
+    /// Đăng ký JwtBearer scheme <see cref="PlatformAuthenticationSchemes.Bearer"/>, bind <c>Authentication:Schemes:Bearer:Profiles:Default</c>.
     /// </summary>
-    /// <remarks>
-    /// <para><b>Khi nào dùng:</b> API nhận token OAuth/JWT qua header <c>Authorization: Bearer</c>, một scheme duy nhất.</para>
-    /// </remarks>
     public static AuthenticationBuilder AddCoreJwtBearer(
         this AuthenticationBuilder builder,
         IConfiguration configuration,
         Action<JwtBearerOptions>? configureOptions = null) =>
-        builder.AddCoreJwtBearer(configuration, JwtBearerDefaults.AuthenticationScheme, configureOptions);
+        builder.AddCoreJwtBearer(
+            configuration,
+            PlatformAuthenticationSchemes.Bearer,
+            PlatformAuthenticationSchemes.DefaultProfile,
+            configureOptions);
 
     /// <summary>
-    /// Đăng ký JwtBearer với tên scheme tùy chỉnh — bind <c>Authentication:Jwt:{authenticationScheme}</c>.
+    /// Đăng ký JwtBearer — bind <c>Authentication:Schemes:Bearer:Profiles:{configurationProfile}</c>.
     /// </summary>
-    /// <remarks>
-    /// <para><b>Khi nào dùng:</b> nhiều JWT authority hoặc scheme name khác <c>Bearer</c> (ví dụ validate token từ OpenIddict nội bộ).</para>
-    /// </remarks>
     public static AuthenticationBuilder AddCoreJwtBearer(
         this AuthenticationBuilder builder,
         IConfiguration configuration,
         string authenticationScheme,
+        string configurationProfile,
         Action<JwtBearerOptions>? configureOptions = null) =>
-        builder.AddCoreJwtBearer(configuration, authenticationScheme, authenticationScheme, configureOptions);
+        builder.AddCoreJwtBearer(
+            configuration,
+            authenticationScheme,
+            authenticationScheme,
+            configurationProfile,
+            configureOptions);
 
     /// <summary>
     /// Overload đầy đủ: đăng ký JwtBearer, bind config và map sang <see cref="JwtBearerOptions"/>.
     /// </summary>
-    /// <remarks>
-    /// <para><b>Khi <paramref name="configureOptions"/> là <c>null</c> (khuyến nghị):</b></para>
-    /// <list type="bullet">
-    /// <item>Bind <c>Authentication:Jwt:{authenticationScheme}</c> vào <see cref="AuthenticationJwtOption"/>.</item>
-    /// <item>Có <c>Authority</c> → dùng metadata OIDC; không có → dùng <c>IssuerSigningKeys</c> symmetric.</item>
-    /// <item>Validate options lúc startup.</item>
-    /// </list>
-    /// <para><b>Khi truyền <paramref name="configureOptions"/>:</b> cấu hình JwtBearer hoàn toàn bằng code — dùng test/prototype.</para>
-    /// </remarks>
     public static AuthenticationBuilder AddCoreJwtBearer(
         this AuthenticationBuilder builder,
         IConfiguration configuration,
         string authenticationScheme,
         string displayName,
+        string configurationProfile,
         Action<JwtBearerOptions>? configureOptions = null)
     {
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<AuthenticationJwtOption>, AuthenticationJwtOptionValidator>());
@@ -64,7 +61,7 @@ public static class AuthenticationBuilderExtension
         if (configureOptions != null)
             return builder.AddJwtBearer(authenticationScheme, displayName ?? authenticationScheme, configureOptions);
 
-        var section = configuration.GetSection($"Authentication:Jwt:{authenticationScheme}");
+        var section = configuration.GetSection(AuthenticationSchemeProfileConfiguration.ProfileSection("Bearer", configurationProfile));
         builder.Services.Configure<AuthenticationJwtOption>(authenticationScheme, section);
         builder.Services.AddOptions<AuthenticationJwtOption>(authenticationScheme)
             .Bind(section)
@@ -102,7 +99,7 @@ public static class AuthenticationBuilderExtension
             ValidateWithLKG = authOption.ValidateWithLKG,
             ValidateTokenReplay = authOption.ValidateTokenReplay,
             ValidateAudience = authOption.ValidateAudience,
-            ValidAudiences = authOption.ValidAudiences.Length > 0 ? authOption.ValidAudiences : null,
+            ValidAudiences = ResolveValidAudiences(authOption),
             ValidateIssuerSigningKey = useAuthority ? false : authOption.ValidateIssuerSigningKey,
             IssuerSigningKeys = useAuthority
                 ? null
@@ -114,6 +111,14 @@ public static class AuthenticationBuilderExtension
                 ? (notBefore, expires, _, parameters) => ValidateMaxLifetime(notBefore, expires, parameters, authOption.MaxExpireMinutes)
                 : null
         };
+    }
+
+    private static string[]? ResolveValidAudiences(AuthenticationJwtOption authOption)
+    {
+        if (authOption.ValidAudiences.Length > 0)
+            return authOption.ValidAudiences;
+
+        return string.IsNullOrWhiteSpace(authOption.Audience) ? null : [authOption.Audience];
     }
 
     /// <summary>Giới hạn thời gian sống token tối đa theo <see cref="AuthenticationJwtOption.MaxExpireMinutes"/>.</summary>

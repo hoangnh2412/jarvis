@@ -55,10 +55,10 @@ public static class SampleAuthorizationDemoData
     public static void ConfigureOperands(OperandCatalog operands) =>
         operands
             .AddUserClaim("DepartmentId")
-            .AddUserClaim("ApproveLimit")
+            .AddUserClaim("ApproveLimit", valueType: OperandValueType.Decimal)
             .AddUserClaim("ManagedDepartmentIds", OperandValueKind.Collection)
             .AddResource("DepartmentId")
-            .AddResource("Amount");
+            .AddResource("Amount", valueType: OperandValueType.Decimal);
 
     /// <summary>Role / policy nghiệp vụ Sample đóng góp vào seeder platform (ADR V5).</summary>
     public static void ConfigureSeed(AuthorizationSeedCatalog seed) =>

@@ -45,6 +45,23 @@ public sealed class OperandValidatorTests
         Assert.Contains("LIKE", result.ErrorMessage);
     }
 
+    [Fact(DisplayName = "T37: ordering operator rejected on Guid operands")]
+    public void T37_OrderingOperatorRejectedOnGuid()
+    {
+        var result = _validator.ValidateRule("Resource.OrgId", "<=", "User.OrgId");
+
+        Assert.False(result.IsValid);
+        Assert.Contains("<=", result.ErrorMessage);
+    }
+
+    [Fact(DisplayName = "T37b: ordering operator allowed on decimal operands")]
+    public void T37b_OrderingOperatorAllowedOnDecimal()
+    {
+        var result = _validator.ValidateRule("Resource.Amount", "<=", "User.ApproveLimit");
+
+        Assert.True(result.IsValid);
+    }
+
     [Fact(DisplayName = "T38: IN operator requires collection operand")]
     public void T38_InOperatorRequiresCollectionOperand()
     {

@@ -192,4 +192,62 @@ public sealed class LoginCommandHandlerTests
             new LoginCommand { Username = "hoang", Password = "correct-password" },
             CancellationToken.None));
     }
+
+    [Fact(DisplayName = "T90/T91: wrong password records a failure; success resets the counter")]
+    public async Task HandleAsync_records_access_failure_and_resets_on_success()
+    {
+        var user = new User { Id = Guid.NewGuid(), UserName = "hoang" };
+        var userManager = IdentityMockHelpers.MockUserManager<User>();
+        userManager.Setup(m => m.FindByNameAsync("hoang")).ReturnsAsync(user);
+        userManager.Setup(m => m.CheckPasswordAsync(user, "wrong-password")).ReturnsAsync(false);
+        userManager.Setup(m => m.CheckPasswordAsync(user, "correct-password")).ReturnsAsync(true);
+
+        var handler = new LoginCommandHandler(userManager.Object, CreateJwtOptions(), CreateConfiguration());
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => handler.HandleAsync(
+            new LoginCommand { Username = "hoang", Password = "wrong-password" },
+            CancellationToken.None));
+        userManager.Verify(m => m.AccessFailedAsync(user), Times.Once);
+
+        await handler.HandleAsync(
+            new LoginCommand { Username = "hoang", Password = "correct-password" },
+            CancellationToken.None);
+        userManager.Verify(m => m.ResetAccessFailedCountAsync(user), Times.Once);
+    }
+
+    [Fact(DisplayName = "T107: token carries configured issuer and audience")]
+    public async Task HandleAsync_emits_configured_issuer_and_audience()
+    {
+        var option = new AuthenticationJwtOption
+        {
+            IssuerSigningKeys = ["Sample-Test-DevSigningKey-32bit!"],
+            ValidIssuers = ["https://jarvis.local"],
+            Audience = "jarvis-api",
+            MaxExpireMinutes = 15,
+        };
+        var monitor = new Mock<IOptionsMonitor<AuthenticationJwtOption>>();
+        monitor.Setup(m => m.Get("Bearer")).Returns(option);
+
+        var user = new User { Id = Guid.NewGuid(), UserName = "hoang" };
+        var userManager = IdentityMockHelpers.MockUserManager<User>();
+        userManager.Setup(m => m.FindByNameAsync("hoang")).ReturnsAsync(user);
+        userManager.Setup(m => m.CheckPasswordAsync(user, "correct-password")).ReturnsAsync(true);
+
+        var handler = new LoginCommandHandler(userManager.Object, monitor.Object, CreateConfiguration());
+        var result = await handler.HandleAsync(
+            new LoginCommand { Username = "hoang", Password = "correct-password" },
+            CancellationToken.None);
+
+        var validation = await new JsonWebTokenHandler().ValidateTokenAsync(result.AccessToken, new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = "https://jarvis.local",
+            ValidateAudience = true,
+            ValidAudience = "jarvis-api",
+            ValidateLifetime = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Sample-Test-DevSigningKey-32bit!")),
+        });
+
+        Assert.True(validation.IsValid, validation.Exception?.Message);
+    }
 }

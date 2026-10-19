@@ -45,13 +45,22 @@ internal sealed class GovernanceStore : IAsyncDisposable
         return role;
     }
 
-    public Guid AddUser(params Role[] roles)
+    public Guid AddUser(params Role[] roles) => AddUser(tenantId: null, orgId: null, roles);
+
+    public Guid AddUser(Guid? tenantId, Guid? orgId, params Role[] roles)
     {
-        var userId = Guid.NewGuid();
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            UserName = Guid.NewGuid().ToString("N"),
+            TenantId = tenantId,
+            OrgId = orgId,
+        };
+        Context.Users.Add(user);
         foreach (var role in roles)
-            Context.UserRoles.Add(new IdentityUserRole<Guid> { UserId = userId, RoleId = role.Id });
+            Context.UserRoles.Add(new IdentityUserRole<Guid> { UserId = user.Id, RoleId = role.Id });
         Context.SaveChanges();
-        return userId;
+        return user.Id;
     }
 
     public ValueTask DisposeAsync() => Context.DisposeAsync();

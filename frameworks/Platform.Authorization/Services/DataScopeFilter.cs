@@ -185,7 +185,14 @@ public sealed class DataScopeFilter : IDataScopeFilter
         }
 
         if (userValue.GetType() != valueType)
-            return False;
+        {
+            if (!IsNumeric(userValue.GetType()) || !IsNumeric(valueType))
+                return False;
+
+            // int/long resource với claim decimal: so trên decimal, không cắt phần thập phân.
+            var numeric = Binary(op, Expression.Convert(member, typeof(decimal)), Parameter(System.Convert.ToDecimal(userValue, System.Globalization.CultureInfo.InvariantCulture), typeof(decimal)));
+            return numeric is null ? False : And(NotNull(member, memberType), numeric);
+        }
 
         var compared = Binary(op, member, Parameter(userValue, memberType));
         return compared is null ? False : And(NotNull(member, memberType), compared);
@@ -246,6 +253,17 @@ public sealed class DataScopeFilter : IDataScopeFilter
             // Kiểu không hỗ trợ toán tử (vd. string với <) → rule không đạt.
             return null;
         }
+    }
+
+    private static bool IsNumeric(Type type)
+    {
+        type = Nullable.GetUnderlyingType(type) ?? type;
+        return type == typeof(byte) || type == typeof(sbyte)
+            || type == typeof(short) || type == typeof(ushort)
+            || type == typeof(int) || type == typeof(uint)
+            || type == typeof(long) || type == typeof(ulong)
+            || type == typeof(float) || type == typeof(double)
+            || type == typeof(decimal);
     }
 
     private static string Flip(string op) => op switch

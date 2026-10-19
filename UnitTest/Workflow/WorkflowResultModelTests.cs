@@ -214,7 +214,7 @@ public class WorkflowResultModelTests
     #region Concurrent Scenario Simulation
 
     [Fact]
-    public void WorkflowExecutionResult_MultipleSimultaneousExecutions_ShouldBeIndependent()
+    public async Task WorkflowExecutionResult_MultipleSimultaneousExecutions_ShouldBeIndependent()
     {
         // Arrange
         var tasks = new List<Task<WorkflowExecutionResult>>();
@@ -232,7 +232,7 @@ public class WorkflowResultModelTests
             }));
         }
 
-        var results = Task.WhenAll(tasks).Result;
+        var results = await Task.WhenAll(tasks);
 
         // Assert
         Assert.Equal(10, results.Length);

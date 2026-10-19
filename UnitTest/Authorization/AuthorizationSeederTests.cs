@@ -268,5 +268,21 @@ public sealed class AuthorizationSeederTests
         Assert.Equal(8, ruleCount); // 6 policies × 1 rule + P_OWNER_OR_SAME_DEPT × 2 rules = 8
     }
 
+    [Fact(DisplayName = "V13: ADMIN is seeded with Permission * once")]
+    public async Task AdminRole_IsSeededWithWildcard_Idempotent()
+    {
+        var context = CreateInMemoryDbContext();
+        await context.SeedAsync();
+        await context.SeedAsync();
+
+        var adminId = await context.Roles.Where(r => r.NormalizedName == "ADMIN").Select(r => r.Id).SingleAsync();
+        var wildcards = await context.RoleClaims
+            .Where(c => c.RoleId == adminId && c.ClaimType == "Permission")
+            .ToListAsync();
+
+        Assert.Single(wildcards);
+        Assert.Equal("*", wildcards[0].ClaimValue);
+    }
+
     #endregion
 }

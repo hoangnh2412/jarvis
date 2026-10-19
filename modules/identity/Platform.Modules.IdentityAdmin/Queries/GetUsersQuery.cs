@@ -3,7 +3,7 @@ namespace Platform.Modules.IdentityAdmin.Queries;
 using Platform.DDD.Domain.Shared.Messaging;
 
 /// <summary>
-/// Liệt kê toàn bộ user. Chưa filter theo scope/tenant (data-scope ABAC filtering để Phase 4).
+/// Liệt kê user trong scope của actor: global thấy mọi tenant, tenant admin thấy tenant mình, org admin thấy org mình.
 /// </summary>
 public sealed record GetUsersQuery : IQuery;
 

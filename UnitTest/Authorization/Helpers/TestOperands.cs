@@ -11,11 +11,11 @@ internal static class TestOperands
     public static void Business(OperandCatalog operands) =>
         operands
             .AddUserClaim("DepartmentId")
-            .AddUserClaim("ApproveLimit")
+            .AddUserClaim("ApproveLimit", valueType: OperandValueType.Decimal)
             .AddUserClaim("ManagedProjectIds", OperandValueKind.Collection)
             .AddUserClaim("ManagedDepartmentIds", OperandValueKind.Collection)
             .AddResource("DepartmentId")
-            .AddResource("Amount")
+            .AddResource("Amount", valueType: OperandValueType.Decimal)
             .AddResource("ProjectId")
             .AddResource("EmployeeId");
 

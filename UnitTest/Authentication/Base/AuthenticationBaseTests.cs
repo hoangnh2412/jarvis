@@ -16,8 +16,9 @@ public class AuthenticationBaseTests
     {
         var config = AuthenticationConfigurationBuilder.BuildRootConfig(new Dictionary<string, string?>
         {
-            ["Authentication:Type"] = "ApiKey",
-            ["Authentication:DefaultAuthenticateScheme"] = "Default"
+            ["Authentication:DefaultAuthenticateScheme"] = "ApiKey",
+            ["Authentication:DefaultChallengeScheme"] = "ApiKey",
+            ["Authentication:Schemes:ApiKey:Enabled"] = "true",
         });
 
         using var host = Host.CreateDefaultBuilder()
@@ -25,30 +26,29 @@ public class AuthenticationBaseTests
             .Build();
 
         var options = host.Services.GetRequiredService<IOptions<AuthenticationRootOptions>>().Value;
-        Assert.Equal("ApiKey", options.Type);
-        Assert.Equal("Default", options.DefaultAuthenticateScheme);
+        Assert.Equal("ApiKey", options.DefaultAuthenticateScheme);
     }
 
-    /// <summary><c>Authentication:Type</c> rỗng — validator startup phải fail.</summary>
+    /// <summary>Không có default scheme và không có <c>Type</c> — validator startup phải fail.</summary>
     [Fact]
-    public void AUTH_B_02_Empty_type_fails_validation()
+    public void AUTH_B_02_Missing_default_scheme_and_type_fails_validation()
     {
         var validator = new AuthenticationRootOptionsValidator();
-        var result = validator.Validate(null, new AuthenticationRootOptions { Type = "" });
+        var result = validator.Validate(null, new AuthenticationRootOptions());
 
         Assert.True(result.Failed);
-        Assert.Contains("Authentication:Type", result.FailureMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("DefaultAuthenticateScheme", result.FailureMessage, StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>Default authenticate scheme = Bearer khi cấu hình Jwt.</summary>
+    /// <summary>Default authenticate scheme = <c>Bearer</c> khi cấu hình Jwt.</summary>
     [Fact]
     public void AUTH_B_03_Default_authenticate_scheme_bearer()
     {
         var config = AuthenticationConfigurationBuilder.BuildRootConfig(new Dictionary<string, string?>
         {
-            ["Authentication:Type"] = "Jwt",
             ["Authentication:DefaultAuthenticateScheme"] = "Bearer",
-            ["Authentication:DefaultChallengeScheme"] = "Bearer"
+            ["Authentication:DefaultChallengeScheme"] = "Bearer",
+            ["Authentication:Schemes:Bearer:Enabled"] = "true",
         });
 
         var services = new ServiceCollection();
@@ -59,6 +59,25 @@ public class AuthenticationBaseTests
         Assert.Equal("Bearer", options.DefaultAuthenticateScheme);
     }
 
+    /// <summary><c>DefaultScheme</c> được dùng khi <c>DefaultAuthenticateScheme</c> trống.</summary>
+    [Fact]
+    public void AUTH_B_07_DefaultScheme_fallback_for_authenticate()
+    {
+        var config = AuthenticationConfigurationBuilder.BuildRootConfig(new Dictionary<string, string?>
+        {
+            ["Authentication:DefaultScheme"] = "Bearer",
+            ["Authentication:Schemes:Bearer:Enabled"] = "true",
+        });
+
+        var services = new ServiceCollection();
+        services.AddPlatformAuthentication(config);
+        var sp = services.BuildServiceProvider();
+
+        var options = sp.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
+        Assert.Equal("Bearer", options.DefaultScheme);
+        Assert.Equal("Bearer", options.DefaultAuthenticateScheme);
+    }
+
     /// <summary>Password policy — mật khẩu ngắn hơn <c>MinLength</c> bị từ chối.</summary>
     [Fact]
     public async Task AUTH_B_06_Password_policy_min_length()
@@ -66,12 +85,15 @@ public class AuthenticationBaseTests
         var config = AuthenticationConfigurationBuilder.BuildRootConfig(new Dictionary<string, string?>
         {
             ["Authentication:Type"] = "ApiKey",
-            ["Authentication:PasswordPolicy:MinLength"] = "12"
+            ["Authentication:PasswordPolicy:Source"] = "Configuration",
+            ["Authentication:PasswordPolicy:Defaults:MinLength"] = "12"
         });
 
         var services = new ServiceCollection();
         services.Configure<AuthenticationRootOptions>(config.GetSection("Authentication"));
-        services.AddSingleton<IPasswordPolicyValidator, DefaultPasswordPolicyValidator>();
+        services.AddSingleton<IPasswordPolicyScopeProvider, EmptyPasswordPolicyScopeProvider>();
+        services.AddSingleton<IPasswordPolicyProvider, NullPasswordPolicyProvider>();
+        services.AddSingleton<IPasswordPolicyValidator, PlatformPasswordPolicyValidator>();
         var validator = services.BuildServiceProvider().GetRequiredService<IPasswordPolicyValidator>();
 
         var shortResult = await validator.ValidateAsync("short");

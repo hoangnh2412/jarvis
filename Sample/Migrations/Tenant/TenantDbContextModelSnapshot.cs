@@ -17,10 +17,64 @@ namespace Sample.Migrations.Tenant
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.15")
+                .HasAnnotation("ProductVersion", "9.0.20")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Sample.Entities.ApiKeyCredential", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("KeyHash")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<string>("OwnerName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Profile")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Profile", "KeyHash")
+                        .IsUnique();
+
+                    b.ToTable("ApiKeyCredential", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            IsActive = true,
+                            KeyHash = "lhU5FUJKyK3PWkTAabSb+wEV1Kh0pIqp3n05pZE9NxE=",
+                            OwnerName = "sample-default",
+                            Profile = "Default",
+                            TenantId = new Guid("dd348565-5d31-46bb-aef7-aa7f0c4a1866")
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            IsActive = true,
+                            KeyHash = "kQ5Mlugy2PJ3hBFHNe6jARNFe6oexvxp4jEkKGl5xXs=",
+                            OwnerName = "sample-integration",
+                            Profile = "Integration",
+                            TenantId = new Guid("dd348565-5d31-46bb-aef7-aa7f0c4a1866")
+                        });
+                });
 
             modelBuilder.Entity("Sample.Entities.BasicAuthUser", b =>
                 {
@@ -28,14 +82,17 @@ namespace Sample.Migrations.Tenant
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Password")
+                    b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
 
                     b.PrimitiveCollection<string[]>("Roles")
                         .IsRequired()
                         .HasColumnType("text[]");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -44,7 +101,7 @@ namespace Sample.Migrations.Tenant
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Username")
+                    b.HasIndex("TenantId", "Username")
                         .IsUnique();
 
                     b.ToTable("BasicAuthUser", (string)null);
@@ -53,8 +110,9 @@ namespace Sample.Migrations.Tenant
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            Password = "samplepass",
+                            PasswordHash = "3SLRb2ke18Idago99fbpIlEvb89MrDuviWDeXQ4Wqj0=",
                             Roles = new[] { "user", "admin" },
+                            TenantId = new Guid("dd348565-5d31-46bb-aef7-aa7f0c4a1866"),
                             Username = "sampleuser"
                         });
                 });
@@ -135,6 +193,64 @@ namespace Sample.Migrations.Tenant
                     b.ToTable("Positions");
                 });
 
+            modelBuilder.Entity("Sample.Entities.SampleExcelTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
+
+                    b.Property<int>("HeaderRow")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("MappingsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int?>("RowCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StartRow")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("excel_templates", (string)null);
+                });
+
             modelBuilder.Entity("Sample.Entities.Student", b =>
                 {
                     b.Property<Guid>("Id")
@@ -154,6 +270,54 @@ namespace Sample.Migrations.Tenant
                     b.HasKey("Id");
 
                     b.ToTable("Student", (string)null);
+                });
+
+            modelBuilder.Entity("Sample.Entities.TenantPasswordPolicy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("MaxFailedAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MinLength")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("RequireDigit")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("RequireLowercase")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("RequireNonAlphanumeric")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("RequireUppercase")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .IsUnique();
+
+                    b.ToTable("TenantPasswordPolicy", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            MaxFailedAttempts = 5,
+                            MinLength = 8,
+                            RequireDigit = true,
+                            RequireLowercase = true,
+                            RequireNonAlphanumeric = false,
+                            RequireUppercase = false,
+                            TenantId = new Guid("dd348565-5d31-46bb-aef7-aa7f0c4a1866")
+                        });
                 });
 
             modelBuilder.Entity("Sample.Entities.Employee", b =>

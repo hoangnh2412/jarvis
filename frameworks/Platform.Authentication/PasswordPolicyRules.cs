@@ -1,15 +1,10 @@
-using Microsoft.Extensions.Options;
-
 namespace Platform.Authentication;
 
-/// <summary>
-/// Validator mặc định — áp dụng <see cref="PasswordPolicyOptions"/> từ <see cref="AuthenticationRootOptions"/>.
-/// </summary>
-public sealed class DefaultPasswordPolicyValidator(IOptions<AuthenticationRootOptions> rootOptions) : IPasswordPolicyValidator
+/// <summary>Rule validate mật khẩu theo <see cref="PasswordPolicyOptions"/>.</summary>
+public static class PasswordPolicyRules
 {
-    public Task<PasswordValidationResult> ValidateAsync(string password, CancellationToken cancellationToken = default)
+    public static PasswordValidationResult Validate(string password, PasswordPolicyOptions policy)
     {
-        var policy = rootOptions.Value.PasswordPolicy;
         var errors = new List<string>();
 
         if (string.IsNullOrEmpty(password) || password.Length < policy.MinLength)
@@ -27,8 +22,8 @@ public sealed class DefaultPasswordPolicyValidator(IOptions<AuthenticationRootOp
         if (policy.RequireNonAlphanumeric && password.All(char.IsLetterOrDigit))
             errors.Add("Password must contain a non-alphanumeric character.");
 
-        return Task.FromResult(errors.Count == 0
+        return errors.Count == 0
             ? PasswordValidationResult.Success()
-            : PasswordValidationResult.Failed(errors.ToArray()));
+            : PasswordValidationResult.Failed(errors.ToArray());
     }
 }

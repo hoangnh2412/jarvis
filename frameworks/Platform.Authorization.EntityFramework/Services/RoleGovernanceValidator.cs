@@ -71,6 +71,34 @@ public sealed class RoleGovernanceValidator : IRoleGovernanceValidator
         CancellationToken cancellationToken = default) =>
         await GetMaxRoleLevelAsync(actorUserId, cancellationToken) > roleLevel;
 
+    /// <inheritdoc />
+    public async Task<bool> IsWithinActorScopeAsync(
+        Guid actorUserId,
+        Guid? targetTenantId,
+        Guid? targetOrgId,
+        CancellationToken cancellationToken = default)
+    {
+        var actor = await _context.Users
+            .AsNoTracking()
+            .Where(u => u.Id == actorUserId)
+            .Select(u => new { u.TenantId, u.OrgId })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (actor is null)
+            return false;
+
+        if (actor.TenantId is null)
+            return true;
+
+        if (targetTenantId != actor.TenantId)
+            return false;
+
+        if (actor.OrgId is null)
+            return true;
+
+        return targetOrgId == actor.OrgId;
+    }
+
     /// <summary>
     /// Actor may lock/unlock/delete a user only if actor level &gt; the user's highest role level.
     /// </summary>

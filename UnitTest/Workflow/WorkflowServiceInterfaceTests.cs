@@ -64,7 +64,7 @@ public class WorkflowServiceInterfaceTests
 
         // Assert
         Assert.NotNull(returnType);
-        Assert.True(returnType.Name.StartsWith("Task"));
+        Assert.StartsWith("Task", returnType.Name);
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class WorkflowServiceInterfaceTests
 
         // Assert
         Assert.NotNull(returnType);
-        Assert.True(returnType.Name.StartsWith("Task"));
+        Assert.StartsWith("Task", returnType.Name);
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public class WorkflowServiceInterfaceTests
 
         // Assert
         Assert.NotNull(returnType);
-        Assert.True(returnType.Name.StartsWith("Task"));
+        Assert.StartsWith("Task", returnType.Name);
     }
 
     #endregion

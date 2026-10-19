@@ -1,5 +1,6 @@
 namespace Platform.Authorization.EntityFramework.Persistence;
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Platform.Authentication.Identity.Domain;
 using Platform.Authorization.Domain;
@@ -62,6 +63,35 @@ public static class AuthorizationSeeder
         await context.Policies.AddRangeAsync(
             catalog.Policies.Where(p => !existingPolicies.Contains(p.Code)), cancellationToken);
 
+        await context.SaveChangesAsync(cancellationToken);
+        await EnsureAdminWildcardAsync(context, cancellationToken);
+    }
+
+    /// <summary>
+    /// Role ADMIN (global) nhận Permission <c>*</c> nếu chưa có wildcard.
+    /// Không gán wildcard cho TENANT_ADMIN / ORG_ADMIN — wildcard đang bỏ qua ABAC (V1).
+    /// </summary>
+    private static async Task EnsureAdminWildcardAsync(IdentityDbContextBase context, CancellationToken cancellationToken)
+    {
+        var adminId = await context.Roles
+            .Where(r => r.NormalizedName == "ADMIN")
+            .Select(r => (Guid?)r.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (adminId is null)
+            return;
+
+        var hasWildcard = await context.RoleClaims.AnyAsync(
+            c => c.RoleId == adminId && c.ClaimType == "Permission" && (c.ClaimValue == "*" || c.ClaimValue == "System.All"),
+            cancellationToken);
+        if (hasWildcard)
+            return;
+
+        context.RoleClaims.Add(new IdentityRoleClaim<Guid>
+        {
+            RoleId = adminId.Value,
+            ClaimType = "Permission",
+            ClaimValue = "*",
+        });
         await context.SaveChangesAsync(cancellationToken);
     }
 

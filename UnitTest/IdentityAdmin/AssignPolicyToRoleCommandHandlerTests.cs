@@ -40,6 +40,7 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
             roleManager.Object,
             new FakeCurrentUser(actorId),
             ActorHoldsPolicy(actorId, policy).Object,
+            store.PermissionProvider,
             store.Validator);
 
         await handler.HandleAsync(
@@ -64,6 +65,7 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
             roleManager.Object,
             new FakeCurrentUser(actorId),
             policyProvider.Object,
+            store.PermissionProvider,
             store.Validator);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => handler.HandleAsync(
@@ -89,6 +91,7 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
             roleManager.Object,
             new FakeCurrentUser(actorId),
             policyProvider.Object,
+            store.PermissionProvider,
             store.Validator);
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => handler.HandleAsync(
@@ -110,6 +113,7 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
             roleManager.Object,
             new FakeCurrentUser(actorId),
             ActorHoldsPolicy(actorId, policy).Object,
+            store.PermissionProvider,
             store.Validator);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => handler.HandleAsync(
@@ -132,6 +136,7 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
             roleManager.Object,
             new FakeCurrentUser(actorId),
             ActorHoldsPolicy(actorId, policy).Object,
+            store.PermissionProvider,
             store.Validator);
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => handler.HandleAsync(
@@ -139,5 +144,36 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
             CancellationToken.None));
 
         roleManager.Verify(m => m.AddClaimAsync(It.IsAny<Role>(), It.IsAny<Claim>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "T97: wildcard actor can assign a policy they do not hold")]
+    public async Task HandleAsync_allows_wildcard_actor_without_the_policy()
+    {
+        await using var store = new GovernanceStore();
+        var actorId = store.AddUser(store.AddRole("Admin", 1000, permissions: ["*"]));
+        var role = store.AddRole("Lawyer", 100);
+        var policy = CreatePolicy("P_SAME_ORG");
+
+        var roleManager = IdentityMockHelpers.MockRoleManager<Role>();
+        roleManager.Setup(m => m.FindByIdAsync(role.Id.ToString())).ReturnsAsync(role);
+        roleManager.Setup(m => m.GetClaimsAsync(role)).ReturnsAsync(new List<Claim>());
+        roleManager.Setup(m => m.AddClaimAsync(role, It.IsAny<Claim>())).ReturnsAsync(IdentityResult.Success);
+
+        var policyProvider = new Mock<IPolicyProvider>();
+        policyProvider.Setup(p => p.GetPolicyByCodeAsync("P_SAME_ORG", It.IsAny<CancellationToken>())).ReturnsAsync(policy);
+        policyProvider.Setup(p => p.GetPoliciesByUserAsync(actorId, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+
+        var handler = new AssignPolicyToRoleCommandHandler(
+            roleManager.Object,
+            new FakeCurrentUser(actorId),
+            policyProvider.Object,
+            store.PermissionProvider,
+            store.Validator);
+
+        await handler.HandleAsync(
+            new AssignPolicyToRoleCommand { RoleId = role.Id, PolicyCode = "P_SAME_ORG" },
+            CancellationToken.None);
+
+        roleManager.Verify(m => m.AddClaimAsync(role, It.Is<Claim>(c => c.Value == "P_SAME_ORG")), Times.Once);
     }
 }

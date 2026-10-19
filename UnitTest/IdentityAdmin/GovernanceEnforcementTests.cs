@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Moq;
 using Platform.Authentication.Identity.Domain;
 using Platform.Authorization.Domain;
+using Platform.Authorization.EntityFramework.Services;
 
 /// <summary>
 /// S5: RoleLevel governance (ADR C5) on revoke, lock/unlock, delete and create-role.
@@ -75,7 +76,12 @@ public sealed class GovernanceEnforcementTests
         var cto = store.AddRole("Cto", 650);
         var roleManager = RoleManagerFor(cto, new Claim("Policy", "P_APPROVE_LIMIT"));
 
-        var handler = new RemovePolicyFromRoleCommandHandler(roleManager.Object, new FakeCurrentUser(actorId), store.Validator);
+        var handler = new RemovePolicyFromRoleCommandHandler(
+            roleManager.Object,
+            new FakeCurrentUser(actorId),
+            store.Validator,
+            store.PermissionProvider,
+            new PolicyProvider(store.Context));
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => handler.HandleAsync(
             new RemovePolicyFromRoleCommand { RoleId = cto.Id, PolicyCode = "P_APPROVE_LIMIT" },
@@ -91,12 +97,62 @@ public sealed class GovernanceEnforcementTests
         var cfo = store.AddRole("Cfo", 650);
         var roleManager = RoleManagerFor(cfo, new Claim("Policy", "P_APPROVE_LIMIT"));
 
-        var handler = new RemovePolicyFromRoleCommandHandler(roleManager.Object, new FakeCurrentUser(actorId), store.Validator);
+        var handler = new RemovePolicyFromRoleCommandHandler(
+            roleManager.Object,
+            new FakeCurrentUser(actorId),
+            store.Validator,
+            store.PermissionProvider,
+            new PolicyProvider(store.Context));
 
         await handler.HandleAsync(
             new RemovePolicyFromRoleCommand { RoleId = cfo.Id, PolicyCode = "P_APPROVE_LIMIT" },
             CancellationToken.None);
         roleManager.Verify(m => m.RemoveClaimAsync(cfo, It.Is<Claim>(c => c.Value == "P_APPROVE_LIMIT")), Times.Once);
+    }
+
+    [Fact(DisplayName = "T96: removing a narrowing policy is forbidden when the actor does not hold what remains")]
+    public async Task RemovePolicy_that_widens_scope_denied()
+    {
+        await using var store = new GovernanceStore();
+        var actorId = store.AddUser(store.AddRole("Director", 700));
+        var cfo = store.AddRole("Cfo", 650);
+        var roleManager = RoleManagerFor(
+            cfo,
+            new Claim("Policy", "P_SAME_ORG"),
+            new Claim("Policy", "P_APPROVE_LIMIT"));
+
+        var handler = new RemovePolicyFromRoleCommandHandler(
+            roleManager.Object,
+            new FakeCurrentUser(actorId),
+            store.Validator,
+            store.PermissionProvider,
+            new PolicyProvider(store.Context));
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => handler.HandleAsync(
+            new RemovePolicyFromRoleCommand { RoleId = cfo.Id, PolicyCode = "P_SAME_ORG" },
+            CancellationToken.None));
+        roleManager.Verify(m => m.RemoveClaimAsync(It.IsAny<Role>(), It.IsAny<Claim>()), Times.Never);
+    }
+
+    [Fact(DisplayName = "T93: TenantAdmin cannot lock a user in another tenant")]
+    public async Task Lock_user_outside_tenant_denied()
+    {
+        await using var store = new GovernanceStore();
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+        var actorId = store.AddUser(tenantA, null, store.AddRole("TenantAdmin", 900));
+        var employeeId = store.AddUser(tenantB, null, store.AddRole("Employee", 100));
+
+        var user = new User { Id = employeeId, UserName = "target", TenantId = tenantB };
+        var userManager = IdentityMockHelpers.MockUserManager<User>();
+        userManager.Setup(m => m.FindByIdAsync(employeeId.ToString())).ReturnsAsync(user);
+
+        var handler = new UpdateUserCommandHandler(userManager.Object, new FakeCurrentUser(actorId), store.Validator);
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => handler.HandleAsync(
+            new UpdateUserCommand { UserId = employeeId, IsLocked = true },
+            CancellationToken.None));
+        userManager.Verify(m => m.SetLockoutEndDateAsync(It.IsAny<User>(), It.IsAny<DateTimeOffset?>()), Times.Never);
     }
 
     // --- Lock / unlock / delete user ---

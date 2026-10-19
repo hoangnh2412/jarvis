@@ -28,4 +28,28 @@ public sealed class BasicValidationResult
             Claims = claims
         };
     }
+
+    /// <summary>Build principal sau khi provider đã verify password (hash / storage).</summary>
+    public static BasicValidationResult FromVerifiedUser(string username, IEnumerable<string> roles) =>
+        FromVerifiedUser(username, roles, subjectId: null);
+
+    /// <summary><paramref name="subjectId"/> — map <c>sub</c> / <c>NameIdentifier</c> (vd. user id cho JWT).</summary>
+    public static BasicValidationResult FromVerifiedUser(string username, IEnumerable<string> roles, string? subjectId)
+    {
+        var claims = new List<Claim> { new(ClaimTypes.Name, username) };
+        if (!string.IsNullOrWhiteSpace(subjectId))
+        {
+            claims.Add(new Claim(ClaimTypes.NameIdentifier, subjectId));
+            claims.Add(new Claim("sub", subjectId));
+        }
+
+        foreach (var role in roles)
+            claims.Add(new Claim(ClaimTypes.Role, role));
+
+        return new BasicValidationResult
+        {
+            Username = username,
+            Claims = claims
+        };
+    }
 }

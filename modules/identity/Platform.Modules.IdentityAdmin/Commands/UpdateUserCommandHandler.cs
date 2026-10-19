@@ -36,6 +36,9 @@ public sealed class UpdateUserCommandHandler : IAsyncCommandHandler<UpdateUserCo
         if (!await _roleGovernanceValidator.CanManageUserAsync(actor.UserId.Value, user.Id, cancellationToken))
             throw new UnauthorizedAccessException("You cannot manage a user whose role level is greater than or equal to your own");
 
+        if (!await _roleGovernanceValidator.IsWithinActorScopeAsync(actor.UserId.Value, user.TenantId, user.OrgId, cancellationToken))
+            throw new UnauthorizedAccessException("You cannot manage a user outside your tenant or organization");
+
         if (command.IsLocked)
         {
             await _userManager.SetLockoutEnabledAsync(user, true);

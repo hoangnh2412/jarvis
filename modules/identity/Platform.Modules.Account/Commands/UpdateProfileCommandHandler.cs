@@ -29,17 +29,23 @@ public sealed class UpdateProfileCommandHandler : IAsyncCommandHandler<UpdatePro
         if (user == null)
             throw new InvalidOperationException("User not found");
 
-        if (command.Email != null)
+        if (command.Email != null && !string.Equals(user.Email, command.Email, StringComparison.OrdinalIgnoreCase))
         {
-            user.Email = command.Email;
-            user.NormalizedEmail = command.Email.ToUpperInvariant();
+            var emailResult = await _userManager.SetEmailAsync(user, command.Email);
+            if (!emailResult.Succeeded)
+                throw new InvalidOperationException($"Failed to update profile: {string.Join("; ", emailResult.Errors.Select(e => e.Description))}");
+
+            user.EmailConfirmed = false;
+            var confirmResult = await _userManager.UpdateAsync(user);
+            if (!confirmResult.Succeeded)
+                throw new InvalidOperationException($"Failed to update profile: {string.Join("; ", confirmResult.Errors.Select(e => e.Description))}");
         }
 
-        if (command.PhoneNumber != null)
-            user.PhoneNumber = command.PhoneNumber;
-
-        var result = await _userManager.UpdateAsync(user);
-        if (!result.Succeeded)
-            throw new InvalidOperationException($"Failed to update profile: {string.Join("; ", result.Errors.Select(e => e.Description))}");
+        if (command.PhoneNumber != null && user.PhoneNumber != command.PhoneNumber)
+        {
+            var phoneResult = await _userManager.SetPhoneNumberAsync(user, command.PhoneNumber);
+            if (!phoneResult.Succeeded)
+                throw new InvalidOperationException($"Failed to update profile: {string.Join("; ", phoneResult.Errors.Select(e => e.Description))}");
+        }
     }
 }

@@ -1,7 +1,9 @@
-﻿namespace Platform.Authentication.Jwt;
+﻿using Platform.Authentication;
+
+namespace Platform.Authentication.Jwt;
 
 /// <summary>
-/// Options cấu hình JWT Bearer — bind từ <c>Authentication:Jwt:{scheme}</c>.
+/// Options cấu hình JWT Bearer — bind từ <c>Authentication:Schemes:Bearer:Profiles:{profile}</c>.
 /// </summary>
 /// <remarks>
 /// <para><b>Chức năng:</b> khai báo authority OIDC, audience, signing keys và các flag validate token.</para>
@@ -14,6 +16,9 @@
 /// </remarks>
 public class AuthenticationJwtOption
 {
+    /// <summary>Nơi lấy signing material / authority metadata cho profile này.</summary>
+    public AuthenticationCredentialSource Source { get; set; } = AuthenticationCredentialSource.Configuration;
+
     /// <summary>URL issuer OIDC (ví dụ <c>https://auth.example.com/</c>). Khi set, bỏ qua symmetric keys.</summary>
     public string? Authority { get; set; }
 

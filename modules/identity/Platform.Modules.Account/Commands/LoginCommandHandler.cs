@@ -8,6 +8,7 @@ using Platform.Authentication.Identity.Domain;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Platform.Authentication;
 using Platform.Authentication.Jwt;
 using Platform.DDD.Application.Contracts.Commands;
 
@@ -42,9 +43,17 @@ public sealed class LoginCommandHandler : IAsyncCommandHandler<LoginCommand, Log
 
         var passwordValid = await _userManager.CheckPasswordAsync(user, command.Password);
         if (!passwordValid)
-            throw new UnauthorizedAccessException("Invalid username or password");
+        {
+            await _userManager.AccessFailedAsync(user);
+            if (await _userManager.IsLockedOutAsync(user))
+                throw new UnauthorizedAccessException("Account is locked");
 
-        var token = await GenerateAccessTokenAsync(user, cancellationToken);
+            throw new UnauthorizedAccessException("Invalid username or password");
+        }
+
+        await _userManager.ResetAccessFailedCountAsync(user);
+
+        var token = GenerateAccessToken(user);
 
         return new LoginResponse
         {
@@ -54,9 +63,9 @@ public sealed class LoginCommandHandler : IAsyncCommandHandler<LoginCommand, Log
         };
     }
 
-    private async Task<string> GenerateAccessTokenAsync(User user, CancellationToken cancellationToken)
+    private string GenerateAccessToken(User user)
     {
-        var jwtOption = _jwtOptions.Get("Bearer");
+        var jwtOption = _jwtOptions.Get(PlatformAuthenticationSchemes.Bearer);
         if (jwtOption is null || jwtOption.IssuerSigningKeys.Length == 0)
             throw new InvalidOperationException("JWT signing key not configured");
 
@@ -74,9 +83,19 @@ public sealed class LoginCommandHandler : IAsyncCommandHandler<LoginCommand, Log
         if (user.TenantId is { } tenantId)
             claims.Add(new Claim(_tenantClaimName, tenantId.ToString()));
 
+        var lifetime = jwtOption.MaxExpireMinutes > 0
+            ? TimeSpan.FromMinutes(jwtOption.MaxExpireMinutes)
+            : TimeSpan.FromHours(1);
+        var issuer = jwtOption.ValidIssuers.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
+        var audience = !string.IsNullOrWhiteSpace(jwtOption.Audience)
+            ? jwtOption.Audience
+            : jwtOption.ValidAudiences.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
+
         var token = new JwtSecurityToken(
+            issuer: issuer,
+            audience: audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
+            expires: DateTime.UtcNow.Add(lifetime),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

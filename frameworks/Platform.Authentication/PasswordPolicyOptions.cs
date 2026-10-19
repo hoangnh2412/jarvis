@@ -1,7 +1,7 @@
 namespace Platform.Authentication;
 
 /// <summary>
-/// Options chính sách độ mạnh mật khẩu — bind từ <c>Authentication:PasswordPolicy</c>.
+/// Options chính sách độ mạnh mật khẩu — bind từ <c>Authentication:PasswordPolicy:Defaults</c> hoặc storage.
 /// </summary>
 /// <remarks>
 /// <para><b>Chức năng:</b> quy định độ dài tối thiểu, yêu cầu ký tự và số lần nhập sai tối đa.</para>

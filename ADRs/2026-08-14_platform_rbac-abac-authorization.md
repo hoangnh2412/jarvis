@@ -1217,7 +1217,7 @@ Kiểm chứng 2026-10-02 bằng `dotnet list package --include-transitive`: ch�
 
 ```text
 erp_core/platform/frameworks/Platform.Authentication.Identity/
-├── Platform.Authentication.Identity.csproj      [PackageId Platform.Authentications.Identity; FrameworkReference AspNetCore.App — tên cũ Platform.Authentication.AspNetIdentity]
+├── Platform.Authentication.Identity.csproj      [PackageId Platform.Authentication.Identity; FrameworkReference AspNetCore.App — tên cũ Platform.Authentication.AspNetIdentity]
 └── Domain/
     ├── Role.cs    🟢 [Role : IdentityRole<Guid>; RoleLevel, IsSystemRole, DisplayName, CreatedAt — trước đây ApplicationRole]
     └── User.cs    🟢 [User : IdentityUser<Guid>; TenantId?, OrgId? là CỘT AspNetUsers (Q3)]

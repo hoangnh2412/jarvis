@@ -14,22 +14,29 @@ public sealed class OperandCatalog
     internal IReadOnlyCollection<OperandDefinition> Items => _items.Values;
 
     /// <summary>Thuộc tính người dùng được đọc từ AspNetUserClaims (loại claim mặc định là tên thuộc tính).</summary>
-    public OperandCatalog AddUserClaim(string attribute, OperandValueKind kind = OperandValueKind.Scalar, string? claimType = null) =>
-        Add(new OperandDefinition(OperandDefinition.UserPrefix + attribute, OperandSource.UserClaim, kind, claimType ?? attribute));
+    public OperandCatalog AddUserClaim(
+        string attribute,
+        OperandValueKind kind = OperandValueKind.Scalar,
+        string? claimType = null,
+        OperandValueType valueType = OperandValueType.Infer) =>
+        Add(new OperandDefinition(OperandDefinition.UserPrefix + attribute, OperandSource.UserClaim, kind, claimType ?? attribute, valueType));
 
     /// <summary>Thuộc tính công khai của đối tượng tài nguyên được chuyển cho engine.</summary>
-    public OperandCatalog AddResource(string attribute, OperandValueKind kind = OperandValueKind.Scalar) =>
-        Add(new OperandDefinition(OperandDefinition.ResourcePrefix + attribute, OperandSource.Resource, kind));
+    public OperandCatalog AddResource(
+        string attribute,
+        OperandValueKind kind = OperandValueKind.Scalar,
+        OperandValueType valueType = OperandValueType.Infer) =>
+        Add(new OperandDefinition(OperandDefinition.ResourcePrefix + attribute, OperandSource.Resource, kind, null, valueType));
 
     internal OperandCatalog AddPlatformDefaults()
     {
-        Add(new OperandDefinition("User.Id", OperandSource.UserSubject));
+        Add(new OperandDefinition("User.Id", OperandSource.UserSubject, ValueType: OperandValueType.Guid));
         foreach (var column in UserColumns)
-            Add(new OperandDefinition(OperandDefinition.UserPrefix + column, OperandSource.UserColumn));
+            Add(new OperandDefinition(OperandDefinition.UserPrefix + column, OperandSource.UserColumn, ValueType: OperandValueType.Guid));
 
-        AddResource("TenantId");
-        AddResource("OrgId");
-        AddResource("CreatedBy");
+        AddResource("TenantId", valueType: OperandValueType.Guid);
+        AddResource("OrgId", valueType: OperandValueType.Guid);
+        AddResource("CreatedBy", valueType: OperandValueType.Guid);
         return this;
     }
 

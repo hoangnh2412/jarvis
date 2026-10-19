@@ -2,7 +2,7 @@ namespace Platform.Authorization.Domain;
 
 /// <summary>
 /// Gốc tập hợp chính sách cho ABAC (Kiểm soát truy cập dựa trên thuộc tính).
-/// Các chính sách hệ thống (P_SAME_ORG, P_OWNER_ONLY, v.v.) được hạt giống và không thay đổi.
+/// Các chính sách hệ thống (P_SAME_ORG, P_OWNER_ONLY, …) được seed và không đổi.
 /// Các chính sách tùy chỉnh có thể được phép để tùy chỉnh sản phẩm (giai đoạn 4b+).
 /// </summary>
 public sealed class Policy

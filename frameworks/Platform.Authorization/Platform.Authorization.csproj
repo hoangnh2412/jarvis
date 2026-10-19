@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Platform.Authorization.EntityFramework" />
+    <!-- <InternalsVisibleTo Include="Platform.AutBhorization.EntityFramework" /> -->
     <InternalsVisibleTo Include="UnitTest" />
   </ItemGroup>
 

@@ -12,6 +12,10 @@ internal static class IdentityMockHelpers
     public static Mock<UserManager<TUser>> MockUserManager<TUser>() where TUser : class
     {
         var store = new Mock<IUserStore<TUser>>();
-        return new Mock<UserManager<TUser>>(store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        var userManager = new Mock<UserManager<TUser>>(store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        userManager.Setup(m => m.AccessFailedAsync(It.IsAny<TUser>())).ReturnsAsync(IdentityResult.Success);
+        userManager.Setup(m => m.ResetAccessFailedCountAsync(It.IsAny<TUser>())).ReturnsAsync(IdentityResult.Success);
+        userManager.Setup(m => m.IsLockedOutAsync(It.IsAny<TUser>())).ReturnsAsync(false);
+        return userManager;
     }
 }

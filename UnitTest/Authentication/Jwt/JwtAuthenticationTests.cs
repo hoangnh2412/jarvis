@@ -45,6 +45,21 @@ public class JwtAuthenticationTests
         Assert.True(result.Failed);
     }
 
+    /// <summary><c>Audience</c> được dùng làm <c>ValidAudiences</c> khi mảng <c>ValidAudiences</c> trống (symmetric).</summary>
+    [Fact]
+    public void JWT_U_06_Audience_maps_to_valid_audiences_when_array_empty()
+    {
+        var options = new JwtBearerOptions();
+        AuthenticationBuilderExtension.ConfigureJwtBearer(options, new AuthenticationJwtOption
+        {
+            Audience = "client",
+            ValidateAudience = true,
+            IssuerSigningKeys = ["test-signing-key-at-least-32-chars-long"],
+        }, new ServiceCollection());
+
+        Assert.Equal(["client"], options.TokenValidationParameters.ValidAudiences);
+    }
+
     /// <summary>Mặc định <c>RequireHttpsMetadata</c> = true khi không cấu hình.</summary>
     [Fact]
     public void JWT_U_04_Require_https_metadata_defaults_true()
@@ -74,7 +89,7 @@ public class JwtAuthenticationTests
     {
         const string signingKey = "test-signing-key-at-least-32-chars-long";
         var config = AuthenticationConfigurationBuilder.BuildJwtSymmetricConfig(signingKey);
-        await using var server = await AuthenticationTestServer.CreateAsync(config, composite: false, jwt: true, apiKey: false);
+        await using var server = await AuthenticationTestServer.CreateAsync(config, jwt: true, apiKey: false);
 
         var token = CreateToken(signingKey, DateTime.UtcNow.AddHours(1));
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/_auth-test/whoami");
@@ -93,7 +108,7 @@ public class JwtAuthenticationTests
     {
         const string signingKey = "test-signing-key-at-least-32-chars-long";
         var config = AuthenticationConfigurationBuilder.BuildJwtSymmetricConfig(signingKey);
-        await using var server = await AuthenticationTestServer.CreateAsync(config, composite: false, jwt: true, apiKey: false);
+        await using var server = await AuthenticationTestServer.CreateAsync(config, jwt: true, apiKey: false);
 
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/_auth-test/whoami");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "not.a.valid.jwt");

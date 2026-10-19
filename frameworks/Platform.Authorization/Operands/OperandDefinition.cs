@@ -25,6 +25,18 @@ public enum OperandValueKind
 }
 
 /// <summary>
+/// Kiểu giá trị đã khai báo. <see cref="Infer"/> giữ cách đoán Guid → decimal → string.
+/// Guid và String không được dùng với toán tử thứ tự (&lt;, &lt;=, &gt;, &gt;=).
+/// </summary>
+public enum OperandValueType
+{
+    Infer,
+    Guid,
+    Decimal,
+    String,
+}
+
+/// <summary>
 /// Một operand quy tắc được phép trắng (ADR C7, D10). Chỉ các operand đã đăng ký mới có thể được lưu trong quy tắc
 /// hoặc được giải quyết tại thời gian chạy.
 /// </summary>
@@ -32,7 +44,8 @@ public sealed record OperandDefinition(
     string Path,
     OperandSource Source,
     OperandValueKind Kind = OperandValueKind.Scalar,
-    string? ClaimType = null)
+    string? ClaimType = null,
+    OperandValueType ValueType = OperandValueType.Infer)
 {
     public const string UserPrefix = "User.";
     public const string ResourcePrefix = "Resource.";

@@ -5,10 +5,41 @@ Accept: application/json
 
 ###
 
-# Basic Auth từ DB (sampleuser / samplepass) — lookup qua SampleBasicAuthDbLookup.Lookup delegate
-# và DefaultAuthenticateScheme=Basic hoặc Composite nếu bật nhiều scheme
+# Basic Auth từ DB (hash) — tenant + sampleuser / samplepass
 GET {{Sample_HostAddress}}/api/_auth-test/whoami
+X-Tenant-Id: dd348565-5d31-46bb-aef7-aa7f0c4a1866
 Authorization: Basic c2FtcGxldXNlcjpzYW1wbGVwYXNz
+
+###
+
+# ApiKey từ DB (hash) — cùng tenant
+GET {{Sample_HostAddress}}/api/_auth-test/whoami
+X-Tenant-Id: dd348565-5d31-46bb-aef7-aa7f0c4a1866
+X-API-KEY: dev-sample-api-key
+
+###
+
+# Bearer login — verify BasicAuthUser (DB) rồi JWT; dùng accessToken với GET /api/authentication/me/bearer
+POST {{Sample_HostAddress}}/api/authentication/bearer-token
+Content-Type: application/json
+X-Tenant-Id: dd348565-5d31-46bb-aef7-aa7f0c4a1866
+
+{
+  "username": "sampleuser",
+  "password": "samplepass",
+  "expiresInMinutes": 60
+}
+
+###
+
+# Password policy — scope từ X-Tenant-Id (SamplePasswordPolicyScopeProvider) hoặc tenantId trong body
+POST {{Sample_HostAddress}}/api/authentication/password-policy/validate
+Content-Type: application/json
+X-Tenant-Id: dd348565-5d31-46bb-aef7-aa7f0c4a1866
+
+{
+  "password": "short1"
+}
 
 ###
 

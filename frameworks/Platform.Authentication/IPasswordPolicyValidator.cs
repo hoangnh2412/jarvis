@@ -5,10 +5,13 @@ namespace Platform.Authentication;
 /// </summary>
 /// <remarks>
 /// <para><b>Chức năng:</b> kiểm tra password khi đăng ký/đổi mật khẩu, trả <see cref="PasswordValidationResult"/>.</para>
-/// <para><b>Khi nào dùng:</b> override <see cref="DefaultPasswordPolicyValidator"/> trong DI
-/// khi cần rule tùy chỉnh (password history, breach check, v.v.).</para>
+/// <para><b>Khi nào dùng:</b> override <see cref="PlatformPasswordPolicyValidator"/> hoặc đăng ký <see cref="IPasswordPolicyProvider"/>
+/// khi <see cref="PasswordPolicySource.Storage"/>.</para>
 /// </remarks>
 public interface IPasswordPolicyValidator
 {
-    Task<PasswordValidationResult> ValidateAsync(string password, CancellationToken cancellationToken = default);
+    Task<PasswordValidationResult> ValidateAsync(
+        string password,
+        PasswordPolicyScope? scope = null,
+        CancellationToken cancellationToken = default);
 }

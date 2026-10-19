@@ -10,6 +10,8 @@ public class TenantDbContext(
 {
     public DbSet<Student> Students => Set<Student>();
     public DbSet<BasicAuthUser> BasicAuthUsers => Set<BasicAuthUser>();
+    public DbSet<ApiKeyCredential> ApiKeyCredentials => Set<ApiKeyCredential>();
+    public DbSet<TenantPasswordPolicy> TenantPasswordPolicies => Set<TenantPasswordPolicy>();
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<Position> Positions => Set<Position>();
     public DbSet<Employee> Employees => Set<Employee>();
@@ -22,6 +24,8 @@ public class TenantDbContext(
 
         modelBuilder.ApplyConfiguration(new StudentEntityConfiguration());
         modelBuilder.ApplyConfiguration(new BasicAuthUserEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new ApiKeyCredentialEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new TenantPasswordPolicyEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SampleExcelTemplateEntityConfiguration());
     }
 }

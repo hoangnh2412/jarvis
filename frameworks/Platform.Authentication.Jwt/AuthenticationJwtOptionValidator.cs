@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using Platform.Authentication;
 
 namespace Platform.Authentication.Jwt;
 
@@ -15,7 +16,7 @@ public sealed class AuthenticationJwtOptionValidator : IValidateOptions<Authenti
         if (!hasAuthority && options.ValidateIssuerSigningKey && !hasSymmetricKeys)
         {
             return ValidateOptionsResult.Fail(
-                $"Authentication:Jwt:{name ?? "scheme"} requires Authority or IssuerSigningKeys when ValidateIssuerSigningKey is enabled.");
+                $"{AuthenticationSchemeProfileConfiguration.ProfileSection("Bearer", name ?? "scheme")} requires Authority or IssuerSigningKeys when ValidateIssuerSigningKey is enabled.");
         }
 
         if (hasAuthority && options.ValidateAudience
@@ -23,7 +24,7 @@ public sealed class AuthenticationJwtOptionValidator : IValidateOptions<Authenti
             && options.ValidAudiences.Length == 0)
         {
             return ValidateOptionsResult.Fail(
-                $"Authentication:Jwt:{name ?? "scheme"} requires Audience or ValidAudiences when ValidateAudience is enabled.");
+                $"{AuthenticationSchemeProfileConfiguration.ProfileSection("Bearer", name ?? "scheme")} requires Audience or ValidAudiences when ValidateAudience is enabled.");
         }
 
         return ValidateOptionsResult.Success;

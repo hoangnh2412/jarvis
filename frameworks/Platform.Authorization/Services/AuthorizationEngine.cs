@@ -46,11 +46,12 @@ public sealed class AuthorizationEngine : IAuthorizationEngine
             return AccessDecision.Deny("Người dùng không có quyền hạn yêu cầu");
         }
 
-        // ADR Q7: wildcard bỏ qua ABAC (phạm vi của wildcard TenantAdmin/OrgAdmin vẫn là một câu hỏi mở).
-        if (grantingRoles.Any(r => PermissionMatcher.HasWildcard(r.Value)))
-        {
-            return AccessDecision.Allow(policyCode: "System.All");
-        }
+        // ADR Q7: wildcard bỏ qua ABAC. TenantAdmin/OrgAdmin nếu cũng mang wildcard thì policy scope bị bỏ qua (V1, chưa chốt).
+        var wildcard = grantingRoles
+            .SelectMany(r => r.Value)
+            .FirstOrDefault(PermissionMatcher.IsWildcard);
+        if (wildcard is not null)
+            return AccessDecision.Allow(policyCode: wildcard);
 
         // ADR D11/Q8: các chính sách được AND'ed trong một vai trò; các vai trò cấp quyền được OR'ed.
         // Các vai trò không cấp quyền không đóng góp đường dẫn.

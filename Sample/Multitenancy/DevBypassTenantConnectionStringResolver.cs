@@ -5,7 +5,7 @@ namespace Sample.Multitenancy;
 
 /// <summary>
 /// TEMP: bypass Master.Tenant lookup — always use <c>ConnectionStrings:TenantDbContext</c>.
-/// Re-enable <see cref="Platform.EntityFramework.DataStorages.DbTenantConnectionStringResolver{TMasterDbContext, TTenantEntity}"/>
+/// Re-enable <see cref="Platform.Multitenancy.EntityFramework.DataStorages.DbTenantConnectionStringResolver{TMasterDbContext, TTenantEntity}"/>
 /// when tenants are registered in SampleMaster.
 /// </summary>
 public sealed class DevBypassTenantConnectionStringResolver(IConfiguration configuration)

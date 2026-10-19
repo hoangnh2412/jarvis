@@ -79,6 +79,16 @@ public sealed class PolicyProvider : IPolicyProvider
             .Where(p => policyCodes.Contains(p.Code))
             .ToListAsync(cancellationToken);
 
+        var missingCodes = policyCodes.Except(policies.Select(p => p.Code)).ToList();
+        if (missingCodes.Count > 0)
+        {
+            var ownerRoleId = await _context.RoleClaims
+                .Where(rc => roleIds.Contains(rc.RoleId) && rc.ClaimType == "Policy" && rc.ClaimValue != null && missingCodes.Contains(rc.ClaimValue))
+                .Select(rc => rc.RoleId)
+                .FirstAsync(cancellationToken);
+            throw new UnresolvedPolicyException(ownerRoleId, missingCodes);
+        }
+
         return policies;
     }
 

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <PackageId>Platform.Authentications.Identity</PackageId>
+    <PackageId>Platform.Authentication.Identity</PackageId>
     <Version>1.0.0</Version>
     <Authors>Hoang Nguyen</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

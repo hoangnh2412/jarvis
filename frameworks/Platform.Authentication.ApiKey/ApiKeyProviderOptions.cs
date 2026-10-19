@@ -6,8 +6,8 @@ namespace Platform.Authentication.ApiKey;
 public class ApiKeyProviderOptions
 {
     /// <summary>
-    /// Realm mặc định (trùng section <c>Authentication:ApiKey:Default</c>).
+    /// Realm mặc định (trùng profile <c>Authentication:Schemes:ApiKey:Profiles:Default</c>).
     /// Gán tự động trong <c>AddCoreApiKey</c>.
     /// </summary>
-    public string DefaultRealm { get; set; } = PlatformAuthenticationSchemes.ApiKey;
+    public string DefaultRealm { get; set; } = PlatformAuthenticationSchemes.DefaultProfile;
 }

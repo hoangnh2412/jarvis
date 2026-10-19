@@ -1,5 +1,6 @@
 namespace Platform.Authorization.Services;
 
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Caching.Memory;
 using Platform.Authorization.Abstractions;
 using Platform.Authorization.Domain;
@@ -15,6 +16,9 @@ public sealed class CachedPolicyProvider : IPolicyProvider
     private readonly TimeSpan _cacheDuration;
 
     private const string PolicyCacheKeyPrefix = "policy:";
+    private const string RoleCacheKeyPrefix = "role-policies:";
+
+    private readonly ConcurrentDictionary<string, byte> _keys = new();
 
     public CachedPolicyProvider(
         IPolicyProvider inner,
@@ -40,9 +44,7 @@ public sealed class CachedPolicyProvider : IPolicyProvider
         policy = await _inner.GetPolicyByCodeAsync(code, cancellationToken);
 
         if (policy != null)
-        {
-            _cache.Set(cacheKey, policy, _cacheDuration);
-        }
+            Remember(cacheKey, policy);
 
         return policy;
     }
@@ -51,7 +53,13 @@ public sealed class CachedPolicyProvider : IPolicyProvider
         Guid roleId,
         CancellationToken cancellationToken = default)
     {
-        return await _inner.GetPoliciesByRoleAsync(roleId, cancellationToken);
+        var cacheKey = $"{RoleCacheKeyPrefix}{roleId:N}";
+        if (_cache.TryGetValue(cacheKey, out IReadOnlyList<Policy>? policies) && policies is not null)
+            return policies;
+
+        policies = (await _inner.GetPoliciesByRoleAsync(roleId, cancellationToken)).ToList();
+        Remember(cacheKey, policies);
+        return policies;
     }
 
     public async Task<IEnumerable<Policy>> GetPoliciesByUserAsync(
@@ -91,16 +99,27 @@ public sealed class CachedPolicyProvider : IPolicyProvider
     /// </summary>
     public void InvalidatePolicyCache(string code)
     {
-        var cacheKey = $"{PolicyCacheKeyPrefix}{code}";
-        _cache.Remove(cacheKey);
+        RemoveKey($"{PolicyCacheKeyPrefix}{code}");
     }
 
     /// <summary>
-    /// Clear all policy caches.
+    /// Xoá mọi policy đã cache (theo code và theo role).
     /// </summary>
     public void ClearPolicyCaches()
     {
-        // MemoryCache doesn't provide enumeration, so we'd need to track keys separately
-        // For now, this is a placeholder for distributed cache scenarios
+        foreach (var key in _keys.Keys)
+            RemoveKey(key);
+    }
+
+    private void Remember(string cacheKey, object value)
+    {
+        _cache.Set(cacheKey, value, _cacheDuration);
+        _keys.TryAdd(cacheKey, 0);
+    }
+
+    private void RemoveKey(string cacheKey)
+    {
+        _cache.Remove(cacheKey);
+        _keys.TryRemove(cacheKey, out _);
     }
 }

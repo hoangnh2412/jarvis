@@ -1,5 +1,6 @@
 namespace Platform.Authorization.Services;
 
+using System.Globalization;
 using Platform.Authorization.Abstractions;
 using Platform.Authorization.Domain;
 
@@ -54,59 +55,86 @@ public sealed class PolicyEvaluator : IPolicyEvaluator
 
             return CompareValues(leftValue, rule.Operator, rightValue);
         }
-        catch
+        catch (InvalidOperationException)
         {
-            // Nếu giải quyết operand thất bại, quy tắc không vượt qua
+            // Operand chưa đăng ký hoặc không resolve được → rule không đạt.
             return false;
         }
     }
 
-    private bool CompareValues(object? left, string op, object? right)
+    private static bool CompareValues(object? left, string op, object? right)
     {
-        // Một thuộc tính còn thiếu không bao giờ thỏa mãn một quy tắc; nếu không null == null sẽ cấp quyền truy cập
-        // (ví dụ: người dùng không có OrgId vượt qua SameOrg trên tài nguyên không có OrgId).
+        // Thiếu thuộc tính không bao giờ đạt; nếu không thì null == null sẽ cho phép.
         if (left is null || right is null)
-        {
             return false;
-        }
 
+        var compared = Compare(left, right);
         return op.ToUpperInvariant() switch
         {
-            "==" => Equals(left, right),
-            "!=" => !Equals(left, right),
-            "<" => Compare(left, right) < 0,
-            "<=" => Compare(left, right) <= 0,
-            ">" => Compare(left, right) > 0,
-            ">=" => Compare(left, right) >= 0,
+            "==" => ValuesEqual(left, right),
+            "!=" => !ValuesEqual(left, right),
+            "<" => compared < 0,
+            "<=" => compared <= 0,
+            ">" => compared > 0,
+            ">=" => compared >= 0,
             "IN" => ContainsValue(right, left),
             _ => false
         };
     }
 
-    private int Compare(object? left, object? right)
+    private static bool ValuesEqual(object left, object right)
     {
-        if (left == null && right == null) return 0;
-        if (left == null) return -1;
-        if (right == null) return 1;
+        if (TryToDecimal(left, out var leftNumber) && TryToDecimal(right, out var rightNumber))
+            return leftNumber == rightNumber;
 
-        if (left is IComparable comparable)
+        return Equals(left, right);
+    }
+
+    /// <summary>
+    /// So sánh được thì trả về âm/0/dương. Không so được (kiểu lệch, không IComparable) → null, rule không đạt.
+    /// Hai số khác kiểu CLR (int/long/decimal) được đưa về decimal.
+    /// </summary>
+    private static int? Compare(object left, object right)
+    {
+        if (TryToDecimal(left, out var leftNumber) && TryToDecimal(right, out var rightNumber))
+            return leftNumber.CompareTo(rightNumber);
+
+        if (left.GetType() != right.GetType() || left is not IComparable comparable)
+            return null;
+
+        try
         {
             return comparable.CompareTo(right);
         }
-
-        return 0;
+        catch (ArgumentException)
+        {
+            return null;
+        }
     }
 
-    private bool ContainsValue(object? collection, object? value)
+    private static bool TryToDecimal(object value, out decimal number)
     {
-        if (collection == null || value == null)
+        switch (value)
+        {
+            case byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal:
+                number = Convert.ToDecimal(value, CultureInfo.InvariantCulture);
+                return true;
+            default:
+                number = 0;
+                return false;
+        }
+    }
+
+    private static bool ContainsValue(object? collection, object? value)
+    {
+        if (collection == null || value == null || collection is string)
             return false;
 
         if (collection is System.Collections.IEnumerable enumerable)
         {
             foreach (var item in enumerable)
             {
-                if (Equals(item, value))
+                if (item is not null && ValuesEqual(item, value))
                     return true;
             }
         }

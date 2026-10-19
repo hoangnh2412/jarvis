@@ -1,6 +1,6 @@
 namespace Platform.Authorization.Services;
 
-internal static class PermissionMatcher
+public static class PermissionMatcher
 {
     public static bool IsWildcard(string permission) => permission is "*" or "System.All";
 

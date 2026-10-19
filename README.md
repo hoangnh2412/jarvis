@@ -87,6 +87,7 @@ platform/
 │   └── importexport/              ← placeholder (chưa có project trong solution)
 ├── Sample/                        ← Host demo: API + SPA (clients/web → wwwroot)
 ├── UnitTest/
+├── docs/                          ← Tài liệu platform — [docs/README.md](docs/README.md) (onboarding, guides, features)
 ├── ADRs/                          ← Architecture Decision Records — [ADRs/README.md](ADRs/README.md)
 └── ai-skills/                     ← Pipeline AI SDLC (submodule nội bộ)
 ```
@@ -97,6 +98,7 @@ platform/
 | `modules/` | Module domain (Setting, Account, IdentityAdmin…); mỗi folder một bounded context + optional frontend |
 | `Sample/` | App chạy thử: framework + Setting; SPA Vite/React. Chưa compose Authorization / Account / IdentityAdmin. |
 | `UnitTest/` | Unit / integration test cho framework và module |
+| `docs/` | Tài liệu chung: onboarding, guides kỹ thuật, giới thiệu tính năng — [docs/README.md](docs/README.md) |
 | `ADRs/` | Quyết định kiến trúc & tiến độ — [ADRs/README.md](ADRs/README.md) |
 | `ai-skills/` | Skill / hook AI SDLC (submodule) — [ai-skills/README.md](ai-skills/README.md) |
 
@@ -159,7 +161,7 @@ Chiều **Atomic** — mỗi package một concern, bật/tắt độc lập:
 | ORM (Dapper) | `Platform.ORM.Dapper` | Connection factory cho read/report; DI `AddOrmDapper()` |
 | Caching | `Platform.Caching`, `.Redis` | Memory + Redis, pub/sub invalidation |
 | Authentication (xác thực) | `Platform.Authentications`, `.Jwt`, `.ApiKey`, `.Basic`, `.Cognito` | JWT, API Key, Basic, Cognito |
-| Identity store (danh tính) | `Platform.Authentications.Identity` | Entity `User` (cột `TenantId`/`OrgId`) + `Role` (`RoleLevel`, `IsSystemRole`) cho ASP.NET Identity — dùng chung Account / IdentityAdmin / Authorization |
+| Identity store (danh tính) | `Platform.Authentication.Identity` | Entity `User` (cột `TenantId`/`OrgId`) + `Role` (`RoleLevel`, `IsSystemRole`) cho ASP.NET Identity — dùng chung Account / IdentityAdmin / Authorization |
 | Authorization (phân quyền) | `Platform.Authorization`, `.EntityFramework` | Core (không EF): model Permission/Policy/PolicyRule, engine RBAC + ABAC, abstraction Role Governance — DI `AddPlatformAuthorization()`. Store EF: provider, `IdentityDbContextBase`, seeder — DI `AddPlatformAuthorizationEntityFramework()`. Data scope & snapshot cache chưa xong |
 | Blob Storing | `Platform.BlobStoring`, `.MinIO`, `.AwsS3` | FileSystem (core), MinIO, AWS S3 |
 | Notification | `Platform.Notification`, `.Mailkit` | Email SMTP (Mailkit) |
@@ -361,7 +363,7 @@ Nền tảng bảo mật & admin → Dữ liệu & multitenancy → Kiến trúc
 
 | | Hạng mục | Mô tả |
 |---|----------|--------|
-| 🟡 | ASP.NET Core Identity | `Platform.Authentications.Identity` — `User` (`TenantId`/`OrgId` cột) + `Role`; migration Identity ở product (`Sample.Infrastructure`); lockout áp khi login ✅; refresh token, wire `UserManager`/`SignInManager` trong package 📋 |
+| 🟡 | ASP.NET Core Identity | `Platform.Authentication.Identity` — `User` (`TenantId`/`OrgId` cột) + `Role`; migration Identity ở product (`Sample.Infrastructure`); lockout áp khi login ✅; refresh token, wire `UserManager`/`SignInManager` trong package 📋 |
 | 📋 | Đồng bộ auth | Subject JWT/OIDC ↔ `User` |
 
 #### B.3 Authorization (phân quyền)

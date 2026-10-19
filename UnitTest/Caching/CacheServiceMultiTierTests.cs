@@ -95,10 +95,10 @@ public class CacheServiceMultiTierTests
         Assert.Equal(1, memory.SetCount);
         Assert.Equal(1, distributed.SetCount);
 
-        var second = await service.GetOrSetAsync(param, async _ =>
+        var second = await service.GetOrSetAsync(param, _ =>
         {
             queryCount++;
-            return "other";
+            return Task.FromResult("other");
         });
 
         Assert.Equal("from-db", second);

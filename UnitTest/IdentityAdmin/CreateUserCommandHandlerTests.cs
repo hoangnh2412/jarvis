@@ -192,4 +192,36 @@ public sealed class CreateUserCommandHandlerTests
             },
             CancellationToken.None));
     }
+
+    [Fact(DisplayName = "T92: TenantAdmin cannot create a user in another tenant")]
+    public async Task HandleAsync_throws_when_tenant_is_outside_actor_scope()
+    {
+        await using var store = new GovernanceStore();
+        var actorTenant = Guid.NewGuid();
+        var actorId = store.AddUser(actorTenant, null, store.AddRole("TenantAdmin", 900));
+        var role = store.AddRole("Employee", 100);
+
+        var userManager = IdentityMockHelpers.MockUserManager<User>();
+        var roleManager = IdentityMockHelpers.MockRoleManager<Role>();
+        roleManager.Setup(m => m.FindByIdAsync(role.Id.ToString())).ReturnsAsync(role);
+
+        var handler = new CreateUserCommandHandler(
+            userManager.Object,
+            roleManager.Object,
+            store.Validator,
+            new FakeCurrentUser(actorId));
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => handler.HandleAsync(
+            new CreateUserCommand
+            {
+                Username = "outsider",
+                Email = "outsider@sample.vn",
+                Password = "P@ssw0rd!",
+                RoleId = role.Id,
+                TenantId = Guid.NewGuid(),
+            },
+            CancellationToken.None));
+
+        userManager.Verify(m => m.CreateAsync(It.IsAny<User>(), It.IsAny<string>()), Times.Never);
+    }
 }

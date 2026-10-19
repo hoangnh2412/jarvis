@@ -14,17 +14,20 @@ public sealed class AssignPolicyToRoleCommandHandler : IAsyncCommandHandler<Assi
     private readonly RoleManager<Role> _roleManager;
     private readonly ICurrentUser<CurrentUserInfo> _currentUser;
     private readonly IPolicyProvider _policyProvider;
+    private readonly IPermissionProvider _permissionProvider;
     private readonly IRoleGovernanceValidator _roleGovernanceValidator;
 
     public AssignPolicyToRoleCommandHandler(
         RoleManager<Role> roleManager,
         ICurrentUser<CurrentUserInfo> currentUser,
         IPolicyProvider policyProvider,
+        IPermissionProvider permissionProvider,
         IRoleGovernanceValidator roleGovernanceValidator)
     {
         _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
         _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
         _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
+        _permissionProvider = permissionProvider ?? throw new ArgumentNullException(nameof(permissionProvider));
         _roleGovernanceValidator = roleGovernanceValidator ?? throw new ArgumentNullException(nameof(roleGovernanceValidator));
     }
 
@@ -38,9 +41,15 @@ public sealed class AssignPolicyToRoleCommandHandler : IAsyncCommandHandler<Assi
         if (policyExists == null)
             throw new InvalidOperationException($"Policy '{command.PolicyCode}' not found");
 
-        var actorPolicies = await _policyProvider.GetPoliciesByUserAsync(actor.UserId.Value, cancellationToken);
-        if (!actorPolicies.Any(p => p.Code == command.PolicyCode))
-            throw new UnauthorizedAccessException($"You do not have policy '{command.PolicyCode}' to grant it");
+        // Wildcard (*) bỏ qua yêu cầu "actor đang giữ policy" — Admin không có policy vẫn gán được (V3).
+        // Actor không có wildcard vẫn phải giữ đúng policy (C6).
+        var actorHasWildcard = await _permissionProvider.HasPermissionAsync(actor.UserId.Value, "*", cancellationToken);
+        if (!actorHasWildcard)
+        {
+            var actorPolicies = await _policyProvider.GetPoliciesByUserAsync(actor.UserId.Value, cancellationToken);
+            if (!actorPolicies.Any(p => p.Code == command.PolicyCode))
+                throw new UnauthorizedAccessException($"You do not have policy '{command.PolicyCode}' to grant it");
+        }
 
         var role = await _roleManager.FindByIdAsync(command.RoleId.ToString());
         if (role == null)

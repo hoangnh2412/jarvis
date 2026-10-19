@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Platform.Authentication;
 
 namespace Platform.Authentication.Basic;
 
@@ -30,6 +31,23 @@ public static class AuthenticationBuilderExtension
         return builder.RegisterBasicScheme(configuration, schemeName, configurationKey, configureOptions);
     }
 
+    /// <summary>Basic — profile active (<c>Schemes.Basic.Profile</c>) chọn <see cref="AuthenticationBasicOption.Source"/>.</summary>
+    public static AuthenticationBuilder AddCoreBasicWithProfileSources<TStorage>(
+        this AuthenticationBuilder builder,
+        IConfiguration configuration,
+        string schemeName = AuthenticationBasicOption.DefaultScheme,
+        string configurationKey = AuthenticationBasicOption.DefaultRealm)
+        where TStorage : class, IBasicCredentialProvider
+    {
+        builder.Services.TryAddSingleton<ConfigBasicCredentialProvider>();
+        builder.Services.TryAddSingleton<TStorage>();
+        builder.Services.TryAddSingleton<ProfileSourcedBasicCredentialProvider<TStorage>>();
+        builder.Services.TryAddSingleton<IBasicCredentialProvider>(sp =>
+            sp.GetRequiredService<ProfileSourcedBasicCredentialProvider<TStorage>>());
+
+        return builder.RegisterBasicScheme(configuration, schemeName, configurationKey, null);
+    }
+
     private static AuthenticationBuilder RegisterBasicScheme(
         this AuthenticationBuilder builder,
         IConfiguration configuration,
@@ -43,7 +61,9 @@ public static class AuthenticationBuilderExtension
                 schemeName,
                 configureOptions);
 
-        var section = configuration.GetSection($"Authentication:Basic:{configurationKey}");
+        ConfigureBasicProfiles(builder.Services, configuration);
+
+        var section = configuration.GetSection(AuthenticationSchemeProfileConfiguration.ProfileSection("Basic", configurationKey));
         builder.Services.Configure<AuthenticationBasicOption>(schemeName, section);
         builder.Services.AddOptions<AuthenticationBasicOption>(schemeName).Bind(section);
 
@@ -51,5 +71,15 @@ public static class AuthenticationBuilderExtension
             schemeName,
             schemeName,
             _ => { });
+    }
+
+    private static void ConfigureBasicProfiles(IServiceCollection services, IConfiguration configuration)
+    {
+        var basicSection = configuration.GetSection(AuthenticationSchemeProfileConfiguration.ProfilesSection("Basic"));
+        foreach (var child in basicSection.GetChildren())
+        {
+            services.Configure<AuthenticationBasicOption>(child.Key, child);
+            services.AddOptions<AuthenticationBasicOption>(child.Key).Bind(child);
+        }
     }
 }

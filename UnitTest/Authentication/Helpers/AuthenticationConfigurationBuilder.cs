@@ -10,8 +10,9 @@ internal static class AuthenticationConfigurationBuilder
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Authentication:Type"] = "ApiKey",
-                ["Authentication:ApiKey:" + realm + ":KeyName"] = "X-API-KEY",
-                ["Authentication:ApiKey:" + realm + ":Key"] = key,
+                ["Authentication:Schemes:ApiKey:Profiles:" + realm + ":Source"] = "Configuration",
+                ["Authentication:Schemes:ApiKey:Profiles:" + realm + ":KeyName"] = "X-API-KEY",
+                ["Authentication:Schemes:ApiKey:Profiles:" + realm + ":Key"] = key,
             })
             .Build();
 
@@ -26,12 +27,13 @@ internal static class AuthenticationConfigurationBuilder
             ["Authentication:Type"] = "Basic",
             ["Authentication:DefaultAuthenticateScheme"] = "Basic",
             ["Authentication:DefaultChallengeScheme"] = "Basic",
-            ["Authentication:Basic:Default:Realm"] = realm,
-            ["Authentication:Basic:Default:Users:" + username + ":Password"] = password,
+            ["Authentication:Schemes:Basic:Profiles:Default:Source"] = "Configuration",
+            ["Authentication:Schemes:Basic:Profiles:Default:Realm"] = realm,
+            ["Authentication:Schemes:Basic:Profiles:Default:Users:" + username + ":Password"] = password,
         };
 
         for (var i = 0; i < roles.Length; i++)
-            data["Authentication:Basic:Default:Users:" + username + ":Roles:" + i] = roles[i];
+            data["Authentication:Schemes:Basic:Profiles:Default:Users:" + username + ":Roles:" + i] = roles[i];
 
         return new ConfigurationBuilder().AddInMemoryCollection(data).Build();
     }
@@ -43,20 +45,14 @@ internal static class AuthenticationConfigurationBuilder
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Authentication:Type"] = "Jwt",
-                ["Authentication:Jwt:Bearer:IssuerSigningKeys:0"] = signingKey,
-                ["Authentication:Jwt:Bearer:ValidateIssuerSigningKey"] = "true",
-                ["Authentication:Jwt:Bearer:ValidateAudience"] = "false",
-                ["Authentication:Jwt:Bearer:ValidateIssuer"] = "false",
-                ["Authentication:Jwt:Bearer:RequireHttpsMetadata"] = requireHttpsMetadata.ToString(),
+                ["Authentication:Schemes:Bearer:Profiles:Default:IssuerSigningKeys:0"] = signingKey,
+                ["Authentication:Schemes:Bearer:Profiles:Default:ValidateIssuerSigningKey"] = "true",
+                ["Authentication:Schemes:Bearer:Profiles:Default:ValidateAudience"] = "false",
+                ["Authentication:Schemes:Bearer:Profiles:Default:ValidateIssuer"] = "false",
+                ["Authentication:Schemes:Bearer:Profiles:Default:RequireHttpsMetadata"] = requireHttpsMetadata.ToString(),
             })
             .Build();
 
-    public static IConfiguration BuildRootConfig(Dictionary<string, string?> values)
-    {
-        var data = new Dictionary<string, string?>(values)
-        {
-            ["Authentication:Type"] = values.GetValueOrDefault("Authentication:Type") ?? "ApiKey"
-        };
-        return new ConfigurationBuilder().AddInMemoryCollection(data).Build();
-    }
+    public static IConfiguration BuildRootConfig(Dictionary<string, string?> values) =>
+        new ConfigurationBuilder().AddInMemoryCollection(values).Build();
 }

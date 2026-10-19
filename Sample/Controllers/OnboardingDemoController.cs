@@ -1,7 +1,6 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Platform.DDD.Domain.Repositories;
 using Platform.Workflow.Abstractions;
 using Sample.Entities;
 using Sample.Persistence;
@@ -12,7 +11,6 @@ namespace Sample.Controllers;
 [Route("api/v{version:apiVersion}/onboarding")]
 [ApiVersion("1.0")]
 public class OnboardingDemoController(
-    IMasterUnitOfWork uow,
     MasterDbContext dbContext,
     IWorkflowService? workflowService = null,
     IWorkflowDefinitionService? workflowDefinitionService = null,

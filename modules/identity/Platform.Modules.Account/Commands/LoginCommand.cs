@@ -3,8 +3,8 @@ namespace Platform.Modules.Account.Commands;
 using Platform.DDD.Domain.Shared.Messaging;
 
 /// <summary>
-/// Login command: authenticate user via username/password.
-/// After successful auth, builds Authorization Context with permissions/policies.
+/// Login command: authenticate user via username/password and issue an access token.
+/// Permission and policy stay in the store; the token carries subject, jti, name and tenant only.
 /// </summary>
 public sealed record LoginCommand : ICommand
 {

@@ -15,7 +15,7 @@ public class ConfigApiKeyProviderTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        var section = configuration.GetSection($"Authentication:ApiKey:{defaultRealm}");
+        var section = configuration.GetSection($"Authentication:Schemes:ApiKey:Profiles:{defaultRealm}");
         services.Configure<AuthenticationApiKeyOption>(defaultRealm, section);
         services.AddOptions<AuthenticationApiKeyOption>(defaultRealm).Bind(section);
         services.Configure<ApiKeyProviderOptions>(o => o.DefaultRealm = defaultRealm);
@@ -77,15 +77,15 @@ public class ConfigApiKeyProviderTests
         Assert.Null(await provider.ProvideAsync("Other:s1"));
     }
 
-    /// <summary><c>Key</c> rỗng — ValidateOnStart / validator phải fail.</summary>
+    /// <summary><c>KeyName</c> rỗng — validator startup phải fail.</summary>
     [Fact]
-    public void AK_U_08_Empty_key_fails_validation()
+    public void AK_U_08_Empty_key_name_fails_validation()
     {
         var validator = new AuthenticationApiKeyOptionValidator();
-        var result = validator.Validate("Default", new AuthenticationApiKeyOption { KeyName = "X-API-KEY", Key = "" });
+        var result = validator.Validate("Default", new AuthenticationApiKeyOption { KeyName = "", Key = "" });
 
         Assert.True(result.Failed);
-        Assert.Contains("Key is required", result.FailureMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("KeyName is required", result.FailureMessage, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Hai realm <c>Default</c> và <c>Integration</c> — mỗi realm một secret riêng.</summary>
@@ -94,10 +94,12 @@ public class ConfigApiKeyProviderTests
     {
         var data = new Dictionary<string, string?>
         {
-            ["Authentication:ApiKey:Default:KeyName"] = "X-API-KEY",
-            ["Authentication:ApiKey:Default:Key"] = "default-secret",
-            ["Authentication:ApiKey:Integration:KeyName"] = "X-API-KEY",
-            ["Authentication:ApiKey:Integration:Key"] = "integration-secret",
+            ["Authentication:Schemes:ApiKey:Profiles:Default:Source"] = "Configuration",
+            ["Authentication:Schemes:ApiKey:Profiles:Default:KeyName"] = "X-API-KEY",
+            ["Authentication:Schemes:ApiKey:Profiles:Default:Key"] = "default-secret",
+            ["Authentication:Schemes:ApiKey:Profiles:Integration:Source"] = "Configuration",
+            ["Authentication:Schemes:ApiKey:Profiles:Integration:KeyName"] = "X-API-KEY",
+            ["Authentication:Schemes:ApiKey:Profiles:Integration:Key"] = "integration-secret",
         };
         var config = new ConfigurationBuilder().AddInMemoryCollection(data).Build();
 
@@ -105,7 +107,7 @@ public class ConfigApiKeyProviderTests
         services.AddLogging();
         foreach (var realm in new[] { "Default", "Integration" })
         {
-            var section = config.GetSection($"Authentication:ApiKey:{realm}");
+            var section = config.GetSection($"Authentication:Schemes:ApiKey:Profiles:{realm}");
             services.Configure<AuthenticationApiKeyOption>(realm, section);
             services.AddOptions<AuthenticationApiKeyOption>(realm).Bind(section);
         }

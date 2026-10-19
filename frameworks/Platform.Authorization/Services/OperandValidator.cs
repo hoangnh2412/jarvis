@@ -31,7 +31,7 @@ public sealed class OperandValidator
         if (string.IsNullOrWhiteSpace(leftOperand))
             return ValidationResult.Fail("Operand bên trái không thể trống");
 
-        if (!_registry.TryGet(leftOperand, out _))
+        if (!_registry.TryGet(leftOperand, out var left))
             return ValidationResult.Fail($"Operand bên trái '{leftOperand}' không được đăng ký");
 
         if (string.IsNullOrWhiteSpace(op))
@@ -49,8 +49,16 @@ public sealed class OperandValidator
         if (op == "IN" && right.Kind != OperandValueKind.Collection)
             return ValidationResult.Fail($"Toán tử 'IN' yêu cầu operand collection. Nhận được: {rightOperand}");
 
+        if (IsOrderingOperator(op) && (IsNonNumeric(left) || IsNonNumeric(right)))
+            return ValidationResult.Fail($"Toán tử '{op}' chỉ áp dụng cho operand số. Nhận được: {leftOperand} {op} {rightOperand}");
+
         return ValidationResult.Success();
     }
+
+    private static bool IsOrderingOperator(string op) => op is "<" or "<=" or ">" or ">=";
+
+    private static bool IsNonNumeric(OperandDefinition operand) =>
+        operand.ValueType is OperandValueType.Guid or OperandValueType.String;
 
     public bool IsValidOperand(string operand) => _registry.TryGet(operand, out _);
 
