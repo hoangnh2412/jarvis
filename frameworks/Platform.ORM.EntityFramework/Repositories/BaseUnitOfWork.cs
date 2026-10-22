@@ -12,13 +12,19 @@ public abstract class BaseUnitOfWork<T>(
     IServiceProvider services,
     IDbContextFactory<T> factory,
     ITenantIdResolverFactory tenantIdResolverFactory,
-    ICurrentTenantAccessor currentTenantAccessor)
+    ICurrentTenantAccessor currentTenantAccessor,
+    IOrgIdResolverFactory? orgIdResolverFactory = null,
+    ICurrentOrgAccessor? currentOrgAccessor = null,
+    IRequestScopeResolver? requestScopeResolver = null)
     : IUnitOfWork<T> where T : DbContext, IStorageContext
 {
     private readonly IServiceProvider _services = services;
     private readonly IDbContextFactory<T> _factory = factory;
     private readonly ITenantIdResolverFactory _tenantIdResolverFactory = tenantIdResolverFactory;
     private readonly ICurrentTenantAccessor _currentTenantAccessor = currentTenantAccessor;
+    private readonly IOrgIdResolverFactory? _orgIdResolverFactory = orgIdResolverFactory;
+    private readonly ICurrentOrgAccessor? _currentOrgAccessor = currentOrgAccessor;
+    private readonly IRequestScopeResolver? _requestScopeResolver = requestScopeResolver;
     protected DbContext? StorageContext { get; private set; }
     private Guid? _switchedTenantId;
     private Guid? _contextTenantId;
@@ -136,11 +142,13 @@ public abstract class BaseUnitOfWork<T>(
 
     private async Task<DbContext> EnsureDbContextAsync(CancellationToken cancellationToken)
     {
-        var tenantId = _switchedTenantId ?? await _tenantIdResolverFactory.GetTenantIdAsync(cancellationToken).ConfigureAwait(false);
+        var tenantId = await ResolveTenantIdAsync(cancellationToken).ConfigureAwait(false);
+        var orgId = await ResolveOrgIdAsync(cancellationToken).ConfigureAwait(false);
 
         if (StorageContext != null && _contextTenantId == tenantId)
         {
             ApplyTenantId(tenantId);
+            ApplyOrgId(orgId);
             return StorageContext;
         }
 
@@ -154,7 +162,41 @@ public abstract class BaseUnitOfWork<T>(
         StorageContext = await _factory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         _contextTenantId = tenantId;
         ApplyTenantId(tenantId);
+        ApplyOrgId(orgId);
         return StorageContext;
+    }
+
+    private async Task<Guid?> ResolveTenantIdAsync(CancellationToken cancellationToken)
+    {
+        if (_requestScopeResolver is not null)
+        {
+            var scope = await _requestScopeResolver.ResolveAsync(cancellationToken).ConfigureAwait(false);
+            if (scope.IsForbidden || !scope.IsAllowed)
+                return _switchedTenantId;
+
+            return _switchedTenantId ?? scope.TenantId;
+        }
+
+        return _switchedTenantId
+            ?? await _tenantIdResolverFactory.GetTenantIdAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<Guid?> ResolveOrgIdAsync(CancellationToken cancellationToken)
+    {
+        if (_requestScopeResolver is not null)
+        {
+            var scope = await _requestScopeResolver.ResolveAsync(cancellationToken).ConfigureAwait(false);
+            if (scope.IsForbidden || !scope.IsAllowed)
+                return null;
+
+            return scope.OrgId;
+        }
+
+        var orgId = _currentOrgAccessor?.OrgId;
+        if (!orgId.HasValue && _orgIdResolverFactory is not null)
+            orgId = await _orgIdResolverFactory.GetOrgIdAsync(cancellationToken).ConfigureAwait(false);
+
+        return orgId;
     }
 
     private void ApplyTenantId(Guid? tenantId)
@@ -163,5 +205,13 @@ public abstract class BaseUnitOfWork<T>(
             return;
 
         ((IStorageContext)StorageContext).SetTenantId(tenantId);
+    }
+
+    private void ApplyOrgId(Guid? orgId)
+    {
+        if (StorageContext == null)
+            return;
+
+        ((IStorageContext)StorageContext).SetOrgId(orgId);
     }
 }

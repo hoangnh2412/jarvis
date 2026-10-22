@@ -9,7 +9,8 @@ namespace Platform.Multitenancy;
 public sealed class CurrentTenant<TTenant>(
     ICurrentTenantAccessor currentTenantAccessor,
     ITenantIdResolverFactory tenantIdResolverFactory,
-    ICurrentTenantStore<TTenant> tenantStore) : ICurrentTenant<TTenant>
+    ICurrentTenantStore<TTenant> tenantStore,
+    IRequestScopeResolver? requestScopeResolver = null) : ICurrentTenant<TTenant>
     where TTenant : class, ICurrentTenantIdentity
 {
     private Guid? _resolvedTenantId;
@@ -28,9 +29,17 @@ public sealed class CurrentTenant<TTenant>(
         if (_resolved)
             return _resolvedTenantId;
 
-        _resolvedTenantId = await tenantIdResolverFactory
-            .GetTenantIdAsync(cancellationToken)
-            .ConfigureAwait(false);
+        if (requestScopeResolver is not null)
+        {
+            var scope = await requestScopeResolver.ResolveAsync(cancellationToken).ConfigureAwait(false);
+            _resolvedTenantId = scope.IsAllowed ? scope.TenantId : null;
+        }
+        else
+        {
+            _resolvedTenantId = await tenantIdResolverFactory
+                .GetTenantIdAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
         _resolved = true;
         return _resolvedTenantId;
     }

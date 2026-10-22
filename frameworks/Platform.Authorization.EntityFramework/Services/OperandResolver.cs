@@ -38,7 +38,8 @@ public sealed class OperandResolver : IOperandResolver
             OperandSource.UserSubject => userId,
             OperandSource.UserColumn => await ResolveUserColumnAsync(definition, userId, cancellationToken),
             OperandSource.UserClaim => await ResolveUserClaimAsync(definition, userId, cancellationToken),
-            OperandSource.Resource => ResolveResource(definition, resource),
+            OperandSource.ResourceColumn => ResolveResourceColumn(definition, resource),
+            OperandSource.Resource => ResolveResourceAttribute(definition, resource),
             _ => throw new InvalidOperationException($"Nguồn operand không được hỗ trợ {definition.Source} cho '{operand}'."),
         };
     }
@@ -77,12 +78,22 @@ public sealed class OperandResolver : IOperandResolver
         return ParseScalar(value, definition.ValueType);
     }
 
-    private static object? ResolveResource(OperandDefinition definition, object? resource)
+    private static object? ResolveResourceColumn(OperandDefinition definition, object? resource)
     {
         if (resource == null)
-        {
             throw new InvalidOperationException($"Cannot resolve '{definition.Path}' without a resource object.");
-        }
+
+        return resource.GetType().GetProperty(definition.Attribute)?.GetValue(resource);
+    }
+
+    private static object? ResolveResourceAttribute(OperandDefinition definition, object? resource)
+    {
+        if (resource == null)
+            throw new InvalidOperationException($"Cannot resolve '{definition.Path}' without a resource object.");
+
+        if (resource is IAuthorizationResourceAttributes bag
+            && bag.TryGetAuthorizationAttribute(definition.Attribute, out var fromBag))
+            return fromBag;
 
         return resource.GetType().GetProperty(definition.Attribute)?.GetValue(resource);
     }

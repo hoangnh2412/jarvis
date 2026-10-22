@@ -9,7 +9,17 @@ public class TenantUnitOfWork(
     IServiceProvider services,
     IDbContextFactory<TenantDbContext> factory,
     ITenantIdResolverFactory tenantIdResolverFactory,
-    ICurrentTenantAccessor currentTenantAccessor)
-    : BaseUnitOfWork<TenantDbContext>(services, factory, tenantIdResolverFactory, currentTenantAccessor), ITenantUnitOfWork
+    ICurrentTenantAccessor currentTenantAccessor,
+    IOrgIdResolverFactory orgIdResolverFactory,
+    ICurrentOrgAccessor currentOrgAccessor,
+    IRequestScopeResolver requestScopeResolver)
+    : BaseUnitOfWork<TenantDbContext>(
+        services,
+        factory,
+        tenantIdResolverFactory,
+        currentTenantAccessor,
+        orgIdResolverFactory,
+        currentOrgAccessor,
+        requestScopeResolver), ITenantUnitOfWork
 {
 }

@@ -64,11 +64,15 @@
     <ProjectReference Include="..\frameworks\Platform.Authorization.EntityFramework\Platform.Authorization.EntityFramework.csproj" />
     <ProjectReference Include="..\frameworks\Platform.ORM.EntityFramework\Platform.ORM.EntityFramework.csproj" />
     <ProjectReference Include="..\frameworks\Platform.ORM.Dapper\Platform.ORM.Dapper.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.MultiOrg\Platform.MultiOrg.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Multitenancy\Platform.Multitenancy.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Multitenancy.EntityFramework\Platform.Multitenancy.EntityFramework.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Notification.Mailkit\Platform.Notification.Mailkit.csproj" />
     <ProjectReference Include="..\frameworks\Platform.HealthChecks\Platform.HealthChecks.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Workflow\Platform.Workflow.csproj" />
+    <ProjectReference Include="..\modules\orgs\Platform.Orgs\Platform.Orgs.csproj" />
+    <ProjectReference Include="..\modules\orgs\Platform.Orgs.EntityFramework\Platform.Orgs.EntityFramework.csproj" />
+    <ProjectReference Include="..\modules\orgs\Platform.Orgs.Api\Platform.Orgs.Api.csproj" />
     <ProjectReference Include="..\modules\settings\Platform.Modules.Setting\Platform.Modules.Setting.csproj" />
     <ProjectReference Include="..\modules\settings\Platform.Modules.Setting.API\Platform.Modules.Setting.API.csproj" />
     <ProjectReference Include="..\modules\settings\Platform.Modules.Setting.EntityFramework\Platform.Modules.Setting.EntityFramework.csproj" />

@@ -211,6 +211,7 @@ public class AuthorizationDemoController(
         var creator = SampleAuthorizationDemoData.FindUser(request.CreatedBy)?.Id ?? Guid.Empty;
         var expense = new SampleExpense(
             SampleAuthorizationDemoData.Tenants[request.Tenant],
+            SampleAuthorizationDemoData.DefaultOrgForTenant(request.Tenant),
             SampleAuthorizationDemoData.Departments[request.Department],
             request.Amount,
             creator);

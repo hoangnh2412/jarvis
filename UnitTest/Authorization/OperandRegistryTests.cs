@@ -16,8 +16,8 @@ public sealed class OperandRegistryTests
     [InlineData("User.Id", OperandSource.UserSubject)]
     [InlineData("User.TenantId", OperandSource.UserColumn)]
     [InlineData("User.OrgId", OperandSource.UserColumn)]
-    [InlineData("Resource.TenantId", OperandSource.Resource)]
-    [InlineData("Resource.OrgId", OperandSource.Resource)]
+    [InlineData("Resource.TenantId", OperandSource.ResourceColumn)]
+    [InlineData("Resource.OrgId", OperandSource.ResourceColumn)]
     [InlineData("Resource.CreatedBy", OperandSource.Resource)]
     public void Defaults_ContainGenericOperands(string path, OperandSource source)
     {

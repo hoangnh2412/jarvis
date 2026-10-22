@@ -206,6 +206,9 @@ public sealed class CurrentTenantTests
             CallCount++;
             return Task.FromResult(tenantId);
         }
+
+        public Task<Guid?> GetTenantIdForOrgScopeAsync(CancellationToken cancellationToken = default) =>
+            GetTenantIdAsync(cancellationToken);
     }
 
     private sealed class EmptyTenantStore : ICurrentTenantStore<CurrentTenantInfo>

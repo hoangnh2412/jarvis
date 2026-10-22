@@ -36,6 +36,23 @@ public class TenantIdResolverFactory(IServiceProvider serviceProvider) : ITenant
         return null;
     }
 
+    public virtual async Task<Guid?> GetTenantIdForOrgScopeAsync(CancellationToken cancellationToken = default)
+    {
+        var tenantId = await TryResolveAsync(nameof(UserTenantIdResolver), cancellationToken).ConfigureAwait(false);
+        if (tenantId.HasValue)
+            return tenantId;
+
+        tenantId = await TryResolveAsync(nameof(QueryTenantIdResolver), cancellationToken).ConfigureAwait(false);
+        if (tenantId.HasValue)
+            return tenantId;
+
+        tenantId = await TryResolveAsync(nameof(HostTenantIdResolver), cancellationToken).ConfigureAwait(false);
+        if (tenantId.HasValue)
+            return tenantId;
+
+        return null;
+    }
+
     private async Task<Guid?> TryResolveAsync(string resolverKey, CancellationToken cancellationToken)
     {
         var resolver = _serviceProvider.GetRequiredKeyedService<ITenantIdResolver>(resolverKey);

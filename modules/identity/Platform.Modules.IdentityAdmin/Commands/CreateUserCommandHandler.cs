@@ -6,6 +6,7 @@ using Platform.DDD.Application.Contracts.Commands;
 using Platform.DDD.Domain.Services;
 using Platform.Authentication.Identity.Domain;
 using Platform.Authorization.Abstractions;
+using Platform.Orgs.Abstractions;
 
 public sealed class CreateUserCommandHandler : IAsyncCommandHandler<CreateUserCommand, CreateUserResponse>
 {
@@ -13,17 +14,20 @@ public sealed class CreateUserCommandHandler : IAsyncCommandHandler<CreateUserCo
     private readonly RoleManager<Role> _roleManager;
     private readonly IRoleGovernanceValidator _roleGovernanceValidator;
     private readonly ICurrentUser<CurrentUserInfo> _currentUser;
+    private readonly IOrgCatalog? _orgCatalog;
 
     public CreateUserCommandHandler(
         UserManager<User> userManager,
         RoleManager<Role> roleManager,
         IRoleGovernanceValidator roleGovernanceValidator,
-        ICurrentUser<CurrentUserInfo> currentUser)
+        ICurrentUser<CurrentUserInfo> currentUser,
+        IOrgCatalog? orgCatalog = null)
     {
         _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
         _roleGovernanceValidator = roleGovernanceValidator ?? throw new ArgumentNullException(nameof(roleGovernanceValidator));
         _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
+        _orgCatalog = orgCatalog;
     }
 
     public async Task<CreateUserResponse> HandleAsync(CreateUserCommand command, CancellationToken cancellationToken)
@@ -42,6 +46,18 @@ public sealed class CreateUserCommandHandler : IAsyncCommandHandler<CreateUserCo
 
         if (!await _roleGovernanceValidator.IsWithinActorScopeAsync(actor.UserId.Value, command.TenantId, command.OrgId, cancellationToken))
             throw new UnauthorizedAccessException("You cannot create a user outside your tenant or organization");
+
+        if (command.OrgId is Guid orgId)
+        {
+            if (_orgCatalog is null)
+                throw new InvalidOperationException("IOrgCatalog is not registered; cannot assign OrgId.");
+
+            if (command.TenantId is not Guid tenantId)
+                throw new InvalidOperationException("TenantId is required when OrgId is set.");
+
+            await _orgCatalog.ValidateForAssignmentAsync(orgId, tenantId, cancellationToken)
+                .ConfigureAwait(false);
+        }
 
         var user = new User
         {

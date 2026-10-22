@@ -312,3 +312,4 @@ modules/notifications/frontend/.env.local
 .codegraph/
 .minipower/
 .vscode/
+.claude/

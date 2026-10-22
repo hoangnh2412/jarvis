@@ -27,6 +27,7 @@
     <ProjectReference Include="..\..\..\frameworks\Platform.Authentication\Platform.Authentication.csproj" />
     <ProjectReference Include="..\..\..\frameworks\Platform.Authentication.Identity\Platform.Authentication.Identity.csproj" />
     <ProjectReference Include="..\..\..\frameworks\Platform.Authorization\Platform.Authorization.csproj" />
+    <ProjectReference Include="..\..\orgs\Platform.Orgs.Abstractions\Platform.Orgs.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

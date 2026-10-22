@@ -7,7 +7,7 @@ namespace Platform.Authorization.Operands;
 /// </summary>
 public sealed class OperandCatalog
 {
-    private static readonly HashSet<string> UserColumns = new(StringComparer.Ordinal) { "TenantId", "OrgId" };
+    private static readonly HashSet<string> ScopeColumns = new(StringComparer.Ordinal) { "TenantId", "OrgId" };
 
     private readonly Dictionary<string, OperandDefinition> _items = new(StringComparer.Ordinal);
 
@@ -21,7 +21,7 @@ public sealed class OperandCatalog
         OperandValueType valueType = OperandValueType.Infer) =>
         Add(new OperandDefinition(OperandDefinition.UserPrefix + attribute, OperandSource.UserClaim, kind, claimType ?? attribute, valueType));
 
-    /// <summary>Thuộc tính công khai của đối tượng tài nguyên được chuyển cho engine.</summary>
+    /// <summary>Attribute ABAC trên resource (không phải cột TenantId/OrgId).</summary>
     public OperandCatalog AddResource(
         string attribute,
         OperandValueKind kind = OperandValueKind.Scalar,
@@ -31,11 +31,12 @@ public sealed class OperandCatalog
     internal OperandCatalog AddPlatformDefaults()
     {
         Add(new OperandDefinition("User.Id", OperandSource.UserSubject, ValueType: OperandValueType.Guid));
-        foreach (var column in UserColumns)
+        foreach (var column in ScopeColumns)
             Add(new OperandDefinition(OperandDefinition.UserPrefix + column, OperandSource.UserColumn, ValueType: OperandValueType.Guid));
 
-        AddResource("TenantId", valueType: OperandValueType.Guid);
-        AddResource("OrgId", valueType: OperandValueType.Guid);
+        foreach (var column in ScopeColumns)
+            Add(new OperandDefinition(OperandDefinition.ResourcePrefix + column, OperandSource.ResourceColumn, ValueType: OperandValueType.Guid));
+
         AddResource("CreatedBy", valueType: OperandValueType.Guid);
         return this;
     }

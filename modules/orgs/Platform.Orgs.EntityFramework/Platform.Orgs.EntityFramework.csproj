@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Platform.Orgs.EntityFramework</PackageId>
+    <AssemblyName>Platform.Orgs.EntityFramework</AssemblyName>
+    <RootNamespace>Platform.Orgs.EntityFramework</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>Hoang Nguyen</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.20" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Platform.Orgs\Platform.Orgs.csproj" />
+    <ProjectReference Include="..\..\..\frameworks\Platform.DDD.Domain\Platform.DDD.Domain.csproj" />
+    <ProjectReference Include="..\..\..\frameworks\Platform.ORM.EntityFramework\Platform.ORM.EntityFramework.csproj" />
+  </ItemGroup>
+
+</Project>

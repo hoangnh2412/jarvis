@@ -1,0 +1,37 @@
+# Memory — {Tên dự án} ({user_name local})
+
+> **Cá nhân — gitignore.** Agent đọc file này **trước** khi làm DOC/phase.
+> SSOT đội: `docs/` · [`decision-log.md`](decision-log.md) · [`open-questions.md`](open-questions.md) · `trace-matrix` · `doc-registry` · tasks provider / SQLite.
+
+## Hiện trạng (góc nhìn tôi)
+
+| Mục | Giá trị |
+|-----|---------|
+| **Cập nhật** | YYYY-MM-DD |
+| **Phase đang làm** | |
+| **Module / slice** | |
+| **Baseline** | |
+| **Blocker tôi gặp** | pointer ID / path — không paste dài |
+
+## Tiến độ cá nhân
+
+| Ngày | Đã làm / đang làm | Artifact (ID) |
+|------|-------------------|---------------|
+| | | |
+
+## Nhắc việc
+
+| # | Việc | Liên quan | Nhắc khi | Trạng thái |
+|---|------|-----------|----------|------------|
+| 1 | | DOC / FR / DEC | | ☐ / ◐ / ✓ |
+
+## Con trỏ nhanh
+
+| Cần | Mở |
+|-----|-----|
+| Decision log (đội) | [`decision-log.md`](decision-log.md) |
+| Open questions (đội) | [`open-questions.md`](open-questions.md) |
+| Sổ nợ tài liệu | [`doc-debt.md`](doc-debt.md) |
+| Registry DOC | [`docs/05-traceability/doc-registry.md`](../docs/05-traceability/doc-registry.md) |
+| Trace | [`docs/05-traceability/trace-matrix.md`](../docs/05-traceability/trace-matrix.md) |
+| Module tôi | `docs/03-modules/{id}/` |

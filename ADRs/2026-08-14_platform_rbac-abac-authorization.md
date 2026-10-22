@@ -207,6 +207,7 @@ Mỗi biến thể Org × Dept × hạn mức × resource = một Role + bộ Pe
 | C14 | Identity store (AspNet*) là **shared persistence** — không thuộc riêng Account hay Authorization |
 | C15 | Host compose opt-in; Authentication **không** reference Account / Authorization / IdentityAdmin |
 | C16 | Login **không** evaluate mọi Policy — chỉ build Authorization Context (permissions/policy codes + attributes) vào token/cache |
+| C17 | Mọi bảng nghiệp vụ (kể cả `AspNetUsers` và entity resource) có **cột** `TenantId` + `OrgId`; thuộc tính ABAC còn lại nằm trong **attributes** (user → `AspNetUserClaims`; resource → attributes / property map — §5.2) |
 
 ---
 
@@ -245,7 +246,7 @@ Chúng ta sẽ thiết kế Authorization theo mô hình **RBAC (Permission) + A
 | D2 | Schema Identity | Giữ Users / Roles / UserRoles / UserClaims / RoleClaims |
 | D3 | Schema extension | Thêm `Policies` + `PolicyRules` |
 | D4 | RoleClaim types | `ClaimType = Permission` \| `Policy`; Policy claim chỉ lưu **PolicyCode/Id**, không nhồi rule JSON |
-| D5 | UserClaim | Subject attributes (`TenantId`, `OrgId`, `DepartmentId`, `ApproveLimit`, …); **không** lưu Permission trên UserClaim |
+| D5 | UserClaim | Subject **attributes** (`DepartmentId`, `ApproveLimit`, …); **TenantId/OrgId** là cột user (C17); **không** lưu Permission trên UserClaim |
 | D6 | Role | Mở rộng `IsSystemRole`, `RoleLevel` — entity `Role` (trước đây `ApplicationRole`) cùng `User` đặt ở `Platform.Authentication.Identity` (§11.1) |
 | D7 | System roles | Identifier ổn định `ADMIN` / `TENANT_ADMIN` / `ORG_ADMIN` — không dùng display name làm logic |
 | D8 | Wildcard | `Permission = System.All` (ưu tiên hơn `*`); Admin = global; TenantAdmin/OrgAdmin vẫn qua ABAC scope |
@@ -356,8 +357,11 @@ Request sau đó
                               │  PolicyRules  │
                               └───────────────┘
 
-AspNetUsers ──UserClaims──► Subject Attributes
-                            (TenantId / OrgId / DeptId / ApproveLimit / …)
+AspNetUsers ──cột──► TenantId, OrgId
+         └──UserClaims──► Subject attributes (DeptId, ApproveLimit, …)
+
+Bảng nghiệp vụ ──cột──► TenantId, OrgId
+              └──attributes──► DeptId, Amount, CreatedBy, … (§5.2.1)
 ```
 
 Bảng chính:
@@ -374,20 +378,32 @@ PolicyRules
 
 Dữ liệu mẫu đầy đủ theo từng cấu hình nghiệp vụ: **[Phụ lục D](#phụ-lục-d--dữ-liệu-mẫu-theo-cấu-hình)**.
 
-### 5.2 AspNetUsers & UserClaims
+### 5.2 AspNetUsers & UserClaims (C17)
 
-Identity vẫn là nguồn user. Attribute authorization có thể nằm ở UserClaims nếu muốn giữ context dạng claim:
+Identity vẫn là nguồn user.
+
+| Phạm vi | Lưu trữ | Ví dụ operand |
+|---------|---------|----------------|
+| **Tenant / Org** | **Cột** `AspNetUsers.TenantId`, `AspNetUsers.OrgId` | `User.TenantId`, `User.OrgId` (`OperandSource.UserColumn`) |
+| **Attributes** | **AspNetUserClaims** (ClaimType = tên attribute) | `User.DepartmentId`, `User.ApproveLimit`, `User.ManagedDepartmentIds` |
 
 | UserId | ClaimType | ClaimValue |
 |--------|-----------|------------|
-| U001 | TenantId | T001 |
-| U001 | OrgId | O001 |
 | U001 | DepartmentId | D010 |
 | U001 | ApproveLimit | 10000000 |
 
-**Không** dùng UserClaim cho Permission kiểu `CanEditCustomer=true`. Permission chỉ trên RoleClaim.
+**Không** nhân bản `TenantId`/`OrgId` sang UserClaim. **Không** dùng UserClaim cho Permission (`CanEditCustomer=true`). Permission chỉ trên RoleClaim.
 
-Field quan hệ cốt lõi của domain (nếu đã có cột trên User entity) không bắt buộc nhân bản sang claim — nhưng Authorization Context phải resolve được cùng semantic.
+### 5.2.1 Bảng nghiệp vụ & resource attributes (C17)
+
+Quy ước chung cho mọi bảng (Expense, Project, …) và object resource truyền vào engine:
+
+| Phạm vi | Lưu trữ | Ví dụ operand |
+|---------|---------|----------------|
+| **Tenant / Org** | **Cột** `TenantId`, `OrgId` (`ITenantEntity` + `IOrgEntity` ở DDD) | `Resource.TenantId`, `Resource.OrgId` (`OperandSource.ResourceColumn`) |
+| **Attributes** | Bag nghiệp vụ: JSON/EAV hoặc **property CLR** cùng tên (v1 Sample dùng property để Data Scope dịch SQL) | `Resource.DepartmentId`, `Resource.Amount`, `Resource.CreatedBy` (`OperandSource.Resource`) |
+
+Engine resolve attribute qua `IAuthorizationResourceAttributes` hoặc property public trên DTO/entity. Multitenancy global filter (nếu có) và policy `P_SAME_TENANT` / `P_SAME_ORG` **cùng semantic** với hai cột phạm vi — không thay thế nhau tùy tiện.
 
 ### 5.3 AspNetRoles — System vs Business
 
@@ -499,11 +515,13 @@ Policy chuẩn ERP (v1):
 Operand whitelist — **operand registry** (2026-10-02; thay danh sách hardcode trong `OperandResolver` / `OperandValidator`):
 
 ```text
-Platform (mặc định, generic):   User.Id (subject) · User.TenantId · User.OrgId (cột AspNetUsers — Q3)
-                                Resource.TenantId · Resource.OrgId · Resource.CreatedBy
+Platform (mặc định, generic):   User.Id (subject)
+                                User.TenantId · User.OrgId (UserColumn — cột AspNetUsers)
+                                Resource.TenantId · Resource.OrgId (ResourceColumn — cột bảng nghiệp vụ)
+                                Resource.CreatedBy (Resource attribute)
 Sản phẩm / module (đăng ký):    Sample — AddSampleAuthorizationOperands():
-                                User.DepartmentId · User.ApproveLimit · User.ManagedProjectIds[] · User.ManagedDepartmentIds[] (UserClaim)
-                                Resource.DepartmentId · Resource.Amount · Resource.ProjectId · Resource.EmployeeId
+                                User.DepartmentId · User.ApproveLimit · … (UserClaim)
+                                Resource.DepartmentId · Resource.Amount · … (Resource attribute)
 ```
 
 - Đăng ký **bằng code lúc khởi động**: `builder.AddPlatformAuthorizationOperands(o => o.AddUserClaim("ApproveLimit").AddResource("Amount"))`; nhiều module cùng đóng góp, trùng định nghĩa khác nhau → lỗi lúc start.
@@ -774,7 +792,7 @@ Ví dụ CFO: `Expense.Approve` + SameOrg + ApproveLimit + attributes `OrgId` / 
 |---|---------|---------|---------|
 | Q1 | Accept O3 + O7 + D1–D20? | ✅ YES | RBAC+ABAC model + 4 khối tách biệt |
 | Q2 | Wildcard dùng `System.All` hay cho phép cả `*`? | `*` | Đơn giản; Admin = `Permission = *` |
-| Q3 | User attributes: cột User hay UserClaims? | **Cột User**: TenantId, OrgId; **UserClaims**: ApproveLimit, DepartmentId, … | Không cần fallback UserClaim cho TenantId/OrgId |
+| Q3 | Scope columns vs attributes? | **Cột** `TenantId` + `OrgId` trên **mọi bảng** (user + nghiệp vụ); **attributes** cho phần còn lại (user → UserClaims; resource → §5.2.1) | Operand: `UserColumn` / `ResourceColumn` vs `UserClaim` / `Resource` |
 | Q4 | Tên package? | `Platform.Authorization` *(amendment 2026-10-02)* | Chốt ban đầu 2026-09-29: `Platform.IdentityAccessManagement`. Đổi lại vì: phần "Identity" (`User`/`Role` store) đã tách sang `Platform.Authentication.Identity`, package chỉ còn Permission / Policy / PolicyRule / Role Governance / Data Scope — đúng nghĩa **phân quyền**; đối xứng với `Platform.Authentication.*` (xác thực); và vẫn tránh chữ `Identity` (D20) |
 | Q5 | OR semantics v1? | **A: Seed Policy với Order tag** | v1 = seed `P_OWNER_OR_SAME_DEPT` (Order 1=Owner, 2=SameDept); v9+ = DSL expression |
 | Q6 | `ManagedProject` v1? | **B: Domain relationship** | Project có ProjectMember + ProjectPosition; resolve `ManagedProjectIds` từ DB |
@@ -785,10 +803,12 @@ Ví dụ CFO: `Expense.Approve` + SameOrg + ApproveLimit + attributes `OrgId` / 
 
 ### 7.1 Làm rõ thêm
 
-#### Q3: Resolver Strategy
-- **TenantId, OrgId:** Lấy từ **cột AspNetUsers** (không UserClaims)
-- **ApproveLimit, DepartmentId:** Từ **AspNetUserClaims**
-- **ManagedProjectIds, ManagedDepartmentIds:** Resolve từ **domain** (query DB ProjectMember, etc.)
+#### Q3: Resolver Strategy (C17)
+- **User.TenantId / User.OrgId:** cột `AspNetUsers`
+- **Resource.TenantId / Resource.OrgId:** cột trên bảng entity / DTO (`ResourceColumn`)
+- **User attributes** (ApproveLimit, DepartmentId, …): `AspNetUserClaims`
+- **Resource attributes** (Amount, DepartmentId, CreatedBy, …): property hoặc `IAuthorizationResourceAttributes`
+- **ManagedProjectIds, ManagedDepartmentIds:** resolve từ **domain** (query DB ProjectMember, etc.) — không JWT blob
 
 #### Q5: OR Semantics v1
 Để biểu diễn **Employee được xem/sửa Owner HOẶC SameDept**, seed:
@@ -863,7 +883,7 @@ Icon: 🟢 code đúng quyết định · 🟡 đúng một phần · 🔴 chưa
 |---|------------|-----------------------|
 | D1–D3 | 🟢 | RBAC (RoleClaim `Permission`) + ABAC (`Policy`/`PolicyRule`) |
 | D4 | 🟢 | RoleClaim `Policy` chỉ lưu mã; mã không tồn tại → `UnresolvedPolicyException`, path fail-closed |
-| D5 | 🟢 | Permission chỉ đọc từ RoleClaim; UserClaim chỉ giữ attribute (TenantId/OrgId đã chuyển sang cột — Q3) |
+| D5 | 🟢 | Permission chỉ RoleClaim; UserClaim chỉ attributes; TenantId/OrgId cột user + resource (C17 / Q3) |
 | D6 | 🟢 | `Role.IsSystemRole`, `Role.RoleLevel` |
 | D7 | 🟡 | Seed dùng tên ổn định `ADMIN` / `TENANT_ADMIN` / `ORG_ADMIN`; chưa có hằng số dùng chung |
 | D8 | 🟡 | Chấp nhận cả `*` và `System.All`; Admin bypass ABAC 🟢; "TenantAdmin/OrgAdmin vẫn qua ABAC scope" **không** đạt nếu seed `System.All` cho họ — ⚠️ V1 |
@@ -886,7 +906,7 @@ Icon: 🟢 code đúng quyết định · 🟡 đúng một phần · 🔴 chưa
 |---|------------|-----------------------|
 | Q1 | 🟡 | O3 + O7 đã phản ánh trong cấu trúc package; nhiều D còn 🟡/🔴 (bảng trên) |
 | Q2 | 🟡 | `*` hoạt động; `System.All` vẫn được chấp nhận song song (Phụ lục D.4 vẫn ghi `System.All`; seeder chưa seed RoleClaims nên chưa role nào có wildcard) |
-| Q3 | 🟢 | `User.TenantId` / `User.OrgId` là cột AspNetUsers; `DepartmentId`, `ApproveLimit` từ UserClaims; `User.Id` = subject |
+| Q3 | 🟢 | C17: `TenantId`/`OrgId` cột trên user + resource; attributes còn lại (UserClaim / Resource); `ResourceColumn` + `UserColumn` trong registry |
 | Q4 | 🟢 | `Platform.Authorization` (đổi từ `Platform.IdentityAccessManagement` ngày 2026-10-02; folder, namespace, csproj, test `UnitTest/Authorization/`, migration snapshot đã đồng bộ) |
 | Q5 | 🟢 | `P_OWNER_OR_SAME_DEPT` seed 2 rule Order 1/2; evaluator OR theo `Order` |
 | Q6 | 🔴 | `ManagedProjectIds` chưa resolve từ ProjectMember — đang đọc UserClaim CSV (registry đã parse đúng collection; còn thiếu `OperandSource` dạng truy vấn domain để cắm resolver ProjectMember) |

@@ -23,6 +23,7 @@ using Platform.DDD.Domain.Services;
 using Platform.DDD.Domain;
 using Platform.Authentication;
 using Platform.Multitenancy;
+using Platform.MultiOrg;
 using Platform.Mvc.ApplicationBuilders;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Platform.HealthChecks;
@@ -93,6 +94,7 @@ builder.AddPlatformCaching()
     .UseRedisMemoryCacheInvalidation();
 
 builder.AddSampleSettings();
+builder.AddSampleOrgs();
 builder.Services.AddScoped<ImportExportSettingReader>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 
@@ -203,6 +205,7 @@ app.UseCoreSpa();
 app.UseCoreCors();
 
 app.UseAuthentication();
+app.UseOrgFirstScope();
 app.UseAuthorization();
 
 if (workflowEnabled)

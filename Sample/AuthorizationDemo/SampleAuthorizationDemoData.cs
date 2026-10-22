@@ -8,15 +8,16 @@ using Platform.Authorization.Operands;
 
 namespace Sample.AuthorizationDemo;
 
-/// <summary>Tài nguyên demo: thuộc tính public được đọc qua operand <c>Resource.*</c>.</summary>
-public sealed record SampleExpense(Guid TenantId, Guid DepartmentId, decimal Amount, Guid CreatedBy);
+/// <summary>Tài nguyên demo in-memory: cột phạm vi + attributes cho operand <c>Resource.*</c>.</summary>
+public sealed record SampleExpense(Guid TenantId, Guid? OrgId, Guid DepartmentId, decimal Amount, Guid CreatedBy);
 
-/// <summary>Chứng từ chi phí lưu trong bảng <c>SampleExpenses</c> — dùng cho demo Data Scope.</summary>
-public sealed class SampleExpenseRow
+/// <summary>Chứng từ chi phí — cột <c>TenantId</c>/<c>OrgId</c>; attributes ABAC map property (v1).</summary>
+public sealed class SampleExpenseRow : Platform.DDD.Domain.Entities.ITenantEntity, Platform.DDD.Domain.Entities.IOrgEntity
 {
     public Guid Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public Guid TenantId { get; set; }
+    public Guid? OrgId { get; set; }
     public Guid DepartmentId { get; set; }
     public decimal Amount { get; set; }
     public Guid CreatedBy { get; set; }
@@ -36,6 +37,16 @@ public static class SampleAuthorizationDemoData
         ["T1"] = Guid.Parse("40000000-0000-0000-0000-000000000001"),
         ["T2"] = Guid.Parse("40000000-0000-0000-0000-000000000002"),
     };
+
+    public static readonly IReadOnlyDictionary<string, Guid> Orgs = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["O1"] = Guid.Parse("42000000-0000-0000-0000-000000000001"),
+        ["O2"] = Guid.Parse("42000000-0000-0000-0000-000000000002"),
+    };
+
+    /// <summary>Org mặc định của tenant trong demo (một org/tenant).</summary>
+    public static Guid DefaultOrgForTenant(string tenantKey) =>
+        tenantKey.Equals("T2", StringComparison.OrdinalIgnoreCase) ? Orgs["O2"] : Orgs["O1"];
 
     public static readonly IReadOnlyDictionary<string, Guid> Departments = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase)
     {
@@ -170,6 +181,7 @@ public static class SampleAuthorizationDemoData
                 NormalizedUserName = user.UserName.ToUpperInvariant(),
                 SecurityStamp = Guid.NewGuid().ToString("N"),
                 TenantId = Tenants[user.Tenant],
+                OrgId = DefaultOrgForTenant(user.Tenant),
             });
             foreach (var roleId in user.Roles)
                 context.UserRoles.Add(new IdentityUserRole<Guid> { UserId = user.Id, RoleId = roleId });
@@ -191,6 +203,7 @@ public static class SampleAuthorizationDemoData
                 Id = Guid.NewGuid(),
                 Code = code,
                 TenantId = Tenants[tenant],
+                OrgId = DefaultOrgForTenant(tenant),
                 DepartmentId = Departments[department],
                 Amount = amount,
                 CreatedBy = FindUser(createdBy)!.Id,

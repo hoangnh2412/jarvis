@@ -7,4 +7,7 @@ namespace Platform.DDD.Domain.DataStorages;
 public interface ITenantIdResolverFactory
 {
     Task<Guid?> GetTenantIdAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Domain (host lookup) → user claim → query — không đọc header <c>X-Tenant-Id</c>.</summary>
+    Task<Guid?> GetTenantIdForOrgScopeAsync(CancellationToken cancellationToken = default);
 }

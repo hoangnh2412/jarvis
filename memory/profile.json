@@ -1,0 +1,15 @@
+{
+  "version": 3,
+  "project_name": "Jarvis_framework",
+  "project_summary": "dự án Minipower",
+  "current_phase": "discovery",
+  "project_mode": "mvp",
+  "docs_provider": "local",
+  "tasks_provider": "none",
+  "chat_provider": "none",
+  "code_provider": "local",
+  "trace_store": "sqlite",
+  "surfaces": [
+    "docs"
+  ]
+}

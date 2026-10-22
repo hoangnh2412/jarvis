@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Identity;
 
 /// <summary>
 /// Application user extending ASP.NET Identity user.
-/// TenantId / OrgId are columns on AspNetUsers (ADR RBAC+ABAC §7 Q3); other subject attributes
-/// (DepartmentId, ApproveLimit, …) stay in AspNetUserClaims.
+/// <c>TenantId</c> / <c>OrgId</c> are scope columns on AspNetUsers; other subject attributes
+/// (DepartmentId, ApproveLimit, …) live in AspNetUserClaims (ADR RBAC+ABAC §5.2).
 /// </summary>
 public sealed class User : IdentityUser<Guid>
 {

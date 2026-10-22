@@ -1,0 +1,8 @@
+# Identity máy này (ADR-033 QĐ-20) — không commit tên người
+profile.user.json
+
+# Entry agent cá nhân (ADR-035) — tiến độ + nhắc việc; khuôn = memory.md.example
+memory.md
+
+# Trace SQLite = projection + SSOT việc đội khi tasks=none (ADR-033/035); khuôn trace.sql commit
+trace.db

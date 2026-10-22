@@ -17,6 +17,8 @@ public sealed class TestTemplateDbContext : DbContext, IStorageContext
 
     public void SetTenantId(Guid? tenantId) => TenantId = tenantId;
 
+    public void SetOrgId(Guid? orgId) { }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<FakeExcelTemplate>(e =>

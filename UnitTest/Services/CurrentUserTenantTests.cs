@@ -174,6 +174,9 @@ public sealed class CurrentUserTenantTests
     {
         public Task<Guid?> GetTenantIdAsync(CancellationToken cancellationToken = default)
             => Task.FromResult(tenantId);
+
+        public Task<Guid?> GetTenantIdForOrgScopeAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(tenantId);
     }
 
     private sealed class FixedCurrentUserStore(CurrentUserInfo info) : ICurrentUserStore<CurrentUserInfo>

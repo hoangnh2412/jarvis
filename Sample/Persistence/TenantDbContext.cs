@@ -1,4 +1,5 @@
 using Platform.ORM.EntityFramework.DataStorages;
+using Platform.Orgs.EntityFramework.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Sample.Entities;
 
@@ -15,6 +16,7 @@ public class TenantDbContext(
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<Position> Positions => Set<Position>();
     public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<Sample.Entities.Org> Organizations => Set<Sample.Entities.Org>();
 
     public DbSet<SampleExcelTemplate> ExcelTemplates => Set<SampleExcelTemplate>();
 
@@ -27,5 +29,7 @@ public class TenantDbContext(
         modelBuilder.ApplyConfiguration(new ApiKeyCredentialEntityConfiguration());
         modelBuilder.ApplyConfiguration(new TenantPasswordPolicyEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SampleExcelTemplateEntityConfiguration());
+        modelBuilder.ApplyPlatformOrgCatalog<Sample.Entities.Org>();
+        modelBuilder.ApplyConfiguration(new OrgEntityConfiguration());
     }
 }

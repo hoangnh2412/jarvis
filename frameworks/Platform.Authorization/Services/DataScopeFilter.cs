@@ -123,8 +123,8 @@ public sealed class DataScopeFilter : IDataScopeFilter
             return False;
 
         var op = rule.Operator.ToUpperInvariant();
-        var leftIsResource = left.Source == OperandSource.Resource;
-        var rightIsResource = right.Source == OperandSource.Resource;
+        var leftIsResource = IsResourceOperand(left);
+        var rightIsResource = IsResourceOperand(right);
 
         if (leftIsResource && rightIsResource)
             return CompareMembers(item, left, op, right);
@@ -217,6 +217,9 @@ public sealed class DataScopeFilter : IDataScopeFilter
             ? False
             : And(And(NotNull(leftMember, leftType), NotNull(rightMember, rightType)), compared);
     }
+
+    private static bool IsResourceOperand(OperandDefinition operand) =>
+        operand.Source is OperandSource.Resource or OperandSource.ResourceColumn;
 
     private static bool TryGetMember(ParameterExpression item, OperandDefinition resource, out Expression member, out Type memberType)
     {

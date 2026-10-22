@@ -10,4 +10,9 @@ public interface IStorageContext
     /// Working tenant for app code is <c>ICurrentTenant</c> — do not expose a public getter here.
     /// </summary>
     void SetTenantId(Guid? tenantId);
+
+    /// <summary>
+    /// Snapshot working org cho global query filter <see cref="Entities.IOrgEntity"/> (khi host bật).
+    /// </summary>
+    void SetOrgId(Guid? orgId);
 }

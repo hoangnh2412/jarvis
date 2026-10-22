@@ -1,0 +1,32 @@
+# Minipower — CI cho dự án đích (ADR-020 QĐ-5 · C8).
+#
+# Một job duy nhất: kiểm xương sống trace UC → FR → AC → Test bằng ID ổn định.
+# Đây là điều kiện cứng nằm ở CI thay vì hook, vì nó đọc cả cây docs/ — quá đắt
+# để chạy mỗi prompt.
+#
+# FAIL (chặn pipeline): ID trỏ sai · ID khai trùng.
+# WARN (không chặn):    FR chưa có AC · AC chưa có Test.
+#
+# KHÔNG phạt vì tài liệu chưa viết: mvp/maintain cố ý thiếu DOC. Script chỉ soi
+# ID trong tài liệu ĐANG CÓ.
+#
+# Cài: copy file này vào root dự án, sửa MINIPOWER_PATH cho đúng chỗ pack.
+
+stages:
+  - verify
+
+trace:check:
+  stage: verify
+  image: node:20-alpine
+  variables:
+    # Đường dẫn tới pack minipower. Sửa cho khớp cách bạn cài:
+    #   - submodule:  ./vendor/ai-skills/minipower
+    #   - npm/symlink: ./node_modules/minipower
+    MINIPOWER_PATH: "./vendor/ai-skills/minipower"
+  script:
+    - node "$MINIPOWER_PATH/hooks/bin/trace-check.js" "$CI_PROJECT_DIR"
+  rules:
+    # Chỉ chạy khi docs/ thực sự đổi — trace không tự mục khi chỉ sửa code.
+    - changes:
+        - "docs/**/*"
+  allow_failure: false

@@ -26,6 +26,7 @@
     "@platform/core": "file:../../../frameworks/frontend",
     "@platform/files": "file:../../../modules/files/frontend",
     "@platform/notifications": "file:../../../modules/notifications/frontend",
+    "@platform/orgs": "file:../../../modules/orgs/frontend",
     "@platform/setting": "file:../../../modules/settings/frontend",
     "@platform/importexport": "file:../../../modules/importexport/frontend",
     "@primereact/core": "^11.0.0",

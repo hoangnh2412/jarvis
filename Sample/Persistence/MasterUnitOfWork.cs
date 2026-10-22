@@ -9,7 +9,15 @@ public class MasterUnitOfWork(
     IServiceProvider services,
     IDbContextFactory<MasterDbContext> factory,
     ITenantIdResolverFactory tenantIdResolverFactory,
-    ICurrentTenantAccessor currentTenantAccessor)
-    : BaseUnitOfWork<MasterDbContext>(services, factory, tenantIdResolverFactory, currentTenantAccessor), IMasterUnitOfWork
+    ICurrentTenantAccessor currentTenantAccessor,
+    IOrgIdResolverFactory? orgIdResolverFactory = null,
+    ICurrentOrgAccessor? currentOrgAccessor = null)
+    : BaseUnitOfWork<MasterDbContext>(
+        services,
+        factory,
+        tenantIdResolverFactory,
+        currentTenantAccessor,
+        orgIdResolverFactory,
+        currentOrgAccessor), IMasterUnitOfWork
 {
 }

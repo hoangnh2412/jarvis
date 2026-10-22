@@ -49,6 +49,7 @@ const notificationsSrc = path.resolve(
   '../../../modules/notifications/frontend/src',
 )
 const settingsSrc = path.resolve(root, '../../../modules/settings/frontend/src')
+const orgsSrc = path.resolve(root, '../../../modules/orgs/frontend/src')
 const filesSrc = path.resolve(root, '../../../modules/files/frontend/src')
 
 /**
@@ -187,6 +188,10 @@ export default defineConfig(({ mode }) => {
           replacement: path.resolve(settingsSrc, 'index.ts'),
         },
         {
+          find: /^@platform\/orgs$/,
+          replacement: path.resolve(orgsSrc, 'index.ts'),
+        },
+        {
           find: /^@platform\/importexport$/,
           replacement: path.resolve(ieLib, 'index.ts'),
         },
@@ -231,7 +236,7 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       strictPort: true,
       fs: {
-        allow: [root, platformCoreSrc, notificationsSrc, settingsSrc, ieLib],
+        allow: [root, platformCoreSrc, notificationsSrc, settingsSrc, orgsSrc, ieLib],
       },
       proxy: {
         '/api': {

@@ -20,6 +20,12 @@
       "@platform/setting/*": ["../../../modules/settings/frontend/src/*"],
       "@platform/files": ["../../../modules/files/frontend/src/index.ts"],
       "@platform/files/*": ["../../../modules/files/frontend/src/*"],
+      "@platform/orgs": ["../../../modules/orgs/frontend/src/index.ts"],
+      "@platform/orgs/*": ["../../../modules/orgs/frontend/src/*"],
+      "zod": ["node_modules/zod"],
+      "react-hook-form": ["node_modules/react-hook-form"],
+      "@hookform/resolvers": ["node_modules/@hookform/resolvers"],
+      "@hookform/resolvers/*": ["node_modules/@hookform/resolvers/*"],
       "@microsoft/signalr": ["node_modules/@microsoft/signalr"],
       "axios": ["node_modules/axios"],
       "lucide-react": ["node_modules/lucide-react"],
@@ -45,6 +51,7 @@
     "src",
     "../../../modules/settings/frontend/src",
     "../../../modules/files/frontend/src",
+    "../../../modules/orgs/frontend/src",
     "../../../frameworks/frontend/src"
   ]
 }

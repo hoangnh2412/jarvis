@@ -1,0 +1,18 @@
+cr_id: CR-000
+title: Example — change in single module
+status: example
+change_type: modify
+modules:
+  - "{module-id}"
+affected_docs:
+  - path: 03-modules/{module-id}/DOC-06-srs.md
+    doc: DOC-06
+    action: modify
+  - path: 03-modules/{module-id}/DOC-07-acceptance-criteria.md
+    doc: DOC-07
+    action: modify
+impact:
+  scope: true
+  timeline_days: 0
+  regression_tests: []
+baseline_target: null

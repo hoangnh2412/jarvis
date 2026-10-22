@@ -16,6 +16,8 @@ public abstract class BaseStorageContext : DbContext, IStorageContext
     /// </summary>
     private Guid? TenantId { get; set; }
 
+    private Guid? OrgFilterId { get; set; }
+
     /// <summary>
     /// Whether <see cref="SetTenantId"/> has applied a non-null tenant (package-internal validation).
     /// </summary>
@@ -31,15 +33,14 @@ public abstract class BaseStorageContext : DbContext, IStorageContext
         base.OnModelCreating(modelBuilder);
         AddConcurrencyCheck(modelBuilder);
         AddGlobalQueryFilter(modelBuilder);
+        AddOrgEntityQueryFilter(modelBuilder);
     }
 
-    protected virtual bool ShouldFilterTenant(Type entityType)
-    {
-        if (typeof(ITenantEntity).IsAssignableFrom(entityType))
-            return true;
+    protected virtual bool ShouldFilterTenant(Type entityType) =>
+        typeof(ITenantEntity).IsAssignableFrom(entityType);
 
-        return false;
-    }
+    protected virtual bool ShouldFilterOrg(Type entityType) =>
+        typeof(IOrgEntity).IsAssignableFrom(entityType);
 
     private void AddGlobalQueryFilter(ModelBuilder modelBuilder)
     {
@@ -50,6 +51,19 @@ public abstract class BaseStorageContext : DbContext, IStorageContext
                 continue;
 
             modelBuilder.Entity(clrType).AddQueryFilter<ITenantEntity>(x => x.TenantId == TenantId);
+        }
+    }
+
+    private void AddOrgEntityQueryFilter(ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            var clrType = entityType.ClrType;
+            if (!ShouldFilterOrg(clrType))
+                continue;
+
+            modelBuilder.Entity(clrType).AddQueryFilter<IOrgEntity>(x =>
+                !OrgFilterId.HasValue || x.OrgId == null || x.OrgId == OrgFilterId);
         }
     }
 
@@ -75,6 +89,8 @@ public abstract class BaseStorageContext : DbContext, IStorageContext
     }
 
     public virtual void SetTenantId(Guid? tenantId) => TenantId = tenantId;
+
+    public virtual void SetOrgId(Guid? orgId) => OrgFilterId = orgId;
 
     public override int SaveChanges()
     {

@@ -49,6 +49,10 @@
     <ProjectReference Include="..\frameworks\Platform.Authentication.ApiKey\Platform.Authentication.ApiKey.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Authentication.Jwt\Platform.Authentication.Jwt.csproj" />
     <ProjectReference Include="..\frameworks\Platform.Authentication.Basic\Platform.Authentication.Basic.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Multitenancy\Platform.Multitenancy.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.MultiOrg\Platform.MultiOrg.csproj" />
+    <ProjectReference Include="..\modules\orgs\Platform.Orgs\Platform.Orgs.csproj" />
+    <ProjectReference Include="..\modules\orgs\Platform.Orgs.EntityFramework\Platform.Orgs.EntityFramework.csproj" />
     <ProjectReference Include="..\modules\files\Platform.Modules.Files\Platform.Modules.Files.csproj" />
     <ProjectReference Include="..\modules\files\Platform.Modules.Files.API\Platform.Modules.Files.API.csproj" />
     <ProjectReference Include="..\Sample\Sample.csproj" />

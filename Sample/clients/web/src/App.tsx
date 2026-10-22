@@ -12,7 +12,7 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
-import { FileSpreadsheet, GraduationCap, Layers } from "lucide-react";
+import { Building2, FileSpreadsheet, GraduationCap, Layers } from "lucide-react";
 import {
   ACCOUNT_ROUTES,
   AdminLayout,
@@ -61,6 +61,11 @@ import {
 import { clearAccessToken, isAuthenticated, setAccessToken } from "./auth";
 import { NotificationBell } from "@platform/notifications";
 import { SettingPage } from "@platform/setting";
+import {
+  OrgListPage,
+  ORG_ROUTES,
+  configureOrgNavigate,
+} from "@platform/orgs";
 import { FilesPage, FILE_MANAGER_ROUTES } from "@platform/files";
 import { extractLoginResult } from "./auth/apiHelpers";
 import { RequireAuth } from "./auth/RequireAuth";
@@ -215,6 +220,14 @@ function RoleNavigateBridge() {
   return null;
 }
 
+function OrgNavigateBridge() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    configureOrgNavigate((to) => navigate(to));
+  }, [navigate]);
+  return null;
+}
+
 function FileManagerNavigateBridge() {
   const navigate = useNavigate();
   useEffect(() => {
@@ -333,6 +346,12 @@ export default function App() {
           path: '/students',
         },
         {
+          id: 'orgs',
+          label: 'Organization',
+          icon: Building2,
+          path: ORG_ROUTES.list,
+        },
+        {
           id: 'ie-templates',
           label: 'Excel templates',
           icon: FileSpreadsheet,
@@ -353,6 +372,7 @@ export default function App() {
       <TenantNavigateBridge />
       <CraftPdfNavigateBridge />
       <RoleNavigateBridge />
+      <OrgNavigateBridge />
       <FileManagerNavigateBridge />
       <ImportNavigateBridge />
       <PlannerNavigateBridge />
@@ -437,6 +457,8 @@ export default function App() {
             path={ROLE_ROUTES.list}
             element={<RoleListPage locale="vi" />}
           />
+
+          <Route path={ORG_ROUTES.list} element={<OrgListPage locale="vi" />} />
 
           <Route
             path={FILE_MANAGER_ROUTES.list}

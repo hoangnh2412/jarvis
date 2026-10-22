@@ -1,0 +1,9 @@
+# Snapshot manifest — điền khi baseline sign-off
+baseline_id: BL-1.0
+date: null
+signed_by: null
+files: []
+# Ví dụ:
+#   - path: 03-modules/{module-id}/DOC-06-srs.md
+#     version: "1.0"
+#     sha256: "..."
