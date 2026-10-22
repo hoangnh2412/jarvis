@@ -3,6 +3,7 @@ namespace Platform.Modules.IdentityAdmin.Commands;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Platform.Authentication;
+using Platform.Authentication.Identity;
 using Platform.DDD.Application.Contracts.Commands;
 using Platform.DDD.Domain.Services;
 using Platform.Authorization.Abstractions;
@@ -48,12 +49,12 @@ public sealed class AssignPermissionToRoleCommandHandler : IAsyncCommandHandler<
             throw new UnauthorizedAccessException("You cannot modify a role with level greater than or equal to your own");
 
         var existingClaim = (await _roleManager.GetClaimsAsync(role))
-            .FirstOrDefault(c => c.Type == "Permission" && c.Value == command.Permission);
+            .FirstOrDefault(c => c.Type == IdentityClaimTypes.Permission && c.Value == command.Permission);
 
         if (existingClaim != null)
             return;
 
-        var claim = new Claim("Permission", command.Permission);
+        var claim = new Claim(IdentityClaimTypes.Permission, command.Permission);
         var result = await _roleManager.AddClaimAsync(role, claim);
         if (!result.Succeeded)
             throw new InvalidOperationException($"Failed to assign permission: {string.Join("; ", result.Errors.Select(e => e.Description))}");

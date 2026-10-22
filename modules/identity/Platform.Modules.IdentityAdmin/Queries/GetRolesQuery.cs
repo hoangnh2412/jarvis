@@ -11,4 +11,6 @@ public sealed record RoleSummaryDto
     public string? DisplayName { get; init; }
     public required int RoleLevel { get; init; }
     public required bool IsSystemRole { get; init; }
+    public bool IsActive { get; init; } = true;
+    public IReadOnlyCollection<string> Permissions { get; init; } = [];
 }

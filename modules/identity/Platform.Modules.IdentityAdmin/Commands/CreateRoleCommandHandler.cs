@@ -1,11 +1,13 @@
 namespace Platform.Modules.IdentityAdmin.Commands;
 
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Platform.Authentication;
-using Platform.DDD.Application.Contracts.Commands;
-using Platform.DDD.Domain.Services;
+using Platform.Authentication.Identity;
 using Platform.Authentication.Identity.Domain;
 using Platform.Authorization.Abstractions;
+using Platform.DDD.Application.Contracts.Commands;
+using Platform.DDD.Domain.Services;
 
 public sealed class CreateRoleCommandHandler : IAsyncCommandHandler<CreateRoleCommand, CreateRoleResponse>
 {
@@ -44,6 +46,13 @@ public sealed class CreateRoleCommandHandler : IAsyncCommandHandler<CreateRoleCo
         var result = await _roleManager.CreateAsync(role);
         if (!result.Succeeded)
             throw new InvalidOperationException($"Failed to create role: {string.Join("; ", result.Errors.Select(e => e.Description))}");
+
+        if (!command.IsActive)
+        {
+            var claimResult = await _roleManager.AddClaimAsync(role, new Claim(IdentityClaimTypes.RoleActive, "false"));
+            if (!claimResult.Succeeded)
+                throw new InvalidOperationException($"Failed to create role: {string.Join("; ", claimResult.Errors.Select(e => e.Description))}");
+        }
 
         return new CreateRoleResponse
         {

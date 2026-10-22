@@ -4,6 +4,7 @@ using Platform.Modules.IdentityAdmin.Commands;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using Platform.Authentication.Identity.Domain;
+using Platform.Orgs.Abstractions;
 
 public sealed class CreateUserCommandHandlerTests
 {
@@ -25,14 +26,18 @@ public sealed class CreateUserCommandHandlerTests
         var roleManager = IdentityMockHelpers.MockRoleManager<Role>();
         roleManager.Setup(m => m.FindByIdAsync(role.Id.ToString())).ReturnsAsync(role);
 
+        var tenantId = Guid.NewGuid();
+        var orgId = Guid.NewGuid();
+        var orgs = new Mock<IOrgCatalog>();
+        orgs.Setup(catalog => catalog.ValidateForAssignmentAsync(orgId, tenantId, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
         var handler = new CreateUserCommandHandler(
             userManager.Object,
             roleManager.Object,
             store.Validator,
-            new FakeCurrentUser(actorId));
-
-        var tenantId = Guid.NewGuid();
-        var orgId = Guid.NewGuid();
+            new FakeCurrentUser(actorId),
+            orgs.Object);
 
         var result = await handler.HandleAsync(
             new CreateUserCommand
@@ -52,6 +57,44 @@ public sealed class CreateUserCommandHandlerTests
         userManager.Verify(m => m.AddToRoleAsync(It.IsAny<User>(), "Lawyer"), Times.Once);
         // S7: no more GroupSid / OrgId user claims — the columns are the single source.
         userManager.Verify(m => m.AddClaimAsync(It.IsAny<User>(), It.IsAny<System.Security.Claims.Claim>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task HandleAsync_assigns_every_distinct_role()
+    {
+        await using var store = new GovernanceStore();
+        var actorId = store.AddUser(store.AddRole("OrgAdmin", 800));
+        var first = store.AddRole("Lawyer", 100);
+        var second = store.AddRole("Clerk", 100);
+
+        var userManager = IdentityMockHelpers.MockUserManager<User>();
+        userManager.Setup(m => m.CreateAsync(It.IsAny<User>(), "P@ssw0rd!"))
+            .ReturnsAsync(IdentityResult.Success);
+        userManager.Setup(m => m.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        var roleManager = IdentityMockHelpers.MockRoleManager<Role>();
+        roleManager.Setup(m => m.FindByIdAsync(first.Id.ToString())).ReturnsAsync(first);
+        roleManager.Setup(m => m.FindByIdAsync(second.Id.ToString())).ReturnsAsync(second);
+
+        var handler = new CreateUserCommandHandler(
+            userManager.Object,
+            roleManager.Object,
+            store.Validator,
+            new FakeCurrentUser(actorId));
+
+        await handler.HandleAsync(
+            new CreateUserCommand
+            {
+                Username = "multi",
+                Email = "multi@sample.vn",
+                Password = "P@ssw0rd!",
+                RoleIds = [first.Id, second.Id, first.Id],
+            },
+            CancellationToken.None);
+
+        userManager.Verify(m => m.AddToRoleAsync(It.IsAny<User>(), "Lawyer"), Times.Once);
+        userManager.Verify(m => m.AddToRoleAsync(It.IsAny<User>(), "Clerk"), Times.Once);
     }
 
     [Fact]

@@ -18,6 +18,10 @@ public static class IdentityAdminDependencyInjection
         services.AddScoped<IAsyncCommandHandler<UpdateUserCommand>>(
             provider => provider.GetRequiredService<UpdateUserCommandHandler>());
 
+        services.AddScoped<UpdateUserAccountCommandHandler>();
+        services.AddScoped<IAsyncCommandHandler<UpdateUserAccountCommand>>(
+            provider => provider.GetRequiredService<UpdateUserAccountCommandHandler>());
+
         services.AddScoped<DeleteUserCommandHandler>();
         services.AddScoped<IAsyncCommandHandler<DeleteUserCommand>>(
             provider => provider.GetRequiredService<DeleteUserCommandHandler>());
@@ -25,6 +29,18 @@ public static class IdentityAdminDependencyInjection
         services.AddScoped<CreateRoleCommandHandler>();
         services.AddScoped<IAsyncCommandHandler<CreateRoleCommand, CreateRoleResponse>>(
             provider => provider.GetRequiredService<CreateRoleCommandHandler>());
+
+        services.AddScoped<UpdateRoleCommandHandler>();
+        services.AddScoped<IAsyncCommandHandler<UpdateRoleCommand>>(
+            provider => provider.GetRequiredService<UpdateRoleCommandHandler>());
+
+        services.AddScoped<DeleteRoleCommandHandler>();
+        services.AddScoped<IAsyncCommandHandler<DeleteRoleCommand>>(
+            provider => provider.GetRequiredService<DeleteRoleCommandHandler>());
+
+        services.AddScoped<SetRolePermissionsCommandHandler>();
+        services.AddScoped<IAsyncCommandHandler<SetRolePermissionsCommand>>(
+            provider => provider.GetRequiredService<SetRolePermissionsCommandHandler>());
 
         services.AddScoped<AssignPermissionToRoleCommandHandler>();
         services.AddScoped<IAsyncCommandHandler<AssignPermissionToRoleCommand>>(
@@ -46,9 +62,17 @@ public static class IdentityAdminDependencyInjection
         services.AddScoped<IAsyncQueryHandler<GetUsersQuery, IReadOnlyCollection<UserSummaryDto>>>(
             provider => provider.GetRequiredService<GetUsersQueryHandler>());
 
+        services.AddScoped<GetUserQueryHandler>();
+        services.AddScoped<IAsyncQueryHandler<GetUserQuery, UserDetailDto>>(
+            provider => provider.GetRequiredService<GetUserQueryHandler>());
+
         services.AddScoped<GetRolesQueryHandler>();
         services.AddScoped<IAsyncQueryHandler<GetRolesQuery, IReadOnlyCollection<RoleSummaryDto>>>(
             provider => provider.GetRequiredService<GetRolesQueryHandler>());
+
+        services.AddScoped<GetRoleQueryHandler>();
+        services.AddScoped<IAsyncQueryHandler<GetRoleQuery, RoleDetailDto>>(
+            provider => provider.GetRequiredService<GetRoleQueryHandler>());
 
         services.AddScoped<GetPermissionsQueryHandler>();
         services.AddScoped<IAsyncQueryHandler<GetPermissionsQuery, IReadOnlyCollection<string>>>(

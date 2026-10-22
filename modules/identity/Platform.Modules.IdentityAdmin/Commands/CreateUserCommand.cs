@@ -11,8 +11,19 @@ public sealed record CreateUserCommand : ICommand
     public required string Username { get; init; }
     public required string Email { get; init; }
     public required string Password { get; init; }
-    public required Guid RoleId { get; init; }
+
+    /// <summary>Single role. Combined with <see cref="RoleIds"/>; an empty id is ignored.</summary>
+    public Guid RoleId { get; init; }
+
+    /// <summary>Roles assigned together. At least one id is required across this and <see cref="RoleId"/>.</summary>
+    public IReadOnlyCollection<Guid> RoleIds { get; init; } = [];
+
+    public string? PhoneNumber { get; init; }
+
+    public string? DisplayName { get; init; }
+
     public Guid? TenantId { get; init; }
+
     public Guid? OrgId { get; init; }
 }
 

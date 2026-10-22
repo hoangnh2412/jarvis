@@ -2,9 +2,9 @@ namespace Platform.Modules.IdentityAdmin.Queries;
 
 using Microsoft.AspNetCore.Identity;
 using Platform.Authentication;
+using Platform.Authentication.Identity.Domain;
 using Platform.DDD.Application.Contracts.Queries;
 using Platform.DDD.Domain.Services;
-using Platform.Authentication.Identity.Domain;
 
 public sealed class GetRolesQueryHandler : IAsyncQueryHandler<GetRolesQuery, IReadOnlyCollection<RoleSummaryDto>>
 {
@@ -24,14 +24,22 @@ public sealed class GetRolesQueryHandler : IAsyncQueryHandler<GetRolesQuery, IRe
             throw new UnauthorizedAccessException("Current user not found");
 
         var roles = await _roleManager.Roles.MaterializeAsync(cancellationToken);
-
-        return roles.Select(role => new RoleSummaryDto
+        var result = new List<RoleSummaryDto>(roles.Count);
+        foreach (var role in roles)
         {
-            RoleId = role.Id,
-            Name = role.Name ?? string.Empty,
-            DisplayName = role.DisplayName,
-            RoleLevel = role.RoleLevel,
-            IsSystemRole = role.IsSystemRole
-        }).ToList();
+            var claims = await _roleManager.GetClaimsAsync(role);
+            result.Add(new RoleSummaryDto
+            {
+                RoleId = role.Id,
+                Name = role.Name ?? string.Empty,
+                DisplayName = role.DisplayName,
+                RoleLevel = role.RoleLevel,
+                IsSystemRole = role.IsSystemRole,
+                IsActive = IdentityAdminReader.IsActive(claims),
+                Permissions = IdentityAdminReader.Permissions(claims)
+            });
+        }
+
+        return result;
     }
 }

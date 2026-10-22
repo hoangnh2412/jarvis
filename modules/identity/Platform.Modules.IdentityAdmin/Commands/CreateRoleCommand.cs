@@ -11,6 +11,9 @@ public sealed record CreateRoleCommand : ICommand
     public required string Name { get; init; }
     public string? DisplayName { get; init; }
     public required int RoleLevel { get; init; }
+
+    /// <summary>False stores a <c>role_active=false</c> claim. Omitted means active.</summary>
+    public bool IsActive { get; init; } = true;
 }
 
 public sealed record CreateRoleResponse

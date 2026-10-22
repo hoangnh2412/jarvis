@@ -1,11 +1,13 @@
 namespace Platform.Modules.IdentityAdmin.Commands;
 
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Platform.Authentication;
-using Platform.DDD.Application.Contracts.Commands;
-using Platform.DDD.Domain.Services;
+using Platform.Authentication.Identity;
 using Platform.Authentication.Identity.Domain;
 using Platform.Authorization.Abstractions;
+using Platform.DDD.Application.Contracts.Commands;
+using Platform.DDD.Domain.Services;
 using Platform.Orgs.Abstractions;
 
 public sealed class CreateUserCommandHandler : IAsyncCommandHandler<CreateUserCommand, CreateUserResponse>
@@ -36,26 +38,32 @@ public sealed class CreateUserCommandHandler : IAsyncCommandHandler<CreateUserCo
         if (actor?.UserId == null)
             throw new UnauthorizedAccessException("Current user not found");
 
-        var targetRole = await _roleManager.FindByIdAsync(command.RoleId.ToString());
-        if (targetRole == null)
-            throw new InvalidOperationException($"Role {command.RoleId} not found");
+        var targetRoles = await LoadAssignableRolesAsync(actor.UserId.Value, ResolveRoleIds(command), cancellationToken);
 
-        var canAssign = await _roleGovernanceValidator.CanAssignRoleAsync(actor.UserId.Value, command.RoleId, cancellationToken);
-        if (!canAssign)
-            throw new UnauthorizedAccessException("You do not have permission to assign this role");
+        var tenantId = command.TenantId;
+        var orgId = command.OrgId;
+        if (tenantId is null && orgId is null)
+        {
+            var actorUser = await _userManager.FindByIdAsync(actor.UserId.Value.ToString());
+            if (actorUser != null)
+            {
+                tenantId = actorUser.TenantId;
+                orgId = actorUser.OrgId;
+            }
+        }
 
-        if (!await _roleGovernanceValidator.IsWithinActorScopeAsync(actor.UserId.Value, command.TenantId, command.OrgId, cancellationToken))
+        if (!await _roleGovernanceValidator.IsWithinActorScopeAsync(actor.UserId.Value, tenantId, orgId, cancellationToken))
             throw new UnauthorizedAccessException("You cannot create a user outside your tenant or organization");
 
-        if (command.OrgId is Guid orgId)
+        if (orgId is Guid assignedOrgId)
         {
             if (_orgCatalog is null)
                 throw new InvalidOperationException("IOrgCatalog is not registered; cannot assign OrgId.");
 
-            if (command.TenantId is not Guid tenantId)
+            if (tenantId is not Guid assignedTenantId)
                 throw new InvalidOperationException("TenantId is required when OrgId is set.");
 
-            await _orgCatalog.ValidateForAssignmentAsync(orgId, tenantId, cancellationToken)
+            await _orgCatalog.ValidateForAssignmentAsync(assignedOrgId, assignedTenantId, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -64,21 +72,36 @@ public sealed class CreateUserCommandHandler : IAsyncCommandHandler<CreateUserCo
             Id = Guid.NewGuid(),
             UserName = command.Username,
             Email = command.Email,
+            PhoneNumber = NormalizeOptional(command.PhoneNumber),
             NormalizedUserName = command.Username.ToUpperInvariant(),
             NormalizedEmail = command.Email.ToUpperInvariant(),
-            TenantId = command.TenantId,
-            OrgId = command.OrgId
+            TenantId = tenantId,
+            OrgId = orgId
         };
 
         var createResult = await _userManager.CreateAsync(user, command.Password);
         if (!createResult.Succeeded)
             throw new InvalidOperationException($"Failed to create user: {string.Join("; ", createResult.Errors.Select(e => e.Description))}");
 
-        var addRoleResult = await _userManager.AddToRoleAsync(user, targetRole.Name ?? string.Empty);
-        if (!addRoleResult.Succeeded)
+        foreach (var targetRole in targetRoles)
         {
-            await _userManager.DeleteAsync(user);
-            throw new InvalidOperationException($"Failed to assign role: {string.Join("; ", addRoleResult.Errors.Select(e => e.Description))}");
+            var addRoleResult = await _userManager.AddToRoleAsync(user, targetRole.Name ?? string.Empty);
+            if (!addRoleResult.Succeeded)
+            {
+                await _userManager.DeleteAsync(user);
+                throw new InvalidOperationException($"Failed to assign role: {string.Join("; ", addRoleResult.Errors.Select(e => e.Description))}");
+            }
+        }
+
+        var displayName = NormalizeOptional(command.DisplayName);
+        if (displayName != null)
+        {
+            var claimResult = await _userManager.AddClaimAsync(user, new Claim(IdentityClaimTypes.DisplayName, displayName));
+            if (!claimResult.Succeeded)
+            {
+                await _userManager.DeleteAsync(user);
+                throw new InvalidOperationException($"Failed to store display name: {string.Join("; ", claimResult.Errors.Select(e => e.Description))}");
+            }
         }
 
         return new CreateUserResponse
@@ -87,4 +110,47 @@ public sealed class CreateUserCommandHandler : IAsyncCommandHandler<CreateUserCo
             Username = user.UserName!
         };
     }
+
+    internal static List<Guid> ResolveRoleIds(CreateUserCommand command)
+    {
+        var roleIds = new List<Guid>();
+        if (command.RoleId != Guid.Empty)
+            roleIds.Add(command.RoleId);
+
+        if (command.RoleIds != null)
+        {
+            foreach (var roleId in command.RoleIds)
+            {
+                if (roleId != Guid.Empty && !roleIds.Contains(roleId))
+                    roleIds.Add(roleId);
+            }
+        }
+
+        if (roleIds.Count == 0)
+            throw new InvalidOperationException("At least one role is required");
+
+        return roleIds;
+    }
+
+    private async Task<List<Role>> LoadAssignableRolesAsync(Guid actorUserId, IReadOnlyList<Guid> roleIds, CancellationToken cancellationToken)
+    {
+        var roles = new List<Role>(roleIds.Count);
+        foreach (var roleId in roleIds)
+        {
+            var targetRole = await _roleManager.FindByIdAsync(roleId.ToString());
+            if (targetRole == null)
+                throw new InvalidOperationException($"Role {roleId} not found");
+
+            var canAssign = await _roleGovernanceValidator.CanAssignRoleAsync(actorUserId, roleId, cancellationToken);
+            if (!canAssign)
+                throw new UnauthorizedAccessException("You do not have permission to assign this role");
+
+            roles.Add(targetRole);
+        }
+
+        return roles;
+    }
+
+    private static string? NormalizeOptional(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
