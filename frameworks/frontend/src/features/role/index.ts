@@ -13,6 +13,7 @@ export {
   RoleForm,
   RolePageShell,
   RoleTable,
+  PolicyPicker,
 } from './components'
 export type {
   PermissionEditorProps,
@@ -21,6 +22,7 @@ export type {
   RoleFormProps,
   RolePageShellProps,
   RoleTableProps,
+  PolicyPickerProps,
 } from './components'
 
 // Types
@@ -31,6 +33,7 @@ export type {
   CreateRolePayload,
   UpdateRolePayload,
   UpdateRolePermissionsPayload,
+  UpdateRolePoliciesPayload,
   GetRoleListParams,
   RoleListResult,
 } from './types'
@@ -46,6 +49,7 @@ export {
   mockResetRoles,
   mockUpdateRole,
   mockUpdateRolePermissions,
+  mockUpdateRolePolicies,
 } from './services'
 
 // Services (axios API — gắn qua callback.onSubmit)
@@ -58,6 +62,7 @@ export {
   callUpdateRole,
   callDeleteRole,
   callUpdateRolePermissions,
+  callUpdateRolePolicies,
 } from './services'
 
 // Validation

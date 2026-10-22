@@ -75,6 +75,9 @@ public sealed class OrgFirstRequestScopeResolver(
             return _cached.Value;
         }
 
+        // Cache trước validate để UoW/OrgStore không gọi lại ResolveAsync đệ quy khi mở DB.
+        _cached = RequestScopeResolution.Allowed(orgId.Value, tenantId.Value);
+
         try
         {
             await orgTenantScopeValidator
@@ -87,7 +90,6 @@ public sealed class OrgFirstRequestScopeResolver(
             return _cached.Value;
         }
 
-        _cached = RequestScopeResolution.Allowed(orgId.Value, tenantId.Value);
         return _cached.Value;
     }
 

@@ -1,4 +1,4 @@
-import { accountHttp } from '@platform/core'
+import { accountHttp, platformHttp } from '@platform/core'
 import { getAccessToken } from './accessToken'
 
 let configured = false
@@ -8,11 +8,13 @@ export function setupSampleAccountAuth() {
   if (configured) return
   configured = true
 
-  accountHttp.interceptors.request.use((config) => {
-    const token = getAccessToken()
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  })
+  for (const instance of [platformHttp, accountHttp]) {
+    instance.interceptors.request.use((config) => {
+      const token = getAccessToken()
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+      return config
+    })
+  }
 }

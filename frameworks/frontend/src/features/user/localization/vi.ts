@@ -1,0 +1,56 @@
+export const viMessages = {
+  form: {
+    createTitle: 'Tạo người dùng',
+    editTitle: 'Cập nhật người dùng',
+    detailTitle: 'Chi tiết người dùng',
+    saveSuccess: 'Lưu người dùng thành công',
+    deleteSuccess: 'Xoá người dùng thành công',
+    lockSuccess: 'Đã khoá tài khoản',
+    unlockSuccess: 'Đã mở khoá tài khoản',
+    saveError: 'Không lưu được người dùng. Vui lòng thử lại.',
+    notFound: 'Không tìm thấy người dùng',
+    submitting: 'Đang lưu…',
+    username: 'Tên đăng nhập',
+    email: 'Email',
+    password: 'Mật khẩu',
+    role: 'Vai trò',
+    tenantId: 'Tenant',
+    orgId: 'Tổ chức',
+    locked: 'Khoá tài khoản',
+    save: 'Lưu',
+    cancel: 'Hủy',
+    lock: 'Khoá',
+    unlock: 'Mở khoá',
+  },
+  list: {
+    description: 'Tạo, sửa, khoá và gán vai trò cho người dùng.',
+    searchPlaceholder: 'Tìm theo tên hoặc email…',
+    create: 'Tạo người dùng',
+    empty: 'Không có người dùng',
+    loading: 'Đang tải…',
+  },
+  status: {
+    locked: 'Đã khoá',
+    active: 'Đang hoạt động',
+    column: 'Trạng thái',
+  },
+  routes: {
+    list: 'Người dùng',
+  },
+  menu: {
+    users: 'Người dùng',
+  },
+  actions: {
+    view: 'Xem chi tiết',
+    edit: 'Chỉnh sửa',
+    delete: 'Xoá',
+    menu: 'Thao tác',
+  },
+  confirm: {
+    deleteTitle: 'Xoá người dùng?',
+    deleteDescription: (username: string) =>
+      `Tài khoản ${username} sẽ bị xoá.`,
+    confirm: 'Xoá',
+    cancel: 'Hủy',
+  },
+}

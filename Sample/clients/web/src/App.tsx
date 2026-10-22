@@ -12,7 +12,7 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
-import { Building2, FileSpreadsheet, GraduationCap, Layers } from "lucide-react";
+import { Building2, FileSpreadsheet, GraduationCap, Layers, ShieldCheck } from "lucide-react";
 import {
   ACCOUNT_ROUTES,
   AdminLayout,
@@ -36,6 +36,12 @@ import {
   RoleListPage,
   ROLE_ROUTES,
   configureRoleNavigate,
+  UserListPage,
+  UserFormPage,
+  UserDetailPage,
+  configureUserNavigate,
+  PermissionCatalogPage,
+  PERMISSION_ROUTES,
   configureFileManagerNavigate,
   ImportPage,
   IMPORT_ROUTES,
@@ -53,7 +59,6 @@ import {
   CraftDocBuilderPage,
   CRAFT_DOC_ROUTES,
   configureCraftDocNavigate,
-  callLogin,
   notify,
   DEFAULT_ADMIN_MAIN_NAV,
   type AdminNavItem,
@@ -67,10 +72,10 @@ import {
   configureOrgNavigate,
 } from "@platform/orgs";
 import { FilesPage, FILE_MANAGER_ROUTES } from "@platform/files";
-import { extractLoginResult } from "./auth/apiHelpers";
 import { RequireAuth } from "./auth/RequireAuth";
-import { isMockAccountCredentials, mockLogin } from "./constants";
+import { loginWithJwt } from "./auth/loginWithJwt";
 import { OnboardingDemoPage } from "./pages/OnboardingDemoPage";
+import { AccessDemoPage } from "./pages/AccessDemoPage";
 
 const demoApiKey =
   import.meta.env.VITE_NOTIFICATION_API_KEY ?? "dev-notifications-demo-key";
@@ -162,16 +167,7 @@ function GuestLoginPage() {
     <LoginPage
       callback={{
         onSubmit: async (payload) => {
-          // Tài khoản mock → không gọi API
-          if (isMockAccountCredentials(payload)) {
-            const result = await mockLogin(payload);
-            setAccessToken(result.token);
-            return result;
-          }
-
-          // Tài khoản thật → gọi BE
-          const response = await callLogin(payload);
-          const result = extractLoginResult(response);
+          const result = await loginWithJwt(payload);
           const token = result.tokens?.accessToken;
           if (!token) {
             throw new Error("Server không trả access token.");
@@ -216,6 +212,14 @@ function RoleNavigateBridge() {
   const navigate = useNavigate();
   useEffect(() => {
     configureRoleNavigate((to) => navigate(to));
+  }, [navigate]);
+  return null;
+}
+
+function UserNavigateBridge() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    configureUserNavigate((to) => navigate(to));
   }, [navigate]);
   return null;
 }
@@ -282,6 +286,16 @@ function ImportExportNavigateBridge() {
     configureImportExportNavigate((to) => navigate(to));
   }, [navigate]);
   return null;
+}
+
+function UserDetailRoute() {
+  const { id = "" } = useParams();
+  return <UserDetailPage userId={id} />;
+}
+
+function UserEditRoute() {
+  const { id = "" } = useParams();
+  return <UserFormPage mode="edit" userId={id} />;
 }
 
 function TenantDetailRoute() {
@@ -363,6 +377,12 @@ export default function App() {
           icon: Layers,
           path: '/onboarding-demo',
         },
+        {
+          id: 'access-demo',
+          label: 'RBAC / ABAC',
+          icon: ShieldCheck,
+          path: '/access-demo',
+        },
       ] as AdminNavItem[],
     [],
   )
@@ -372,6 +392,7 @@ export default function App() {
       <TenantNavigateBridge />
       <CraftPdfNavigateBridge />
       <RoleNavigateBridge />
+      <UserNavigateBridge />
       <OrgNavigateBridge />
       <FileManagerNavigateBridge />
       <ImportNavigateBridge />
@@ -415,13 +436,12 @@ export default function App() {
         >
           <Route index element={<DashboardPage title="Tổng quan" />} />
           <Route path={DASHBOARD_ROUTES.home} element={<DashboardPage />} />
-          <Route path="users" element={<PlaceholderPage title="Người dùng" />} />
+          <Route path="users" element={<UserListPage locale="vi" />} />
+          <Route path="users/create" element={<UserFormPage mode="create" />} />
+          <Route path="users/:id/edit" element={<UserEditRoute />} />
+          <Route path="users/:id" element={<UserDetailRoute />} />
           <Route path="onboarding-demo" element={<OnboardingDemoPage />} />
           <Route path="notifications-demo" element={<NotificationDemoPage />} />
-          <Route
-            path="users"
-            element={<PlaceholderPage title="Người dùng" />}
-          />
           <Route
             path="templates"
             element={<PlaceholderPage title="Biểu mẫu" />}
@@ -457,6 +477,11 @@ export default function App() {
             path={ROLE_ROUTES.list}
             element={<RoleListPage locale="vi" />}
           />
+          <Route
+            path={PERMISSION_ROUTES.list}
+            element={<PermissionCatalogPage locale="vi" />}
+          />
+          <Route path="access-demo" element={<AccessDemoPage />} />
 
           <Route path={ORG_ROUTES.list} element={<OrgListPage locale="vi" />} />
 

@@ -27,6 +27,8 @@ public static class HostApplicationBuilderExtension
     public static IHostApplicationBuilder AddOrgFirstScopeResolution(this IHostApplicationBuilder builder)
     {
         builder.Services.TryAddScoped<IRequestScopeResolver, OrgFirstRequestScopeResolver>();
+        builder.Services.TryAddScoped(sp =>
+            new Lazy<IRequestScopeResolver>(() => sp.GetRequiredService<IRequestScopeResolver>()));
         return builder;
     }
 

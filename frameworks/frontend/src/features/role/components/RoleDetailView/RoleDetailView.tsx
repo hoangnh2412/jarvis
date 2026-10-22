@@ -24,7 +24,13 @@ export function RoleDetailView({ role }: RoleDetailViewProps) {
         value={role.isDefault ? 'Có' : 'Không'}
       />
       <Row label="Public" value={role.isPublic ? 'Có' : 'Không'} />
+      <Row label="Cấp" value={role.roleLevel} />
+      <Row label="Hệ thống" value={role.isSystemRole ? 'Có' : 'Không'} />
       <Row label="Số quyền" value={role.permissions.length} />
+      <Row
+        label="Policy"
+        value={role.policies.length ? role.policies.join(', ') : '—'}
+      />
       <Row
         label="Tạo lúc"
         value={new Date(role.createdAt).toLocaleString('vi-VN')}

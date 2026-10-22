@@ -12,7 +12,7 @@ public class TenantUnitOfWork(
     ICurrentTenantAccessor currentTenantAccessor,
     IOrgIdResolverFactory orgIdResolverFactory,
     ICurrentOrgAccessor currentOrgAccessor,
-    IRequestScopeResolver requestScopeResolver)
+    Lazy<IRequestScopeResolver>? requestScopeResolver = null)
     : BaseUnitOfWork<TenantDbContext>(
         services,
         factory,

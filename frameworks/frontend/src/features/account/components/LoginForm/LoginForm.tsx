@@ -26,13 +26,13 @@ export function LoginForm({ register, control, errors }: LoginFormProps) {
     <>
       <div>
         <Label htmlFor="login-email" className="mb-1.5 block text-sm font-medium text-slate-700">
-          Email <span className="text-red-500">*</span>
+          Tên đăng nhập <span className="text-red-500">*</span>
         </Label>
         <InputText
           id="login-email"
-          type="email"
-          autoComplete="email"
-          placeholder="you@example.com"
+          type="text"
+          autoComplete="username"
+          placeholder="sampleuser"
           unstyled
           className={errors.email ? inputInvalidClass : inputClass}
           {...register('email')}

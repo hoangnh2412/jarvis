@@ -20,6 +20,7 @@ export type RoleTableProps = {
   onView?: (role: Role) => void
   onEdit?: (role: Role) => void
   onPermissions?: (role: Role) => void
+  onPolicies?: (role: Role) => void
   onDelete?: (role: Role) => void
   className?: string
 }
@@ -180,6 +181,7 @@ export const RoleTable = memo(function RoleTable({
   onView,
   onEdit,
   onPermissions,
+  onPolicies,
   onDelete,
   className = '',
 }: RoleTableProps) {
@@ -224,6 +226,8 @@ export const RoleTable = memo(function RoleTable({
 
               <HeaderWithFilter label="Quyền" sortField="permissionCount" />
 
+              <HeaderWithFilter label="Cấp" sortField="roleLevel" align="right" />
+
               <HeaderWithFilter label="Thao tác" align="right" />
             </DataTable.THeadRow>
           </DataTable.THead>
@@ -237,6 +241,11 @@ export const RoleTable = memo(function RoleTable({
                     <code className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[13px] text-slate-800">
                       {role.name}
                     </code>
+                    {role.isSystemRole ? (
+                      <Tag severity="info" className="ml-2 font-medium">
+                        Hệ thống
+                      </Tag>
+                    ) : null}
                   </DataTable.Cell>
                   <DataTable.Cell className="px-4 py-3 font-medium text-ink">
                     {role.displayName}
@@ -253,7 +262,10 @@ export const RoleTable = memo(function RoleTable({
                     )}
                   </DataTable.Cell>
                   <DataTable.Cell className="px-4 py-3 text-mute">
-                    {role.permissionCount} quyền
+                    {role.permissionCount} quyền · {role.policies.length} policy
+                  </DataTable.Cell>
+                  <DataTable.Cell className="px-4 py-3 text-right tabular-nums text-ink">
+                    {role.roleLevel}
                   </DataTable.Cell>
                   <DataTable.Cell className="px-4 py-3 text-right">
                     <RoleRowActions
@@ -261,6 +273,7 @@ export const RoleTable = memo(function RoleTable({
                       onView={onView}
                       onEdit={onEdit}
                       onPermissions={onPermissions}
+                      onPolicies={onPolicies}
                       onDelete={onDelete}
                     />
                   </DataTable.Cell>
@@ -271,7 +284,7 @@ export const RoleTable = memo(function RoleTable({
 
           <DataTable.EmptyTBody>
             <tr>
-              <td colSpan={5} className="px-2 py-12 text-center">
+              <td colSpan={6} className="px-2 py-12 text-center">
                 {!loading ? (
                   <p className="m-0 text-sm text-mute">{emptyMessage}</p>
                 ) : null}

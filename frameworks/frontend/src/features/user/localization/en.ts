@@ -1,0 +1,56 @@
+export const enMessages = {
+  form: {
+    createTitle: 'Create user',
+    editTitle: 'Update user',
+    detailTitle: 'User details',
+    saveSuccess: 'User saved',
+    deleteSuccess: 'User deleted',
+    lockSuccess: 'Account locked',
+    unlockSuccess: 'Account unlocked',
+    saveError: 'Could not save the user. Please try again.',
+    notFound: 'User not found',
+    submitting: 'Saving…',
+    username: 'Username',
+    email: 'Email',
+    password: 'Password',
+    role: 'Role',
+    tenantId: 'Tenant',
+    orgId: 'Organization',
+    locked: 'Lock account',
+    save: 'Save',
+    cancel: 'Cancel',
+    lock: 'Lock',
+    unlock: 'Unlock',
+  },
+  list: {
+    description: 'Create, edit, lock, and assign roles to users.',
+    searchPlaceholder: 'Search by username or email…',
+    create: 'Create user',
+    empty: 'No users',
+    loading: 'Loading…',
+  },
+  status: {
+    locked: 'Locked',
+    active: 'Active',
+    column: 'Status',
+  },
+  routes: {
+    list: 'Users',
+  },
+  menu: {
+    users: 'Users',
+  },
+  actions: {
+    view: 'View',
+    edit: 'Edit',
+    delete: 'Delete',
+    menu: 'Actions',
+  },
+  confirm: {
+    deleteTitle: 'Delete user?',
+    deleteDescription: (username: string) =>
+      `Account ${username} will be deleted.`,
+    confirm: 'Delete',
+    cancel: 'Cancel',
+  },
+}

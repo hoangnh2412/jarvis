@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Eye, KeyRound, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { Eye, KeyRound, MoreHorizontal, Pencil, Shield, Trash2 } from 'lucide-react'
 import { Popover } from 'primereact/popover'
 import type { Role } from '../../types'
 import { btnTextClass } from '../fieldStyles'
@@ -9,6 +9,7 @@ export type RoleRowActionsProps = {
   onView?: (role: Role) => void
   onEdit?: (role: Role) => void
   onPermissions?: (role: Role) => void
+  onPolicies?: (role: Role) => void
   onDelete?: (role: Role) => void
 }
 
@@ -32,6 +33,7 @@ export function RoleRowActions({
   onView,
   onEdit,
   onPermissions,
+  onPolicies,
   onDelete,
 }: RoleRowActionsProps) {
   const [open, setOpen] = useState(false)
@@ -47,7 +49,7 @@ export function RoleRowActions({
         onClick: () => onView(role),
       })
     }
-    if (onEdit) {
+    if (onEdit && !role.isSystemRole) {
       list.push({
         id: 'edit',
         label: 'Chỉnh sửa',
@@ -55,7 +57,7 @@ export function RoleRowActions({
         onClick: () => onEdit(role),
       })
     }
-    if (onPermissions) {
+    if (onPermissions && !role.isSystemRole) {
       list.push({
         id: 'permissions',
         label: 'Phân quyền',
@@ -63,7 +65,15 @@ export function RoleRowActions({
         onClick: () => onPermissions(role),
       })
     }
-    if (onDelete) {
+    if (onPolicies && !role.isSystemRole) {
+      list.push({
+        id: 'policies',
+        label: 'Policy',
+        icon: Shield,
+        onClick: () => onPolicies(role),
+      })
+    }
+    if (onDelete && !role.isSystemRole) {
       list.push({
         id: 'delete',
         label: 'Xoá',
@@ -75,7 +85,7 @@ export function RoleRowActions({
     }
 
     return list
-  }, [role, onView, onEdit, onPermissions, onDelete])
+  }, [role, onView, onEdit, onPermissions, onPolicies, onDelete])
 
   if (actions.length === 0) return null
 

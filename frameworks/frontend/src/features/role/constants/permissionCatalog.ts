@@ -1,3 +1,4 @@
+import { AUTHORIZATION_PERMISSIONS } from '../../authorization/catalog'
 import type { PermissionGroup } from '../types'
 
 const crud = (prefix: string, _label: string) => [
@@ -10,6 +11,14 @@ const crud = (prefix: string, _label: string) => [
 
 /** Catalog quyền — cấu trúc nhóm + cây cha-con (demo, khớp UX ABP). */
 export const PERMISSION_CATALOG: PermissionGroup[] = [
+  {
+    id: 'authorization',
+    label: 'Authorization',
+    permissions: AUTHORIZATION_PERMISSIONS.map((permission) => ({
+      id: permission.code,
+      label: permission.label,
+    })),
+  },
   {
     id: 'identity',
     label: 'Identity management',

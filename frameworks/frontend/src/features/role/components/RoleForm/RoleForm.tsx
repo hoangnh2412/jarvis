@@ -63,6 +63,17 @@ export function RoleForm({
         />
       </Field>
 
+      <Field label="Cấp vai trò *" error={errors.roleLevel?.message}>
+        <InputText
+          {...register('roleLevel', { valueAsNumber: true })}
+          readOnly={readOnly}
+          unstyled
+          inputMode="numeric"
+          className={errors.roleLevel ? fieldInputInvalidClass : fieldInputClass}
+          placeholder="100"
+        />
+      </Field>
+
       <Field label="Mô tả" error={errors.description?.message}>
         <Textarea
           {...register('description')}

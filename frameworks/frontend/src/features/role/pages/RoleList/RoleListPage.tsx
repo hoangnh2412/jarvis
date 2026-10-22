@@ -18,6 +18,7 @@ import { getErrorMessage } from '../../../../lib/getErrorMessage'
 import { handleAction, type ActionProps } from '../../../../lib/handleAction'
 import {
   PermissionEditor,
+  PolicyPicker,
   RoleDetailView,
   RoleForm,
   RolePageShell,
@@ -33,6 +34,7 @@ import {
   mockGetRoleList,
   mockUpdateRole,
   mockUpdateRolePermissions,
+  mockUpdateRolePolicies,
 } from '../../services'
 import type { PermissionGroup, Role } from '../../types'
 import { resolveRoleContent, type RoleSlotContent } from '../../utils'
@@ -51,6 +53,7 @@ export type RoleListPageContentContext = {
   openEdit: (role: Role) => void
   openView: (role: Role) => void
   openPermissions: (role: Role) => void
+  openPolicies: (role: Role) => void
   requestDelete: (role: Role) => void
   pendingDelete: Role | null
   deleting: boolean
@@ -91,6 +94,11 @@ export type RoleListPageProps = {
       { id: string; permissions: string[] },
       Role
     >
+    updatePolicies?: ActionProps<
+      { role: Role; policies: string[] },
+      { id: string; policies: string[] },
+      Role
+    >
   }
   content?: RoleSlotContent<RoleListPageContentContext>
   withShell?: boolean
@@ -124,11 +132,14 @@ export function RoleListPage({
   const [editingRole, setEditingRole] = useState<Role | null>(null)
   const [permissionRole, setPermissionRole] = useState<Role | null>(null)
   const [permissionDraft, setPermissionDraft] = useState<string[]>([])
+  const [policyRole, setPolicyRole] = useState<Role | null>(null)
+  const [policyDraft, setPolicyDraft] = useState<string[]>([])
   const [catalog, setCatalog] = useState<PermissionGroup[]>([])
   const [pendingDelete, setPendingDelete] = useState<Role | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [savingForm, setSavingForm] = useState(false)
   const [savingPermissions, setSavingPermissions] = useState(false)
+  const [savingPolicies, setSavingPolicies] = useState(false)
 
   const {
     register,
@@ -205,6 +216,7 @@ export function RoleListPage({
       description: role.description ?? '',
       isDefault: role.isDefault,
       isPublic: role.isPublic,
+      roleLevel: role.roleLevel,
     })
   }
 
@@ -216,6 +228,11 @@ export function RoleListPage({
   const openPermissions = (role: Role) => {
     setPermissionRole(role)
     setPermissionDraft([...role.permissions])
+  }
+
+  const openPolicies = (role: Role) => {
+    setPolicyRole(role)
+    setPolicyDraft([...role.policies])
   }
 
   const onSaveForm: FormEventHandler<HTMLFormElement> = handleSubmit(
@@ -288,6 +305,32 @@ export function RoleListPage({
     }
   }
 
+  const onSavePolicies = async () => {
+    if (!policyRole) return
+    setSavingPolicies(true)
+    try {
+      const outcome = await handleAction({
+        ctx: { role: policyRole, policies: policyDraft },
+        callback: callback?.updatePolicies,
+        defaultSubmit: ({ id, policies }) => mockUpdateRolePolicies(id, policies),
+        getPayload: ({ role, policies }) => ({
+          id: role.id,
+          policies,
+        }),
+        onSuccess: async () => {
+          setPolicyRole(null)
+          await reload()
+        },
+      })
+      if (outcome.status === 'cancelled') return
+      notify.success(messages.form.policiesSuccess)
+    } catch (error) {
+      notify.error(getErrorMessage(error, messages.form.saveError))
+    } finally {
+      setSavingPolicies(false)
+    }
+  }
+
   const confirmDelete = async () => {
     if (!pendingDelete) return
     setDeleting(true)
@@ -326,6 +369,7 @@ export function RoleListPage({
       onView={openView}
       onEdit={openEdit}
       onPermissions={openPermissions}
+      onPolicies={openPolicies}
       onDelete={(role) => setPendingDelete(role)}
     />
   )
@@ -406,6 +450,41 @@ export function RoleListPage({
         />
       </FeatureDialog>
 
+      <FeatureDialog
+        open={policyRole != null}
+        onClose={() => setPolicyRole(null)}
+        title={
+          policyRole
+            ? `${messages.form.policiesTitle} — ${policyRole.displayName}`
+            : messages.form.policiesTitle
+        }
+        size="md"
+        footer={
+          <>
+            <Button
+              type="button"
+              unstyled
+              className={btnOutlinedClass}
+              disabled={savingPolicies}
+              onClick={() => setPolicyRole(null)}
+            >
+              Hủy
+            </Button>
+            <Button
+              type="button"
+              unstyled
+              className={btnPrimaryClass}
+              disabled={savingPolicies}
+              onClick={() => void onSavePolicies()}
+            >
+              {savingPolicies ? messages.form.submitting : 'Save'}
+            </Button>
+          </>
+        }
+      >
+        <PolicyPicker value={policyDraft} onChange={setPolicyDraft} />
+      </FeatureDialog>
+
       <ConfirmDialog
         open={Boolean(pendingDelete)}
         onClose={() => setPendingDelete(null)}
@@ -440,6 +519,7 @@ export function RoleListPage({
     openEdit,
     openView,
     openPermissions,
+    openPolicies,
     requestDelete: (role) => setPendingDelete(role),
     pendingDelete,
     deleting,

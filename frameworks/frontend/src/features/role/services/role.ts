@@ -3,6 +3,7 @@ import type {
   GetRoleListParams,
   UpdateRolePayload,
   UpdateRolePermissionsPayload,
+  UpdateRolePoliciesPayload,
 } from '../types'
 import instance from './req'
 
@@ -33,4 +34,11 @@ export const callUpdateRolePermissions = async (
   data: UpdateRolePermissionsPayload,
 ) => {
   return await instance.put(`v1/roles/${id}/permissions`, data)
+}
+
+export const callUpdateRolePolicies = async (
+  id: string,
+  data: UpdateRolePoliciesPayload,
+) => {
+  return await instance.put(`v1/roles/${id}/policies`, data)
 }

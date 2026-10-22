@@ -14,14 +14,14 @@ public sealed class OrgStore<TOrg, TUnitOfWork>(TUnitOfWork unitOfWork) : IOrgSt
 
     public async Task<TOrg?> FindTrackedAsync(Guid tenantId, Guid id, CancellationToken cancellationToken)
     {
-        var repo = await RepositoryAsync(cancellationToken).ConfigureAwait(false);
+        var repo = await RepositoryAsync(tenantId, cancellationToken).ConfigureAwait(false);
         return await repo.GetByIdAsync(x => x.Id == id && x.TenantId == tenantId, cancellationToken)
             .ConfigureAwait(false);
     }
 
     public async Task<TOrg?> FindByCodeAsync(Guid tenantId, string code, CancellationToken cancellationToken)
     {
-        var repo = await RepositoryAsync(cancellationToken).ConfigureAwait(false);
+        var repo = await RepositoryAsync(tenantId, cancellationToken).ConfigureAwait(false);
         return await repo.GetByIdAsync(
             x => x.TenantId == tenantId && x.Code == code,
             cancellationToken).ConfigureAwait(false);
@@ -33,7 +33,7 @@ public sealed class OrgStore<TOrg, TUnitOfWork>(TUnitOfWork unitOfWork) : IOrgSt
         Guid? exceptId,
         CancellationToken cancellationToken)
     {
-        var repo = await RepositoryAsync(cancellationToken).ConfigureAwait(false);
+        var repo = await RepositoryAsync(tenantId, cancellationToken).ConfigureAwait(false);
         return await repo.GetQuery().AnyAsync(
             x => x.TenantId == tenantId
                 && x.Code == code
@@ -47,7 +47,7 @@ public sealed class OrgStore<TOrg, TUnitOfWork>(TUnitOfWork unitOfWork) : IOrgSt
         string? search,
         CancellationToken cancellationToken)
     {
-        var repo = await RepositoryAsync(cancellationToken).ConfigureAwait(false);
+        var repo = await RepositoryAsync(tenantId, cancellationToken).ConfigureAwait(false);
         var query = repo.GetQuery().Where(x => x.TenantId == tenantId);
 
         if (isActive is bool active)
@@ -64,13 +64,16 @@ public sealed class OrgStore<TOrg, TUnitOfWork>(TUnitOfWork unitOfWork) : IOrgSt
 
     public async Task AddAsync(TOrg entity, CancellationToken cancellationToken)
     {
-        var repo = await RepositoryAsync(cancellationToken).ConfigureAwait(false);
+        var repo = await RepositoryAsync(entity.TenantId, cancellationToken).ConfigureAwait(false);
         await repo.InsertAsync(entity, cancellationToken).ConfigureAwait(false);
     }
 
     public Task SaveChangesAsync(CancellationToken cancellationToken) =>
         _unitOfWork.SaveChangesAsync(cancellationToken);
 
-    private Task<IRepository<TOrg>> RepositoryAsync(CancellationToken cancellationToken) =>
-        _unitOfWork.GetRepositoryAsync<IRepository<TOrg>>(cancellationToken);
+    private async Task<IRepository<TOrg>> RepositoryAsync(Guid tenantId, CancellationToken cancellationToken)
+    {
+        await _unitOfWork.SwitchDbContextAsync(tenantId, cancellationToken).ConfigureAwait(false);
+        return await _unitOfWork.GetRepositoryAsync<IRepository<TOrg>>(cancellationToken).ConfigureAwait(false);
+    }
 }

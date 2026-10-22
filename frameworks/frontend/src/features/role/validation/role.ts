@@ -20,6 +20,11 @@ export const roleFormSchema = z.object({
     .nullable(),
   isDefault: z.boolean(),
   isPublic: z.boolean(),
+  roleLevel: z
+    .number()
+    .int()
+    .min(1, 'Cấp vai trò tối thiểu là 1')
+    .max(799, 'Vai trò nghiệp vụ phải thấp hơn OrgAdmin (800)'),
 })
 
 export type RoleFormData = z.infer<typeof roleFormSchema>
@@ -30,4 +35,5 @@ export const roleFormDefaultValues: RoleFormData = {
   description: '',
   isDefault: false,
   isPublic: true,
+  roleLevel: 100,
 }

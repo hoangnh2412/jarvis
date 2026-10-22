@@ -5,9 +5,12 @@ export const loginSchema = z.object({
   email: z
     .string()
     .trim()
-    .min(1, 'Vui lòng nhập email')
-    .max(255, 'Email quá dài')
-    .refine((val) => REGEX.EMAIL.test(val), 'Email không hợp lệ'),
+    .min(1, 'Vui lòng nhập tên đăng nhập')
+    .max(255, 'Tên đăng nhập quá dài')
+    .refine(
+      (val) => !val.includes('@') || REGEX.EMAIL.test(val),
+      'Email không hợp lệ',
+    ),
   password: z
     .string()
     .min(1, 'Mật khẩu là bắt buộc')

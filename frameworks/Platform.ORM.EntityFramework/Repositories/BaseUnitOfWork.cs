@@ -15,7 +15,7 @@ public abstract class BaseUnitOfWork<T>(
     ICurrentTenantAccessor currentTenantAccessor,
     IOrgIdResolverFactory? orgIdResolverFactory = null,
     ICurrentOrgAccessor? currentOrgAccessor = null,
-    IRequestScopeResolver? requestScopeResolver = null)
+    Lazy<IRequestScopeResolver>? requestScopeResolver = null)
     : IUnitOfWork<T> where T : DbContext, IStorageContext
 {
     private readonly IServiceProvider _services = services;
@@ -24,7 +24,7 @@ public abstract class BaseUnitOfWork<T>(
     private readonly ICurrentTenantAccessor _currentTenantAccessor = currentTenantAccessor;
     private readonly IOrgIdResolverFactory? _orgIdResolverFactory = orgIdResolverFactory;
     private readonly ICurrentOrgAccessor? _currentOrgAccessor = currentOrgAccessor;
-    private readonly IRequestScopeResolver? _requestScopeResolver = requestScopeResolver;
+    private readonly Lazy<IRequestScopeResolver>? _requestScopeResolver = requestScopeResolver;
     protected DbContext? StorageContext { get; private set; }
     private Guid? _switchedTenantId;
     private Guid? _contextTenantId;
@@ -168,24 +168,26 @@ public abstract class BaseUnitOfWork<T>(
 
     private async Task<Guid?> ResolveTenantIdAsync(CancellationToken cancellationToken)
     {
+        if (_switchedTenantId.HasValue)
+            return _switchedTenantId;
+
         if (_requestScopeResolver is not null)
         {
-            var scope = await _requestScopeResolver.ResolveAsync(cancellationToken).ConfigureAwait(false);
+            var scope = await _requestScopeResolver.Value.ResolveAsync(cancellationToken).ConfigureAwait(false);
             if (scope.IsForbidden || !scope.IsAllowed)
-                return _switchedTenantId;
+                return null;
 
-            return _switchedTenantId ?? scope.TenantId;
+            return scope.TenantId;
         }
 
-        return _switchedTenantId
-            ?? await _tenantIdResolverFactory.GetTenantIdAsync(cancellationToken).ConfigureAwait(false);
+        return await _tenantIdResolverFactory.GetTenantIdAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<Guid?> ResolveOrgIdAsync(CancellationToken cancellationToken)
     {
         if (_requestScopeResolver is not null)
         {
-            var scope = await _requestScopeResolver.ResolveAsync(cancellationToken).ConfigureAwait(false);
+            var scope = await _requestScopeResolver.Value.ResolveAsync(cancellationToken).ConfigureAwait(false);
             if (scope.IsForbidden || !scope.IsAllowed)
                 return null;
 

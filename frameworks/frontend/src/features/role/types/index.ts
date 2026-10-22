@@ -13,7 +13,12 @@ export type Role = AuditedFields & {
   description?: string | null
   isDefault: boolean
   isPublic: boolean
+  /** Cấp governance. Actor chỉ tạo role có level thấp hơn mình. */
+  roleLevel: number
+  /** Role hệ thống không sửa permission / policy và không xoá. */
+  isSystemRole: boolean
   permissions: string[]
+  policies: string[]
 }
 
 export type PermissionNode = {
@@ -34,12 +39,17 @@ export type CreateRolePayload = {
   description?: string | null
   isDefault?: boolean
   isPublic?: boolean
+  roleLevel: number
 }
 
 export type UpdateRolePayload = CreateRolePayload
 
 export type UpdateRolePermissionsPayload = {
   permissions: string[]
+}
+
+export type UpdateRolePoliciesPayload = {
+  policies: string[]
 }
 
 export type GetRoleListParams = {
