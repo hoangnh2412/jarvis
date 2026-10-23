@@ -36,7 +36,8 @@ public sealed class GetRoleQueryHandler : IAsyncQueryHandler<GetRoleQuery, RoleD
             RoleLevel = role.RoleLevel,
             IsSystemRole = role.IsSystemRole,
             IsActive = IdentityAdminReader.IsActive(claims),
-            Permissions = IdentityAdminReader.Permissions(claims)
+            Permissions = IdentityAdminReader.Permissions(claims),
+            Policies = IdentityAdminReader.Policies(claims)
         };
     }
 }

@@ -21,4 +21,12 @@ internal static class IdentityAdminReader
             .Distinct(StringComparer.Ordinal)
             .OrderBy(value => value, StringComparer.Ordinal)
             .ToList();
+
+    public static IReadOnlyList<string> Policies(IEnumerable<Claim> claims) =>
+        claims
+            .Where(claim => claim.Type == "Policy")
+            .Select(claim => claim.Value)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(value => value, StringComparer.Ordinal)
+            .ToList();
 }

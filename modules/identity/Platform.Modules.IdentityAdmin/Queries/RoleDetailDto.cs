@@ -9,4 +9,5 @@ public sealed record RoleDetailDto
     public required bool IsSystemRole { get; init; }
     public required bool IsActive { get; init; }
     public required IReadOnlyCollection<string> Permissions { get; init; }
+    public required IReadOnlyCollection<string> Policies { get; init; }
 }
