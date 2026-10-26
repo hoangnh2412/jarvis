@@ -53,6 +53,11 @@
     <ProjectReference Include="..\frameworks\Platform.MultiOrg\Platform.MultiOrg.csproj" />
     <ProjectReference Include="..\modules\orgs\Platform.Orgs\Platform.Orgs.csproj" />
     <ProjectReference Include="..\modules\orgs\Platform.Orgs.EntityFramework\Platform.Orgs.EntityFramework.csproj" />
+    <ProjectReference Include="..\modules\tenants\Platform.Tenants\Platform.Tenants.csproj" />
+    <ProjectReference Include="..\modules\tenants\Platform.Tenants.EntityFramework\Platform.Tenants.EntityFramework.csproj" />
+    <ProjectReference Include="..\modules\tenants\Platform.Tenants.Api\Platform.Tenants.Api.csproj" />
+    <ProjectReference Include="..\modules\orgstructure\Platform.OrgStructure\Platform.OrgStructure.csproj" />
+    <ProjectReference Include="..\modules\orgstructure\Platform.OrgStructure.EntityFramework\Platform.OrgStructure.EntityFramework.csproj" />
     <ProjectReference Include="..\modules\files\Platform.Modules.Files\Platform.Modules.Files.csproj" />
     <ProjectReference Include="..\modules\files\Platform.Modules.Files.API\Platform.Modules.Files.API.csproj" />
     <ProjectReference Include="..\Sample\Sample.csproj" />

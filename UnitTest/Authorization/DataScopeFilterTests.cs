@@ -59,7 +59,7 @@ public sealed class DataScopeFilterTests
 
         var registry = TestOperands.Registry();
         var resolver = new OperandResolver(ctx, registry);
-        var evaluator = new PolicyEvaluator(resolver);
+        var evaluator = new PolicyEvaluator(resolver, registry);
         var permissions = new PermissionProvider(ctx);
         var policies = new PolicyProvider(ctx);
 

@@ -68,6 +68,12 @@ public sealed class OrgStore<TOrg, TUnitOfWork>(TUnitOfWork unitOfWork) : IOrgSt
         await repo.InsertAsync(entity, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task RemoveAsync(TOrg entity, CancellationToken cancellationToken)
+    {
+        var repo = await RepositoryAsync(entity.TenantId, cancellationToken).ConfigureAwait(false);
+        await repo.DeleteAsync(entity, cancellationToken).ConfigureAwait(false);
+    }
+
     public Task SaveChangesAsync(CancellationToken cancellationToken) =>
         _unitOfWork.SaveChangesAsync(cancellationToken);
 

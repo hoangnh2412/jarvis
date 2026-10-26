@@ -109,6 +109,67 @@ public class OrgManagerTests
         Assert.Equal(OrgErrorCode.CodeAlreadyExists, error.Code);
     }
 
+    [Fact]
+    public async Task Update_PublishesDiff_AfterSuccessHook()
+    {
+        var hooks = new RecordingHooks();
+        var publisher = new RecordingPublisher(hooks);
+        var manager = new OrgManager<HostOrg, TestTenantInfo>(
+            new MemoryOrgStore(),
+            new FakeCurrentTenant(TenantX),
+            hooks,
+            publisher,
+            new SelfOrgTenantVisibility());
+        var created = await manager.CreateAsync(new HostCreateOrgInput { Code = "acme", Name = "Acme" });
+
+        await manager.UpdateAsync(created.Id, new UpdateOrgInput { Code = "acme", Name = "Acme 2" });
+
+        var updated = Assert.IsType<OrgUpdatedEvent>(Assert.Single(publisher.Events.Where(e => e is OrgUpdatedEvent)));
+        Assert.True(hooks.SuccessUpdateCount >= 1);
+        Assert.Contains(updated.Changes, change => change.Name == "Name" && change.After == "Acme 2");
+        Assert.DoesNotContain(updated.Changes, change => change.Name == "Code");
+    }
+
+    [Fact]
+    public async Task SetActive_PublishesIsActiveDiff()
+    {
+        var hooks = new RecordingHooks();
+        var publisher = new RecordingPublisher(hooks);
+        var manager = new OrgManager<HostOrg, TestTenantInfo>(
+            new MemoryOrgStore(),
+            new FakeCurrentTenant(TenantX),
+            hooks,
+            publisher,
+            new SelfOrgTenantVisibility());
+        var created = await manager.CreateAsync(new HostCreateOrgInput { Code = "acme", Name = "Acme" });
+
+        await manager.SetActiveAsync(created.Id, false);
+
+        var updated = publisher.Events.OfType<OrgUpdatedEvent>().Single();
+        Assert.Contains(updated.Changes, change => change.Name == "IsActive" && change.After == "False");
+    }
+
+    [Fact]
+    public async Task Delete_DoesNotRemoveOrEmit()
+    {
+        var hooks = new RecordingHooks();
+        var publisher = new RecordingPublisher(hooks);
+        var store = new MemoryOrgStore();
+        var manager = new OrgManager<HostOrg, TestTenantInfo>(
+            store,
+            new FakeCurrentTenant(TenantX),
+            hooks,
+            publisher,
+            new SelfOrgTenantVisibility());
+        var created = await manager.CreateAsync(new HostCreateOrgInput { Code = "acme", Name = "Acme" });
+
+        var error = await Assert.ThrowsAsync<ConflictException>(() => manager.DeleteAsync(created.Id));
+
+        Assert.Equal(OrgErrorCode.HardDeleteDisabled, error.Code);
+        Assert.NotNull(store.Find(created.Id));
+        Assert.DoesNotContain(publisher.Events, e => e is OrgDeletedEvent);
+    }
+
     private static Fixture CreateFixture(Guid tenantId)
     {
         var store = new MemoryOrgStore();
@@ -116,11 +177,38 @@ public class OrgManagerTests
             store,
             new FakeCurrentTenant(tenantId),
             new HostOrgHooks(),
-            new NullOrgCatalogEventPublisher());
+            new NullOrgCatalogEventPublisher(),
+            new SelfOrgTenantVisibility());
         return new Fixture(store, manager, new OrgCatalog<HostOrg>(store));
     }
 
     private sealed record Fixture(MemoryOrgStore Store, OrgManager<HostOrg, TestTenantInfo> Manager, OrgCatalog<HostOrg> Catalog);
+
+    private sealed class RecordingHooks : HostOrgHooks
+    {
+        public int SuccessUpdateCount { get; private set; }
+
+        public override Task SuccessUpdateAsync(
+            OrgCatalogUpdateHookContext<HostOrg> context,
+            CancellationToken cancellationToken = default)
+        {
+            SuccessUpdateCount++;
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class RecordingPublisher(RecordingHooks hooks) : IOrgCatalogEventPublisher
+    {
+        public List<OrgCatalogEventBase> Events { get; } = [];
+
+        public Task PublishAsync(OrgCatalogEventBase @event, CancellationToken cancellationToken = default)
+        {
+            if (@event is OrgUpdatedEvent)
+                Assert.True(hooks.SuccessUpdateCount > 0);
+            Events.Add(@event);
+            return Task.CompletedTask;
+        }
+    }
 
     private sealed class HostOrg : BaseEntity<Guid>, IOrgCatalogEntity
     {
@@ -169,7 +257,7 @@ public class OrgManagerTests
             };
     }
 
-    private sealed class HostOrgHooks : DefaultOrgCatalogHooks<HostOrg>
+    private class HostOrgHooks : DefaultOrgCatalogHooks<HostOrg>
     {
         public override Task PrepareCreateAsync(
             OrgCatalogCreateHookContext<HostOrg> context,
@@ -226,6 +314,12 @@ public class OrgManagerTests
         public Task AddAsync(HostOrg entity, CancellationToken cancellationToken)
         {
             _items.Add(entity);
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveAsync(HostOrg entity, CancellationToken cancellationToken)
+        {
+            _items.RemoveAll(x => x.Id == entity.Id);
             return Task.CompletedTask;
         }
 

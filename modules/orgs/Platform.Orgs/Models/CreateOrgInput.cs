@@ -1,3 +1,5 @@
+using Platform.Tenants.Models;
+
 namespace Platform.Orgs.Models;
 
 /// <summary>
@@ -8,4 +10,6 @@ public class CreateOrgInput
     public string Code { get; set; } = string.Empty;
 
     public string Name { get; set; } = string.Empty;
+
+    public CatalogAdminAccountInput? InitialAdmin { get; set; }
 }

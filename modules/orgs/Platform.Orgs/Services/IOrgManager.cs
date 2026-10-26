@@ -21,4 +21,6 @@ public interface IOrgManager
     Task<OrgDescriptor?> GetByCodeAsync(string code, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<OrgDescriptor>> ListAsync(ListOrgsQuery? query = null, CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

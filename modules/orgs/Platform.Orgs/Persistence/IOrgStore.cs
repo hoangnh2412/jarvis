@@ -18,5 +18,7 @@ public interface IOrgStore<TOrg>
 
     Task AddAsync(TOrg entity, CancellationToken cancellationToken);
 
+    Task RemoveAsync(TOrg entity, CancellationToken cancellationToken);
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

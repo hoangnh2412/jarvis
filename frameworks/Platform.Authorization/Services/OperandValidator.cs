@@ -17,6 +17,7 @@ public sealed class OperandValidator
         ">",
         ">=",
         "IN",
+        "StartsWith",
     };
 
     private readonly IOperandRegistry _registry;
@@ -44,7 +45,18 @@ public sealed class OperandValidator
             return ValidationResult.Fail("Operand bên phải không thể trống");
 
         if (!_registry.TryGet(rightOperand, out var right))
-            return ValidationResult.Fail($"Operand bên phải '{rightOperand}' không được đăng ký");
+        {
+            if (!RuleRightValueParser.AllowsLiteral(left, op))
+                return ValidationResult.Fail($"Toán tử '{op}' không hỗ trợ hằng số ở vế phải.");
+
+            if (IsOrderingOperator(op) && IsNonNumeric(left))
+                return ValidationResult.Fail($"Toán tử '{op}' chỉ áp dụng cho operand số. Nhận được: {leftOperand} {op} {rightOperand}");
+
+            if (!RuleRightValueParser.TryParseLiteral(left, rightOperand, out _, out var literalError))
+                return ValidationResult.Fail(literalError ?? $"Operand bên phải '{rightOperand}' không được đăng ký");
+
+            return ValidationResult.Success();
+        }
 
         if (op == "IN" && right.Kind != OperandValueKind.Collection)
             return ValidationResult.Fail($"Toán tử 'IN' yêu cầu operand collection. Nhận được: {rightOperand}");

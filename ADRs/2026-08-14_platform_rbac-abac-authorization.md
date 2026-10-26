@@ -1,6 +1,7 @@
 # ADR — RBAC + ABAC Authorization + ranh giới Account / IdentityAdmin
 
-> **Trạng thái:** 🟢 Accepted · **Amendment 2026-10-03: 🟡 Proposed** (chờ anh Hoàng duyệt — §7.3 phát hiện rà soát, V6–V14, test §8.9; chưa được implement khi chưa duyệt)  
+> **Trạng thái:** 🟢 Accepted · **Bổ sung 2026-10-25:** tên chuẩn phạm vi đơn vị là `OrganizationalUnitId` + `UnitType` (D5, D9, D10). **Amendment 2026-10-03: 🟡 Proposed** (chờ anh Hoàng duyệt — §7.3 phát hiện rà soát, V6–V14, test §8.9; chưa được implement khi chưa duyệt)  
+> **Change log:** 2026-10-25 — D5, D9, D10 và bảng policy chuẩn ghi tên đơn vị mới và `StartsWith`. Phụ lục test lịch sử không viết lại. 2026-10-25 — Operand `OrganizationalUnitId`, `UnitType`, `LegalEntityId`, `OrganizationalUnitPath` và policy `P_SAME_ORGANIZATIONAL_UNIT`, `P_SAME_LEGAL_ENTITY`, `P_WITHIN_OU_SUBTREE` (toán tử `StartsWith`). `DepartmentId` và policy `P_SAME_DEPARTMENT` giữ cho bản ghi cũ; cài mới không seed policy phòng ban. Cột user và claim ghi cùng lúc khi gán đơn vị. Bảng lịch sử test trong file không viết lại. 2026-10-25 — `DepartmentId` / `SameDepartment` không còn là tên chuẩn phạm vi đơn vị.  
 > **Ngày:** 2026-08-14 · Accept: 2026-09-29 · Implement: 🟡 đang làm (rà soát code 2026-10-02, cập nhật Data Scope + Sample 2026-10-03 — đối chiếu C/D/Q: §7.2 · Data Scope: §5.11 · checklist: §10 · cấu trúc: §11 · Sample: §11.8 · phase: §12)  
 > **Loại:** Authorization / package boundary / module boundary / data model  
 > **Liên quan:** [Refactor Authentication](./refactor-authentication.md) (Auth ≠ Authorization), [Current User / Tenant](./2026-08-01_platform_current-user-tenant.md), [Multitenancy](./2026-08-06_platform_multitenancy-package.md), [refactoring-rules.md](./refactoring-rules.md) (§0.2 Module Atomic)  
@@ -246,12 +247,12 @@ Chúng ta sẽ thiết kế Authorization theo mô hình **RBAC (Permission) + A
 | D2 | Schema Identity | Giữ Users / Roles / UserRoles / UserClaims / RoleClaims |
 | D3 | Schema extension | Thêm `Policies` + `PolicyRules` |
 | D4 | RoleClaim types | `ClaimType = Permission` \| `Policy`; Policy claim chỉ lưu **PolicyCode/Id**, không nhồi rule JSON |
-| D5 | UserClaim | Subject **attributes** (`DepartmentId`, `ApproveLimit`, …); **TenantId/OrgId** là cột user (C17); **không** lưu Permission trên UserClaim |
+| D5 | UserClaim | Subject **attributes**. Từ 2026-10-25 tên chuẩn phạm vi đơn vị: `OrganizationalUnitId`, `UnitType`, `LegalEntityId`, `OrganizationalUnitPath`. `OrganizationalUnitId` và `UnitType` cũng là cột trên user; giá trị ABAC vẫn là UserClaim, ghi cùng lúc khi gán đơn vị. `DepartmentId` giữ để rule cũ còn đọc được. `ApproveLimit` vẫn là attribute. **TenantId/OrgId** là cột user (C17); **không** lưu Permission trên UserClaim |
 | D6 | Role | Mở rộng `IsSystemRole`, `RoleLevel` — entity `Role` (trước đây `ApplicationRole`) cùng `User` đặt ở `Platform.Authentication.Identity` (§11.1) |
 | D7 | System roles | Identifier ổn định `ADMIN` / `TENANT_ADMIN` / `ORG_ADMIN` — không dùng display name làm logic |
 | D8 | Wildcard | `Permission = System.All` (ưu tiên hơn `*`); Admin = global; TenantAdmin/OrgAdmin vẫn qua ABAC scope |
-| D9 | Policy v1 | Seed: SameTenant, SameOrg, SameDepartment, OwnerOnly, ApproveLimit, ManagedProject, ManagedDepartment |
-| D10 | Operators v1 | `==`, `!=`, `>`, `>=`, `<`, `<=`, `IN` — whitelist cố định. Operand: `IOperandRegistry`, kiểm cả khi lưu rule lẫn lúc evaluate |
+| D9 | Policy v1 | Seed gốc: SameTenant, SameOrg, OwnerOnly, ApproveLimit. Từ 2026-10-25 thêm SameOrganizationalUnit, SameLegalEntity, WithinOuSubtree (`StartsWith` trên path). SameDepartment không seed trên cài mới; bản ghi `P_SAME_DEPARTMENT` đã có thì giữ. ManagedProject, ManagedDepartment vẫn là policy nghiệp vụ mẫu, không phải seed platform |
+| D10 | Operators v1 | `==`, `!=`, `>`, `>=`, `<`, `<=`, `IN`, và từ 2026-10-25 `StartsWith` — whitelist cố định. Operand: `IOperandRegistry`, kiểm cả khi lưu rule lẫn lúc evaluate |
 | D11 | AND/OR | Nhiều Policy trên Role mặc định **AND**; case OR (OwnerOnly ∨ SameDepartment) biểu diễn bằng Policy Group / AuthorizationRuleSet — không implicit OR từ danh sách phẳng |
 | D12 | Runtime 2 lớp | (1) Permission check; (2) Data Scope / Policy evaluate (+ query filter cho list) |
 | D13 | Cache | Snapshot Authorization Context + Policy definition cache; invalidate khi Role/Claim/Policy đổi |
@@ -506,7 +507,10 @@ Policy chuẩn ERP (v1):
 |------|----------------|----------|
 | SameTenant | `Resource.TenantId == User.TenantId` | TenantAdmin, IT tập đoàn |
 | SameOrg | `Resource.OrgId == User.OrgId` | OrgAdmin, Director, CFO, … |
-| SameDepartment | `Resource.DepartmentId == User.DepartmentId` | Dept Manager, nhân viên phòng |
+| SameOrganizationalUnit | `Resource.OrganizationalUnitId == User.OrganizationalUnitId` | Cùng một đơn vị trên cây, từ 2026-10-25 |
+| SameLegalEntity | `Resource.LegalEntityId == User.LegalEntityId` | Cùng pháp nhân, từ 2026-10-25 |
+| WithinOuSubtree | `Resource.OrganizationalUnitPath StartsWith User.OrganizationalUnitPath` | Nhánh con của đơn vị user, từ 2026-10-25 |
+| SameDepartment | `Resource.DepartmentId == User.DepartmentId` | Alias cũ. Không seed trên cài mới. Bản ghi đã có vẫn đọc được |
 | OwnerOnly | `Resource.CreatedBy == User.Id` | Employee, Sales Employee |
 | ApproveLimit | `Resource.Amount <= User.ApproveLimit` | CFO/CTO, Dept Manager |
 | ManagedProject | Dept match hoặc `ProjectId IN ManagedProjectIds` (resolve domain) | Technical Manager |
@@ -519,7 +523,9 @@ Platform (mặc định, generic):   User.Id (subject)
                                 User.TenantId · User.OrgId (UserColumn — cột AspNetUsers)
                                 Resource.TenantId · Resource.OrgId (ResourceColumn — cột bảng nghiệp vụ)
                                 Resource.CreatedBy (Resource attribute)
-Sản phẩm / module (đăng ký):    Sample — AddSampleAuthorizationOperands():
+Sản phẩm / module (đăng ký):    Host VNA — OrganizationalUnitId, UnitType, LegalEntityId, OrganizationalUnitPath (UserClaim và Resource).
+                                DepartmentId giữ đăng ký để rule cũ.
+                                Sample — AddSampleAuthorizationOperands():
                                 User.DepartmentId · User.ApproveLimit · … (UserClaim)
                                 Resource.DepartmentId · Resource.Amount · … (Resource attribute)
 ```

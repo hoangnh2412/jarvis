@@ -10,6 +10,7 @@ How-to, luồng runtime, diagram và tích hợp host — dành cho **engineer**
 | Authentication — appsettings (Schemes / Profile) | [authentication/appsettings.md](./authentication/appsettings.md) |
 | Authentication — storage / `Source` | [authentication/storage-backed-providers.md](./authentication/storage-backed-providers.md) |
 | Authentication — Current user | [authentication/current-user.md](./authentication/current-user.md) |
+| **Multi-tenant, multi-org** | [multitenancy/multi-tenant-multi-org.md](./multitenancy/multi-tenant-multi-org.md) |
 
 ## Quy ước
 

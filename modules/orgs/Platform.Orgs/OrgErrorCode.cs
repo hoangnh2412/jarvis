@@ -20,4 +20,7 @@ public class OrgErrorCode : IErrorCode
 
     [Display(Description = "Dữ liệu organization không hợp lệ")]
     public const string InvalidInput = "98305";
+
+    [Display(Description = "Catalog không xóa cứng organization")]
+    public const string HardDeleteDisabled = "98306";
 }

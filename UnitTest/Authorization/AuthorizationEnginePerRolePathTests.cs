@@ -39,7 +39,9 @@ public sealed class AuthorizationEnginePerRolePathTests
         var engine = new AuthorizationEngine(
             new PermissionProvider(ctx),
             new PolicyProvider(ctx),
-            new PolicyEvaluator(new OperandResolver(ctx, operands ?? TestOperands.Registry())));
+            new PolicyEvaluator(
+                new OperandResolver(ctx, operands ?? TestOperands.Registry()),
+                operands ?? TestOperands.Registry()));
         return (ctx, engine);
     }
 

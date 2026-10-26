@@ -20,6 +20,7 @@ public static class PlatformOrgsExtensions
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.TryAddScoped<IOrgCatalogHooks<TOrg>, DefaultOrgCatalogHooks<TOrg>>();
+        builder.Services.TryAddScoped<IOrgTenantVisibility, SelfOrgTenantVisibility>();
         builder.Services.TryAddScoped<IOrgManager, OrgManager<TOrg, TTenant>>();
         builder.Services.TryAddScoped<IOrgCatalog, OrgCatalog<TOrg>>();
         builder.Services.AddScoped<IOrgTenantScopeValidator, OrgCatalogTenantScopeValidator>();

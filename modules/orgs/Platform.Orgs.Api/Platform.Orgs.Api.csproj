@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Platform.Orgs\Platform.Orgs.csproj" />
+    <ProjectReference Include="..\..\tenants\Platform.Tenants\Platform.Tenants.csproj" />
   </ItemGroup>
 
 </Project>

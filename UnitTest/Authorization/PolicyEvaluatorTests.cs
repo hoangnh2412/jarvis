@@ -1,7 +1,9 @@
 using Moq;
 using Platform.Authorization.Abstractions;
 using Platform.Authorization.Domain;
+using Platform.Authorization.Operands;
 using Platform.Authorization.Services;
+using UnitTest.Authorization.Helpers;
 using Xunit;
 
 namespace UnitTest.Authorization;
@@ -14,7 +16,7 @@ public sealed class PolicyEvaluatorTests
     public PolicyEvaluatorTests()
     {
         _resolverMock = new Mock<IOperandResolver>();
-        _evaluator = new PolicyEvaluator(_resolverMock.Object);
+        _evaluator = new PolicyEvaluator(_resolverMock.Object, TestOperands.Registry());
     }
 
     #region T60-T71 - Policy Evaluation Matrix
@@ -43,6 +45,25 @@ public sealed class PolicyEvaluatorTests
         var result = await _evaluator.EvaluateAsync(userId, policy, resource);
 
         // Assert
+        Assert.True(result);
+    }
+
+    [Fact(DisplayName = "T61b: decimal literal on the right passes ordering rule")]
+    public async Task T61b_DecimalLiteralOnRightPasses()
+    {
+        var policy = CreateTestPolicy("P_AMOUNT_GT", "Amount greater than limit");
+        var rule = CreateTestRule(policy.Id, 1, "Resource.Amount", ">", "20000000");
+        policy.Rules.Add(rule);
+
+        var userId = Guid.NewGuid();
+        var resource = new { Amount = 25_000_000m };
+
+        _resolverMock
+            .Setup(r => r.ResolveAsync("Resource.Amount", userId, resource, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(25_000_000m);
+
+        var result = await _evaluator.EvaluateAsync(userId, policy, resource);
+
         Assert.True(result);
     }
 

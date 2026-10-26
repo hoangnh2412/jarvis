@@ -119,30 +119,42 @@ public sealed class DataScopeFilter : IDataScopeFilter
         Guid userId,
         CancellationToken cancellationToken)
     {
-        if (!_operands.TryGet(rule.LeftOperand, out var left) || !_operands.TryGet(rule.RightOperand, out var right))
+        if (!_operands.TryGet(rule.LeftOperand, out var left))
             return False;
 
         var op = rule.Operator.ToUpperInvariant();
         var leftIsResource = IsResourceOperand(left);
-        var rightIsResource = IsResourceOperand(right);
 
-        if (leftIsResource && rightIsResource)
-            return CompareMembers(item, left, op, right);
-
-        if (leftIsResource)
-            return CompareMember(item, left, op, await ResolveUserValueAsync(rule.RightOperand, userId, cancellationToken));
-
-        if (rightIsResource)
+        if (_operands.TryGet(rule.RightOperand, out var right))
         {
-            // "User.X IN Resource.Y" cần collection phía resource — chưa hỗ trợ trong query.
-            return op == "IN"
-                ? False
-                : CompareMember(item, right, Flip(op), await ResolveUserValueAsync(rule.LeftOperand, userId, cancellationToken));
+            var rightIsResource = IsResourceOperand(right);
+
+            if (leftIsResource && rightIsResource)
+                return CompareMembers(item, left, op, right);
+
+            if (leftIsResource)
+                return CompareMember(item, left, op, await ResolveUserValueAsync(rule.RightOperand, userId, cancellationToken));
+
+            if (rightIsResource)
+            {
+                // "User.X IN Resource.Y" cần collection phía resource — chưa hỗ trợ trong query.
+                return op == "IN"
+                    ? False
+                    : CompareMember(item, right, Flip(op), await ResolveUserValueAsync(rule.LeftOperand, userId, cancellationToken));
+            }
+
+            // Cả hai vế thuộc user: kết quả không phụ thuộc bản ghi → hằng số, đánh giá bằng chính PolicyEvaluator.
+            var single = new Policy { Code = "DataScope", Rules = [rule] };
+            return await _policyEvaluator.EvaluateAsync(userId, single, new object(), cancellationToken) ? True : False;
         }
 
-        // Cả hai vế thuộc user: kết quả không phụ thuộc bản ghi → hằng số, đánh giá bằng chính PolicyEvaluator.
-        var single = new Policy { Code = "DataScope", Rules = [rule] };
-        return await _policyEvaluator.EvaluateAsync(userId, single, new object(), cancellationToken) ? True : False;
+        if (!leftIsResource || op == "IN")
+            return False;
+
+        if (!RuleRightValueParser.TryParseLiteral(left, rule.RightOperand, out var literal, out _))
+            return False;
+
+        return CompareMember(item, left, op, literal);
     }
 
     private async Task<object?> ResolveUserValueAsync(string operand, Guid userId, CancellationToken cancellationToken)
@@ -248,6 +260,7 @@ public sealed class DataScopeFilter : IDataScopeFilter
                 "<=" => Expression.LessThanOrEqual(left, right),
                 ">" => Expression.GreaterThan(left, right),
                 ">=" => Expression.GreaterThanOrEqual(left, right),
+                "StartsWith" => Expression.Call(left, nameof(string.StartsWith), null, right),
                 _ => null,
             };
         }

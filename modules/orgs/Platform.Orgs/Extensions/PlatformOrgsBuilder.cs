@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Platform.DDD.Domain.Services;
+using Platform.Orgs.Abstractions.Events;
 using Platform.Orgs.Hooks;
 using Platform.Orgs.Mapping;
 using Platform.Orgs.Services;
@@ -44,6 +45,14 @@ public sealed class PlatformOrgsBuilder<TOrg, TTenant>
     public PlatformOrgsBuilder<TOrg, TTenant> UseAsCurrentOrgStore()
     {
         HostBuilder.Services.TryAddScoped<ICurrentOrgStore<OrgCatalogOrgProfile>, OrgCatalogCurrentOrgStore<TTenant>>();
+        return this;
+    }
+
+    /// <summary>Thay publisher no-op. Gọi sau <c>AddPlatformOrgs</c>.</summary>
+    public PlatformOrgsBuilder<TOrg, TTenant> UseOrgCatalogEventPublisher<TPublisher>()
+        where TPublisher : class, IOrgCatalogEventPublisher
+    {
+        HostBuilder.Services.AddScoped<IOrgCatalogEventPublisher, TPublisher>();
         return this;
     }
 }

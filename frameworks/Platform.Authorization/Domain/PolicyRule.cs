@@ -28,8 +28,7 @@ public sealed class PolicyRule
     public string Operator { get; set; } = string.Empty;
 
     /// <summary>
-    /// Operand bên phải đã đăng ký (ví dụ: User.OrgId, User.ApproveLimit).
-    /// Không nhận hằng số — hạn mức nằm ở UserClaim.
+    /// Operand đã đăng ký (vd. User.OrgId) hoặc hằng số (vd. 20000000) khi kiểu vế trái cho phép.
     /// </summary>
     public string RightOperand { get; set; } = string.Empty;
 

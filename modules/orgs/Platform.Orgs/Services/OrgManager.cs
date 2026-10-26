@@ -19,17 +19,20 @@ public sealed class OrgManager<TOrg, TTenant> : IOrgManager
     private readonly ICurrentTenant<TTenant> _currentTenant;
     private readonly IOrgCatalogHooks<TOrg> _hooks;
     private readonly IOrgCatalogEventPublisher _eventPublisher;
+    private readonly IOrgTenantVisibility _visibility;
 
     public OrgManager(
         IOrgStore<TOrg> store,
         ICurrentTenant<TTenant> currentTenant,
         IOrgCatalogHooks<TOrg> hooks,
-        IOrgCatalogEventPublisher eventPublisher)
+        IOrgCatalogEventPublisher eventPublisher,
+        IOrgTenantVisibility visibility)
     {
         _store = store;
         _currentTenant = currentTenant;
         _hooks = hooks;
         _eventPublisher = eventPublisher;
+        _visibility = visibility;
     }
 
     public async Task<OrgDescriptor> CreateAsync(CreateOrgInput input, CancellationToken cancellationToken = default)
@@ -64,13 +67,13 @@ public sealed class OrgManager<TOrg, TTenant> : IOrgManager
             await _store.AddAsync(entity, cancellationToken).ConfigureAwait(false);
             await _store.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
+            context.Succeeded = true;
+            await _hooks.SuccessCreateAsync(context, cancellationToken).ConfigureAwait(false);
+
             var descriptor = OrgDescriptorMapper.ToDescriptor(entity);
             await _eventPublisher.PublishAsync(
                 new OrgCreatedEvent(tenantId, entity.Id, DateTimeOffset.UtcNow, descriptor),
                 cancellationToken).ConfigureAwait(false);
-
-            context.Succeeded = true;
-            await _hooks.SuccessCreateAsync(context, cancellationToken).ConfigureAwait(false);
             return descriptor;
         }
         catch (Exception ex)
@@ -96,6 +99,8 @@ public sealed class OrgManager<TOrg, TTenant> : IOrgManager
         var entity = await FindRequiredAsync(tenantId, id, cancellationToken).ConfigureAwait(false);
         var code = NormalizeCode(input.Code);
         var name = NormalizeRequired(input.Name, OrgCatalogLimits.NameMaxLength);
+        var beforeCode = entity.Code;
+        var beforeName = entity.Name;
 
         var context = new OrgCatalogUpdateHookContext<TOrg>
         {
@@ -118,13 +123,17 @@ public sealed class OrgManager<TOrg, TTenant> : IOrgManager
 
             await _store.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-            var descriptor = OrgDescriptorMapper.ToDescriptor(entity);
-            await _eventPublisher.PublishAsync(
-                new OrgUpdatedEvent(tenantId, entity.Id, DateTimeOffset.UtcNow, descriptor),
-                cancellationToken).ConfigureAwait(false);
-
             context.Succeeded = true;
             await _hooks.SuccessUpdateAsync(context, cancellationToken).ConfigureAwait(false);
+
+            var descriptor = OrgDescriptorMapper.ToDescriptor(entity);
+            await _eventPublisher.PublishAsync(
+                new OrgUpdatedEvent(
+                    tenantId,
+                    entity.Id,
+                    DateTimeOffset.UtcNow,
+                    Diff(beforeCode, beforeName, null, entity)),
+                cancellationToken).ConfigureAwait(false);
             return descriptor;
         }
         catch (Exception ex)
@@ -146,7 +155,7 @@ public sealed class OrgManager<TOrg, TTenant> : IOrgManager
     {
         var tenantId = await RequireTenantIdAsync(cancellationToken).ConfigureAwait(false);
         var entity = await FindRequiredAsync(tenantId, id, cancellationToken).ConfigureAwait(false);
-
+        var beforeActive = entity.IsActive;
         var context = new OrgCatalogUpdateHookContext<TOrg>
         {
             TenantId = tenantId,
@@ -164,13 +173,19 @@ public sealed class OrgManager<TOrg, TTenant> : IOrgManager
 
             await _store.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-            var descriptor = OrgDescriptorMapper.ToDescriptor(entity);
-            await _eventPublisher.PublishAsync(
-                new OrgUpdatedEvent(tenantId, entity.Id, DateTimeOffset.UtcNow, descriptor),
-                cancellationToken).ConfigureAwait(false);
-
             context.Succeeded = true;
             await _hooks.SuccessUpdateAsync(context, cancellationToken).ConfigureAwait(false);
+
+            var descriptor = OrgDescriptorMapper.ToDescriptor(entity);
+            await _eventPublisher.PublishAsync(
+                new OrgUpdatedEvent(
+                    tenantId,
+                    entity.Id,
+                    DateTimeOffset.UtcNow,
+                    beforeActive == entity.IsActive
+                        ? []
+                        : [new OrgFieldChange("IsActive", beforeActive.ToString(), entity.IsActive.ToString())]),
+                cancellationToken).ConfigureAwait(false);
             return descriptor;
         }
         catch (Exception ex)
@@ -205,13 +220,38 @@ public sealed class OrgManager<TOrg, TTenant> : IOrgManager
         CancellationToken cancellationToken = default)
     {
         var tenantId = await RequireTenantIdAsync(cancellationToken).ConfigureAwait(false);
-        var entities = await _store.ListAsync(
-            tenantId,
-            query?.IsActive,
-            query?.Search,
-            cancellationToken).ConfigureAwait(false);
+        var visible = await _visibility.ListVisibleTenantIdsAsync(tenantId, cancellationToken).ConfigureAwait(false);
+        var merged = new List<OrgDescriptor>();
+        foreach (var visibleTenantId in visible.Distinct())
+        {
+            var entities = await _store.ListAsync(
+                visibleTenantId,
+                query?.IsActive,
+                query?.Search,
+                cancellationToken).ConfigureAwait(false);
+            merged.AddRange(entities.Select(OrgDescriptorMapper.ToDescriptor));
+        }
 
-        return entities.Select(OrgDescriptorMapper.ToDescriptor).ToArray();
+        return merged;
+    }
+
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        _ = id;
+        cancellationToken.ThrowIfCancellationRequested();
+        throw new ConflictException(OrgErrorCode.HardDeleteDisabled);
+    }
+
+    private static IReadOnlyList<OrgFieldChange> Diff(string beforeCode, string beforeName, bool? beforeActive, TOrg entity)
+    {
+        var changes = new List<OrgFieldChange>();
+        if (!string.Equals(beforeCode, entity.Code, StringComparison.Ordinal))
+            changes.Add(new OrgFieldChange("Code", beforeCode, entity.Code));
+        if (!string.Equals(beforeName, entity.Name, StringComparison.Ordinal))
+            changes.Add(new OrgFieldChange("Name", beforeName, entity.Name));
+        if (beforeActive is not null && beforeActive != entity.IsActive)
+            changes.Add(new OrgFieldChange("IsActive", beforeActive.ToString(), entity.IsActive.ToString()));
+        return changes;
     }
 
     private static TOrg CreateEntity(Guid id)

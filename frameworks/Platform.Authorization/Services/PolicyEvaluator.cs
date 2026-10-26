@@ -3,6 +3,7 @@ namespace Platform.Authorization.Services;
 using System.Globalization;
 using Platform.Authorization.Abstractions;
 using Platform.Authorization.Domain;
+using Platform.Authorization.Operands;
 
 /// <summary>
 /// Đánh giá một chính sách duy nhất đối với người dùng và tài nguyên.
@@ -11,10 +12,12 @@ using Platform.Authorization.Domain;
 public sealed class PolicyEvaluator : IPolicyEvaluator
 {
     private readonly IOperandResolver _operandResolver;
+    private readonly IOperandRegistry _operandRegistry;
 
-    public PolicyEvaluator(IOperandResolver operandResolver)
+    public PolicyEvaluator(IOperandResolver operandResolver, IOperandRegistry operandRegistry)
     {
         _operandResolver = operandResolver ?? throw new ArgumentNullException(nameof(operandResolver));
+        _operandRegistry = operandRegistry ?? throw new ArgumentNullException(nameof(operandRegistry));
     }
 
     public async Task<bool> EvaluateAsync(
@@ -51,7 +54,7 @@ public sealed class PolicyEvaluator : IPolicyEvaluator
         try
         {
             var leftValue = await _operandResolver.ResolveAsync(rule.LeftOperand, userId, resource, cancellationToken);
-            var rightValue = await _operandResolver.ResolveAsync(rule.RightOperand, userId, resource, cancellationToken);
+            var rightValue = await ResolveRightValueAsync(rule, userId, resource, cancellationToken);
 
             return CompareValues(leftValue, rule.Operator, rightValue);
         }
@@ -60,6 +63,24 @@ public sealed class PolicyEvaluator : IPolicyEvaluator
             // Operand chưa đăng ký hoặc không resolve được → rule không đạt.
             return false;
         }
+    }
+
+    private async Task<object?> ResolveRightValueAsync(
+        PolicyRule rule,
+        Guid userId,
+        object resource,
+        CancellationToken cancellationToken)
+    {
+        if (_operandRegistry.TryGet(rule.RightOperand, out _))
+            return await _operandResolver.ResolveAsync(rule.RightOperand, userId, resource, cancellationToken);
+
+        if (!_operandRegistry.TryGet(rule.LeftOperand, out var leftOperand))
+            throw new InvalidOperationException($"Operand '{rule.LeftOperand}' không được đăng ký.");
+
+        if (!RuleRightValueParser.TryParseLiteral(leftOperand, rule.RightOperand, out var literal, out var error))
+            throw new InvalidOperationException(error ?? $"Giá trị vế phải '{rule.RightOperand}' không hợp lệ.");
+
+        return literal;
     }
 
     private static bool CompareValues(object? left, string op, object? right)
@@ -78,6 +99,7 @@ public sealed class PolicyEvaluator : IPolicyEvaluator
             ">" => compared > 0,
             ">=" => compared >= 0,
             "IN" => ContainsValue(right, left),
+            "STARTSWITH" => left.ToString()!.StartsWith(right.ToString()!, StringComparison.Ordinal),
             _ => false
         };
     }

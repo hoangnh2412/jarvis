@@ -1,10 +1,11 @@
 # ADR — Catalog Org events (đồng bộ / integration)
 
-> **Trạng thái:** 🟡 **Accepted (boundary)** · **chưa implement code** (nợ phase sau)  
-> **Ngày:** 2026-10-21 · Accept boundary: 2026-10-21  
+> **Trạng thái:** 🟢 **Accepted** (2026-10-25). Publish sau `Success*`, payload update là diff, `SetActive` phát `OrgUpdatedEvent`, không phát `OrgDeletedEvent`. `UseOrgCatalogEventPublisher` có trên builder. Test T3–T6 xanh; T1 chưa assert riêng; T2 chưa có.  
+> **Ngày:** 2026-10-21 · Accept §7: 2026-10-25  
 > **Loại:** Module Atomic / contract / integration boundary  
 > **Liên quan:** [Module Orgs](./2026-10-17_platform_orgs-module.md) (D4, D5, hooks), [OrgStructure](./2026-10-17_platform_orgstructure-module.md), [ImportExport](./2026-08-15-adr-platform-importexport-module.md), [architecture-rules.md](./architecture-rules.md) §0.2, [adr-template.md](./adr-template.md)  
-> **Phạm vi:** Định nghĩa **catalog events** khi Create / Update / Delete Org qua `IOrgManager`; vị trí type + port publish trong `Platform.Orgs.*`; thời điểm phát trong lifecycle hooks hiện có.  
+> **Phạm vi:** Định nghĩa **catalog events** khi Create / Update / Delete Org qua `IOrgManager`; vị trí type + port publish trong `Platform.Orgs.*`; thời điểm phát trong lifecycle hooks hiện có. Không định nghĩa cây Root / Tenant / Org / OrgStructure — cây nằm ở [hướng dẫn multi-tenant, multi-org](../docs/guides/multitenancy/multi-tenant-multi-org.md). Event phát cho Org dù Org thuộc Tenant gốc hay Tenant con.  
+> **Change log:** 2026-10-25 — Mục 10 và T3–T6 khớp code: publish sau `Success*`, diff, `UseOrgCatalogEventPublisher`. T1 chưa assert riêng, T2 chưa có test. 2026-10-25 — Ghi rõ ADR này không xếp kênh vào Tenant hay OrgStructure. 2026-10-25 — Accept §7: D1–D7. Publish sau hook `Success`. `OrgUpdatedEvent` mang diff. `SetActiveAsync` phát `OrgUpdatedEvent`. Không hard delete nên không phát `OrgDeletedEvent` trong lượt này.
 > **Ngoài phạm vi:** Message bus cụ thể (Kafka, RabbitMQ), transactional outbox schema, handler đồng bộ sang hệ thứ ba, MediatR wiring ở Host — **host-owned** hoặc package riêng sau.  
 > **Chú thích icon:** 🟢 xong · 🟡 accepted / chờ code · 🔴 chưa làm
 
@@ -47,11 +48,11 @@ Sản phẩm sẽ cần **đồng bộ dữ liệu Org** sang search index, data
 | # | Ràng buộc |
 |---|-----------|
 | C1 | Event **chỉ** phát sau **`SaveChanges` thành công** (cùng nhánh `Success*`), không phát trong `Prepare` / `Validate` |
-| C2 | Payload event **không** expose type entity host — dùng **`OrgDescriptor`** hoặc snapshot tối thiểu (`TenantId`, `OrgId`, field chuẩn) |
+| C2 | Payload event **không** expose type entity host. Create dùng `OrgDescriptor`. Update dùng **diff** các field chuẩn đã đổi. Delete không dùng trong lượt này |
 | C3 | Type event + port publish đặt **`Platform.Orgs.Abstractions`** (consumer chỉ Abstractions) hoặc subfolder `Events/` cùng package — **không** reference EF / bus |
 | C4 | `Platform.Orgs` core có thể gọi port tùy chọn; **mặc định no-op** (giống `DefaultOrgCatalogHooks`) |
 | C5 | Host có thể vẫn dùng **`Success*`** hook cho logic riêng; event platform **không thay** hook — bổ sung contract cho nhiều subscriber |
-| C6 | Delete: event chỉ khi **`DeleteAsync`** (hoặc tương đương) được implement trên `IOrgManager` — hiện 🔴 chưa có API delete |
+| C6 | Không hard delete Org ([ADR Orgs](./2026-10-17_platform_orgs-module.md)). Vô hiệu hóa đi qua `SetActiveAsync` và phát `OrgUpdatedEvent`. `OrgDeletedEvent` giữ type, không gọi trong lượt này |
 
 ---
 
@@ -72,22 +73,22 @@ Sản phẩm sẽ cần **đồng bộ dữ liệu Org** sang search index, data
 | # | Quyết định | Chi tiết | Status |
 |---|------------|----------|--------|
 | D1 | Tên event (quá khứ) | **`OrgCreatedEvent`**, **`OrgUpdatedEvent`**, **`OrgDeletedEvent`** — không dùng `CreateOrgEvent` làm tên platform mặc định | 🟡 Accepted |
-| D2 | Base / metadata | Mọi event có tối thiểu **`TenantId`**, **`OrgId`**, **`OccurredAt`** (UTC); payload chính: **`OrgDescriptor`** (sau create/update) hoặc descriptor cuối trước delete | 🟡 Accepted |
-| D3 | Vị trí type | **`Platform.Orgs.Abstractions`** — namespace gợi ý `Platform.Orgs.Abstractions.Events` | 🟡 Accepted |
-| D4 | Port publish | **`IOrgCatalogEventPublisher`** (hoặc tên tương đương) — `PublishAsync(OrgCatalogEventBase, CancellationToken)` hoặc overload theo loại; **default `NullOrgCatalogEventPublisher`** no-op | 🟡 Accepted |
-| D5 | Ai gọi publish | **`OrgManager`** (hoặc hook nội bộ đăng ký mặc định khi bật events) **sau** `SaveChanges` + trước hoặc sau **`Success*`** host — **đề xuất:** publish **trước** `Success*` để handler host vẫn chạy sau event platform | 🟡 Accepted (chi tiết implement Q2) |
+| D2 | Base / metadata | Mọi event có **`TenantId`**, **`OrgId`**, **`OccurredAt`** (UTC). Create: **`OrgDescriptor`**. Update: **diff** field chuẩn đã đổi (cũ → mới), không gửi nguyên bản ghi | 🟢 Accepted |
+| D3 | Vị trí type | **`Platform.Orgs.Abstractions`** — namespace `Platform.Orgs.Abstractions.Events` | 🟢 Accepted |
+| D4 | Port publish | **`IOrgCatalogEventPublisher`** — `PublishAsync`; **default `NullOrgCatalogEventPublisher`** | 🟢 Accepted |
+| D5 | Ai gọi publish | **`OrgManager`** sau `SaveChanges` thành công và **sau** hook **`Success*`** của host | 🟢 Accepted |
 | D6 | DDD mapping | Coi event là **integration / catalog notification** phát từ **application boundary** (`OrgManager`), không bắt entity host implement `IDomainEvent` | 🟡 Accepted |
 | D7 | Transport | Outbox / bus / retry = **Host Infrastructure**; platform chỉ contract + gọi port | 🟡 Accepted |
-| D8 | DI | Opt-in: `AddPlatformOrgs` giữ no-op publisher; extension kiểu **`.UseOrgCatalogEventPublisher<T>()`** hoặc đăng ký handler collection — chốt khi implement | 🔴 implement |
+| D8 | DI | Opt-in: `AddPlatformOrgs` giữ no-op publisher; **`.UseOrgCatalogEventPublisher<T>()`** thay publisher | 🟢 |
 | D9 | Liên kết hooks | `Prepare*` = map cột host; `Success*` = side effect tùy host; **event** = contract cross-module — không trùng trách nhiệm | 🟡 Accepted |
 
 ### 5.1 Luồng (mục tiêu khi implement)
 
 ```text
 … → SaveChanges OK
-  → map OrgDescriptor
-  → IOrgCatalogEventPublisher.PublishAsync(OrgCreatedEvent | Updated | Deleted)
   → Success* (host hooks)
+  → map payload (descriptor khi tạo, diff khi sửa)
+  → IOrgCatalogEventPublisher.PublishAsync(OrgCreatedEvent | OrgUpdatedEvent)
   → return
 ```
 
@@ -112,16 +113,18 @@ Lỗi: **không** publish created/updated; có thể dùng `Error*` / `Finally*`
 
 ## 7. Confirm
 
+Đã chốt 2026-10-25.
+
 | # | Câu hỏi | Trả lời |
 |---|---------|---------|
-| Q1 | Accept D1–D7 boundary (implement later)? | _chờ_ |
-| Q2 | Publish **trước** hay **sau** `Success*` host? | _đề xuất: trước Success* (D5)_ |
-| Q3 | `OrgUpdatedEvent` có kèm diff field hay chỉ full descriptor? | _đề xuất: full `OrgDescriptor` MVP; diff Later_ |
-| Q4 | `SetActiveAsync` phát `OrgUpdatedEvent`? | _đề xuất: Yes — cùng Updated_ |
+| Q1 | Accept D1–D7? | Có. Làm trong lượt platform |
+| Q2 | Publish trước hay sau `Success*`? | Sau `Success*` |
+| Q3 | Payload `OrgUpdatedEvent` | Diff các field đã đổi |
+| Q4 | `SetActiveAsync` | Phát `OrgUpdatedEvent` |
 
-- [ ] Accept boundary D1–D7
-- [ ] Chốt thứ tự vs `Success*`
-- [ ] Chốt payload Updated / SetActive
+- [x] Accept D1–D7
+- [x] Publish sau `Success*`
+- [x] Update là diff. `SetActiveAsync` phát Updated
 
 ---
 
@@ -131,22 +134,22 @@ Lỗi: **không** publish created/updated; có thể dùng `Error*` / `Finally*`
 
 | # | Case | Expect | Trạng thái |
 |---|------|--------|------------|
-| T1 | Create OK + publisher đăng ký | `OrgCreatedEvent` 1 lần; `TenantId`/`OrgId` khớp | 🔴 |
+| T1 | Create OK + publisher đăng ký | `OrgCreatedEvent` 1 lần; `TenantId`/`OrgId` khớp | 🟡 Create có phát event; chưa có assert riêng đếm 1 lần và khớp id |
 | T2 | Create duplicate code | Không publish | 🔴 |
 
 ### 8.2 Regression
 
 | # | Case | Expect | Trạng thái |
 |---|------|--------|------------|
-| T3 | Host không đăng ký publisher | No-op; T1–T2 Orgs hiện có vẫn xanh | 🔴 |
-| T4 | `Success*` hook host | Vẫn chạy sau publish (nếu D5 = trước Success) | 🔴 |
+| T3 | Host không đăng ký publisher | No-op; test catalog cũ vẫn xanh | 🟢 `OrgManagerTests` dùng `NullOrgCatalogEventPublisher` |
+| T4 | `Success*` hook host | Chạy trước publish | 🟢 `Update_PublishesDiff_AfterSuccessHook` (nhánh update) |
 
 ### 8.3 Mới
 
 | # | Case | Expect | Trạng thái |
 |---|------|--------|------------|
-| T5 | `SetActiveAsync` | `OrgUpdatedEvent` | 🔴 |
-| T6 | `DeleteAsync` (khi có) | `OrgDeletedEvent` | 🔴 |
+| T5 | `SetActiveAsync` | `OrgUpdatedEvent` | 🟢 `SetActive_PublishesIsActiveDiff` |
+| T6 | Không hard delete | Không phát `OrgDeletedEvent` | 🟢 `Delete_DoesNotRemoveOrEmit` |
 
 ---
 
@@ -156,7 +159,7 @@ Lỗi: **không** publish created/updated; có thể dùng `Error*` / `Finally*`
 |-------|------|----------|-----------|
 | E0 | Confirm §7 | Accepted | — |
 | E1 | Types + `IOrgCatalogEventPublisher` trong Abstractions | Build | E0; Orgs phase 3 🟡 |
-| E2 | Wire `OrgManager` + unit test T1–T4 | Tests 🟢 | E1 |
+| E2 | Wire `OrgManager` + unit test T1–T4 | T3, T4 xanh. T1 vàng, T2 đỏ | E1 |
 | E3 | Sample host: log hoặc fake handler (optional) | Doc | E2 |
 | E4 | Host product: outbox + bus (không trong Orgs core) | Sản phẩm | E2 |
 
@@ -168,8 +171,8 @@ Lỗi: **không** publish created/updated; có thể dùng `Error*` / `Finally*`
 
 | Mục | Giá trị |
 |-----|---------|
-| Decision | 🟡 **Accepted (boundary)** — chờ confirm §7 |
-| Implementation | 🔴 **Deferred** — nợ code |
+| Decision | 🟢 **Accepted** 2026-10-25 (D1–D7, publish sau `Success*`, update là diff) |
+| Implementation | 🟡 Publish sau `Success*`, update là diff, `SetActive` phát `OrgUpdatedEvent`, không phát `OrgDeletedEvent`, `.UseOrgCatalogEventPublisher` đã có. Test T3–T6 xanh, T1 vàng, T2 đỏ. Outbox/bus vẫn của Host |
 | Blocked by | Không (có thể implement độc lập sau catalog) |
 | Unblocks | Integration OrgStructure / DWH / search |
 | Owner | Platform |

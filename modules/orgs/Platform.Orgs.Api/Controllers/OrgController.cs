@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Platform.Orgs.Api.Models;
 using Platform.Orgs.Models;
 using Platform.Orgs.Services;
+using Platform.Tenants.Services;
 
 namespace Platform.Orgs.Api.Controllers;
 
@@ -15,7 +16,9 @@ namespace Platform.Orgs.Api.Controllers;
 [Route("api/v{version:apiVersion}/orgs")]
 [ApiController]
 [Authorize]
-public sealed class OrgController(IOrgManager orgManager) : ControllerBase
+public sealed class OrgController(
+    IOrgManager orgManager,
+    IPlatformCatalogAdminProvisioner? adminProvisioner = null) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> ListAsync(
@@ -49,8 +52,22 @@ public sealed class OrgController(IOrgManager orgManager) : ControllerBase
         CancellationToken cancellationToken)
     {
         var created = await orgManager
-            .CreateAsync(new CreateOrgInput { Code = request.Code, Name = request.Name }, cancellationToken)
+            .CreateAsync(new CreateOrgInput
+            {
+                Code = request.Code,
+                Name = request.Name,
+                InitialAdmin = request.InitialAdmin,
+            }, cancellationToken)
             .ConfigureAwait(false);
+
+        if (request.InitialAdmin is not null && adminProvisioner is not null)
+        {
+            var admin = await adminProvisioner
+                .ProvisionOrgAdminAsync(created.TenantId, created.Id, request.InitialAdmin, cancellationToken)
+                .ConfigureAwait(false);
+            return Ok(new { org = created, initialAdmin = admin });
+        }
+
         return Ok(created);
     }
 

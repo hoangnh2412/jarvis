@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\tenants\Platform.Tenants\Platform.Tenants.csproj" />
     <ProjectReference Include="..\Platform.Orgs.Abstractions\Platform.Orgs.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\frameworks\Platform.DDD.Domain\Platform.DDD.Domain.csproj" />
     <ProjectReference Include="..\..\..\frameworks\Platform.DDD.Domain.Shared\Platform.DDD.Domain.Shared.csproj" />

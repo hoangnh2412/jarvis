@@ -148,7 +148,7 @@ public static class AuthorizationSeeder
             {
                 Id = Guid.Parse("20000000-0000-0000-0000-000000000001"),
                 Code = "P_SAME_TENANT",
-                Name = "Same Tenant",
+                Name = "Cùng tenant",
                 ResourceType = null,
                 Action = null,
                 IsSystemPolicy = true,
@@ -168,7 +168,7 @@ public static class AuthorizationSeeder
             {
                 Id = Guid.Parse("20000000-0000-0000-0000-000000000002"),
                 Code = "P_SAME_ORG",
-                Name = "Same Organization",
+                Name = "Cùng đơn vị",
                 ResourceType = null,
                 Action = null,
                 IsSystemPolicy = true,
@@ -188,7 +188,7 @@ public static class AuthorizationSeeder
             {
                 Id = Guid.Parse("20000000-0000-0000-0000-000000000004"),
                 Code = "P_OWNER_ONLY",
-                Name = "Owner Only",
+                Name = "Chỉ của mình",
                 ResourceType = null,
                 Action = null,
                 IsSystemPolicy = true,

@@ -1,10 +1,11 @@
 # ADR — Module quản lý Organization (`Platform.Orgs`)
 
-> **Trạng thái:** 🔴 **Proposed** (chờ confirm §7).  
-> **Ngày:** 2026-10-17  
+> **Trạng thái:** 🟢 **Accepted** (2026-10-25). Catalog, không seed, không xóa cứng, list theo cây tenant đã code. Còn `OrgApiTests` và skill `orgs-dotnet` (§10).  
+> **Ngày:** 2026-10-17 · Cập nhật phân cấp và §7: 2026-10-25  
 > **Loại:** Business module / Module Atomic (Library + Persistence + optional Abstractions)  
-> **Liên quan:** [Tenants module](./2026-08-07_platform_tenants-module.md) (🔴 — pattern catalog song song), [Multitenancy package](./2026-08-06_platform_multitenancy-package.md) (🟢 ambient), [generic `ICurrentTenant<TTenant>`](./2026-08-06_platform_generic-current-tenant.md) (🟢), [Current User / Tenant](./2026-08-01_platform_current-user-tenant.md) (🟢 — D5 home vs working), [RBAC + ABAC](./2026-08-14_platform_rbac-abac-authorization.md) (🟡 — `User.OrgId`, `SameOrg`, `OrgAdmin`), [OrgStructure module](./2026-10-17_platform_orgstructure-module.md) (🔴 — cây nội bộ **trong** một Org), [Catalog Org events](./2026-10-21_platform_orgs-catalog-events.md) (🟡 boundary — implement later), [architecture-rules.md](./architecture-rules.md) (§0.2).  
-> **Phạm vi:** Tách **catalog / lifecycle Organization (Org)** — khách hàng cuối A, B, C, D thuộc đại lý Tenant X, Y — thành module **`Platform.Orgs`**; facade `IOrgManager`; marker scope **`IOrgEntity`** (cùng vai `ITenantEntity`); optional **`ICurrentOrg`** / store; **không** chứa cây phòng ban / pháp nhân / vị trí (thuộc OrgStructure).  
+> **Liên quan:** [Tenants module](./2026-08-07_platform_tenants-module.md) (🟡 catalog + UI vận hành), [Multitenancy package](./2026-08-06_platform_multitenancy-package.md) (🟢 ambient), [generic `ICurrentTenant<TTenant>`](./2026-08-06_platform_generic-current-tenant.md) (🟢), [Current User / Tenant](./2026-08-01_platform_current-user-tenant.md) (🟢 — D5 home vs working), [RBAC + ABAC](./2026-08-14_platform_rbac-abac-authorization.md) (🟡 — `User.OrgId`, `SameOrg`, `OrgAdmin`), [OrgStructure module](./2026-10-17_platform_orgstructure-module.md) (🟡 — cây nội bộ **trong** một Org; chưa gán Position), [Catalog Org events](./2026-10-21_platform_orgs-catalog-events.md) (🟡 publish sau `Success*`, T1/T2 chưa khép), [architecture-rules.md](./architecture-rules.md) (§0.2).  
+> **Phạm vi:** Catalog **Org** — người bán đứng trên hóa đơn, do một Tenant (kể cả Tenant con) tạo. Facade `IOrgManager`; marker **`IOrgEntity`**; optional **`ICurrentOrg`**. **Không** chứa Tenant cha-con (ADR Tenants) và **không** chứa cây phòng ban (ADR OrgStructure).  
+> **Change log:** 2026-10-25 — Mục 10 bỏ đỏ ở seed, list theo cây và không hard delete. `Org.View` / `Org.Manage` có trên Host. 2026-10-25 — `DeleteAsync` từ chối xóa cứng (98306), bỏ HTTP DELETE. `ListAsync` gộp org của tenant hiện tại và tenant con. Host không gọi seed `VNA_DEFAULT`. Publish event sau `Success*`, update là diff. 2026-10-25 — Org không có cha-con. Kênh tự tạo Org khách (chi nhánh, đại lý Minvoice) là Tenant con, không phải Org và không phải `OrganizationalUnit`. Chi nhánh VNA không tạo Org khách nên không thuộc ADR này. 2026-10-25 — Accept §7: D1–D18, C1–C10, O3. Vô hiệu hóa, không hard delete. Không seed Org. Danh sách nhìn xuống tenant con. API sản phẩm giữ resolver host. API vận hành theo luật root ở ADR Tenants.
 > **Ngoài phạm vi:** Cơ cấu tổ chức nội bộ tập đoàn; CRUD Tenant; ambient tenant R2 / `Change`; Authorization engine (rule evaluator); billing / subscription; dedicated-DB provisioning; UI portal production (host-owned). **Trong phạm vi platform:** catalog + ambient org + SPI cho module khác + HTTP API opt-in + filter EF + tích hợp IdentityAdmin/Authorization — Sample chỉ là host reference.  
 > **Chú thích icon:** 🟢 xong 100% · 🟡 đã làm, còn việc · 🔴 chưa làm
 
@@ -12,23 +13,25 @@
 
 ## 1. Bối cảnh
 
-### 1.1 Mô hình kinh doanh (ERP SaaS)
+### 1.1 Mô hình phân cấp (2026-10-25)
+
+Sơ đồ đầy đủ: [multi-tenant, multi-org](../docs/guides/multitenancy/multi-tenant-multi-org.md).
 
 ```text
-ERP (root — hạ tầng của chủ sản phẩm)
-  ├── Tenant X, Y          ← đại lý / white-label (module Tenants + Multitenancy)
-  │     ├── Org A, B       ← khách hàng cuối của X (module Orgs — ADR này)
-  │     └── …
-  └── Tenant Y
-        ├── Org C, D
-        └── …
+Root
+  └── Tenant (có thể có Tenant con)
+        └── Org          ← người bán trên hóa đơn; ADR này
+              └── OrgStructure
 ```
 
-| Khái niệm | Ví dụ | Ranh giới |
-|----------|-------|-----------|
-| **Tenant** | X, Y | Isolation đại lý, branding, catalog tenant |
-| **Org** | A, B, C, D | **Một khách hàng ERP** (hợp đồng / admin gốc / phạm vi `OrgAdmin`); có thể là **cả tập đoàn** về mặt thương mại — cơ cấu nội bộ (công ty con, chi nhánh, phòng) **không** là Org platform |
-| **OrgStructure** | Cây OU, pháp nhân, vị trí | Trong **một** Org — [ADR riêng](./2026-10-17_platform_orgstructure-module.md) |
+| Lớp | Ai giữ | Ví dụ |
+|-----|--------|--------|
+| **Root** | Ngoài module này | Minipower |
+| **Tenant** | [ADR Tenants](./2026-08-07_platform_tenants-module.md) | Minvoice; Tenant con HCM, HN, đại lý |
+| **Org** | ADR này | Org Minvoice, Org khách, Org EPAY, Org VNA, Org Chi nhánh HCM (treo phòng ban của chính chi nhánh) |
+| **OrgStructure** | [ADR OrgStructure](./2026-10-17_platform_orgstructure-module.md) | Phòng ban; chi nhánh / phòng vé / đại lý của VNA vì chúng không tạo Org khách |
+
+Org **không** có `ParentOrgId`. Nhiều Org trong một Tenant là anh em. Khách của chi nhánh HCM là Org trong **Tenant HCM**, không phải con của Org Minvoice.
 
 Platform đã có:
 
@@ -61,7 +64,7 @@ Platform đã có:
 |---|-----------|
 | C1 | **`Platform.Multitenancy` không CRUD Org** — ambient tenant giữ nguyên semantic R2 / D5 |
 | C2 | **Org luôn thuộc một Tenant** — `ITenantEntity` (hoặc tương đương) trên entity Org |
-| C3 | **Một Org platform = một khách hàng ERP** (A/B/C/D); cấu trúc tập đoàn **bên trong** Org qua OrgStructure |
+| C3 | **Một Org = một người bán trên hóa đơn** trong đúng một Tenant. Cây nội bộ của Org đó là OrgStructure. Kênh tự tạo Org khách là Tenant con, không phải Org con |
 | C4 | Module Orgs **không** reference OrgStructure runtime nặng; OrgStructure chỉ cần `Platform.Orgs.Abstractions` |
 | C5 | Entity concrete + migration = **host-owned** (pattern Setting / Tenants) |
 | C6 | Authorization rules (`SameOrg`, Role Governance) = `Platform.Authorization` — Orgs chỉ cung cấp **dữ liệu tham chiếu** |
@@ -103,9 +106,12 @@ Platform đã có:
 | D12 | IdentityAdmin | Gán / đổi `User.OrgId` **bắt buộc** gọi **`IOrgCatalog.ValidateForAssignmentAsync`** (module IdentityAdmin reference Abstractions only) |
 | D13 | Fluent DI | `AddPlatformOrgs<TOrg, TTenant>()` → **`PlatformOrgsBuilder<TOrg, TTenant>`**: `.UseEntityFramework<…>()`, `.UseHooks<…>()`, `.UseReadModel<…>()`, **`.UseAsCurrentOrgStore()`** (+ host `AddCurrentOrg<OrgCatalogOrgProfile>()`), (Later) `.UseHttpApi()` |
 | D15 | Persistence nội bộ | **`IOrgStore<TOrg>`** (core) + **`OrgStore<TOrg,TUnitOfWork>`** (EF satellite) — **không** đặt tên `*Service` / public repository; Manager + Catalog + Read dùng chung store |
-| D8 | **Không** chứa OrgStructure | Phòng ban, chi nhánh, pháp nhân, job title → [OrgStructure ADR](./2026-10-17_platform_orgstructure-module.md) |
+| D8 | **Không** chứa OrgStructure và **không** chứa Tenant con | Phòng ban và node không tạo Org khách → [OrgStructure ADR](./2026-10-17_platform_orgstructure-module.md). Kênh tạo Org khách → Tenant con trong [ADR Tenants](./2026-08-07_platform_tenants-module.md) |
 | D9 | DI Host | `AddPlatformOrgs<TOrg, TTenant>()` opt-in; **không** thay `AddCurrentTenant` |
-| D10 | DB placement | Org catalog **tenant-scoped** (bảng có `TenantId`, cùng DB nghiệp vụ tenant) **hoặc** master catalog — **mặc định đề xuất: tenant-scoped DB** (đại lý X chỉ thấy A,B khi ambient tenant X); host dedicated-DB chốt §7 |
+| D10 | DB placement | Org catalog **nằm trong DB của tenant** (bảng có `TenantId`). Không đưa bảng Org lên Master |
+| D17 | Ai được thấy Org nào | Tenant thấy Org của chính nó và Org của các tenant thấp hơn trong cây. Không thấy Org của tenant cùng cấp hoặc tenant cao hơn. Ví dụ Tenant HCM chỉ thấy Org trong HCM. Tenant Minvoice thấy Org của Minvoice, của HCM và của HN. Vì mỗi tenant một DB, danh sách của tenant cha đọc catalog của các DB con theo `ParentTenantId` |
+| D18 | Không seed Org | Platform và Host không tạo Org mặc định (không `VNA_DEFAULT`, không aligner seed). Người dùng tạo Org trên UI |
+| D19 | Hai cửa HTTP scope | API vận hành (`/platform/tenants` và API platform admin) theo luật root ở [ADR Tenants](./2026-08-07_platform_tenants-module.md) T12. API sản phẩm giữ resolver host hiện tại: người đã đăng nhập, không gửi header, dùng org và tenant gắn trên user. Thiếu header không được thành root |
 
 ### 5.1 Ranh giới Tenant / Org / OrgStructure
 
@@ -130,9 +136,10 @@ Platform đã có:
 | Header → org đang làm việc (working) | **`X-Org-Id`** qua **D16** (`IRequestScopeResolver`); chain **`IOrgIdResolver*`** (domain/query) **không** thay middleware scope |
 | Home org trên user (`User.OrgId`) | Identity — claim / resolver; khác working org trên request |
 | Validate org ∈ tenant (HTTP scope) | **`IOrgTenantScopeValidator`** — **`Platform.Orgs`**: `OrgCatalogTenantScopeValidator` |
-| Danh sách Org của tenant X; tạo Org A | **Orgs** |
+| Danh sách Org của một Tenant và của tenant thấp hơn; tạo Org | **Orgs** (D17) — không từ OrgStructure |
 | `User.OrgId` gán user vào Org home | IdentityAdmin + validate qua **Orgs** |
-| Cây phòng ban trong Org A | **OrgStructure** |
+| Cây phòng ban trong một Org; chi nhánh VNA | **OrgStructure** |
+| Chi nhánh hoặc đại lý tự tạo Org khách | **Tenants** — Tenant con (`ParentTenantId`) |
 | Policy `SameOrg` | Authorization (operand `User.OrgId` / `Resource.OrgId`) |
 
 #### 5.1.1 HTTP — resolve working Tenant + Org (D16)
@@ -482,30 +489,28 @@ AddPlatformOrgs<Org, CurrentTenantInfo>()    → .UseEntityFramework<Org, Curren
 
 ## 7. Confirm
 
+Đã chốt 2026-10-25.
+
 | # | Câu hỏi | Trả lời |
 |---|---------|---------|
-| Q1 | Accept D1–D10, C1–C8, phương án O3? | _chờ_ |
-| Q2 | Tên package | **`Platform.Orgs`** (+ EF + Abstractions) — OK? |
-| Q3 | Facade | **`IOrgManager`** — OK? |
-| Q4 | Marker `IOrgEntity` đặt ở Domain (cạnh `ITenantEntity`)? | _đã đặt Domain_ |
-| Q5 | Org catalog DB | Tenant-scoped (đề xuất D10) **hay** Master? |
-| Q6 | Ship `Platform.MultiOrg` cùng lần với module Orgs? | _đề xuất: Yes (platform)_ |
-| Q9 | `IOrgCatalog` vs gộp read vào `IOrgManager` cho consumer? | _đề xuất: tách Abstractions (C9)_ |
-| Q7 | Header working org + tenant (D16)? | **Accepted** — bảng §5.1.1; **`X-Org-Id` bắt buộc**; thiếu org hoặc (rule 1/3) → **403**; validate org ∈ tenant |
-| Q8 | Soft-disable mặc định, hard delete Later? | _chờ_ |
-| Q10 | Cột nghiệp vụ thêm trên entity host, không sửa platform? | **OK** — ghi: hooks **Prepare**; đọc: **`IOrgCatalogReadMapper`** + **`UseReadModel`**; SPI: `OrgDescriptor` không mở rộng (2026-10-20 / 2026-10-21) |
-| Q11 | Catalog events đồng bộ | **Deferred** — [ADR events](./2026-10-21_platform_orgs-catalog-events.md) (D14) |
+| Q1 | Accept D1–D10, C1–C8, phương án O3? | Có, kể cả D11–D19 và C9–C10 |
+| Q2 | Tên package | `Platform.Orgs`, `Platform.Orgs.Abstractions`, `Platform.Orgs.EntityFramework`, `Platform.Orgs.Api` |
+| Q3 | Facade | `IOrgManager`. Đọc tích hợp qua `IOrgCatalog` |
+| Q4 | Marker `IOrgEntity` | Giữ trong Domain, cạnh `ITenantEntity` |
+| Q5 | Ai thấy Org nào | Org của tenant hiện tại và của tenant thấp hơn. Không thấy ngang, không thấy lên |
+| Q6 | `Platform.MultiOrg` | Ship cùng module Orgs |
+| Q8 | Xóa Org | Vô hiệu hóa. Không hard delete |
+| Q12 | Seed Org | Không. Bỏ `VNA_DEFAULT` |
+| Q13 | Header | API vận hành theo luật root. API sản phẩm giữ resolver host (D19) |
+| Q10 | Cột host | Giữ hook Prepare và read mapper |
+| Q11 | Catalog events | Làm trong lượt platform. Chi tiết [ADR events](./2026-10-21_platform_orgs-catalog-events.md) |
 
-- [ ] Accept D1–D10, C1–C8, O3
-- [ ] Tên `Platform.Orgs` (+ satellite)
-- [ ] Facade `IOrgManager`
-- [x] Marker `IOrgEntity` ở `Platform.DDD.Domain`
-- [ ] Chốt DB placement
-- [ ] Ship MultiOrg + Orgs cùng release platform
-- [ ] Chốt `IOrgCatalog` (Abstractions)
-- [x] Working org HTTP scope (D16 / Q7) — `OrgFirstRequestScopeResolver` + middleware
-- [x] Cột host ngoài platform (Q10)
-- [ ] Soft-disable
+- [x] Accept D1–D19, C1–C10, O3
+- [x] Tên package và `IOrgManager` / `IOrgCatalog`
+- [x] `IOrgEntity` ở Domain
+- [x] Org trong DB tenant; danh sách nhìn xuống cây tenant
+- [x] Vô hiệu hóa, không seed Org
+- [x] Hai cửa HTTP scope
 
 ---
 
@@ -565,8 +570,8 @@ Giao **một vertical slice platform** — sản phẩm compose một lần, kh�
 
 | Mục | Giá trị |
 |-----|---------|
-| Decision | 🔴 **Proposed** (§7); catalog slice **đã code** theo D5/D13/D15 |
-| Implementation | 🟡 **🟢** Catalog + MultiOrg (**D16** middleware/resolver) + EF org filter + Api + events + IdentityAdmin + Sample **`UseOrgFirstScope`** + migration **`AddOrgCatalog`** + README. **🔴** seed `Org.View`/`Org.Manage`, `OrgApiTests`, skill `orgs-dotnet`, `DeleteAsync`, middleware exclude health/swagger |
-| Blocked by | Confirm §7 |
+| Decision | 🟢 **Accepted** 2026-10-25 (D1–D19, C1–C10, O3) |
+| Implementation | 🟡 Catalog + MultiOrg + EF org filter + Api + events + IdentityAdmin + Sample. Host có `Org.View` / `Org.Manage`. Không seed org. `ListAsync` gộp tenant hiện tại và tenant con (D17). Không hard delete (`98306`, không có HTTP DELETE). **🔴** `OrgApiTests`, skill `orgs-dotnet` |
+| Blocked by | Không. Phần đỏ: test HTTP và skill |
 | Unblocks | Catalog Org cho RBAC; module OrgStructure |
 | Owner | Platform |

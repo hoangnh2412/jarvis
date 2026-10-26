@@ -14,6 +14,12 @@ public sealed class User : IdentityUser<Guid>
     /// </summary>
     public Guid? TenantId { get; set; }
 
+    /// <summary>Đơn vị trên cây tổ chức. Null khi user chưa được gán.</summary>
+    public Guid? OrganizationalUnitId { get; set; }
+
+    /// <summary>Loại đơn vị tương ứng <see cref="OrganizationalUnitId"/>.</summary>
+    public string? UnitType { get; set; }
+
     /// <summary>
     /// Organization (member company) inside the tenant; null when the user is tenant-wide.
     /// </summary>

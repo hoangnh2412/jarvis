@@ -62,6 +62,22 @@ public sealed class OperandValidatorTests
         Assert.True(result.IsValid);
     }
 
+    [Fact(DisplayName = "T37c: ordering operator allows decimal literal on the right")]
+    public void T37c_OrderingOperatorAllowsDecimalLiteral()
+    {
+        var result = _validator.ValidateRule("Resource.Amount", ">", "20000000");
+
+        Assert.True(result.IsValid);
+    }
+
+    [Fact(DisplayName = "T37d: non-numeric literal rejected for ordering operator")]
+    public void T37d_NonNumericLiteralRejectedForOrdering()
+    {
+        var result = _validator.ValidateRule("Resource.Amount", ">", "not-a-number");
+
+        Assert.False(result.IsValid);
+    }
+
     [Fact(DisplayName = "T38: IN operator requires collection operand")]
     public void T38_InOperatorRequiresCollectionOperand()
     {
