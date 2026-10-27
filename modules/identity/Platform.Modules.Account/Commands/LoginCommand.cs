@@ -9,7 +9,11 @@ using Platform.DDD.Domain.Shared.Messaging;
 public sealed record LoginCommand : ICommand
 {
     public required string Username { get; init; }
+
     public required string Password { get; init; }
+
+    /// <summary><c>platform</c> = user Master (không tenant/org). <c>app</c> = user đã gắn tenant.</summary>
+    public string Realm { get; init; } = "app";
 }
 
 public sealed record LoginResponse

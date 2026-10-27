@@ -1,11 +1,11 @@
 # ADR — Module quản lý Organization (`Platform.Orgs`)
 
-> **Trạng thái:** 🟢 **Accepted** (2026-10-25). Catalog, không seed, không xóa cứng, list theo cây tenant đã code. Còn `OrgApiTests` và skill `orgs-dotnet` (§10).  
+> **Trạng thái:** 🟢 **Accepted** (2026-10-25). Implementation 🟢 slice VNA Host (2026-10-27): catalog, không seed, không hard delete, list cây tenant, events, `OrgApiTests` trên Host, skill `minipower-backend-orgs-dotnet` (repo minipower).  
 > **Ngày:** 2026-10-17 · Cập nhật phân cấp và §7: 2026-10-25  
 > **Loại:** Business module / Module Atomic (Library + Persistence + optional Abstractions)  
 > **Liên quan:** [Tenants module](./2026-08-07_platform_tenants-module.md) (🟡 catalog + UI vận hành), [Multitenancy package](./2026-08-06_platform_multitenancy-package.md) (🟢 ambient), [generic `ICurrentTenant<TTenant>`](./2026-08-06_platform_generic-current-tenant.md) (🟢), [Current User / Tenant](./2026-08-01_platform_current-user-tenant.md) (🟢 — D5 home vs working), [RBAC + ABAC](./2026-08-14_platform_rbac-abac-authorization.md) (🟡 — `User.OrgId`, `SameOrg`, `OrgAdmin`), [OrgStructure module](./2026-10-17_platform_orgstructure-module.md) (🟡 — cây nội bộ **trong** một Org; chưa gán Position), [Catalog Org events](./2026-10-21_platform_orgs-catalog-events.md) (🟡 publish sau `Success*`, T1/T2 chưa khép), [architecture-rules.md](./architecture-rules.md) (§0.2).  
 > **Phạm vi:** Catalog **Org** — người bán đứng trên hóa đơn, do một Tenant (kể cả Tenant con) tạo. Facade `IOrgManager`; marker **`IOrgEntity`**; optional **`ICurrentOrg`**. **Không** chứa Tenant cha-con (ADR Tenants) và **không** chứa cây phòng ban (ADR OrgStructure).  
-> **Change log:** 2026-10-25 — Mục 10 bỏ đỏ ở seed, list theo cây và không hard delete. `Org.View` / `Org.Manage` có trên Host. 2026-10-25 — `DeleteAsync` từ chối xóa cứng (98306), bỏ HTTP DELETE. `ListAsync` gộp org của tenant hiện tại và tenant con. Host không gọi seed `VNA_DEFAULT`. Publish event sau `Success*`, update là diff. 2026-10-25 — Org không có cha-con. Kênh tự tạo Org khách (chi nhánh, đại lý Minvoice) là Tenant con, không phải Org và không phải `OrganizationalUnit`. Chi nhánh VNA không tạo Org khách nên không thuộc ADR này. 2026-10-25 — Accept §7: D1–D18, C1–C10, O3. Vô hiệu hóa, không hard delete. Không seed Org. Danh sách nhìn xuống tenant con. API sản phẩm giữ resolver host. API vận hành theo luật root ở ADR Tenants.
+> **Change log:** 2026-10-27 — [ADR-009](../../docs/04-platform/DOC-09-adr/ADR-009-master-app-database-topology-platform-catalog.md) (Proposed): VNA đặt catalog **`orgs` trên Master DB** (`public`), **không** theo D10 “DB của tenant” — xem ADR-009 §4 khi triển khai. 2026-10-27 — `OrgApiTests` (`backend/tests/Einvoice.Host.Tests/Organization/OrgApiTests.cs`). Skill orgs-dotnet 🟢. Implementation VNA 🟢. 2026-10-25 — Mục 10 bỏ đỏ ở seed, list theo cây và không hard delete. `Org.View` / `Org.Manage` có trên Host. 2026-10-25 — `DeleteAsync` từ chối xóa cứng (98306), bỏ HTTP DELETE. `ListAsync` gộp org của tenant hiện tại và tenant con. Host không gọi seed `VNA_DEFAULT`. Publish event sau `Success*`, update là diff. 2026-10-25 — Org không có cha-con. Kênh tự tạo Org khách (chi nhánh, đại lý Minvoice) là Tenant con, không phải Org và không phải `OrganizationalUnit`. Chi nhánh VNA không tạo Org khách nên không thuộc ADR này. 2026-10-25 — Accept §7: D1–D18, C1–C10, O3. Vô hiệu hóa, không hard delete. Không seed Org. Danh sách nhìn xuống tenant con. API sản phẩm giữ resolver host. API vận hành theo luật root ở ADR Tenants.
 > **Ngoài phạm vi:** Cơ cấu tổ chức nội bộ tập đoàn; CRUD Tenant; ambient tenant R2 / `Change`; Authorization engine (rule evaluator); billing / subscription; dedicated-DB provisioning; UI portal production (host-owned). **Trong phạm vi platform:** catalog + ambient org + SPI cho module khác + HTTP API opt-in + filter EF + tích hợp IdentityAdmin/Authorization — Sample chỉ là host reference.  
 > **Chú thích icon:** 🟢 xong 100% · 🟡 đã làm, còn việc · 🔴 chưa làm
 
@@ -98,7 +98,7 @@ Platform đã có:
 | D4 | Facade ghi / admin | **`IOrgManager`** — create, update, set active, list có phân quyền; host **không** query `DbSet` trực tiếp |
 | D4b | Port đọc / tích hợp | **`IOrgCatalog`** (Abstractions) — `GetAsync(orgId, tenantId)`, `GetByCodeAsync`, `ListAsync`, **`ValidateForAssignmentAsync(orgId, tenantId, …)`**; **`OrgDescriptor`** DTO; **không** type `IOrgReference` riêng |
 | D5 | Bản ghi catalog | **Không** class `Org` trong package. Contract **`IOrgCatalogEntity`**: `Id`, `TenantId`, `Code`, `Name`, `IsActive`. Host class implement interface và **thêm cột** (`TaxCode`, …). `ApplyPlatformOrgCatalog<TOrg>()` chỉ cấu hình cột chuẩn; EF convention map cột host. Ghi cột host: subclass `CreateOrgInput` / `UpdateOrgInput` + **`IOrgCatalogHooks<TOrg>`** (Validate / Prepare / Success / Error / Finally). Đọc cột host: **`IOrgCatalogReadMapper<TOrg,TReadModel>`** + **`IOrgCatalogReader<TReadModel>`** (`UseReadModel` — ambient + explicit tenant). **`OrgDescriptor`** + **`IOrgCatalog`** giữ SPI cột chuẩn — không kế thừa descriptor |
-| D14 | Catalog events (đồng bộ) | **`OrgCreatedEvent` / `OrgUpdatedEvent` / `OrgDeletedEvent`** + port publish — chi tiết [ADR events](./2026-10-21_platform_orgs-catalog-events.md); **🔴 chưa code** |
+| D14 | Catalog events (đồng bộ) | **`OrgCreatedEvent` / `OrgUpdatedEvent`** publish sau khi ghi thành công. `OrgDeletedEvent` không phát vì không xóa cứng. Chi tiết [ADR events](./2026-10-21_platform_orgs-catalog-events.md) |
 | D6 | Scope nghiệp vụ | **`IOrgEntity`** (marker, cùng vai `ITenantEntity`) — 🟢 Domain. **Filter EF** theo working org: extension **`Platform.ORM.EntityFramework`** (hoặc satellite gắn ORM) bật qua host, song song filter `ITenantEntity` — không để “ADR ORM sau” |
 | D7 | Working Org | **`Platform.MultiOrg`** + contract Domain **`ICurrentOrg*` / `IOrgIdResolver*`** — mirror Multitenancy (accessor, R2). **`ICurrentOrgStore`** bridge từ **`IOrgCatalog`**. **Home** = `User.OrgId` (claim/resolver legacy). **Working HTTP** = **`IRequestScopeResolver`** + header **`X-Org-Id`** (bắt buộc) và **`X-Tenant-Id`** (tùy rule D16) — §5.1.1 |
 | D16 | HTTP working scope (org-first) | **`OrgFirstRequestScopeResolver`** (`IRequestScopeResolver`) + **`UseOrgFirstScope()`** middleware → **403** khi thiếu/sai scope. Org working **chỉ** từ **`X-Org-Id`** (GUID hợp lệ). Tenant: có header thì parse header; không header thì domain (`ITenantDomainLookup` nếu đăng ký) rồi **`ITenantIdResolverFactory.GetTenantIdForOrgScopeAsync`** (user → query → host, **không** đọc `X-Tenant-Id`). Luôn **`IOrgTenantScopeValidator`** (host: **`OrgCatalogTenantScopeValidator`**). Chi tiết §5.1.1 |
@@ -108,7 +108,7 @@ Platform đã có:
 | D15 | Persistence nội bộ | **`IOrgStore<TOrg>`** (core) + **`OrgStore<TOrg,TUnitOfWork>`** (EF satellite) — **không** đặt tên `*Service` / public repository; Manager + Catalog + Read dùng chung store |
 | D8 | **Không** chứa OrgStructure và **không** chứa Tenant con | Phòng ban và node không tạo Org khách → [OrgStructure ADR](./2026-10-17_platform_orgstructure-module.md). Kênh tạo Org khách → Tenant con trong [ADR Tenants](./2026-08-07_platform_tenants-module.md) |
 | D9 | DI Host | `AddPlatformOrgs<TOrg, TTenant>()` opt-in; **không** thay `AddCurrentTenant` |
-| D10 | DB placement | Org catalog **nằm trong DB của tenant** (bảng có `TenantId`). Không đưa bảng Org lên Master |
+| D10 | DB placement | Org catalog **nằm trong DB của tenant** (bảng có `TenantId`). Không đưa bảng Org lên Master — **VNA Host:** supersede theo [ADR-009](../../docs/04-platform/DOC-09-adr/ADR-009-master-app-database-topology-platform-catalog.md) (`public.orgs` trên Master) khi ADR-009 Accepted |
 | D17 | Ai được thấy Org nào | Tenant thấy Org của chính nó và Org của các tenant thấp hơn trong cây. Không thấy Org của tenant cùng cấp hoặc tenant cao hơn. Ví dụ Tenant HCM chỉ thấy Org trong HCM. Tenant Minvoice thấy Org của Minvoice, của HCM và của HN. Vì mỗi tenant một DB, danh sách của tenant cha đọc catalog của các DB con theo `ParentTenantId` |
 | D18 | Không seed Org | Platform và Host không tạo Org mặc định (không `VNA_DEFAULT`, không aligner seed). Người dùng tạo Org trên UI |
 | D19 | Hai cửa HTTP scope | API vận hành (`/platform/tenants` và API platform admin) theo luật root ở [ADR Tenants](./2026-08-07_platform_tenants-module.md) T12. API sản phẩm giữ resolver host hiện tại: người đã đăng nhập, không gửi header, dùng org và tenant gắn trên user. Thiếu header không được thành root |
@@ -419,7 +419,7 @@ UnitTest/
 └── Org/
     ├── OrgManagerTests.cs                   # 🟢 T1, T2, T5, T9
     ├── OrgCatalogModelTests.cs              # 🟢 model / limits
-    └── OrgApiTests.cs                       # 🔴 HTTP + permission (nếu bật Api)
+    └── OrgApiTests.cs                       # 🟢 VNA: `Einvoice.Host.Tests/Organization/OrgApiTests.cs` (contract `OrgController` + quyền catalog)
 ```
 
 **Host compose (sketch):**
@@ -571,7 +571,7 @@ Giao **một vertical slice platform** — sản phẩm compose một lần, kh�
 | Mục | Giá trị |
 |-----|---------|
 | Decision | 🟢 **Accepted** 2026-10-25 (D1–D19, C1–C10, O3) |
-| Implementation | 🟡 Catalog + MultiOrg + EF org filter + Api + events + IdentityAdmin + Sample. Host có `Org.View` / `Org.Manage`. Không seed org. `ListAsync` gộp tenant hiện tại và tenant con (D17). Không hard delete (`98306`, không có HTTP DELETE). **🔴** `OrgApiTests`, skill `orgs-dotnet` |
-| Blocked by | Không. Phần đỏ: test HTTP và skill |
+| Implementation | 🟢 **Hoàn thành** (VNA Host, 2026-10-27) — Catalog + MultiOrg + EF org filter + Api + events. `Org.View` / `Org.Manage`. Không seed org. `ListAsync` gộp tenant hiện tại và tenant con (D17). Không hard delete (`98306`, không HTTP DELETE). Test `OrgApiTests` trên Host. Skill `minipower-backend-orgs-dotnet` (repo minipower). **Ngoài slice VNA:** bộ `OrgApiTests` HTTP E2E trong Jarvis Sample (nếu bật Api) vẫn tùy host reference. |
+| Blocked by | Không |
 | Unblocks | Catalog Org cho RBAC; module OrgStructure |
 | Owner | Platform |

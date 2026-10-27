@@ -53,7 +53,12 @@ public sealed class LoginCommandHandler : IAsyncCommandHandler<LoginCommand, Log
 
         await _userManager.ResetAccessFailedCountAsync(user);
 
-        var token = GenerateAccessToken(user);
+        var isPlatformAccount = user.TenantId is null && user.OrgId is null;
+        var wantsPlatform = string.Equals(command.Realm, "platform", StringComparison.OrdinalIgnoreCase);
+        if (wantsPlatform != isPlatformAccount)
+            throw new UnauthorizedAccessException("Invalid username or password");
+
+        var token = GenerateAccessToken(user, wantsPlatform ? "platform" : "app");
 
         return new LoginResponse
         {
@@ -63,7 +68,7 @@ public sealed class LoginCommandHandler : IAsyncCommandHandler<LoginCommand, Log
         };
     }
 
-    private string GenerateAccessToken(User user)
+    private string GenerateAccessToken(User user, string realm)
     {
         var jwtOption = _jwtOptions.Get(PlatformAuthenticationSchemes.Bearer);
         if (jwtOption is null || jwtOption.IssuerSigningKeys.Length == 0)
@@ -77,7 +82,8 @@ public sealed class LoginCommandHandler : IAsyncCommandHandler<LoginCommand, Log
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new("sub", user.Id.ToString()),
             new("jti", Guid.NewGuid().ToString()),
-            new(ClaimTypes.Name, user.UserName ?? string.Empty)
+            new(ClaimTypes.Name, user.UserName ?? string.Empty),
+            new("realm", realm),
         };
 
         if (user.TenantId is { } tenantId)

@@ -1,7 +1,7 @@
 # ADR — RBAC + ABAC Authorization + ranh giới Account / IdentityAdmin
 
 > **Trạng thái:** 🟢 Accepted · **Bổ sung 2026-10-25:** tên chuẩn phạm vi đơn vị là `OrganizationalUnitId` + `UnitType` (D5, D9, D10). **Amendment 2026-10-03: 🟡 Proposed** (chờ anh Hoàng duyệt — §7.3 phát hiện rà soát, V6–V14, test §8.9; chưa được implement khi chưa duyệt)  
-> **Change log:** 2026-10-25 — D5, D9, D10 và bảng policy chuẩn ghi tên đơn vị mới và `StartsWith`. Phụ lục test lịch sử không viết lại. 2026-10-25 — Operand `OrganizationalUnitId`, `UnitType`, `LegalEntityId`, `OrganizationalUnitPath` và policy `P_SAME_ORGANIZATIONAL_UNIT`, `P_SAME_LEGAL_ENTITY`, `P_WITHIN_OU_SUBTREE` (toán tử `StartsWith`). `DepartmentId` và policy `P_SAME_DEPARTMENT` giữ cho bản ghi cũ; cài mới không seed policy phòng ban. Cột user và claim ghi cùng lúc khi gán đơn vị. Bảng lịch sử test trong file không viết lại. 2026-10-25 — `DepartmentId` / `SameDepartment` không còn là tên chuẩn phạm vi đơn vị.  
+> **Change log:** 2026-10-27 — [ADR-009](../../docs/04-platform/DOC-09-adr/ADR-009-master-app-database-topology-platform-catalog.md) (Proposed): schema `identity` chỉ AspNet* + `policies`/`policy_rules`; catalog Tenants/Orgs không nằm trong `identity` — xem ADR-009 §4 (C14 giữ nguyên). 2026-10-27 — §5.12 chốt thành phần `AuthorizationSnapshot` (identity + membership + Permissions + Policies). 2026-10-27 — §10.1 ghi nợ kỹ thuật slice VNA + governance (diễn giải cho người quyết, chưa implement). 2026-10-25 — D5, D9, D10 và bảng policy chuẩn ghi tên đơn vị mới và `StartsWith`. Phụ lục test lịch sử không viết lại. 2026-10-25 — Operand `OrganizationalUnitId`, `UnitType`, `LegalEntityId`, `OrganizationalUnitPath` và policy `P_SAME_ORGANIZATIONAL_UNIT`, `P_SAME_LEGAL_ENTITY`, `P_WITHIN_OU_SUBTREE` (toán tử `StartsWith`). `DepartmentId` và policy `P_SAME_DEPARTMENT` giữ cho bản ghi cũ; cài mới không seed policy phòng ban. Cột user và claim ghi cùng lúc khi gán đơn vị. Bảng lịch sử test trong file không viết lại. 2026-10-25 — `DepartmentId` / `SameDepartment` không còn là tên chuẩn phạm vi đơn vị.  
 > **Ngày:** 2026-08-14 · Accept: 2026-09-29 · Implement: 🟡 đang làm (rà soát code 2026-10-02, cập nhật Data Scope + Sample 2026-10-03 — đối chiếu C/D/Q: §7.2 · Data Scope: §5.11 · checklist: §10 · cấu trúc: §11 · Sample: §11.8 · phase: §12)  
 > **Loại:** Authorization / package boundary / module boundary / data model  
 > **Liên quan:** [Refactor Authentication](./refactor-authentication.md) (Auth ≠ Authorization), [Current User / Tenant](./2026-08-01_platform_current-user-tenant.md), [Multitenancy](./2026-08-06_platform_multitenancy-package.md), [refactoring-rules.md](./refactoring-rules.md) (§0.2 Module Atomic)  
@@ -711,7 +711,21 @@ Kiểm thử trực tiếp trên PostgreSQL 2026-10-03 (xem §11.8): danh sách 
 
 ### 5.12 Cache & Audit
 
-Snapshot gợi ý:
+**Authorization snapshot** = ảnh chụp quyền + phạm vi subject **sau khi** gom role/claim, dùng cho cache và evaluate nhanh. **Không** nhét vào JWT. Khi build snapshot, copy từ cột user (`TenantId`, `OrgId`) và từ membership org-structure (đơn vị, loại đơn vị, job position/grade/title) cùng với tập `Permissions` và `Policies` đã resolve.
+
+Thành phần **chốt** (2026-10-27):
+
+| Trường | Nguồn (gợi ý) |
+|--------|----------------|
+| `UserId` | User đang đăng nhập |
+| `TenantId`, `OrgId` | Cột `AspNetUsers` (C17) |
+| `OrgUnitId` | Đơn vị tổ chức gắn user (membership / claim `OrganizationalUnitId`) |
+| `OrgUnitTypeId` | Loại đơn vị (catalog `org_unit_types`, hoặc map từ `UnitType` trên OU) |
+| `JobPositionId`, `JobGradeId`, `JobTitleId` | Membership org-structure (vị trí, cấp, chức vụ) |
+| `Permissions` | Hợp permission từ role (RBAC) |
+| `Policies` | Hợp **mã** policy gắn role (ABAC), resolve rule khi evaluate |
+
+Attribute khác trên UserClaim (vd `ApproveLimit`, `OrganizationalUnitPath`, `ManagedDepartmentIds`) **không** nằm trong snapshot — engine vẫn đọc khi evaluate rule (operand `User.*`).
 
 ```csharp
 public sealed class AuthorizationSnapshot
@@ -719,16 +733,19 @@ public sealed class AuthorizationSnapshot
     public Guid UserId { get; init; }
     public Guid? TenantId { get; init; }
     public Guid? OrgId { get; init; }
-    public Guid? DepartmentId { get; init; }
+    public Guid? OrgUnitId { get; init; }
+    public Guid? OrgUnitTypeId { get; init; }
+    public Guid? JobPositionId { get; init; }
+    public Guid? JobGradeId { get; init; }
+    public Guid? JobTitleId { get; init; }
     public IReadOnlySet<string> Permissions { get; init; } = new HashSet<string>();
     public IReadOnlySet<string> Policies { get; init; } = new HashSet<string>();
-    public decimal? ApproveLimit { get; init; }
 }
 ```
 
-Invalidate khi đổi UserRole / RoleClaim / UserClaim / Role / Policy / PolicyRule.
+Invalidate snapshot (hoặc bump generation — [ADR-006](../../docs/04-platform/DOC-09-adr/ADR-006-authorization-cache-invalidation.md)) khi đổi UserRole / RoleClaim / UserClaim / Role / Policy / PolicyRule / **membership org-structure** (ảnh hưởng các cột identity ở trên).
 
-> **Hiện trạng (2026-10-02):** 🔴 chưa có `AuthorizationSnapshot`. `CachedPolicyProvider` chỉ cache `GetPolicyByCodeAsync` (engine không gọi hàm này) và chưa được đăng ký DI. Chưa ghi authorization trace; `AccessDecision` có `Reason` / `PolicyCode` nhưng không được log.
+> **Hiện trạng (2026-10-27):** 🔴 chưa có type `AuthorizationSnapshot` trong code; hình dữ liệu trên là **chuẩn ADR**, chưa implement. `CachedPolicyProvider` chỉ cache `GetPolicyByCodeAsync` (engine không gọi hàm này) và chưa đăng ký DI. Chưa ghi authorization trace; `AccessDecision` có `Reason` / `PolicyCode` nhưng không được log.
 
 Authorization trace (ERP audit) nên log Permission/Policy/result/reason; tránh log dữ liệu nhạy cảm thừa.
 
@@ -943,6 +960,17 @@ Icon: 🟢 code đúng quyết định · 🟡 đúng một phần · 🔴 chưa
 ### 7.3 Amendment 2026-10-03 — Phát hiện rà soát code *(🟡 Proposed — chờ duyệt)*
 
 Rà soát 2026-10-03 đối chiếu ADR ↔ code (`Platform.Authorization*`, `Platform.Modules.*`, `Sample.Infrastructure`, `Sample`, `UnitTest`). Suite `UnitTest.Authorization|Account|IdentityAdmin`: **178/178 xanh** — các lỗi dưới đây **không** bị test hiện có bắt. Mục này **chưa** là quyết định implement: hướng xử lý chỉ là đề xuất; khi được duyệt mới chuyển 🟢 và code theo.
+
+**Chốt 2026-10-27 (anh Hoàng): chỉ nhận các mục đã chỉ. Các mục khác của bản nháp không nhận.**
+
+| Mục | Quyết định | Việc |
+|-----|------------|------|
+| V7 | Nhận. Chỉ tài khoản nền tảng quản trị user tenant khác | Chưa code |
+| V10 | Nhận. Kiểm theo từng role, không gộp | [ADR-008](../../docs/04-platform/DOC-09-adr/ADR-008-grant-scope-by-role-path.md), làm sau |
+| V11 | Nhận. Cache hết hiệu lực ngay | [ADR-006](../../docs/04-platform/DOC-09-adr/ADR-006-authorization-cache-invalidation.md), làm sau |
+| V12 | Nhận. Làm sau | Chưa có ADR riêng |
+| V14 | Nhận. Token có `iss`, `aud` và refresh token | Chưa code |
+| V6, V8, V9, V13 | Không nhận trong phiên này | V8 không làm theo hướng gỡ policy. Nhật ký tổng thể là [ADR-007](../../docs/04-platform/DOC-09-adr/ADR-007-audit-log.md), Proposed, làm sau |
 
 #### 7.3.1 Lỗi / lỗ hổng chưa được ADR ghi nhận
 
@@ -1205,6 +1233,28 @@ Viết cùng lúc sửa V6–V14 (§7.3). Cột "Hiện tại" = kết quả d�
 | 8 | Role Governance | 🟡 | C5 (RoleLevel) + C6 (grant-scope) 🟢 trên mọi lệnh; tenant/org scope (§5.4 mục 4–5) 🔴 |
 | 9 | §8 Smoke + Regression (+ test mới khi implement) | 🟡 | 178 test Authorization/Account/IdentityAdmin xanh. Chạy full `UnitTest` 2026-10-03: 435/446 — T2/T3 (Authentication, Multitenancy, CurrentUser) xanh trừ `CFG_01` (plaintext API key trong appsettings Sample); 10 fail còn lại thuộc Workflow, SignalR, ORM/Dapper (cần PostgreSQL) — ngoài phạm vi ADR này |
 | 10 | Sample demo + [README index](./README.md) | 🟡 | Sample có demo phân quyền `api/_authz-demo` (engine + EF store + operand/seed đóng góp, Postgres thật: 13/13 kịch bản, Data Scope 21/21) và code mẫu endpoint `api/_authz-sample/expenses` (§5.11.2, §11.8); chưa compose Account/IdentityAdmin; README platform đã đồng bộ 2026-10-02 |
+
+### 10.1 Nợ kỹ thuật (tech debt) — đọc trước khi quyết “đóng Implementation”
+
+*Ghi 2026-10-27. Mục này **không** thay quyết định Accepted §7; chỉ liệt kê **khoảng trống giữa ADR ↔ code** trên **Jarvis + VNA eInvoice (`Einvoice.Host`)** để anh Hoàng rà và chọn làm tiếp hay ghi nợ. Icon: 🔴 chưa làm · 🟡 một phần · ⏸ đã chốt hướng, chưa code.*
+
+**Đã có (không liệt vào debt):** đăng nhập Bearer; catalog permission VNA; seed role/policy nền (`P_SAME_TENANT`, `P_SAME_ORG`, `P_OWNER_ONLY`, `P_SAME_POSITION`…); engine + Data Scope **chạy trong unit test và Sample**; UI gán quyền theo role; `GET /api/authorization/me`; cột ABAC trên bảng `inv_*` (chuẩn bị dữ liệu, chưa dùng để chặn API).
+
+| ID | Việc còn thiếu (nói ngắn) | Người dùng / hệ thống bị gì? | Mức | Hướng đã chốt? | Việc tiếp (gợi ý) |
+|----|---------------------------|------------------------------|-----|----------------|-------------------|
+| **TD-01** | API nghiệp vụ VNA **chưa** gọi engine / Data Scope | User có permission trên role (vd `Invoice.Update`) có thể thao tác **rộng hơn** phạm vi ABAC (phòng, org…) vì handler **không** truyền hóa đơn / dòng `inv_*` vào `AuthorizeAsync` hoặc `IDataScopeFilter` | Cao | Chưa (D14 🟡) | Chốt danh sách endpoint Must; gắn engine hoặc filter list theo permission + policy trên từng module |
+| **TD-02** | Cột scope trên `inv_*` chưa nối luật | DB đã có `tenant_id`, `org_id`, `branch_/office_/agent_organization_unit_id`, `user_id`, `job_position_id`, `job_grade_id` nhưng **ghi / đọc / kiểm quyền** chưa thống nhất một pipeline | Cao | Một phần (operand Host) | Khi làm TD-01: map resource field ↔ policy; quy ước ai set cột khi tạo/sửa hóa đơn |
+| **TD-03** | Cache policy **không** hết hiệu lực ngay sau sửa quyền | Sau đổi role/policy trên UI, request tiếp theo (cùng node hoặc node khác) vẫn có thể dùng policy **cũ** đến khi cache TTL hết | Trung bình | ⏸ V11 → [ADR-006](../../docs/04-platform/DOC-09-adr/ADR-006-authorization-cache-invalidation.md) Proposed | Duyệt ADR-006 rồi implement generation counter; không bật `CachedPolicyProvider` “chỉ TTL” làm chuẩn |
+| **TD-04** | IdentityAdmin **chưa** khóa theo tenant/org (V7) | Tenant admin có thể (theo handler Jarvis hiện tại) thao tác user **tenant khác** nếu biết id; list user **không** lọc đúng phạm vi actor | Cao | ⏸ V7 nhận 2026-10-27, **chưa code** | `CanManageScopeAsync` + lọc `GetUsers`; chỉ user nền tảng (`TenantId` và `OrgId` null) vượt tenant |
+| **TD-05** | Cấp quyền theo **gộp** nhiều role (V10) | Người có hai role có thể tạo role mới **rộng hơn** từng đường quyền họ đang có (policy role A + policy role B “cộng” được) | Trung bình | ⏸ V10 → [ADR-008](../../docs/04-platform/DOC-09-adr/ADR-008-grant-scope-by-role-path.md) Proposed | Duyệt ADR-008; sửa handler gán permission/policy |
+| **TD-06** | JWT / session (V14) | Token thiếu `iss`/`aud` chuẩn hóa; refresh token chưa có; hạn token còn hardcode một số chỗ | Thấp–TB | ⏸ V14 nhận, **chưa code** | DEC/ slice Account; không bắt buộc để chặn TD-01 |
+| **TD-07** | `AuthorizeAsync` với `resource: null` (V12) | Dev gọi nhầm API engine **không** truyền resource → chỉ RBAC, **bỏ qua** ABAC dù role có policy | Trung bình | ⏸ V12 “làm sau”, chưa ADR riêng | ADR hoặc API tách `HasPermission` vs `Authorize` bắt buộc resource |
+| **TD-08** | Claim vị trí / OU sync user nghiệp vụ | Gán thành viên org-structure vẫn ghi claim qua **Master** `UserManager`; user đăng nhập **app** nằm schema `tenant` → claim `PositionId` / OU **không** đồng bộ cho ABAC trên user nghiệp vụ | Cao | Chưa | Slice org-structure + identity tenant: ghi claim trên DB đúng realm |
+| **TD-09** | Amendment V6, V8, V9, V13 **không** nhận 2026-10-27 | Không làm theo các đề xuất tương ứng trong §7.3 (lockout chi tiết V6, chặn gỡ policy V8, permission trên handler V9, bootstrap Sample V13). Gỡ policy + lý do → **ADR-007** audit tổng thể, không feature lẻ | — | Từ chối / chuyển ADR-007 | Không implement V8; audit khi ADR-007 Accepted |
+
+**Cách đọc với §10 checklist:** hàng 4 (runtime + Data Scope) 🟡 chủ yếu vì **TD-01, TD-02**; hàng 8 (governance) 🔴 chủ yếu vì **TD-04, TD-05**; D13 🔴 trùng **TD-03**. Amendment §7.3 vẫn **Proposed** cho các mục chưa nhận; các mục anh đã nhận (V7, V10, V11, V12, V14) nằm ở cột “Hướng đã chốt” trên, **chưa** tự biến thành code.
+
+**Không thuộc debt của ADR này (ghi nhận):** dual login Master / tenant DB và provision admin khi tạo tenant — xem [ADR Tenants](./2026-08-07_platform_tenants-module.md) Implementation 🟢; catalog Org / org-structure — ADR Orgs / OrgStructure riêng.
 
 ---
 

@@ -1,12 +1,12 @@
 # ADR — Module cơ cấu tổ chức (`Platform.OrgStructure`)
 
-> **Trạng thái:** 🟢 **Accepted** (2026-10-25). Implementation 🟡 Host API + migration `AddOrgStructure`, màn `/system/org-structure`. Chưa gán Position cho user.  
+> **Trạng thái:** 🟢 **Accepted** (2026-10-25). Implementation 🟡 Host API + migration `AddOrgStructure`, màn `/system/org-structure`. Gán thành viên ghi claim `PositionId` (policy `P_SAME_POSITION` trên Host). Skill `minipower-backend-orgstructure-dotnet` nằm ở repo minipower.  
 > **Ngày:** 2026-10-17 · Cập nhật phân cấp và §7: 2026-10-25  
 > **Loại:** Business module / Module Atomic (Library + Persistence + Abstractions)  
 > **Liên quan:** [Orgs module](./2026-10-17_platform_orgs-module.md) (🟡 catalog, không seed, không xóa cứng), [RBAC + ABAC](./2026-08-14_platform_rbac-abac-authorization.md) (🟡 — tên chuẩn `OrganizationalUnitId` / `UnitType`; `DepartmentId` chỉ còn cho rule cũ), [Tenants / Multitenancy](./2026-08-07_platform_tenants-module.md) · [Multitenancy package](./2026-08-06_platform_multitenancy-package.md), [architecture-rules.md](./architecture-rules.md) (§0.2).  
 > **Phạm vi:** Cây tổ chức **bên trong một Org**: phòng ban, và các node **không tạo Org** (chi nhánh, phòng vé, đại lý của VNA — hóa đơn vẫn thuộc Org VNA). Pháp nhân, chức danh, vị trí giữ trong module này.  
 > **Ngoài phạm vi:** Catalog Org; Tenant và Tenant con. Chi nhánh HCM, HN và đại lý của Minvoice **là Tenant con**, không phải `OrganizationalUnit`. CRUD Tenant; Authorization engine; payroll; workflow duyệt; UI org-chart đầy đủ.  
-> **Change log:** 2026-10-25 — Host: entity `sys`, API `api/v1/org-structure`, migration `AddOrgStructure`, UnitType trên Host, UI `/system/org-structure` xem trước mẫu rồi xác nhận. Gán Position cho user vẫn để sau. 2026-10-25 — Library `Platform.OrgStructure`: facade, `Path`, mẫu `simple-company` có xem trước, test manager. Chưa Host/API. 2026-10-25 — `UnitType.Branch` chỉ cho node không tạo Org khách (mẫu VNA). Kênh tạo Org khách chuyển sang ADR Tenants. 2026-10-25 — Accept §7: D1–D12, C1–C8, O3. Một facade. Pháp nhân trong cùng lượt. Cây lưu `Path`. Không tự seed. Seed chỉ khi user chọn và đã xem trước dữ liệu. Bỏ `DepartmentId`. Thêm `IOrganizationalUnitScope`.
+> **Change log:** 2026-10-27 — [ADR-009](../../docs/04-platform/DOC-09-adr/ADR-009-master-app-database-topology-platform-catalog.md) (**Accepted**): bảng org-structure trên App DB schema **`system`** (thay `sys` as-built) khi migration theo ADR-009. 2026-10-25 — Host: entity `sys`, API `api/v1/org-structure`, migration `AddOrgStructure`, UnitType trên Host, UI `/system/org-structure` xem trước mẫu rồi xác nhận. Gán Position cho user vẫn để sau. 2026-10-25 — Library `Platform.OrgStructure`: facade, `Path`, mẫu `simple-company` có xem trước, test manager. Chưa Host/API. 2026-10-25 — `UnitType.Branch` chỉ cho node không tạo Org khách (mẫu VNA). Kênh tạo Org khách chuyển sang ADR Tenants. 2026-10-25 — Accept §7: D1–D12, C1–C8, O3. Một facade. Pháp nhân trong cùng lượt. Cây lưu `Path`. Không tự seed. Seed chỉ khi user chọn và đã xem trước dữ liệu. Bỏ `DepartmentId`. Thêm `IOrganizationalUnitScope`.
 > **Chú thích icon:** 🟢 xong 100% · 🟡 đã làm, còn việc · 🔴 chưa làm
 
 ---
@@ -266,7 +266,7 @@ Host
 
 | # | Case | Expect | Trạng thái |
 |---|------|--------|------------|
-| T4 | Policy dùng `OrganizationalUnitId` | Pass với OU id hợp lệ. `DepartmentId` không còn là tên chuẩn | 🔴 |
+| T4 | Policy dùng `OrganizationalUnitId` | Pass với OU id hợp lệ. `DepartmentId` không còn là tên chuẩn | 🟡 Host seed `P_SAME_ORGANIZATIONAL_UNIT` và `P_SAME_POSITION` |
 
 ### 8.3 Mới
 
