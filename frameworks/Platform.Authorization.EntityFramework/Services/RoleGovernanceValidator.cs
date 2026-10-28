@@ -87,8 +87,11 @@ public sealed class RoleGovernanceValidator : IRoleGovernanceValidator
         if (actor is null)
             return false;
 
-        if (actor.TenantId is null)
+        if (actor.TenantId is null && actor.OrgId is null)
             return true;
+
+        if (actor.TenantId is null)
+            return false;
 
         if (targetTenantId != actor.TenantId)
             return false;
