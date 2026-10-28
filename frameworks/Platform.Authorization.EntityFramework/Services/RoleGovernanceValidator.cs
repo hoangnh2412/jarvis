@@ -21,11 +21,13 @@ public sealed class RoleGovernanceValidator : IRoleGovernanceValidator
     /// </summary>
     public async Task<int> GetMaxRoleLevelAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var maxLevel = await (
-                from ur in _context.UserRoles
-                join r in _context.Roles on ur.RoleId equals r.Id
-                where ur.UserId == userId
-                select (int?)r.RoleLevel)
+        var maxLevel = await _context.UserRoles
+            .Where(ur => ur.UserId == userId)
+            .Join(
+                _context.Roles,
+                ur => ur.RoleId,
+                role => role.Id,
+                (ur, role) => (int?)role.RoleLevel)
             .MaxAsync(cancellationToken);
 
         return maxLevel ?? 0;

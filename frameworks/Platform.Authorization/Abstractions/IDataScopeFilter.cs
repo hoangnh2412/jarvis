@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 namespace Platform.Authorization.Abstractions;
 
 /// <summary>
@@ -16,6 +18,15 @@ public interface IDataScopeFilter
     /// </summary>
     Task<IQueryable<T>> ApplyFilterAsync<T>(
         IQueryable<T> query,
+        Guid userId,
+        string permission,
+        CancellationToken cancellationToken = default) where T : class;
+
+    /// <summary>
+    /// Biểu thức <c>Where</c> của phạm vi. <c>null</c> khi wildcard (không lọc).
+    /// Gắn vào query của DbContext sẽ thực thi, không giữ <c>IQueryable</c> của context khác.
+    /// </summary>
+    Task<Expression<Func<T, bool>>?> GetScopePredicateAsync<T>(
         Guid userId,
         string permission,
         CancellationToken cancellationToken = default) where T : class;

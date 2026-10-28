@@ -43,11 +43,13 @@ public sealed class PermissionProvider : IPermissionProvider
 
     public async Task<IReadOnlyDictionary<Guid, ISet<string>>> GetPermissionsByRoleAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var rows = await (
-                from ur in _context.UserRoles
-                join rc in _context.RoleClaims on ur.RoleId equals rc.RoleId
-                where ur.UserId == userId && rc.ClaimType == "Permission"
-                select new { rc.RoleId, rc.ClaimValue })
+        var rows = await _context.UserRoles
+            .Where(ur => ur.UserId == userId)
+            .Join(
+                _context.RoleClaims.Where(rc => rc.ClaimType == "Permission"),
+                ur => ur.RoleId,
+                rc => rc.RoleId,
+                (ur, rc) => new { rc.RoleId, rc.ClaimValue })
             .ToListAsync(cancellationToken);
 
         return rows

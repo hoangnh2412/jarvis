@@ -51,6 +51,14 @@ public sealed class DataScopeFilter : IDataScopeFilter
         return predicate is null ? query : query.Where(predicate);
     }
 
+    /// <inheritdoc />
+    public Task<Expression<Func<T, bool>>?> GetScopePredicateAsync<T>(
+        Guid userId,
+        string permission,
+        CancellationToken cancellationToken = default)
+        where T : class =>
+        BuildPredicateAsync<T>(userId, permission, cancellationToken);
+
     /// <summary>
     /// Predicate phạm vi cho <typeparamref name="T"/>; <c>null</c> nghĩa là không cần lọc (wildcard).
     /// </summary>
