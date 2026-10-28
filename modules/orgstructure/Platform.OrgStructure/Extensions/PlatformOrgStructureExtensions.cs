@@ -15,7 +15,10 @@ public static class PlatformOrgStructureExtensions
         where TPosition : class, IPositionEntity
     {
         ArgumentNullException.ThrowIfNull(builder);
+        builder.Services.Configure<OrgStructureOptions>(builder.Configuration.GetSection(OrgStructureOptions.SectionName));
+        builder.Services.AddHttpContextAccessor();
         builder.Services.TryAddScoped<IOrgStructureManager, OrgStructureManager<TUnit, TLegalEntity, TJobTitle, TPosition>>();
+        builder.Services.TryAddScoped<IRequestOrgUnitScope, RequestOrgUnitScopeService>();
         return new PlatformOrgStructureBuilder<TUnit, TLegalEntity, TJobTitle, TPosition>(builder);
     }
 }
