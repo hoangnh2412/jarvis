@@ -37,6 +37,7 @@ export type SettingConnection = {
   apiBase: string
   tenantId: string
   apiKey: string
+  headers?: Record<string, string>
 }
 
 export type SettingOption = {

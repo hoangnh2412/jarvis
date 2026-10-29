@@ -6,7 +6,8 @@ export {
   SettingSelect,
 } from './components'
 export {
-  DEFAULT_SETTING_CONNECTION,
+  configureSettingConnection,
+  getSettingConnection,
   getSettingForm,
   getSettingGroups,
   saveSettingGroup,

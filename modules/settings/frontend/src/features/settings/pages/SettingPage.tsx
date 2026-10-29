@@ -11,7 +11,7 @@ import {
 } from '@platform/core'
 import { ChevronDown, RefreshCw, Save } from 'lucide-react'
 import {
-  DEFAULT_SETTING_CONNECTION,
+  getSettingConnection,
   getSettingForm,
   getSettingGroups,
   saveSettingGroup,
@@ -127,7 +127,7 @@ export function SettingPage() {
     patchForm(groupName, { loading: true })
     try {
       const items = await getSettingForm(
-        DEFAULT_SETTING_CONNECTION,
+        getSettingConnection(),
         groupName,
       )
       loadedGroupsRef.current.add(groupName)
@@ -155,7 +155,7 @@ export function SettingPage() {
     setLoadingGroups(true)
     setStatus(null)
     try {
-      const nextGroups = await getSettingGroups(DEFAULT_SETTING_CONNECTION)
+      const nextGroups = await getSettingGroups(getSettingConnection())
       setGroups(nextGroups)
       loadedGroupsRef.current.clear()
       inflightGroupsRef.current.clear()
@@ -236,7 +236,7 @@ export function SettingPage() {
     setStatus(null)
     try {
       await saveSettingGroup(
-        DEFAULT_SETTING_CONNECTION,
+        getSettingConnection(),
         group.name,
         values,
       )

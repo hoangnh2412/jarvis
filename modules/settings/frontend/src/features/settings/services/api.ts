@@ -20,11 +20,31 @@ type RequestOptions = {
   requiresTenant?: boolean
 }
 
-export const DEFAULT_SETTING_CONNECTION: SettingConnection = {
-  // Same-origin với Sample (wwwroot) hoặc Vite proxy /api → Sample
-  apiBase: '/api/v1/settings',
-  tenantId: '11111111-1111-1111-1111-111111111111',
-  apiKey: '',
+const connectionPatch: Partial<SettingConnection> = {}
+
+/** Host bắt buộc gọi trước khi dùng SettingPage hoặc API client (apiBase, tenantId, …). */
+export function configureSettingConnection(patch: Partial<SettingConnection>) {
+  if (patch.apiBase !== undefined) connectionPatch.apiBase = patch.apiBase
+  if (patch.tenantId !== undefined) connectionPatch.tenantId = patch.tenantId
+  if (patch.apiKey !== undefined) connectionPatch.apiKey = patch.apiKey
+  if (patch.headers !== undefined) connectionPatch.headers = patch.headers
+}
+
+export function getSettingConnection(): SettingConnection {
+  const connection: SettingConnection = {
+    apiBase: connectionPatch.apiBase ?? '',
+    tenantId: connectionPatch.tenantId ?? '',
+    apiKey: connectionPatch.apiKey ?? '',
+    headers: connectionPatch.headers,
+  }
+
+  if (!connection.apiBase.trim()) {
+    throw new Error(
+      'Module Setting chưa được cấu hình: host phải gọi configureSettingConnection({ apiBase, tenantId, ... }) trước khi gọi API.',
+    )
+  }
+
+  return connection
 }
 
 export async function getSettingGroups(connection: SettingConnection) {
@@ -78,6 +98,11 @@ async function request<T>(
   if (tenantId) headers.set('X-Tenant-Id', tenantId)
   if (connection.apiKey.trim()) {
     headers.set('X-API-KEY', connection.apiKey.trim())
+  }
+  if (connection.headers) {
+    for (const [name, value] of Object.entries(connection.headers)) {
+      if (value) headers.set(name, value)
+    }
   }
   if (options.body !== undefined) {
     headers.set('Content-Type', 'application/json')
