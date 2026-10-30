@@ -4,7 +4,7 @@ Platform **test-time** (TypeScript): không nằm trong `Jarvis.sln`, không đi
 
 | Package / folder | Vai trò |
 |------------------|---------|
-| `@jarvis/autotest` (`core/`) | Contract engine-agnostic: `ApiClient`, `IHttpTransport`, `IBrowserDriver`, `Workflow`, reporting, `pollUntil` |
+| `@jarvis/autotest` (`core/`) | Contract engine-agnostic — xem [core/README.md](core/README.md) |
 | `@jarvis/autotest.playwright` (`playwright/`) | Satellite Playwright — `PlaywrightTransport`, `PlaywrightBrowserDriver` |
 | `sample/` | Consumer SAD §17 chống Host [`Sample/`](../Sample/) (API + SPA). **Không** copy vào `Sample/clients/` |
 

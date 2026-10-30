@@ -1,7 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 
+const REPORTS_ROOT_KEYS = ['AUTOTEST_REPORTS_ROOT', 'REPORTS_ROOT'] as const;
+
 export function getReportsRoot(): string {
+  for (const key of REPORTS_ROOT_KEYS) {
+    const value = process.env[key]?.trim();
+    if (value) {
+      return path.resolve(value);
+    }
+  }
   return path.resolve(process.cwd(), 'reports');
 }
 
@@ -13,11 +21,7 @@ function pad(value: number): string {
 
 export function createRunId(): string {
   const now = new Date();
-  const date = [
-    now.getFullYear(),
-    pad(now.getMonth() + 1),
-    pad(now.getDate()),
-  ].join('');
+  const date = [now.getFullYear(), pad(now.getMonth() + 1), pad(now.getDate())].join('');
   const time = [pad(now.getHours()), pad(now.getMinutes()), pad(now.getSeconds())].join('');
   const random = Math.random().toString(36).slice(2, 6);
   return `${date}-${time}-${random}`;
@@ -28,6 +32,11 @@ export function getRunId(): string {
     currentRunId = createRunId();
   }
   return currentRunId;
+}
+
+/** Tách runId giữa các worker / suite (unit test, parallel). */
+export function resetRunId(): void {
+  currentRunId = null;
 }
 
 export function getReportDir(runId: string): string {

@@ -1,19 +1,22 @@
 export { type TestContext, createTestContext } from './core/TestContext';
-export { type Configuration, loadConfiguration } from './core/Configuration';
+export { type Configuration, loadConfiguration, assertConfigurationReady } from './core/Configuration';
 export { createTestContextWithDefaults } from './core/createTestContext';
 
 export { type Workflow, type WorkflowContext } from './workflow/Workflow';
 
-export { ApiClient, ApiClientError, type RequestOptions } from './api/ApiClient';
+export { ApiClient, ApiClientError, type HttpMethod, type RawApiResponse, type RequestOptions } from './api/ApiClient';
 
 export { type AuthStrategy } from './authentication/AuthStrategy';
 export { ApiKeyAuth } from './authentication/ApiKeyAuth';
+export { BearerTokenAuth } from './authentication/BearerTokenAuth';
+export { CompositeAuth } from './authentication/CompositeAuth';
 export { type Logger } from './logging/Logger';
 export { ConsoleLogger } from './logging/ConsoleLogger';
 
 export {
   createRunId,
   getRunId,
+  resetRunId,
   getReportDir,
   ensureReportDir,
   writeRunMeta,

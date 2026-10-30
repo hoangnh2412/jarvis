@@ -6,13 +6,34 @@ import type { IHttpTransport, HttpTransportResponse } from '../../src/ports/IHtt
 class FakeTransport implements IHttpTransport {
   calls: Array<{ method: string; url: string; options?: Record<string, unknown> }> = [];
   constructor(private readonly responder: (method: string, url: string) => HttpTransportResponse) {}
-  async get(url: string, options?: Record<string, unknown>): Promise<HttpTransportResponse> {
-    this.calls.push({ method: 'get', url, options });
-    return this.responder('get', url);
+
+  private call(method: string, url: string, options?: Record<string, unknown>): Promise<HttpTransportResponse> {
+    this.calls.push({ method, url, options });
+    return Promise.resolve(this.responder(method, url));
   }
+
+  async get(url: string, options?: Record<string, unknown>): Promise<HttpTransportResponse> {
+    return this.call('get', url, options);
+  }
+
+  async head(url: string, options?: Record<string, unknown>): Promise<HttpTransportResponse> {
+    return this.call('head', url, options);
+  }
+
   async post(url: string, options?: Record<string, unknown>): Promise<HttpTransportResponse> {
-    this.calls.push({ method: 'post', url, options });
-    return this.responder('post', url);
+    return this.call('post', url, options);
+  }
+
+  async put(url: string, options?: Record<string, unknown>): Promise<HttpTransportResponse> {
+    return this.call('put', url, options);
+  }
+
+  async patch(url: string, options?: Record<string, unknown>): Promise<HttpTransportResponse> {
+    return this.call('patch', url, options);
+  }
+
+  async delete(url: string, options?: Record<string, unknown>): Promise<HttpTransportResponse> {
+    return this.call('delete', url, options);
   }
 }
 
@@ -68,6 +89,7 @@ test('HTTP non-ok ném ApiClientError với status và body', async () => {
     const err = error as ApiClientError;
     assert.equal(err.status, 500);
     assert.equal(err.body, 'boom');
+    assert.equal(err.url, 'http://x');
     assert.equal(err.name, 'ApiClientError');
     return true;
   });
@@ -94,4 +116,36 @@ test('response rỗng trả null', async () => {
 
 test('constructor thiếu baseUrl ném Error', () => {
   assert.throws(() => new ApiClient(new FakeTransport(() => jsonResponse(200, '{}')), '', {}), /baseUrl/);
+});
+
+test('constructor baseUrl không hợp lệ ném Error', () => {
+  assert.throws(() => new ApiClient(new FakeTransport(() => jsonResponse(200, '{}')), 'not-a-url', {}), /không hợp lệ/);
+});
+
+test('baseUrl bỏ slash cuối', async () => {
+  const probe = new (class extends ApiClient {
+    probeBuildUrl() {
+      return this.buildUrl('/a');
+    }
+  })(new FakeTransport(() => jsonResponse(200, '{}')), 'http://h/', {});
+  assert.equal(await probe.probeBuildUrl(), 'http://h/a');
+});
+
+test('put gọi transport.put với JSON body', async () => {
+  const transport = new FakeTransport(() => jsonResponse(200, '{"ok":true}'));
+  const client = new (class extends ApiClient {
+    putPublic<T>(p: string, o?: RequestOptions) {
+      return this.put<T>(p, o);
+    }
+  })(transport, 'http://h', {});
+  await client.putPublic('/x', { body: { id: 1 } });
+  assert.equal(transport.calls[0].method, 'put');
+});
+
+test('requestRaw không ném khi HTTP 404', async () => {
+  const client = new ApiClient(new FakeTransport(() => jsonResponse(404, '{"code":"NF"}')), 'http://h', {});
+  const raw = await client.requestRaw<{ code: string }>('GET', '/missing');
+  assert.equal(raw.status, 404);
+  assert.equal(raw.ok, false);
+  assert.equal(raw.body.code, 'NF');
 });

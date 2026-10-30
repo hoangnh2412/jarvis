@@ -1,5 +1,5 @@
 import { createTestContext, type TestContext } from './TestContext';
-import { loadConfiguration, type Configuration } from './Configuration';
+import { loadConfiguration, type Configuration, assertConfigurationReady } from './Configuration';
 import { createRunId } from '../reporting/RunContext';
 
 export function createTestContextWithDefaults(
@@ -8,4 +8,4 @@ export function createTestContextWithDefaults(
   return createTestContext(createRunId(), env);
 }
 
-export { createTestContext, type TestContext, loadConfiguration, type Configuration };
+export { createTestContext, type TestContext, loadConfiguration, type Configuration, assertConfigurationReady };

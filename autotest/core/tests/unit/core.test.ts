@@ -4,7 +4,9 @@ import { ApiKeyAuth } from '../../src/authentication/ApiKeyAuth';
 import { ConsoleLogger } from '../../src/logging/ConsoleLogger';
 import { createTestContext } from '../../src/core/TestContext';
 import { createTestContextWithDefaults } from '../../src/core/createTestContext';
-import { loadConfiguration } from '../../src/core/Configuration';
+import { loadConfiguration, assertConfigurationReady } from '../../src/core/Configuration';
+import { BearerTokenAuth } from '../../src/authentication/BearerTokenAuth';
+import { CompositeAuth } from '../../src/authentication/CompositeAuth';
 import { createTestHarness } from '../../src/composition/createTestHarness';
 import type { IHttpTransport } from '../../src/ports/IHttpTransport';
 
@@ -51,6 +53,39 @@ test('loadConfiguration merge overrides', () => {
   const config = loadConfiguration({ baseUrl: 'http://x' });
   assert.equal(config.baseUrl, 'http://x');
   assert.deepEqual(config.auth, {});
+});
+
+test('loadConfiguration đọc AUTOTEST_BASE_URL từ env', () => {
+  const previous = process.env.AUTOTEST_BASE_URL;
+  process.env.AUTOTEST_BASE_URL = 'http://from-env';
+  try {
+    const config = loadConfiguration();
+    assert.equal(config.baseUrl, 'http://from-env');
+  } finally {
+    if (previous === undefined) {
+      delete process.env.AUTOTEST_BASE_URL;
+    } else {
+      process.env.AUTOTEST_BASE_URL = previous;
+    }
+  }
+});
+
+test('assertConfigurationReady ném khi thiếu baseUrl', () => {
+  assert.throws(() => assertConfigurationReady({ baseUrl: '', auth: {} }), /baseUrl/);
+});
+
+test('BearerTokenAuth gắn Authorization Bearer', () => {
+  const headers = new BearerTokenAuth('tok').applyHeaders();
+  assert.equal(headers.Authorization, 'Bearer tok');
+});
+
+test('CompositeAuth gộp headers', () => {
+  const headers = new CompositeAuth([
+    new ApiKeyAuth('k'),
+    new BearerTokenAuth('t'),
+  ]).applyHeaders();
+  assert.equal(headers['X-KEY-API'], 'k');
+  assert.equal(headers.Authorization, 'Bearer t');
 });
 
 test('createTestHarness build registry từ deps', () => {
