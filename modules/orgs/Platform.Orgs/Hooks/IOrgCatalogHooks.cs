@@ -6,7 +6,7 @@ namespace Platform.Orgs.Hooks;
 /// khi lỗi: <b>Error</b> (sau khi gán <see cref="OrgCatalogHookContextBase.Exception"/>) → rethrow → <b>Finally</b> (luôn).
 /// </summary>
 public interface IOrgCatalogHooks<TOrg>
-    where TOrg : class, IOrgCatalogEntity
+    where TOrg : class, IOrgManagementEntity
 {
     // --- Validate (ném exception để hủy thao tác) ---
 

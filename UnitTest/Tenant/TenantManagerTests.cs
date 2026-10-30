@@ -41,11 +41,11 @@ public class TenantManagerTests
             Code = " HCM ",
             Name = "Minvoice HCM",
             ConnectionString = Connection,
-            ParentTenantId = parent.Id,
+            ParentId = parent.Id,
         });
 
         Assert.Equal("hcm", child.Code);
-        Assert.Equal(parent.Id, child.ParentTenantId);
+        Assert.Equal(parent.Id, child.ParentId);
         Assert.Equal(Connection, child.ConnectionString);
         Assert.True(child.IsActive);
     }
@@ -131,7 +131,7 @@ public class TenantManagerTests
         Code = code,
         Name = code,
         ConnectionString = Connection,
-        ParentTenantId = parentId,
+        ParentId = parentId,
     };
 
     private static TenantManager<TestTenant> CreateManager() => new(new MemoryTenantStore());
@@ -146,7 +146,7 @@ public class TenantManagerTests
 
         public bool IsActive { get; set; }
 
-        public Guid? ParentTenantId { get; set; }
+        public Guid? ParentId { get; set; }
 
         public string ConnectionString { get; set; } = string.Empty;
     }

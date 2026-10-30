@@ -14,7 +14,7 @@ namespace Platform.Orgs.Extensions;
 public static class PlatformOrgsExtensions
 {
     public static PlatformOrgsBuilder<TOrg, TTenant> AddPlatformOrgs<TOrg, TTenant>(this IHostApplicationBuilder builder)
-        where TOrg : class, IOrgCatalogEntity
+        where TOrg : class, IOrgManagementEntity
         where TTenant : class, ICurrentTenantIdentity
     {
         ArgumentNullException.ThrowIfNull(builder);

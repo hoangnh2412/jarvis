@@ -14,4 +14,6 @@ public sealed class OrgDescriptor
     public string Name { get; init; } = string.Empty;
 
     public bool IsActive { get; init; }
+
+    public Guid? ParentId { get; init; }
 }

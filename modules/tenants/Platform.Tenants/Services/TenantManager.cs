@@ -26,13 +26,13 @@ public sealed class TenantManager<TTenant> : ITenantManager
             throw new ConflictException(TenantErrorCode.CodeAlreadyExists);
 
         var id = Guid.NewGuid();
-        await EnsureParentAsync(id, input.ParentTenantId, cancellationToken).ConfigureAwait(false);
+        await EnsureParentAsync(id, input.ParentId, cancellationToken).ConfigureAwait(false);
 
         var entity = CreateEntity(id);
         entity.Code = code;
         entity.Name = name;
         entity.IsActive = true;
-        entity.ParentTenantId = input.ParentTenantId;
+        entity.ParentId = input.ParentId;
         entity.ConnectionString = connectionString;
 
         await _store.AddAsync(entity, cancellationToken).ConfigureAwait(false);
@@ -77,7 +77,7 @@ public sealed class TenantManager<TTenant> : ITenantManager
     {
         var entity = await FindRequiredAsync(id, cancellationToken).ConfigureAwait(false);
         await EnsureParentAsync(id, parentTenantId, cancellationToken).ConfigureAwait(false);
-        entity.ParentTenantId = parentTenantId;
+        entity.ParentId = parentTenantId;
         await _store.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return ToDescriptor(entity, includeConnectionString: true);
     }
@@ -121,7 +121,7 @@ public sealed class TenantManager<TTenant> : ITenantManager
         if (!byId.ContainsKey(tenantId))
             throw new NotFoundException(TenantErrorCode.NotFound);
 
-        var children = all.ToLookup(entity => entity.ParentTenantId);
+        var children = all.ToLookup(entity => entity.ParentId);
         var ids = new List<Guid>();
         var seen = new HashSet<Guid>();
         var queue = new Queue<Guid>();
@@ -163,7 +163,7 @@ public sealed class TenantManager<TTenant> : ITenantManager
             if (!parent.IsActive)
                 throw new ConflictException(TenantErrorCode.ParentInactive);
 
-            cursor = parent.ParentTenantId;
+            cursor = parent.ParentId;
         }
     }
 
@@ -207,7 +207,7 @@ public sealed class TenantManager<TTenant> : ITenantManager
             Code = entity.Code,
             Name = entity.Name,
             IsActive = entity.IsActive,
-            ParentTenantId = entity.ParentTenantId,
+            ParentId = entity.ParentId,
             ConnectionString = includeConnectionString ? entity.ConnectionString : null,
         };
 

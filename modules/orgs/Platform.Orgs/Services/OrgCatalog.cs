@@ -6,7 +6,7 @@ namespace Platform.Orgs.Services;
 
 /// <summary>Đọc catalog theo tenant caller truyền vào.</summary>
 public sealed class OrgCatalog<TOrg> : IOrgCatalog
-    where TOrg : class, IOrgCatalogEntity
+    where TOrg : class, IOrgManagementEntity
 {
     private readonly IOrgStore<TOrg> _store;
 

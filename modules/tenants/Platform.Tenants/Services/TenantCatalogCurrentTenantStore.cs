@@ -16,7 +16,7 @@ public sealed class TenantCatalogCurrentTenantStore(ITenantManager tenants) : IC
             TenantId = descriptor.Id,
             Code = descriptor.Code,
             Name = descriptor.Name,
-            ParentTenantId = descriptor.ParentTenantId,
+            ParentId = descriptor.ParentId,
             IsActive = descriptor.IsActive,
         };
     }

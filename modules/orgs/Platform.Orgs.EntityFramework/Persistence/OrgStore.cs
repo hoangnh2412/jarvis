@@ -7,7 +7,7 @@ namespace Platform.Orgs.EntityFramework.Persistence;
 
 /// <summary>Store catalog qua <see cref="IUnitOfWork"/> và <see cref="IRepository{TEntity}"/>.</summary>
 public sealed class OrgStore<TOrg, TUnitOfWork>(TUnitOfWork unitOfWork) : IOrgStore<TOrg>
-    where TOrg : class, IOrgCatalogEntity
+    where TOrg : class, IOrgManagementEntity
     where TUnitOfWork : class, IUnitOfWork
 {
     private readonly TUnitOfWork _unitOfWork = unitOfWork;

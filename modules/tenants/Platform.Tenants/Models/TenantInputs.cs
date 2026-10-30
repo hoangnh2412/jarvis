@@ -8,7 +8,7 @@ public sealed class CreateTenantInput
 
     public string? ConnectionString { get; set; }
 
-    public Guid? ParentTenantId { get; set; }
+    public Guid? ParentId { get; set; }
 
     public CatalogAdminAccountInput? InitialAdmin { get; set; }
 }

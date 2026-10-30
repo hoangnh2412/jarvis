@@ -17,12 +17,12 @@ public static class TenantModelBuilderExtensions
             builder.Property(tenant => tenant.Code).HasMaxLength(TenantCatalogLimits.CodeMaxLength).IsRequired();
             builder.Property(tenant => tenant.Name).HasMaxLength(TenantCatalogLimits.NameMaxLength).IsRequired();
             builder.Property(tenant => tenant.IsActive).IsRequired();
-            builder.Property(tenant => tenant.ParentTenantId);
+            builder.Property(tenant => tenant.ParentId).HasColumnName("parent_id");
             builder.Property(tenant => tenant.ConnectionString)
                 .HasMaxLength(TenantCatalogLimits.ConnectionStringMaxLength)
                 .IsRequired();
             builder.HasIndex(tenant => tenant.Code).IsUnique();
-            builder.HasIndex(tenant => tenant.ParentTenantId);
+            builder.HasIndex(tenant => tenant.ParentId);
         });
     }
 }

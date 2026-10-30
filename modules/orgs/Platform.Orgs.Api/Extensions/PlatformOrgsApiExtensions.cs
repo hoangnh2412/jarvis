@@ -12,7 +12,7 @@ public static class PlatformOrgsApiExtensions
     /// <summary>Expose <see cref="OrgController"/> tại <c>api/v{version}/orgs</c>.</summary>
     public static PlatformOrgsBuilder<TOrg, TTenant> UseHttpApi<TOrg, TTenant>(
         this PlatformOrgsBuilder<TOrg, TTenant> builder)
-        where TOrg : class, IOrgCatalogEntity
+        where TOrg : class, IOrgManagementEntity
         where TTenant : class, ICurrentTenantIdentity
     {
         ArgumentNullException.ThrowIfNull(builder);

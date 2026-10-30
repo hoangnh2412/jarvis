@@ -1,10 +1,10 @@
 namespace Platform.Orgs.Mapping;
 
 /// <summary>
-/// Map entity catalog host (<see cref="IOrgCatalogEntity"/>) sang read model của sản phẩm (DTO có cột mở rộng).
+/// Map entity catalog host (<see cref="IOrgManagementEntity"/>) sang read model của sản phẩm (DTO có cột mở rộng).
 /// </summary>
 public interface IOrgCatalogReadMapper<TOrg, TReadModel>
-    where TOrg : class, IOrgCatalogEntity
+    where TOrg : class, IOrgManagementEntity
 {
     TReadModel Map(TOrg entity);
 }

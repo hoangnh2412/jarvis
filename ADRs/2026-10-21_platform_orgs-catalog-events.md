@@ -13,7 +13,7 @@
 
 ## 1. Bối cảnh
 
-Module **`Platform.Orgs`** đã có catalog + lifecycle qua **`IOrgManager`**, entity host-owned (`IOrgCatalogEntity`), extension **`IOrgCatalogHooks<TOrg>`** với pipeline:
+Module **`Platform.Orgs`** đã có catalog + lifecycle qua **`IOrgManager`**, entity host-owned (`IOrgManagementEntity`), extension **`IOrgCatalogHooks<TOrg>`** với pipeline:
 
 ```text
 Validate → invariant platform → Prepare → SaveChanges

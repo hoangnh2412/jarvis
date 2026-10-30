@@ -2,7 +2,7 @@
 
 Mô hình phân cấp của nền tảng Jarvis: **Root → Tenant → Org → OrgStructure**.
 
-Tài liệu này là mô hình nghiệp vụ (cập nhật 2026-10-29: Org catalog `ParentId` / tập đoàn). ADR Tenants, Orgs và OrgStructure cần đồng bộ khi chốt slice `platform_core`. Trên code VNA Host: `ParentTenantId` catalog tenant đã có; Org catalog `ParentId` và schema `platform_core` đang theo kế hoạch refactor.
+Tài liệu này là mô hình nghiệp vụ (cập nhật 2026-10-29: Org catalog `ParentId` / tập đoàn). Trên code VNA Host (2026-10-30): catalog **`platform_core`**, tenant **`ParentId`** / cột `parent_id`, org **`ParentId`** / cột `parent_id`, interface **`IOrgManagementEntity`**.
 
 ## Bốn lớp
 

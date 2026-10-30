@@ -11,7 +11,7 @@ public sealed class TenantDescriptor
 
     public bool IsActive { get; init; }
 
-    public Guid? ParentTenantId { get; init; }
+    public Guid? ParentId { get; init; }
 
     /// <summary>Chỉ có trên đọc một bản ghi và sau khi ghi. Danh sách để null.</summary>
     public string? ConnectionString { get; init; }

@@ -9,7 +9,7 @@ namespace Platform.Orgs.EntityFramework.Extensions;
 public static class OrgModelBuilderExtensions
 {
     public static void ApplyPlatformOrgCatalog<TOrg>(this ModelBuilder modelBuilder)
-        where TOrg : class, IOrgCatalogEntity
+        where TOrg : class, IOrgManagementEntity
     {
         ArgumentNullException.ThrowIfNull(modelBuilder);
 
@@ -20,6 +20,8 @@ public static class OrgModelBuilderExtensions
             builder.Property(x => x.Code).HasMaxLength(OrgCatalogLimits.CodeMaxLength).IsRequired();
             builder.Property(x => x.Name).HasMaxLength(OrgCatalogLimits.NameMaxLength).IsRequired();
             builder.Property(x => x.IsActive).IsRequired();
+            builder.Property(x => x.ParentId);
+            builder.HasIndex(x => x.ParentId);
             builder.HasIndex(x => new { x.TenantId, x.Code }).IsUnique();
         });
     }

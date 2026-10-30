@@ -11,7 +11,7 @@ namespace Platform.Orgs.Extensions;
 
 /// <summary>Builder fluent sau <c>AddPlatformOrgs</c>.</summary>
 public sealed class PlatformOrgsBuilder<TOrg, TTenant>
-    where TOrg : class, IOrgCatalogEntity
+    where TOrg : class, IOrgManagementEntity
     where TTenant : class, ICurrentTenantIdentity
 {
     internal PlatformOrgsBuilder(IHostApplicationBuilder hostBuilder)

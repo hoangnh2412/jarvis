@@ -6,11 +6,13 @@ using Platform.Orgs;
 namespace Sample.Entities;
 
 /// <summary>
-/// Catalog Org của Sample. <see cref="TaxCode"/> là cột host — không có trên <c>IOrgCatalogEntity</c>.
+/// Catalog Org của Sample. <see cref="TaxCode"/> là cột host — không có trên <c>IOrgManagementEntity</c>.
 /// </summary>
-public class Org : BaseEntity<Guid>, IOrgCatalogEntity
+public class Org : BaseEntity<Guid>, IOrgManagementEntity
 {
     public Guid TenantId { get; set; }
+
+    public Guid? ParentId { get; set; }
 
     public string Code { get; set; } = string.Empty;
 

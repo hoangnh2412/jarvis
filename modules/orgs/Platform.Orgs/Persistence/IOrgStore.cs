@@ -2,7 +2,7 @@ namespace Platform.Orgs.Persistence;
 
 /// <summary>Persistence nội bộ catalog. EF đăng ký implementation; test thay bằng store bộ nhớ.</summary>
 public interface IOrgStore<TOrg>
-    where TOrg : class, IOrgCatalogEntity
+    where TOrg : class, IOrgManagementEntity
 {
     Task<TOrg?> FindTrackedAsync(Guid tenantId, Guid id, CancellationToken cancellationToken);
 

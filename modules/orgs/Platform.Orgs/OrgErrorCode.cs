@@ -23,4 +23,7 @@ public class OrgErrorCode : IErrorCode
 
     [Display(Description = "Catalog không xóa cứng organization")]
     public const string HardDeleteDisabled = "98306";
+
+    [Display(Description = "Organization cha không hợp lệ")]
+    public const string InvalidParent = "98307";
 }

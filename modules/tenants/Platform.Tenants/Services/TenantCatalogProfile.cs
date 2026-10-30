@@ -11,7 +11,7 @@ public sealed class TenantCatalogProfile : ICurrentTenantIdentity
 
     public string Name { get; init; } = string.Empty;
 
-    public Guid? ParentTenantId { get; init; }
+    public Guid? ParentId { get; init; }
 
     public bool IsActive { get; init; }
 }

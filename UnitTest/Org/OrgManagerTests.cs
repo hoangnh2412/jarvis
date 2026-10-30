@@ -210,9 +210,11 @@ public class OrgManagerTests
         }
     }
 
-    private sealed class HostOrg : BaseEntity<Guid>, IOrgCatalogEntity
+    private sealed class HostOrg : BaseEntity<Guid>, IOrgManagementEntity
     {
         public Guid TenantId { get; set; }
+
+        public Guid? ParentId { get; set; }
 
         public string Code { get; set; } = string.Empty;
 

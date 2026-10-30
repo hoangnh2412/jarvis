@@ -13,7 +13,7 @@ public static class PlatformOrgsEntityFrameworkExtensions
 {
     public static PlatformOrgsBuilder<TOrg, TTenant> UseEntityFramework<TOrg, TTenant, TUnitOfWork>(
         this PlatformOrgsBuilder<TOrg, TTenant> builder)
-        where TOrg : class, IOrgCatalogEntity
+        where TOrg : class, IOrgManagementEntity
         where TTenant : class, ICurrentTenantIdentity
         where TUnitOfWork : class, IUnitOfWork
     {

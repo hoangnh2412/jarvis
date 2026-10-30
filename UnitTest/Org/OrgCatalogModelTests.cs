@@ -19,7 +19,7 @@ public class OrgCatalogModelTests
         Assert.NotNull(entity);
         Assert.NotNull(entity.FindProperty(nameof(HostOrg.Code)));
         Assert.NotNull(entity.FindProperty(nameof(HostOrg.TaxCode)));
-        Assert.Null(typeof(IOrgCatalogEntity).GetProperty(nameof(HostOrg.TaxCode)));
+        Assert.Null(typeof(IOrgManagementEntity).GetProperty(nameof(HostOrg.TaxCode)));
 
         var uniqueOnCode = entity.GetIndexes().Any(index =>
             index.IsUnique
@@ -27,9 +27,11 @@ public class OrgCatalogModelTests
         Assert.True(uniqueOnCode);
     }
 
-    private sealed class HostOrg : BaseEntity<Guid>, IOrgCatalogEntity
+    private sealed class HostOrg : BaseEntity<Guid>, IOrgManagementEntity
     {
         public Guid TenantId { get; set; }
+
+        public Guid? ParentId { get; set; }
 
         public string Code { get; set; } = string.Empty;
 

@@ -10,7 +10,7 @@ public sealed class CreateTenantHttpRequest
 
     public string? ConnectionString { get; set; }
 
-    public Guid? ParentTenantId { get; set; }
+    public Guid? ParentId { get; set; }
 
     public CatalogAdminAccountInput? InitialAdmin { get; set; }
 }
@@ -31,5 +31,5 @@ public sealed class SetTenantActiveHttpRequest
 
 public sealed class SetTenantParentHttpRequest
 {
-    public Guid? ParentTenantId { get; set; }
+    public Guid? ParentId { get; set; }
 }

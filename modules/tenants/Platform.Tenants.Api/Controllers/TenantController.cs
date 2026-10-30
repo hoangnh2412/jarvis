@@ -71,7 +71,7 @@ public sealed class TenantController(
             Code = request.Code,
             Name = request.Name,
             ConnectionString = request.ConnectionString,
-            ParentTenantId = request.ParentTenantId,
+            ParentId = request.ParentId,
             InitialAdmin = request.InitialAdmin,
         }, cancellationToken).ConfigureAwait(false);
 
@@ -120,7 +120,7 @@ public sealed class TenantController(
         [FromBody] SetTenantParentHttpRequest request,
         CancellationToken cancellationToken)
     {
-        var updated = await tenants.SetParentAsync(id, request.ParentTenantId, cancellationToken).ConfigureAwait(false);
+        var updated = await tenants.SetParentAsync(id, request.ParentId, cancellationToken).ConfigureAwait(false);
         return Ok(updated);
     }
 }

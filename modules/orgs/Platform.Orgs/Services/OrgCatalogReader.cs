@@ -7,7 +7,7 @@ using Platform.Orgs.Persistence;
 namespace Platform.Orgs.Services;
 
 public sealed class OrgCatalogReader<TOrg, TTenant, TReadModel> : IOrgCatalogReader<TReadModel>
-    where TOrg : class, IOrgCatalogEntity
+    where TOrg : class, IOrgManagementEntity
     where TTenant : class, ICurrentTenantIdentity
 {
     private readonly IOrgStore<TOrg> _store;

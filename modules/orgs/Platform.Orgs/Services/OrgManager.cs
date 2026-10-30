@@ -12,7 +12,7 @@ namespace Platform.Orgs.Services;
 /// CRUD catalog theo ambient tenant. Cột chuẩn do manager ghi; host mở rộng qua <see cref="IOrgCatalogHooks{TOrg}"/>.
 /// </summary>
 public sealed class OrgManager<TOrg, TTenant> : IOrgManager
-    where TOrg : class, IOrgCatalogEntity
+    where TOrg : class, IOrgManagementEntity
     where TTenant : class, ICurrentTenantIdentity
 {
     private readonly IOrgStore<TOrg> _store;
@@ -44,7 +44,7 @@ public sealed class OrgManager<TOrg, TTenant> : IOrgManager
         var name = NormalizeRequired(input.Name, OrgCatalogLimits.NameMaxLength);
 
         var entity = CreateEntity(Guid.NewGuid());
-        ApplyStandardCreateFields(entity, tenantId, code, name);
+        ApplyStandardCreateFields(entity, tenantId, code, name, input.ParentId);
 
         var context = new OrgCatalogCreateHookContext<TOrg>
         {
@@ -61,8 +61,9 @@ public sealed class OrgManager<TOrg, TTenant> : IOrgManager
             if (codeTaken)
                 throw new ConflictException(OrgErrorCode.CodeAlreadyExists);
 
+            await EnsureParentAsync(tenantId, entity.Id, input.ParentId, cancellationToken).ConfigureAwait(false);
             await _hooks.PrepareCreateAsync(context, cancellationToken).ConfigureAwait(false);
-            ApplyStandardCreateFields(entity, tenantId, code, name);
+            ApplyStandardCreateFields(entity, tenantId, code, name, input.ParentId);
 
             await _store.AddAsync(entity, cancellationToken).ConfigureAwait(false);
             await _store.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -254,6 +255,40 @@ public sealed class OrgManager<TOrg, TTenant> : IOrgManager
         return changes;
     }
 
+    private async Task EnsureParentAsync(
+        Guid tenantId,
+        Guid orgId,
+        Guid? parentId,
+        CancellationToken cancellationToken)
+    {
+        if (parentId is null)
+            return;
+
+        if (parentId == Guid.Empty || parentId == orgId)
+            throw new BadRequestException(OrgErrorCode.InvalidParent);
+
+        var cursor = parentId;
+        var guard = 0;
+        while (cursor is Guid currentParentId)
+        {
+            if (currentParentId == orgId || ++guard > 64)
+                throw new BadRequestException(OrgErrorCode.InvalidParent);
+
+            var parent = await _store.FindTrackedAsync(tenantId, currentParentId, cancellationToken)
+                .ConfigureAwait(false);
+            if (parent is null)
+                throw new NotFoundException(OrgErrorCode.NotFound);
+
+            if (parent.TenantId != tenantId)
+                throw new BadRequestException(OrgErrorCode.InvalidParent);
+
+            if (!parent.IsActive)
+                throw new ConflictException(OrgErrorCode.Inactive);
+
+            cursor = parent.ParentId;
+        }
+    }
+
     private static TOrg CreateEntity(Guid id)
     {
         var entity = (TOrg)Activator.CreateInstance(typeof(TOrg))!;
@@ -261,12 +296,13 @@ public sealed class OrgManager<TOrg, TTenant> : IOrgManager
         return entity;
     }
 
-    private static void ApplyStandardCreateFields(TOrg entity, Guid tenantId, string code, string name)
+    private static void ApplyStandardCreateFields(TOrg entity, Guid tenantId, string code, string name, Guid? parentId)
     {
         entity.TenantId = tenantId;
         entity.Code = code;
         entity.Name = name;
         entity.IsActive = true;
+        entity.ParentId = parentId;
     }
 
     private static void ApplyStandardUpdateFields(TOrg entity, Guid tenantId, string code, string name)

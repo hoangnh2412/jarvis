@@ -11,5 +11,7 @@ public class CreateOrgInput
 
     public string Name { get; set; } = string.Empty;
 
+    public Guid? ParentId { get; set; }
+
     public CatalogAdminAccountInput? InitialAdmin { get; set; }
 }

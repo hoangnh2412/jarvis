@@ -6,6 +6,8 @@ namespace Sample.Entities;
 
 public class Tenant : BaseEntity<Guid>, ITenantManagementEntity
 {
+    public Guid? ParentId { get; set; }
+
     public required string ConnectionString { get; set; }
 }
 

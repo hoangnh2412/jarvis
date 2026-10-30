@@ -2,7 +2,7 @@ namespace Platform.Orgs.Hooks;
 
 /// <summary>Hooks mặc định — no-op.</summary>
 public class DefaultOrgCatalogHooks<TOrg> : IOrgCatalogHooks<TOrg>
-    where TOrg : class, IOrgCatalogEntity
+    where TOrg : class, IOrgManagementEntity
 {
     public virtual Task ValidateCreateAsync(
         OrgCatalogCreateHookContext<TOrg> context,
