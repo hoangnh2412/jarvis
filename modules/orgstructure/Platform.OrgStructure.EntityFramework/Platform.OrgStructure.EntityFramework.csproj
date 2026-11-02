@@ -23,8 +23,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Platform.OrgStructure\Platform.OrgStructure.csproj" />
+    <ProjectReference Include="..\..\identity\Platform.Modules.IdentityAdmin\Platform.Modules.IdentityAdmin.csproj" />
     <ProjectReference Include="..\..\..\frameworks\Platform.DDD.Domain\Platform.DDD.Domain.csproj" />
     <ProjectReference Include="..\..\..\frameworks\Platform.ORM.EntityFramework\Platform.ORM.EntityFramework.csproj" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
 </Project>
