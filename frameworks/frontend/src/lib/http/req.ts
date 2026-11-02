@@ -5,6 +5,10 @@ export type PlatformHttpConfig = {
   baseURL?: string
   apiKey?: string
   apiKeyHeader?: string
+  /** Host tiêm header phạm vi (tenant/org) cho mỗi request; package không tự biết khóa lưu trữ của host. */
+  getScopeHeaders?: () => Record<string, string>
+  /** Nhận biết token hết hạn để host dọn phiên; gọi khi response 401. */
+  onUnauthorized?: () => void
 }
 
 const runtime: PlatformHttpConfig = {}
@@ -48,6 +52,15 @@ instance.interceptors.request.use(
       config.headers = config.headers ?? {}
       config.headers[resolveApiKeyHeader()] = apiKey
     }
+    const scopeHeaders = runtime.getScopeHeaders?.()
+    if (scopeHeaders) {
+      config.headers = config.headers ?? {}
+      for (const [key, value] of Object.entries(scopeHeaders)) {
+        if (value && config.headers[key] == null) {
+          config.headers[key] = value
+        }
+      }
+    }
     return config
   },
   (error) => Promise.reject(error),
@@ -56,6 +69,9 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error?.response?.status === 401) {
+      runtime.onUnauthorized?.()
+    }
     const normalizeError = error?.response?.data ?? {
       Status: error?.response?.status ?? 0,
       Message: 'Không thể kết nối tới máy chủ',
