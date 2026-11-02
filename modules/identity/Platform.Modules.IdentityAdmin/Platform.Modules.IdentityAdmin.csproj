@@ -19,7 +19,11 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
+    <ProjectReference Include="..\..\..\frameworks\Platform.Authorization.EntityFramework\Platform.Authorization.EntityFramework.csproj" />
+    <ProjectReference Include="..\..\tenants\Platform.Tenants\Platform.Tenants.csproj" />
+    <ProjectReference Include="..\..\orgstructure\Platform.OrgStructure\Platform.OrgStructure.csproj" />
+    <ProjectReference Include="..\..\orgs\Platform.Orgs\Platform.Orgs.csproj" />
+</ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\frameworks\Platform.DDD.Application\Platform.DDD.Application.csproj" />

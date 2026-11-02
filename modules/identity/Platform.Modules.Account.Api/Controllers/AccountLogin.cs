@@ -1,14 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Platform.DDD.Application.Contracts.Commands;
+using Platform.Modules.Account;
 using Platform.Modules.Account.Commands;
 
 namespace Platform.Modules.Account.Api.Controllers;
 
 public static class AccountLogin
 {
-    public const string AppRealm = "app";
+    public const string AppRealm = AccountRealms.App;
 
-    public const string PlatformRealm = "platform";
+    public const string PlatformRealm = AccountRealms.Platform;
 
     public static async Task<IActionResult> ExecuteAsync(
         IAsyncCommandHandler<LoginCommand, LoginResponse> login,

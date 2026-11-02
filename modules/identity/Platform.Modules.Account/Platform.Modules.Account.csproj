@@ -28,6 +28,12 @@
     <ProjectReference Include="..\..\..\frameworks\Platform.Authentication\Platform.Authentication.csproj" />
     <ProjectReference Include="..\..\..\frameworks\Platform.Authentication.Identity\Platform.Authentication.Identity.csproj" />
     <ProjectReference Include="..\..\..\frameworks\Platform.Authentication.Jwt\Platform.Authentication.Jwt.csproj" />
+    <ProjectReference Include="..\..\..\frameworks\Platform.Authorization.EntityFramework\Platform.Authorization.EntityFramework.csproj" />
+    <ProjectReference Include="..\..\tenants\Platform.Tenants\Platform.Tenants.csproj" />
+    <ProjectReference Include="..\..\orgs\Platform.Orgs.Abstractions\Platform.Orgs.Abstractions.csproj" />
+    <ProjectReference Include="..\Platform.Modules.IdentityAdmin\Platform.Modules.IdentityAdmin.csproj" />
+    <ProjectReference Include="..\..\orgstructure\Platform.OrgStructure\Platform.OrgStructure.csproj" />
+    <ProjectReference Include="..\..\orgs\Platform.Orgs\Platform.Orgs.csproj" />
   </ItemGroup>
 
   <ItemGroup>
