@@ -38,6 +38,20 @@ public class ApiResponseWrapperMiddleware(
             if (context.Response.HasStarted)
                 return;
 
+            // Non-JSON payloads (XML, plain text, binary files) pass through untouched:
+            // wrapping them in the JSON envelope would corrupt downloads and TVAN XML.
+            var contentType = context.Response.ContentType;
+            var isJson = string.IsNullOrEmpty(contentType)
+                || contentType.Contains("json", StringComparison.OrdinalIgnoreCase);
+            if (!isJson)
+            {
+                context.Response.Body = originalResponseBodyStream;
+                context.Response.ContentLength = stream.Length;
+                stream.Position = 0;
+                await stream.CopyToAsync(originalResponseBodyStream);
+                return;
+            }
+
             var responseBody = await HttpContextExtension.ReadResponseBodyStreamAsync(stream);
             context.Response.Body = originalResponseBodyStream;
             context.Response.ContentType = ContentTypes.Json;

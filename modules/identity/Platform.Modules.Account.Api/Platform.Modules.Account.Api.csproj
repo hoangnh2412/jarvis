@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Platform.Modules.Account.Api</PackageId>
+    <AssemblyName>Platform.Modules.Account.Api</AssemblyName>
+    <RootNamespace>Platform.Modules.Account.Api</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>Hoang Nguyen</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <!-- ADR C12/T13: Account.Api depends on Account only — never on Platform.Authorization. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Platform.Modules.Account\Platform.Modules.Account.csproj" />
+  </ItemGroup>
+
+</Project>
