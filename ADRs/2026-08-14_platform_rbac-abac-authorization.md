@@ -1399,7 +1399,8 @@ erp_core/platform/modules/identity/Platform.Modules.IdentityAdmin/
 └── DependencyInjection/IdentityAdminDependencyInjection.cs   🟢 AddIdentityAdminApplication()
 ```
 
-🔴 Chưa có: API `/api/identity-admin/*`; kiểm permission kiểu `User.Manage` ở tầng endpoint (hiện chỉ có governance theo RoleLevel); CRUD custom Policy / PolicyRule (Phase 4b, T26–T44); Admin (không có policy) chưa gán được policy theo C6.
+🟢 Đã bổ sung `Platform.Modules.Account.Api` (`/api/v1/app/account/*`, `/api/v1/platform/account/*`, `/api/v1/me`) và `Platform.Modules.IdentityAdmin.Api` (`/api/v1/app/users`, `/api/v1/app/roles`, `/api/v1/app/authorization/*`, `/api/v1/platform/users`, `/api/v1/platform/roles`, `/api/v1/platform/authorization/*`, `/api/system/install`) cùng CRUD custom Policy / PolicyRule (`AuthorizationPolicyAdminService`).
+🔴 Còn lại: kiểm permission kiểu `User.Manage` ở tầng endpoint cho từng action riêng lẻ nếu Host yêu cầu thêm ngoài `RoleLevel` và `PlatformRootRequirement`.
 
 ### 11.5 Test (platform UnitTest)
 
