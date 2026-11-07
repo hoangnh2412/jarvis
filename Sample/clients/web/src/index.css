@@ -13,15 +13,14 @@
 
 @import "@platform/core/theme.css";
 @import "@platform/core/styles.css";
-@import "@platform/core/dashboard.css";
-@import "@platform/core/planner.css";
-@import "@platform/core/timesheet.css";
-@import "@platform/core/dynamicForm.css";
-@import "@platform/core/craftDoc.css";
+@import "./features/dashboard/styles/dashboard.css";
+@import "./features/planner/styles/planner.css";
+@import "./features/timesheet/styles/timesheet.css";
+@import "./features/dynamicForm/styles/dynamicForm.css";
+@import "./features/craftDoc/styles/craftDoc.css";
 @import "@platform/notifications/styles.css";
 @import "../../../../frameworks/frontend/src/styles/theme.css";
 @import "../../../../frameworks/frontend/src/styles/kit.css";
-@import "../../../../frameworks/frontend/src/features/dashboard/styles/dashboard.css";
 
 :root {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;

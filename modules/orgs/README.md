@@ -43,4 +43,4 @@ Gán claim `Permission` trên role (vd. `ORG_ADMIN`) tại host seed.
 
 Sau `SaveChanges`, `OrgManager` gọi `IOrgCatalogEventPublisher` (`OrgCreatedEvent` / `OrgUpdatedEvent`). Mặc định `NullOrgCatalogEventPublisher`; host thay bằng bus/outbox.
 
-ADR: [2026-10-17_platform_orgs-module.md](../../ADRs/2026-10-17_platform_orgs-module.md), [2026-10-21_platform_orgs-catalog-events.md](../../ADRs/2026-10-21_platform_orgs-catalog-events.md).
+ADR: [2026-10-17_platform_orgs-module.md](../../docs/04-platform/DOC-09-adr/2026-10-17_platform_orgs-module.md), [2026-10-21_platform_orgs-catalog-events.md](../../docs/04-platform/DOC-09-adr/2026-10-21_platform_orgs-catalog-events.md).

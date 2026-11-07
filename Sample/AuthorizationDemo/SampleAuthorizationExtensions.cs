@@ -51,6 +51,7 @@ public static class SampleAuthorizationExtensions
         if (recreate)
             await context.Database.EnsureDeletedAsync(cancellationToken);
         await context.Database.EnsureCreatedAsync(cancellationToken);
+        await context.Database.MigrateAsync(cancellationToken);
 
         await services.GetRequiredService<AuthorizationDataSeeder>().SeedAsync(cancellationToken);
         await SampleAuthorizationDemoData.EnsureDemoDataAsync(context, cancellationToken);

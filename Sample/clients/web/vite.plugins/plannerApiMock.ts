@@ -66,7 +66,7 @@ function cloneBoard(board: PlannerBoard): PlannerBoard {
 /**
  * Vite middleware mock `/api/v1/planner/*`.
  * Tránh MSW Service Worker — DevTools Network không bị treo / ERR_CACHE_MISS.
- * Seed: `@platform/core` → `features/planner/mocks/get-board.json`
+ * Seed: Sample `clients/web/mocks/planner/get-board.json`
  */
 export function plannerApiMockPlugin(options: {
   boardJsonPath: string

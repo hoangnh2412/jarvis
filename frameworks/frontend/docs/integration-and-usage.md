@@ -104,7 +104,7 @@ Một số module cần thêm peer khi dùng:
 
 | Module                          | Peer thêm                                       |
 | ------------------------------- | ----------------------------------------------- |
-| CraftPdf                        | `react-rnd`, `react-pdf`, `pdfjs-dist`, `quill` |
+| CraftPdf                        | `react-rnd`, `quill`. `react-pdf` và `pdfjs-dist` do Sample khai báo |
 | Dashboard                       | `gridstack`, `chart.js`, `react-chartjs-2`      |
 | QueryBuilder (trong TenantList) | `react-querybuilder`, `@react-querybuilder/dnd` |
 

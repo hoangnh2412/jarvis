@@ -32,11 +32,13 @@ npm i @platform/core
 
 ## Peer dependencies (app phải có)
 
+React, React DOM, React Router, React Hook Form, Zod, `@hookform/resolvers`, `@primereact/core`, `@primereact/headless`, `@primeuix/themes` và `@primeuix/styled` là dependency của `@platform/core`. App không khai báo lại.
+
 ```bash
-npm i react react-dom lucide-react zod react-hook-form @hookform/resolvers primereact @primeuix/themes
+npm i lucide-react primereact
 ```
 
-> **Lưu ý local link (`file:…`)**: app Vite cần `resolve.dedupe` + alias `react`/`react-dom` về `node_modules` của app, tránh 2 bản React → lỗi `Invalid hook call`.
+> **Host Vite**: `vite.config.ts` của host gọi `loadEnv`, gắn React, Tailwind và alias `@platform/*`. Theme đổi ở file CSS (`index.css`, `@platform/core/theme.css`), không sửa plugin Vite. Mock thuộc host.
 
 **PrimeReactProvider + Toast** — bắt buộc ở root:
 
@@ -249,7 +251,7 @@ configureCraftPdfNavigate((to) => navigate(to))
 />
 ```
 
-Peer thêm: `react-rnd`, `react-pdf`, `pdfjs-dist`, `quill`.  
+`react-rnd` và `quill` là dependency của kit. `react-pdf`, `pdfjs-dist` do Sample khai báo.  
 Chưa set `VITE_API_URL_CRAFT_PDF` → dùng mock in-memory. Generate PDF nối backend qua `callback.generate`.
 
 ### Vite: `process is not defined` (react-rnd)

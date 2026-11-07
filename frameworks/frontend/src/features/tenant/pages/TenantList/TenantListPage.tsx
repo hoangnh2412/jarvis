@@ -5,8 +5,10 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { Filter, Plus } from 'lucide-react'
+import { Eye, Filter, Pencil, Plus, Power, Trash2 } from 'lucide-react'
 import { Button } from 'primereact/button'
+import { Tag } from 'primereact/tag'
+import { AdminList, type AdminListColumn, type RowActionItem } from '../../../../common/AdminList'
 import ConfirmDialog from '../../../../common/ConfirmDialog'
 import {
   DEFAULT_LIST_PAGE_SIZE_OPTIONS,
@@ -46,6 +48,7 @@ import {
   navigateTenant,
 } from '../../routes'
 import {
+  TENANT_STATUS_LABEL,
   TENANT_STATUS_OPTIONS,
   TenantStatus,
   type GetTenantListParams,
@@ -220,6 +223,7 @@ export function TenantListPage({
   const [internalItems, setInternalItems] = useState<Tenant[]>([])
   const [internalTotal, setInternalTotal] = useState(0)
   const [internalLoading, setInternalLoading] = useState(!controlled)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   const [searchInput, setSearchInput] = useState(initialQuery?.search ?? '')
   const [search, setSearch] = useState(initialQuery?.search ?? '')
@@ -294,13 +298,16 @@ export function TenantListPage({
       return
     }
     setInternalLoading(true)
+    setLoadError(null)
     try {
       const res = await callGetTenantList(nextQuery)
       const result = unwrapTenantListResult(res)
       setInternalItems(result.items)
       setInternalTotal(result.total)
     } catch (error) {
-      notify.error(getErrorMessage(error, messages.form.saveError))
+      const message = getErrorMessage(error, messages.form.saveError)
+      setLoadError(message)
+      notify.error(message)
     } finally {
       setInternalLoading(false)
     }
@@ -468,7 +475,7 @@ export function TenantListPage({
     <TenantTable
       items={items}
       loading={loading}
-      emptyMessage={messages.list.empty}
+      emptyMessage={loadError ?? messages.list.empty}
       onView={handleView}
       onEdit={handleEdit}
       onDelete={(t) => setPendingDelete(t)}
@@ -543,11 +550,104 @@ export function TenantListPage({
     />
   )
 
+  const tenantColumns: AdminListColumn<Tenant>[] = [
+    {
+      key: 'code',
+      label: 'Mã',
+      sortable: true,
+      sortValue: (tenant) => tenant.code,
+      className: 'font-mono font-medium',
+      value: (tenant) => tenant.code,
+    },
+    {
+      key: 'name',
+      label: 'Tên',
+      sortable: true,
+      sortValue: (tenant) => tenant.name,
+      value: (tenant) => tenant.name,
+    },
+    {
+      key: 'status',
+      label: 'Trạng thái',
+      render: (tenant) => (
+        <Tag severity={tenant.status === TenantStatus.Active ? 'success' : 'secondary'}>
+          {TENANT_STATUS_LABEL[tenant.status]}
+        </Tag>
+      ),
+    },
+    {
+      key: 'parentId',
+      label: 'Parent',
+      className: 'font-mono text-xs',
+      value: (tenant) => tenant.parentId ?? '—',
+    },
+  ]
+
+  const tenantActions = (tenant: Tenant): RowActionItem[] => {
+    const actions: RowActionItem[] = []
+    if (handleView) {
+      actions.push({ id: 'view', label: 'Xem', icon: Eye, onClick: () => handleView(tenant) })
+    }
+    if (handleEdit) {
+      actions.push({ id: 'edit', label: 'Sửa', icon: Pencil, onClick: () => handleEdit(tenant) })
+    }
+    actions.push(
+      { id: 'status', label: 'Đổi trạng thái', icon: Power, onClick: () => void handleToggleStatus(tenant) },
+      {
+        id: 'delete',
+        label: 'Xóa',
+        icon: Trash2,
+        danger: true,
+        separatorBefore: true,
+        onClick: () => setPendingDelete(tenant),
+      },
+    )
+    return actions
+  }
+
   const defaultContent = (
     <>
       {toolbar}
-      {defaultTable}
-      {paginationBar}
+      <AdminList
+        items={items}
+        columns={tenantColumns}
+        loading={loading}
+        searchValue={searchInput}
+        onSearchChange={setSearchInput}
+        searchLabel={messages.list.searchPlaceholder}
+        searchPlaceholder={messages.list.searchPlaceholder}
+        emptyMessage={loadError ?? messages.list.empty}
+        actionsFor={tenantActions}
+        paging={{ total, page, size, onPageChange: setPage, onSizeChange: setSize }}
+        extraActions={(
+          <select
+            aria-label="Trạng thái"
+            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm"
+            value={statusFilter}
+            onChange={(event) => {
+              const value = event.target.value
+              setStatusFilter(value === 'all' ? 'all' : Number(value) as TenantStatusValue)
+              setPage(1)
+            }}
+          >
+            <option value="all">Tất cả</option>
+            {TENANT_STATUS_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        )}
+        primaryAction={(
+          <>
+            {headerActions}
+            {handleCreate ? (
+              <Button type="button" unstyled className={btnPrimaryClass} onClick={handleCreate}>
+                <Plus className="size-4" />
+                {messages.list.create}
+              </Button>
+            ) : null}
+          </>
+        )}
+      />
     </>
   )
 
@@ -600,23 +700,6 @@ export function TenantListPage({
 
   const resolved = resolveTenantContent(content, contentCtx, defaultContent)
 
-  const actions = (
-    <>
-      {headerActions}
-      {handleCreate && (
-        <Button
-          type="button"
-          unstyled
-          className={btnPrimaryClass}
-          onClick={handleCreate}
-        >
-          <Plus className="size-4" />
-          {messages.list.create}
-        </Button>
-      )}
-    </>
-  )
-
   const dialog = (
     <ConfirmDialog
       open={Boolean(pendingDelete)}
@@ -647,7 +730,7 @@ export function TenantListPage({
       <TenantPageShell
         title={title ?? messages.routes.list}
         description={description ?? messages.list.description}
-        headerActions={actions}
+        showHeader={false}
         className={className}
       >
         {resolved}

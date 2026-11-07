@@ -1,7 +1,7 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ConfirmDialog, FeatureDialog, PageHeader, Tag, notify, type RowActionItem } from '@platform/core'
-import { Lock, Pencil, Plus, Search, Trash2, Unlock } from 'lucide-react'
+import { AdminList, ConfirmDialog, FeatureDialog, Tag, notify, type AdminListColumn, type RowActionItem } from '@platform/core'
+import { Lock, Pencil, Plus, Trash2, Unlock } from 'lucide-react'
 import {
   createSystemUser,
   deleteSystemUser,
@@ -13,7 +13,6 @@ import {
 import { listSystemRoles } from '../services/roles'
 import { notifyApiError } from '../notify'
 import { searchNormalize } from '../utils'
-import { SimpleTable, type SimpleColumn } from '../components/SimpleTable'
 import { btnPrimaryClass } from '../components/fieldStyles'
 import { UserForm, type OrgUnitOption, type UserFormValues } from './UserForm'
 
@@ -27,8 +26,12 @@ export type UsersPageProps = {
 /** Trang danh sách người dùng của tenant; thêm/sửa qua dialog. */
 export function UsersPage({ loadOrgUnits, saveUserOrgUnit }: UsersPageProps) {
   const queryClient = useQueryClient()
-  const usersQuery = useQuery({ queryKey: identityQueryKeys.users, queryFn: listSystemUsers })
-  const rolesQuery = useQuery({ queryKey: identityQueryKeys.roles, queryFn: listSystemRoles })
+  const usersQuery = useQuery({ queryKey: identityQueryKeys.users, queryFn: listSystemUsers, retry: false })
+  const rolesQuery = useQuery({ queryKey: identityQueryKeys.roles, queryFn: listSystemRoles, retry: false })
+
+  useEffect(() => {
+    if (usersQuery.isError) notifyApiError(usersQuery.error)
+  }, [usersQuery.error, usersQuery.isError])
   const [search, setSearch] = useState('')
   const [formUser, setFormUser] = useState<SystemUser | null>(null)
   const [formOpen, setFormOpen] = useState(false)
@@ -96,10 +99,21 @@ export function UsersPage({ loadOrgUnits, saveUserOrgUnit }: UsersPageProps) {
     )
   }, [roleById, search, users])
 
-  const columns = useMemo<SimpleColumn<SystemUser>[]>(() => [
-    { key: 'userName', label: 'Tên đăng nhập', className: 'font-mono font-medium whitespace-nowrap', value: (user) => user.userName },
-    { key: 'fullName', label: 'Họ và tên', className: 'font-medium', value: (user) => user.fullName },
-    { key: 'email', label: 'Email', className: 'text-slate-500', value: (user) => user.email },
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'F4') return
+      event.preventDefault()
+      setFormUser(null)
+      setFormOpen(true)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  const columns = useMemo<AdminListColumn<SystemUser>[]>(() => [
+    { key: 'userName', label: 'Tên đăng nhập', sortable: true, sortValue: (user) => user.userName, className: 'font-mono font-medium whitespace-nowrap', value: (user) => user.userName },
+    { key: 'fullName', label: 'Họ và tên', sortable: true, sortValue: (user) => user.fullName, className: 'font-medium', value: (user) => user.fullName },
+    { key: 'email', label: 'Email', sortable: true, sortValue: (user) => user.email, className: 'text-slate-500', value: (user) => user.email },
     {
       key: 'roles',
       label: 'Vai trò',
@@ -126,28 +140,28 @@ export function UsersPage({ loadOrgUnits, saveUserOrgUnit }: UsersPageProps) {
   ], [toggleMutation])
 
   return (
-    <section className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4 text-sm text-slate-800 sm:p-6">
-      <PageHeader
-        title="Người dùng"
-        description="Quản lý tài khoản người dùng của doanh nghiệp."
-        actions={(
-          <>
-            <label className="relative min-w-56 flex-1 sm:max-w-sm">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden />
-              <input aria-label="Tìm người dùng" value={search} onChange={(event) => setSearch(event.currentTarget.value)} placeholder="Tìm tên, email, vai trò..." className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none focus:border-teal-600" />
-            </label>
-            <button type="button" onClick={() => { setFormUser(null); setFormOpen(true) }} className={btnPrimaryClass}>
-              <Plus className="size-4" aria-hidden /> Thêm người dùng
-            </button>
-          </>
-        )}
-      />
-      <SimpleTable
+    <section className="flex h-full min-h-0 flex-col overflow-hidden p-4 text-sm text-slate-800 sm:p-6">
+      <AdminList
         items={filteredUsers}
         columns={columns}
         loading={usersQuery.isLoading}
-        emptyMessage={usersQuery.isLoading ? 'Đang tải danh sách người dùng…' : 'Không tìm thấy người dùng phù hợp.'}
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchLabel="Tìm người dùng"
+        searchPlaceholder="Tìm tên, email, vai trò..."
+        emptyMessage={
+          usersQuery.isError
+            ? 'Không tải được danh sách người dùng.'
+            : usersQuery.isLoading
+              ? 'Đang tải danh sách người dùng…'
+              : 'Không tìm thấy người dùng phù hợp.'
+        }
         actionsFor={actionsFor}
+        primaryAction={(
+          <button type="button" onClick={() => { setFormUser(null); setFormOpen(true) }} className={btnPrimaryClass}>
+            <Plus className="size-4" aria-hidden /> Thêm người dùng (F4)
+          </button>
+        )}
       />
       <FeatureDialog
         open={formOpen}

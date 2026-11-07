@@ -1,4 +1,4 @@
-using Platform.ORM.EntityFramework.DataStorages;
+using Platform.Host.Postgresql.Persistence;
 using Platform.Orgs.EntityFramework.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Sample.Entities;
@@ -7,7 +7,7 @@ namespace Sample.Persistence;
 
 public class TenantDbContext(
     DbContextOptions<TenantDbContext> options)
-    : BaseStorageContext(options)
+    : PlatformTenantDbContext(options)
 {
     public DbSet<Student> Students => Set<Student>();
     public DbSet<BasicAuthUser> BasicAuthUsers => Set<BasicAuthUser>();
@@ -31,5 +31,8 @@ public class TenantDbContext(
         modelBuilder.ApplyConfiguration(new SampleExcelTemplateEntityConfiguration());
         modelBuilder.ApplyPlatformOrgCatalog<Sample.Entities.Org>();
         modelBuilder.ApplyConfiguration(new OrgEntityConfiguration());
+        modelBuilder.Entity<Department>().ToTable("departments");
+        modelBuilder.Entity<Employee>().ToTable("employees");
+        modelBuilder.Entity<Position>().ToTable("positions");
     }
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ConfirmDialog, PageHeader, Tag, type RowActionItem } from '@platform/core'
-import { Pencil, Plus, Search, Trash2 } from 'lucide-react'
+import { AdminList, ConfirmDialog, Tag, type AdminListColumn, type RowActionItem } from '@platform/core'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   deleteAuthorizationPolicy,
@@ -16,7 +16,6 @@ import {
   matchesPolicySearch,
   policyHumanSummary,
 } from './policyLimitUi'
-import { SimpleTable, type SimpleColumn } from '../components/SimpleTable'
 import { btnPrimaryClass } from '../components/fieldStyles'
 
 /** Danh mục phạm vi truy cập (ABAC) — tạo/sửa/xóa trước khi gán vào vai trò. */
@@ -30,6 +29,7 @@ export function PolicyScopesPage() {
   const policiesQuery = useQuery({
     queryKey: identityQueryKeys.authorizationPolicies,
     queryFn: listAuthorizationPolicies,
+    retry: false,
   })
 
   useEffect(() => {
@@ -64,9 +64,9 @@ export function PolicyScopesPage() {
     setEditingPolicy(null)
   }, [])
 
-  const columns = useMemo<SimpleColumn<AuthorizationPolicyDetail>[]>(() => [
-    { key: 'code', label: 'Mã phạm vi', className: 'font-mono font-semibold', value: (policy) => policy.code },
-    { key: 'name', label: 'Tên hiển thị', value: (policy) => policy.name },
+  const columns = useMemo<AdminListColumn<AuthorizationPolicyDetail>[]>(() => [
+    { key: 'code', label: 'Mã phạm vi', sortable: true, sortValue: (policy) => policy.code, className: 'font-mono font-semibold', value: (policy) => policy.code },
+    { key: 'name', label: 'Tên hiển thị', sortable: true, sortValue: (policy) => policy.name, value: (policy) => policy.name },
     {
       key: 'summary',
       label: 'Điều kiện',
@@ -94,39 +94,29 @@ export function PolicyScopesPage() {
   }, [])
 
   return (
-    <section className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4 text-sm text-slate-800 sm:p-6">
-      <PageHeader
-        title="Phạm vi truy cập"
-        description="Danh mục điều kiện ABAC gán cho vai trò."
-        actions={(
-          <>
-            <label className="relative min-w-56 flex-1 sm:max-w-sm">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden />
-              <input
-                aria-label="Tìm phạm vi"
-                value={search}
-                onChange={(event) => setSearch(event.currentTarget.value)}
-                placeholder="Tìm mã hoặc tên phạm vi…"
-                className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none focus:border-teal-600"
-              />
-            </label>
-            <button
-              type="button"
-              className={btnPrimaryClass}
-              onClick={() => setCreateOpen(true)}
-            >
-              <Plus className="size-4" aria-hidden />
-              Tạo phạm vi
-            </button>
-          </>
-        )}
-      />
-      <SimpleTable
+    <section className="flex h-full min-h-0 flex-col overflow-hidden p-4 text-sm text-slate-800 sm:p-6">
+      <AdminList
         items={filteredPolicies}
         columns={columns}
         loading={policiesQuery.isLoading}
-        emptyMessage={policiesQuery.isLoading ? 'Đang tải danh mục phạm vi…' : 'Không tìm thấy phạm vi phù hợp.'}
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchLabel="Tìm phạm vi"
+        searchPlaceholder="Tìm mã hoặc tên phạm vi…"
+        emptyMessage={
+          policiesQuery.isError
+            ? 'Không tải được danh mục phạm vi.'
+            : policiesQuery.isLoading
+              ? 'Đang tải danh mục phạm vi…'
+              : 'Không tìm thấy phạm vi phù hợp.'
+        }
         actionsFor={actionsFor}
+        primaryAction={(
+          <button type="button" className={btnPrimaryClass} onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" aria-hidden />
+            Tạo phạm vi
+          </button>
+        )}
       />
       {createOpen || editingPolicy !== null ? (
         <CreatePolicyLimitDialog

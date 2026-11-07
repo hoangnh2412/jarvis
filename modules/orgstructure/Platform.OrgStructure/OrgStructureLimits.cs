@@ -9,6 +9,8 @@ public static class OrgStructureLimits
 
     public const int NameMaxLength = 256;
 
+    public const int IconMaxLength = 64;
+
     public const int UnitTypeMaxLength = 64;
 
     public const int PathMaxLength = 1024;

@@ -5,8 +5,10 @@ import {
   type FormEventHandler,
   type ReactNode,
 } from 'react'
-import { Plus } from 'lucide-react'
+import { Eye, KeyRound, Pencil, Plus, Shield, Trash2 } from 'lucide-react'
 import { Button } from 'primereact/button'
+import { Tag } from 'primereact/tag'
+import { AdminList, type AdminListColumn, type RowActionItem } from '../../../../common/AdminList'
 import ConfirmDialog from '../../../../common/ConfirmDialog'
 import { FeatureDialog } from '../../../../common/FeatureDialog'
 import {
@@ -501,11 +503,80 @@ export function RoleListPage({
     </>
   )
 
+  const roleColumns: AdminListColumn<Role>[] = [
+    {
+      key: 'name',
+      label: 'Tên vai trò',
+      sortable: true,
+      sortValue: (role) => role.name,
+      className: 'font-mono font-medium',
+      value: (role) => role.name,
+    },
+    {
+      key: 'displayName',
+      label: 'Mô tả',
+      sortable: true,
+      sortValue: (role) => role.displayName,
+      value: (role) => role.displayName,
+    },
+    {
+      key: 'isPublic',
+      label: 'Trạng thái',
+      render: (role) =>
+        role.isPublic ? <Tag severity="success">Public</Tag> : <Tag severity="secondary">Private</Tag>,
+    },
+    {
+      key: 'grants',
+      label: 'Phân quyền & phạm vi',
+      render: (role) => `${role.permissions.length} quyền · ${role.policies.length} policy`,
+    },
+    {
+      key: 'roleLevel',
+      label: 'Cấp',
+      sortable: true,
+      sortValue: (role) => role.roleLevel,
+      className: 'text-right tabular-nums',
+      value: (role) => role.roleLevel,
+    },
+  ]
+
+  const roleActions = (role: Role): RowActionItem[] => [
+    { id: 'view', label: 'Xem', icon: Eye, onClick: () => openView(role) },
+    { id: 'edit', label: 'Sửa', icon: Pencil, onClick: () => openEdit(role) },
+    { id: 'permissions', label: 'Phân quyền', icon: KeyRound, onClick: () => openPermissions(role) },
+    { id: 'policies', label: 'Phạm vi', icon: Shield, onClick: () => openPolicies(role) },
+    {
+      id: 'delete',
+      label: 'Xóa',
+      icon: Trash2,
+      danger: true,
+      separatorBefore: true,
+      onClick: () => setPendingDelete(role),
+    },
+  ]
+
   const defaultContent = (
-    <>
-      {defaultTable}
-      {paginationBar}
-    </>
+    <AdminList
+      items={items}
+      columns={roleColumns}
+      loading={loading}
+      searchValue={searchInput}
+      onSearchChange={setSearchInput}
+      searchLabel={messages.list.searchPlaceholder}
+      searchPlaceholder={messages.list.searchPlaceholder}
+      emptyMessage={messages.list.empty}
+      actionsFor={roleActions}
+      paging={{ total, page, size, onPageChange: setPage, onSizeChange: setSize }}
+      primaryAction={(
+        <>
+          {headerActions}
+          <Button type="button" unstyled className={btnPrimaryClass} onClick={openCreate}>
+            <Plus className="size-4" />
+            {messages.list.create}
+          </Button>
+        </>
+      )}
+    />
   )
 
   const contentCtx: RoleListPageContentContext = {
@@ -536,16 +607,6 @@ export function RoleListPage({
 
   const resolved = resolveRoleContent(content, contentCtx, defaultContent)
 
-  const actions = (
-    <>
-      {headerActions}
-      <Button type="button" unstyled className={btnPrimaryClass} onClick={openCreate}>
-        <Plus className="size-4" />
-        {messages.list.create}
-      </Button>
-    </>
-  )
-
   if (!withShell) {
     return (
       <>
@@ -560,7 +621,7 @@ export function RoleListPage({
       <RolePageShell
         title={title ?? messages.routes.list}
         description={description ?? messages.list.description}
-        headerActions={actions}
+        showHeader={false}
         className={className}
       >
         {resolved}

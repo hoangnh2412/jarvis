@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Platform.Authentication;
 using Platform.Authentication.ApiKey;
@@ -21,6 +22,7 @@ public static class SampleAuthenticationExtensions
         builder.Services.AddSingleton<IPasswordPolicyProvider, TenantPasswordPolicyDbProvider>();
         builder.Services.AddSingleton<DevBearerTokenIssuer>();
         builder.Services.AddScoped<SampleBearerLoginService>();
+        builder.Services.AddScoped<SampleLoginCatalogService>();
 
         builder.Services.AddPlatformAuthentication(configuration, auth =>
         {
@@ -47,8 +49,35 @@ public static class SampleAuthenticationExtensions
                 var basicScheme = AuthenticationSchemeProfileConfiguration.ResolveBasicScheme(root, configuration);
                 auth.AddCoreBasicWithProfileSources<BasicAuthDbCredentialProvider>(configuration, basicScheme, basicProfile);
             }
+
+            // SPA đăng nhập bằng JWT, trong khi DefaultAuthenticateScheme của Sample là ApiKey.
+            // Request có Bearer đi scheme Bearer; request còn lại giữ ApiKey.
+            if (root.Schemes.Bearer.Enabled && root.Schemes.ApiKey.Enabled)
+            {
+                auth.AddPolicyScheme(SampleRequestScheme, SampleRequestScheme, options =>
+                {
+                    options.ForwardDefaultSelector = context =>
+                    {
+                        var authorization = context.Request.Headers.Authorization.ToString();
+                        if (authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                            return PlatformAuthenticationSchemes.Bearer;
+                        return PlatformAuthenticationSchemes.ApiKey;
+                    };
+                });
+            }
         });
+
+        if (root.Schemes.Bearer.Enabled && root.Schemes.ApiKey.Enabled)
+        {
+            builder.Services.PostConfigure<AuthenticationOptions>(options =>
+            {
+                options.DefaultAuthenticateScheme = SampleRequestScheme;
+                options.DefaultChallengeScheme = SampleRequestScheme;
+            });
+        }
 
         return builder;
     }
+
+    private const string SampleRequestScheme = "SampleRequest";
 }

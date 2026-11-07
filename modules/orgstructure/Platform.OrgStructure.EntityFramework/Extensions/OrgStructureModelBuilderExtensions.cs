@@ -53,4 +53,43 @@ public static class OrgStructureModelBuilderExtensions
             builder.HasIndex(entity => entity.ReportsToPositionId);
         });
     }
+
+    public static void ApplyPlatformOrgCatalog<TUnitType, TJobGrade, TJobPosition, TMember>(this ModelBuilder modelBuilder)
+        where TUnitType : class, IOrgUnitTypeEntity
+        where TJobGrade : class, IOrgNamedCatalogEntity
+        where TJobPosition : class, IOrgNamedCatalogEntity
+        where TMember : class, IOrgUnitMemberEntity
+    {
+        ArgumentNullException.ThrowIfNull(modelBuilder);
+
+        modelBuilder.Entity<TUnitType>(builder =>
+        {
+            builder.HasKey(entity => entity.Id);
+            builder.Property(entity => entity.Code).HasMaxLength(OrgStructureLimits.CodeMaxLength).IsRequired();
+            builder.Property(entity => entity.Name).HasMaxLength(OrgStructureLimits.NameMaxLength).IsRequired();
+            builder.Property(entity => entity.Icon).HasMaxLength(OrgStructureLimits.IconMaxLength).IsRequired();
+            builder.HasIndex(entity => new { entity.OrgId, entity.Code }).IsUnique();
+        });
+
+        MapNamedCatalog<TJobGrade>();
+        MapNamedCatalog<TJobPosition>();
+
+        modelBuilder.Entity<TMember>(builder =>
+        {
+            builder.HasKey(entity => entity.Id);
+            builder.HasIndex(entity => new { entity.OrganizationalUnitId, entity.UserId }).IsUnique();
+        });
+
+        void MapNamedCatalog<TCatalog>()
+            where TCatalog : class, IOrgNamedCatalogEntity
+        {
+            modelBuilder.Entity<TCatalog>(builder =>
+            {
+                builder.HasKey(entity => entity.Id);
+                builder.Property(entity => entity.Code).HasMaxLength(OrgStructureLimits.CodeMaxLength).IsRequired();
+                builder.Property(entity => entity.Name).HasMaxLength(OrgStructureLimits.NameMaxLength).IsRequired();
+                builder.HasIndex(entity => new { entity.OrgId, entity.Code }).IsUnique();
+            });
+        }
+    }
 }

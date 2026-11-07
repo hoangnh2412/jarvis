@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Platform.Authentication;
+using Platform.DDD.Domain.Shared.Extensions;
 using Platform.Authentication.Identity.Domain;
 using Platform.Authentication.Jwt;
 using Platform.Authorization.EntityFramework.Persistence;
@@ -28,6 +30,8 @@ public sealed class AppLoginService(
     IPasswordHasher<User> passwordHasher,
     IOptionsMonitor<AuthenticationJwtOption> jwtOptions) : IAppLoginService
 {
+    private static readonly TimeSpan RefreshLifetime = TimeSpan.FromDays(14);
+
     public async Task<AppLoginResult> LoginAsync(
         string tenantCode,
         string orgCode,
@@ -73,8 +77,55 @@ public sealed class AppLoginService(
             await tenantDb.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        return new AppLoginResult(IssueToken(user), user.Id, tenant.Id, org.Id);
+        var db = tenantIdentity.DbContext;
+        var refreshToken = await IssueRefreshTokenAsync(db, user.Id, cancellationToken).ConfigureAwait(false);
+        return new AppLoginResult(IssueToken(user), refreshToken, user.Id, tenant.Id, org.Id);
     }
+
+    public async Task<AppLoginResult> RefreshAsync(string refreshToken, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(refreshToken))
+            throw new UnauthorizedAccessException();
+
+        var db = tenantIdentity.DbContext;
+        var hash = HashRefreshToken(refreshToken.Trim());
+        var row = await db.Set<UserRefreshToken>()
+            .FirstOrDefaultAsync(item => item.TokenHash == hash, cancellationToken)
+            .ConfigureAwait(false);
+        if (row is null || row.RevokedAtUtc is not null || row.ExpiresAtUtc <= DateTime.UtcNow)
+            throw new UnauthorizedAccessException();
+
+        var user = await db.Users
+            .FirstOrDefaultAsync(item => item.Id == row.UserId, cancellationToken)
+            .ConfigureAwait(false);
+        if (user is null || user.TenantId is not Guid tenantId || user.OrgId is not Guid orgId)
+            throw new UnauthorizedAccessException();
+
+        row.RevokedAtUtc = DateTimeExtension.UtcTimestamp();
+        var nextRefreshToken = await IssueRefreshTokenAsync(db, user.Id, cancellationToken).ConfigureAwait(false);
+        return new AppLoginResult(IssueToken(user), nextRefreshToken, user.Id, tenantId, orgId);
+    }
+
+    private static async Task<string> IssueRefreshTokenAsync(
+        DbContext db,
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var refreshToken = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(32));
+        db.Set<UserRefreshToken>().Add(new UserRefreshToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            TokenHash = HashRefreshToken(refreshToken),
+            CreatedAtUtc = DateTimeExtension.UtcTimestamp(),
+            ExpiresAtUtc = DateTimeExtension.UtcTimestamp().Add(RefreshLifetime),
+        });
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return refreshToken;
+    }
+
+    private static string HashRefreshToken(string refreshToken) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken)));
 
     private string IssueToken(User user)
     {

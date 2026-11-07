@@ -9,6 +9,9 @@ export type NotificationData = {
   [key: string]: unknown
 }
 
+/** Payload SSE. `isRead` do client gắn khi nhận sự kiện. */
+export type NotificationRealtimeMessage = Omit<NotificationItem, 'isRead'>
+
 export type NotificationItem = {
   notificationId: string
   type: string

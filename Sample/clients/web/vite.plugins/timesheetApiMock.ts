@@ -78,7 +78,7 @@ function inDateRange(date: string, from: string, to: string) {
 
 /**
  * Vite middleware mock `/api/v1/timesheet/*`.
- * Seed: `@platform/core` → `features/timesheet/mocks/*.json`
+ * Seed: Sample `clients/web/mocks/timesheet/*.json`
  */
 export function timesheetApiMockPlugin(options: {
   boardJsonPath: string

@@ -1,39 +1,59 @@
 import type { LoginResult } from '@platform/core'
 
-/** Tenant seed của BasicAuthUser (`SampleAuthTenants.DevTenantId`). */
-const DEV_TENANT_ID = 'dd348565-5d31-46bb-aef7-aa7f0c4a1866'
-
-type BearerTokenBody = {
+type TokenPayload = {
   accessToken?: string
+  refreshToken?: string
   AccessToken?: string
+  RefreshToken?: string
+}
+
+type TokenBody = TokenPayload & {
+  data?: TokenPayload
   message?: string
   title?: string
+  error?: { message?: string; systemMessage?: string }
+}
+
+function readTokens(body: TokenBody | null) {
+  const payload = body?.data ?? body
+  return {
+    accessToken: payload?.accessToken || payload?.AccessToken || '',
+    refreshToken: payload?.refreshToken || payload?.RefreshToken || '',
+  }
 }
 
 /**
- * Đăng nhập Sample: verify user rồi nhận JWT từ `POST /api/authentication/bearer-token`.
- * Trường form `email` là username (hoặc email nếu tài khoản dùng email làm tên).
+ * Đăng nhập app: `POST /api/v1/app/account/login`.
+ * Trường form `email` là username.
  */
 export async function loginWithJwt(payload: {
   email: string
   password: string
+  tenantCode: string
+  orgCode: string
+  tenantId: string
+  orgId: string
 }): Promise<LoginResult> {
-  const username = payload.email.trim()
-  const tenantId = import.meta.env.VITE_TENANT_ID?.trim() || DEV_TENANT_ID
-
-  const response = await fetch('/api/authentication/bearer-token', {
+  const response = await fetch('/api/v1/app/account/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Tenant-Id': tenantId,
+      'X-Tenant-Id': payload.tenantId,
+      'X-Org-Id': payload.orgId,
     },
-    body: JSON.stringify({ username, password: payload.password }),
+    body: JSON.stringify({
+      userName: payload.email.trim(),
+      password: payload.password,
+      tenantCode: payload.tenantCode.trim(),
+      orgCode: payload.orgCode.trim(),
+    }),
   })
 
-  const body = (await response.json().catch(() => null)) as BearerTokenBody | null
+  const body = (await response.json().catch(() => null)) as TokenBody | null
   if (!response.ok) {
     throw new Error(
-      body?.message ||
+      body?.error?.message ||
+        body?.message ||
         body?.title ||
         (response.status === 401
           ? 'Sai tên đăng nhập hoặc mật khẩu.'
@@ -41,17 +61,18 @@ export async function loginWithJwt(payload: {
     )
   }
 
-  const accessToken = body?.accessToken || body?.AccessToken
-  if (!accessToken) {
+  const tokens = readTokens(body)
+  if (!tokens.accessToken || !tokens.refreshToken) {
     throw new Error('Server không trả access token.')
   }
 
+  const username = payload.email.trim()
   return {
     user: {
       id: username,
       email: username.includes('@') ? username : `${username}@local`,
       fullName: username,
     },
-    tokens: { accessToken },
+    tokens,
   }
 }

@@ -3,6 +3,7 @@ import type { AxiosInstance } from 'axios'
 import { normalizeApiBaseUrl } from '@platform/core'
 import {
   IMPORT_EXPORT_API_KEY_HEADER,
+  IMPORT_EXPORT_ORG_HEADER,
   IMPORT_EXPORT_TENANT_HEADER,
 } from '../constants'
 import type {
@@ -26,6 +27,8 @@ export type ImportExportHttpConfig = {
   apiKey?: string | (() => string | undefined)
   /** Optional — host demo only; resolved server-side into ICurrentTenant */
   getTenantId?: () => string | undefined
+  /** Optional — working org đã chọn lúc đăng nhập (`X-Org-Id`). */
+  getOrgId?: () => string | undefined
 }
 
 let http: AxiosInstance = axios.create({
@@ -50,9 +53,16 @@ export function configureImportExportHttp(config: ImportExportHttpConfig) {
     if (apiKey) {
       req.headers.set(IMPORT_EXPORT_API_KEY_HEADER, apiKey)
     }
+    // CROSS-MODULE 2026-11-04 · slice đăng nhập Sample (ô chọn Org/Tenant)
+    // Nguyên nhân: API /api bị MultiOrg từ chối khi chỉ có X-Tenant-Id.
+    // Lý do: gửi thêm X-Org-Id từ scope đã chọn. Không đổi DTO import/export.
     const tenantId = config.getTenantId?.()
     if (tenantId) {
       req.headers.set(IMPORT_EXPORT_TENANT_HEADER, tenantId)
+    }
+    const orgId = config.getOrgId?.()
+    if (orgId) {
+      req.headers.set(IMPORT_EXPORT_ORG_HEADER, orgId)
     }
     // Avoid 304 with empty body (axios → unwrap treats "" as valid payload).
     req.headers.set('Cache-Control', 'no-cache')

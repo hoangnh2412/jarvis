@@ -171,7 +171,7 @@ export function ensureOrgStructureFilterLoaded(): Promise<boolean> {
 
 export async function listOrgUnits(): Promise<OrgUnit[]> {
   const payload = await orgHttp.get<unknown[]>(`${API}/units`)
-  if (!Array.isArray(payload)) return []
+  if (!Array.isArray(payload)) throw new Error('API cơ cấu không trả về danh sách.')
   return payload
     .filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === 'object')
     .map(mapUnit)
@@ -239,7 +239,7 @@ function mapUnitTypeCatalogItem(raw: Record<string, unknown>): OrgUnitTypeCatalo
 
 export async function listUnitTypes(): Promise<OrgUnitTypeCatalogItem[]> {
   const payload = await orgHttp.get<unknown[]>(`${API}/unit-types`)
-  if (!Array.isArray(payload)) return []
+  if (!Array.isArray(payload)) throw new Error('API cơ cấu không trả về danh sách.')
   return payload
     .map((row) => {
       if (typeof row === 'string') {
@@ -276,7 +276,7 @@ export async function deleteOrgUnitType(id: string): Promise<void> {
 
 export async function listLegalEntities(): Promise<LegalEntity[]> {
   const payload = await orgHttp.get<unknown[]>(`${API}/legal-entities`)
-  if (!Array.isArray(payload)) return []
+  if (!Array.isArray(payload)) throw new Error('API cơ cấu không trả về danh sách.')
   return payload
     .filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === 'object')
     .map(mapLegalEntity)
@@ -346,7 +346,7 @@ export async function previewOrgTemplate(
     { params: { rootName } },
   )
   const rows = payload.nodes ?? payload.Nodes
-  if (!Array.isArray(rows)) return []
+  if (!Array.isArray(rows)) throw new Error('API cơ cấu không trả về danh sách.')
   return rows
     .filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === 'object')
     .map((raw) => ({
@@ -369,7 +369,7 @@ export async function applyOrgTemplate(input: {
     confirmed: true,
     nodes: input.nodes,
   })
-  if (!Array.isArray(payload)) return []
+  if (!Array.isArray(payload)) throw new Error('API cơ cấu không trả về danh sách.')
   return payload
     .filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === 'object')
     .map(mapUnit)
@@ -428,7 +428,7 @@ function mapOrgUnitMember(raw: Record<string, unknown>): OrgUnitMember {
 
 export async function listJobPositions(): Promise<JobPositionCatalogItem[]> {
   const payload = await orgHttp.get<unknown[]>(`${API}/job-positions`)
-  if (!Array.isArray(payload)) return []
+  if (!Array.isArray(payload)) throw new Error('API cơ cấu không trả về danh sách.')
   return payload
     .filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === 'object')
     .map(mapJobPosition)
@@ -437,7 +437,7 @@ export async function listJobPositions(): Promise<JobPositionCatalogItem[]> {
 
 export async function listJobGrades(): Promise<JobGradeCatalogItem[]> {
   const payload = await orgHttp.get<unknown[]>(`${API}/job-grades`)
-  if (!Array.isArray(payload)) return []
+  if (!Array.isArray(payload)) throw new Error('API cơ cấu không trả về danh sách.')
   return payload
     .filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === 'object')
     .map(mapJobGrade)
@@ -446,7 +446,7 @@ export async function listJobGrades(): Promise<JobGradeCatalogItem[]> {
 
 export async function listJobTitles(): Promise<JobTitleCatalogItem[]> {
   const payload = await orgHttp.get<unknown[]>(`${API}/job-titles`)
-  if (!Array.isArray(payload)) return []
+  if (!Array.isArray(payload)) throw new Error('API cơ cấu không trả về danh sách.')
   return payload
     .filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === 'object')
     .map(mapJobTitle)
@@ -461,7 +461,7 @@ export type UnitMemberCount = {
 
 export async function listUnitMemberSummary(): Promise<UnitMemberCount[]> {
   const payload = await orgHttp.get<unknown[]>(`${API}/units/member-summary`)
-  if (!Array.isArray(payload)) return []
+  if (!Array.isArray(payload)) throw new Error('API cơ cấu không trả về danh sách.')
   return payload
     .filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === 'object')
     .map((raw) => ({
@@ -474,7 +474,7 @@ export async function listUnitMemberSummary(): Promise<UnitMemberCount[]> {
 
 export async function listOrgUnitMembers(unitId: string): Promise<OrgUnitMember[]> {
   const payload = await orgHttp.get<unknown[]>(`${API}/units/${unitId}/members`)
-  if (!Array.isArray(payload)) return []
+  if (!Array.isArray(payload)) throw new Error('API cơ cấu không trả về danh sách.')
   return payload
     .filter((row): row is Record<string, unknown> => Boolean(row) && typeof row === 'object')
     .map(mapOrgUnitMember)

@@ -1339,7 +1339,7 @@ Project demo **nằm ngoài** repo engine:
 
 ```text
 D:\Source Code\Platform.Modules.ImportExport.ConsumerDemo\
-├── nuget.config                          # source LlaExcelLocal + nuget.org
+├── nuget.config                          # source ExcelLocal + nuget.org
 ├── Platform.Modules.ImportExport.ConsumerDemo.sln
 ├── README.md
 └── Platform.Modules.ImportExport.ConsumerDemo\
@@ -1495,7 +1495,7 @@ Consumer chỉ cần cài meta package **`Platform.Modules.ImportExport`** (kéo
 Hoặc CLI (machine-wide):
 
 ```powershell
-dotnet nuget add source "D:\Source Code\Platform.Modules.ImportExport\Platform.Modules.ImportExport\artifacts\nuget" --name LlaExcelLocal
+dotnet nuget add source "D:\Source Code\Platform.Modules.ImportExport\Platform.Modules.ImportExport\artifacts\nuget" --name ExcelLocal
 ```
 
 ### Bước 3 — Cài package vào ConsumerDemo
@@ -1514,7 +1514,7 @@ dotnet nuget add source "D:\Source Code\Platform.Modules.ImportExport\Platform.M
 
 ```powershell
 cd "D:\Source Code\Platform.Modules.ImportExport.ConsumerDemo\Platform.Modules.ImportExport.ConsumerDemo"
-dotnet add package Platform.Modules.ImportExport --version 1.1.0 --source LlaExcelLocal
+dotnet add package Platform.Modules.ImportExport --version 1.1.0 --source ExcelLocal
 ```
 
 ### Bước 4 — `.csproj` sau khi cài

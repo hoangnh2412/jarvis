@@ -39,7 +39,7 @@ import {
 @import "@platform/core/craftDoc.css";
 ```
 
-Peer: `docx-preview`, `pizzip` (đã bundle trong `@platform/core`).
+`docx-preview` do Sample khai báo. `pizzip` nằm trong `@platform/core`.
 
 ---
 

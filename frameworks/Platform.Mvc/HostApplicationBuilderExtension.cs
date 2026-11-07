@@ -5,6 +5,7 @@ using Platform.DDD.Domain.Shared.ExceptionHandling;
 using Platform.DDD.Domain.Shared.RequestResponse;
 using Platform.DDD.Domain.Shared.Utility;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -83,14 +84,47 @@ public static class HostApplicationBuilderExtension
         return builder;
     }
 
+    private static readonly string[] DefaultNonSpaPathPrefixes = ["/api", "/sse", "/hubs", "/health", "/swagger"];
+
     /// <summary>
-    /// Serves SPA static files from wwwroot and maps unmatched routes to <paramref name="fallbackFile"/>.
+    /// Serves SPA static files from wwwroot and maps unmatched page routes to <paramref name="fallbackFile"/>.
+    /// Prefixes in <paramref name="nonSpaPathPrefixes"/> are not the SPA shell, so a missing controller returns 404 instead of a cacheable <c>index.html</c> (304).
+    /// Bỏ qua tham số để giữ <c>/api</c>, <c>/sse</c>, <c>/hubs</c>, <c>/health</c>, <c>/swagger</c>.
     /// </summary>
-    public static WebApplication UseCoreSpa(this WebApplication app, string fallbackFile = "index.html")
+    public static WebApplication UseCoreSpa(
+        this WebApplication app,
+        string fallbackFile = "index.html",
+        IReadOnlyList<string>? nonSpaPathPrefixes = null)
     {
+        var prefixes = nonSpaPathPrefixes ?? DefaultNonSpaPathPrefixes;
         app.UseDefaultFiles();
         app.UseStaticFiles();
-        app.MapFallbackToFile(fallbackFile);
+        app.MapFallback(async context =>
+        {
+            if (IsNonSpaPath(context.Request.Path, prefixes))
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                context.Response.Headers.CacheControl = "no-store";
+                context.Response.ContentType = "application/json";
+                return;
+            }
+
+            var webRoot = app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+            var file = Path.Combine(webRoot, fallbackFile);
+            context.Response.ContentType = "text/html; charset=utf-8";
+            await context.Response.SendFileAsync(file).ConfigureAwait(false);
+        });
         return app;
+    }
+
+    private static bool IsNonSpaPath(PathString path, IReadOnlyList<string> prefixes)
+    {
+        foreach (var prefix in prefixes)
+        {
+            if (path.StartsWithSegments(prefix))
+                return true;
+        }
+
+        return false;
     }
 }

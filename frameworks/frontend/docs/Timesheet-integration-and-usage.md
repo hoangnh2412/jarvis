@@ -27,7 +27,7 @@ import {
 @import "@platform/core/timesheet.css";
 ```
 
-Peer: `ag-grid-community`, `ag-grid-react`.
+Demo: Sample khai báo `ag-grid-community`, `ag-grid-react`. Backend chưa có module timesheet.
 
 ---
 

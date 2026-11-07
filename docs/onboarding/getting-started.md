@@ -28,7 +28,7 @@ dotnet run --project Sample/Sample.csproj
 | `modules/` | Bounded context (Account, Setting, …) |
 | `Sample/` | Host demo API + SPA |
 | `UnitTest/` | Test framework / module |
-| `ADRs/` | Quyết định kiến trúc |
+| `docs/04-platform/DOC-09-adr/` | Quyết định kiến trúc |
 
 Chi tiết: [README.md](../../README.md).
 
@@ -36,7 +36,7 @@ Chi tiết: [README.md](../../README.md).
 
 1. Đọc [features/README.md](../features/README.md) — platform có những capability gì.
 2. Đọc [guides/README.md](../guides/README.md) — tích hợp phần bạn đang làm (auth, cache, …).
-3. Khi đụng thiết kế / constraint: tra [ADRs/README.md](../../ADRs/README.md).
+3. Khi đụng thiết kế / constraint: tra [docs/04-platform/DOC-09-adr/README.md](../04-platform/DOC-09-adr/README.md).
 
 ## 5. Quy ước làm việc (tóm tắt)
 

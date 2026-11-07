@@ -36,6 +36,32 @@ public sealed class AppAccountController(
             return Ok(new
             {
                 accessToken = result.AccessToken,
+                refreshToken = result.RefreshToken,
+                userId = result.UserId,
+                tenantId = result.TenantId,
+                orgId = result.OrgId,
+            });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
+    }
+
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Refresh([FromBody] RefreshBody body, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(body.RefreshToken))
+            return Unauthorized();
+
+        try
+        {
+            var result = await login.RefreshAsync(body.RefreshToken, cancellationToken).ConfigureAwait(false);
+            return Ok(new
+            {
+                accessToken = result.AccessToken,
+                refreshToken = result.RefreshToken,
                 userId = result.UserId,
                 tenantId = result.TenantId,
                 orgId = result.OrgId,
@@ -84,6 +110,8 @@ public sealed class AppAccountController(
     }
 
     public sealed record LoginBody(string UserName, string Password, string? TenantCode, string? OrgCode);
+
+    public sealed record RefreshBody(string? RefreshToken);
 
     public sealed record ChangePasswordBody(string CurrentPassword, string NewPassword);
 

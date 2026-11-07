@@ -2,7 +2,7 @@
 
 Module thông báo realtime cho Platform: lưu lịch sử trên Redis, đẩy sự kiện qua SignalR, và cung cấp UI React (`@platform/notifications`) để người dùng xem, lọc, đánh dấu đã đọc.
 
-**Boundary ADR (hiện hành):** [2026-08-12-adr-platform-realtime-inbox-boundary](../../ADRs/2026-08-12-adr-platform-realtime-inbox-boundary.md) — Framework = `Platform.Realtime` / `.SignalR`; Module = inbox (Phase 3 move).
+**Boundary ADR (hiện hành):** [2026-08-12-adr-platform-realtime-inbox-boundary](../../docs/04-platform/DOC-09-adr/2026-08-12-adr-platform-realtime-inbox-boundary.md) — Framework = `Platform.Realtime` / `.SignalR`; Module = inbox (Phase 3 move).
 
 ## Tổng quan kiến trúc
 
@@ -238,7 +238,7 @@ sequenceDiagram
     participant Hub as NotificationHub
     participant Auth as Auth Middleware
 
-    Client->>Auth: WebSocket/LongPolling + Bearer / API key
+    Client->>Auth: WebSocket / SSE
     Auth->>Hub: OnConnectedAsync
     Hub->>Hub: workContext.User.GetAsync() → abort nếu thiếu userId
     Hub->>Hub: workContext.Tenant.GetIdAsync()
@@ -360,14 +360,10 @@ import '@platform/notifications/styles.css'
 
 | Biến                            | Mặc định                 | Mô tả                                      |
 | ------------------------------- | ------------------------ | ------------------------------------------ |
-| `VITE_NOTIFICATION_API_URL`     | `/api/notifications`     | Base REST                                  |
-| `VITE_NOTIFICATION_HUB_URL`     | `/hubs/notifications`    | SignalR hub URL (`Realtime:SignalR:SignalRPath`) |
-| `VITE_NOTIFICATION_SSE_URL`       | `/sse/notifications`     | SSE endpoint (`Realtime:Sse:SsePath`)      |
-| `VITE_NOTIFICATION_TRANSPORT`   | `signalr`                | `signalr` hoặc `sse` — khớp transport BE  |
-| `VITE_NOTIFICATION_API_KEY`     | (trống)                  | Demo — dùng `X-API-KEY` thay JWT           |
-| `VITE_NOTIFICATION_TENANT_ID`   | (trống)                  | Header `X-Tenant-Id` cho REST + realtime   |
+| `VITE_NOTIFICATION_API_URL` | `/api/notifications` | Base REST                             |
+| `VITE_NOTIFICATION_SSE_URL` | `/sse/notifications` | SSE endpoint (`Realtime:Sse:SsePath`) |
 
-Host có thể gọi `configureNotificationRealtime({ transport: 'sse' })` thay env (ưu tiên sau env default).
+Chuông nhận realtime qua SSE. Host gọi `configureNotificationRealtime` khi cần đổi `sseUrl` hoặc `eventName`.
 
 
 
@@ -379,7 +375,7 @@ Host có thể gọi `configureNotificationRealtime({ transport: 'sse' })` thay 
 | -------------------- | ------------------------------------------------- |
 | `NotificationBell`   | Icon chuông + badge + popover                     |
 | `NotificationCenter` | List, filter, expand, **mở liên kết** `actionUrl` |
-| `useNotifications`   | State, REST + SignalR, optimistic mutations       |
+| `useNotifications`   | State, REST + SSE, optimistic mutations           |
 
 
 `NotificationBell` truyền `controller={notifications}` vào `NotificationCenter` để **tránh double fetch**.
@@ -418,10 +414,9 @@ Icon theo `type`: `comment` → MessageCircle, `friend` → UserPlus, `security`
 ### 5. Xác thực FE
 
 
-| Mode           | REST                            | SignalR                    |
-| -------------- | ------------------------------- | -------------------------- |
-| JWT            | `Authorization: Bearer {token}` | `accessTokenFactory`       |
-| API Key (demo) | `X-API-KEY`                     | Long Polling + `X-API-KEY` |
+| Mode | REST                            | Realtime                                      |
+| ---- | ------------------------------- | --------------------------------------------- |
+| JWT  | `Authorization: Bearer {token}` | Socket và SSE cần cơ chế xác thực riêng       |
 
 
 ---
@@ -532,7 +527,7 @@ function NotificationsPage() {
 - **Components:** `NotificationBell`, `NotificationCenter`
 - **Hook:** `useNotifications`
 - **Services:** `getNotifications`, `markNotificationsRead`, `markNotificationsUnread`, `markAllNotificationsRead`
-- **Config:** `configureNotificationAuth`, `notificationApiBase`, `notificationHubUrl`
+- **Config:** `configureNotificationAuth`, `notificationApiBase`, `notificationSseUrl`
 
 ---
 

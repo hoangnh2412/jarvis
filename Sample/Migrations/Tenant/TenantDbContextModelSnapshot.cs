@@ -22,6 +22,286 @@ namespace Sample.Migrations.Tenant
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Platform.Host.Entities.JobGrade", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("OrgId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("org_structure_job_grade", (string)null);
+                });
+
+            modelBuilder.Entity("Platform.Host.Entities.JobPosition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("OrgId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("org_structure_job_position", (string)null);
+                });
+
+            modelBuilder.Entity("Platform.Host.Entities.JobTitle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("OrgId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("org_structure_job_title", (string)null);
+                });
+
+            modelBuilder.Entity("Platform.Host.Entities.LegalEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("DetailsJson")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("OrgId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("TaxId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("org_structure_legal_entity", (string)null);
+                });
+
+            modelBuilder.Entity("Platform.Host.Entities.OrgChartPosition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("JobTitleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrgId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ReportsToPositionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationalUnitId");
+
+                    b.HasIndex("ReportsToPositionId");
+
+                    b.ToTable("org_structure_position", (string)null);
+                });
+
+            modelBuilder.Entity("Platform.Host.Entities.OrgUnit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("LegalEntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("OrgId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UnitType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("Path");
+
+                    b.HasIndex("OrgId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("org_structure_unit", (string)null);
+                });
+
+            modelBuilder.Entity("Platform.Host.Entities.OrgUnitMember", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("JobGradeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("JobPositionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("JobTitleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrgId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrganizationalUnitId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationalUnitId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("org_structure_unit_member", (string)null);
+                });
+
+            modelBuilder.Entity("Platform.Host.Entities.OrgUnitType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("OrgId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("org_structure_unit_type", (string)null);
+                });
+
             modelBuilder.Entity("Sample.Entities.ApiKeyCredential", b =>
                 {
                     b.Property<Guid>("Id")
@@ -53,7 +333,7 @@ namespace Sample.Migrations.Tenant
                     b.HasIndex("TenantId", "Profile", "KeyHash")
                         .IsUnique();
 
-                    b.ToTable("ApiKeyCredential", (string)null);
+                    b.ToTable("api-key-credential", (string)null);
 
                     b.HasData(
                         new
@@ -104,7 +384,7 @@ namespace Sample.Migrations.Tenant
                     b.HasIndex("TenantId", "Username")
                         .IsUnique();
 
-                    b.ToTable("BasicAuthUser", (string)null);
+                    b.ToTable("basic-auth-user", (string)null);
 
                     b.HasData(
                         new
@@ -129,7 +409,7 @@ namespace Sample.Migrations.Tenant
 
                     b.HasKey("Id");
 
-                    b.ToTable("Departments");
+                    b.ToTable("departments", (string)null);
                 });
 
             modelBuilder.Entity("Sample.Entities.Employee", b =>
@@ -172,7 +452,7 @@ namespace Sample.Migrations.Tenant
 
                     b.HasIndex("PositionId");
 
-                    b.ToTable("Employees");
+                    b.ToTable("employees", (string)null);
                 });
 
             modelBuilder.Entity("Sample.Entities.Org", b =>
@@ -194,6 +474,9 @@ namespace Sample.Migrations.Tenant
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("TaxCode")
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
@@ -203,10 +486,12 @@ namespace Sample.Migrations.Tenant
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ParentId");
+
                     b.HasIndex("TenantId", "Code")
                         .IsUnique();
 
-                    b.ToTable("Org", (string)null);
+                    b.ToTable("org", (string)null);
                 });
 
             modelBuilder.Entity("Sample.Entities.Position", b =>
@@ -224,7 +509,7 @@ namespace Sample.Migrations.Tenant
 
                     b.HasKey("Id");
 
-                    b.ToTable("Positions");
+                    b.ToTable("positions", (string)null);
                 });
 
             modelBuilder.Entity("Sample.Entities.SampleExcelTemplate", b =>
@@ -282,7 +567,7 @@ namespace Sample.Migrations.Tenant
                     b.HasIndex("TenantId", "Code")
                         .IsUnique();
 
-                    b.ToTable("excel_templates", (string)null);
+                    b.ToTable("excel-templates", (string)null);
                 });
 
             modelBuilder.Entity("Sample.Entities.Student", b =>
@@ -303,7 +588,7 @@ namespace Sample.Migrations.Tenant
 
                     b.HasKey("Id");
 
-                    b.ToTable("Student", (string)null);
+                    b.ToTable("student", (string)null);
                 });
 
             modelBuilder.Entity("Sample.Entities.TenantPasswordPolicy", b =>
@@ -338,7 +623,7 @@ namespace Sample.Migrations.Tenant
                     b.HasIndex("TenantId")
                         .IsUnique();
 
-                    b.ToTable("TenantPasswordPolicy", (string)null);
+                    b.ToTable("tenant-password-policy", (string)null);
 
                     b.HasData(
                         new

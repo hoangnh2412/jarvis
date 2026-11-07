@@ -21,35 +21,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -b --pretty false"
   },
-  "peerDependencies": {
-    "@hookform/resolvers": "^5.4.0",
-    "@platform/core": "*",
-    "@primereact/core": "^11.0.0",
-    "@primeuix/themes": "^3.0.0",
-    "axios": "^1.7.0",
-    "lucide-react": ">=0.400.0",
-    "primereact": "^11.0.0",
-    "react": ">=19.0.0",
-    "react-dom": ">=19.0.0",
-    "react-hook-form": "^7.81.0",
-    "react-router-dom": ">=7.0.0",
-    "react-toastify": ">=10.0.0",
-    "zod": "^4.4.3"
-  },
   "dependencies": {
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "@platform/core": "file:../../../frameworks/frontend",
-    "@primereact/core": "^11.0.0",
-    "@primeuix/themes": "^3.0.0",
-    "primereact": "^11.0.0",
-    "react-router-dom": "^7.18.1",
-    "react-toastify": "^11.1.0",
-    "lucide-react": "^1.25.0",
-    "axios": "^1.18.1",
-    "react-hook-form": "^7.82.0",
-    "@hookform/resolvers": "^5.4.0",
-    "zod": "^4.4.3"
+    "@platform/core": "file:../../../frameworks/frontend"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

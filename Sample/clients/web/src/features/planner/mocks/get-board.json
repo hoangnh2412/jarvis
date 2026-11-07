@@ -1,0 +1,114 @@
+{
+  "columns": [
+    {
+      "id": "todo",
+      "name": "To do",
+      "order": 1,
+      "color": "#94a3b8"
+    },
+    {
+      "id": "in_progress",
+      "name": "In progress",
+      "order": 2,
+      "color": "#3b82f6"
+    },
+    {
+      "id": "review",
+      "name": "Review",
+      "order": 3,
+      "color": "#a855f7"
+    },
+    {
+      "id": "done",
+      "name": "Done",
+      "order": 4,
+      "color": "#22c55e"
+    }
+  ],
+  "items": [
+    {
+      "id": "pln-001",
+      "title": "Soạn hợp đồng dịch vụ pháp lý",
+      "description": "Draft HĐ tư vấn cho khách hàng ACME — rà soát điều khoản thanh toán.",
+      "statusId": "todo",
+      "start": "2026-08-27T02:00:00.000Z",
+      "end": "2026-08-27T05:00:00.000Z",
+      "allDay": false,
+      "priority": "high",
+      "assignee": "Nguyễn Văn A",
+      "updatedAt": "2026-08-26T08:00:00.000Z"
+    },
+    {
+      "id": "pln-002",
+      "title": "Họp kick-off Matter GHC-2026",
+      "description": "Align scope Sub-matter T&M với PM-matter và Kế toán.",
+      "statusId": "todo",
+      "start": "2026-08-28T01:00:00.000Z",
+      "end": "2026-08-28T02:30:00.000Z",
+      "allDay": false,
+      "priority": "medium",
+      "assignee": "Trần Thị B",
+      "updatedAt": "2026-08-26T09:15:00.000Z"
+    },
+    {
+      "id": "pln-003",
+      "title": "Rà soát timesheet tuần 34",
+      "description": "Đối chiếu giờ billable vs hạn mức Retainer.",
+      "statusId": "in_progress",
+      "start": "2026-08-25T01:30:00.000Z",
+      "end": "2026-08-27T10:00:00.000Z",
+      "allDay": false,
+      "priority": "high",
+      "assignee": "Lê Minh C",
+      "updatedAt": "2026-08-27T01:00:00.000Z"
+    },
+    {
+      "id": "pln-004",
+      "title": "Chuẩn bị closing checklist Sub-matter",
+      "description": "Danh mục file bắt buộc khi đóng Sub-matter RET tháng 8.",
+      "statusId": "in_progress",
+      "start": "2026-08-26T03:00:00.000Z",
+      "end": "2026-08-29T09:00:00.000Z",
+      "allDay": false,
+      "priority": "medium",
+      "assignee": "Nguyễn Văn A",
+      "updatedAt": "2026-08-26T11:20:00.000Z"
+    },
+    {
+      "id": "pln-005",
+      "title": "Review ý kiến pháp lý nội bộ",
+      "description": "PM-submatter review memo trước khi gửi KH.",
+      "statusId": "review",
+      "start": "2026-08-24T02:00:00.000Z",
+      "end": "2026-08-26T08:00:00.000Z",
+      "allDay": false,
+      "priority": "high",
+      "assignee": "Phạm Quốc D",
+      "updatedAt": "2026-08-26T07:40:00.000Z"
+    },
+    {
+      "id": "pln-006",
+      "title": "Nộp báo cáo tiến độ tuần",
+      "description": null,
+      "statusId": "done",
+      "start": "2026-08-22T01:00:00.000Z",
+      "end": "2026-08-22T04:00:00.000Z",
+      "allDay": false,
+      "priority": "low",
+      "assignee": "Trần Thị B",
+      "updatedAt": "2026-08-22T04:30:00.000Z"
+    },
+    {
+      "id": "pln-007",
+      "title": "All-day: Đào tạo nội bộ Planner",
+      "description": "Workshop Kanban / Calendar / Timeline cho team.",
+      "statusId": "todo",
+      "start": "2026-08-29T00:00:00.000Z",
+      "end": "2026-08-29T23:59:59.000Z",
+      "allDay": true,
+      "priority": "low",
+      "assignee": null,
+      "updatedAt": "2026-08-25T03:00:00.000Z"
+    }
+  ]
+}

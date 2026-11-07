@@ -4,7 +4,7 @@
 |---------|------|--------|--------|
 | — | YYYY-MM-DD | | Draft |
 
-**Áp dụng cho:** mọi DOC-01–18, governance doc và artifact trong `docs/` (trừ snapshot `02-baseline/` — read-only).
+**Áp dụng cho:** mọi DOC-01–19, governance doc và artifact trong `docs/` (trừ snapshot `02-baseline/` — read-only). Bảo mật khi soạn: §6.
 
 **Liên quan:** [`doc-registry.md`](../05-traceability/doc-registry.md) · [`business-glossary.md`](business-glossary.md) · [`baseline-history.md`](baseline-history.md) (baseline ID).
 
@@ -81,7 +81,25 @@ Khi trích dẫn nội dung DOC dependency (vd. *"theo DOC-06 v0.3"*) — dùng 
 
 ---
 
-## 6. Change Log (tài liệu này)
+## 6. Bảo mật tài liệu
+
+Áp khi soạn hoặc sửa artifact trong `docs/`, `brainstorm/` và nội dung đẩy ra ngoài (Outline, Lark, …). Luật ứng xử chung của agent: minipower `contracts/lingua-franca.md` § Bảo mật artifact.
+
+| # | Quy tắc | Chi tiết |
+|---|---------|----------|
+| 1 | **Không secret trong DOC** | Token, password, connection string, API key, nội dung `.env` — placeholder hoặc tên biến, không giá trị thật |
+| 2 | **Dữ liệu giả** | Ví dụ mã số thuế, tên doanh nghiệp, email, số giấy tờ, số chứng từ: synthetic; không copy từ khách, ticket, hay MCP chưa được chỉ định |
+| 3 | **Screenshot / export** | Che hoặc làm mờ PII và secret trước khi đưa vào `docs/` hoặc `assets/` commit |
+| 4 | **Brainstorm** | Thảo luận rủi ro được; không paste credential họp, link có token, dump chat nội bộ |
+| 5 | **Baseline** | `02-baseline/` read-only — không vá snapshot; sửa qua CR |
+| 6 | **Persona** | Tên người thật trong ví dụ chỉ khi đã đồng ý công bố; mặc định `{Author}`, `Nguyễn Văn A (mẫu)` |
+| 7 | **ERD / API spec** | Mô tả cột PII và field nhạy cảm được; dòng mẫu trong DOC-11 / DOC-12 tuân (2) |
+
+Log mẫu trong DOC: mã lỗi `SYS-*` / `{MOD}-*` và trace id giả — không payload production.
+
+---
+
+## 7. Change Log (tài liệu này)
 
 | Version | Thay đổi | Tác giả |
 |---------|----------|---------|

@@ -9,7 +9,7 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
     <SpaRoot>clients\web\</SpaRoot>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
-    <SkipFrontendBuild>true</SkipFrontendBuild>
+    <SkipFrontendBuild>false</SkipFrontendBuild>
     <!-- Dev: dotnet run auto-starts Vite (HMR). Browser opens SpaProxyServerUrl, API stays on applicationUrl. -->
     <SpaProxyServerUrl>http://127.0.0.1:5173</SpaProxyServerUrl>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
@@ -89,6 +89,8 @@
     <ProjectReference Include="..\modules\importexport\Platform.Modules.ImportExport.Api\Platform.Modules.ImportExport.Api.csproj" />
     <ProjectReference Include="..\modules\importexport\Platform.Modules.ImportExport.EntityFramework\Platform.Modules.ImportExport.EntityFramework.csproj" />
     <ProjectReference Include="..\frameworks\Platform.ImportExport.MiniExcel\Platform.ImportExport.MiniExcel.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Host\Platform.Host.csproj" />
+    <ProjectReference Include="..\frameworks\Platform.Host.Postgresql\Platform.Host.Postgresql.csproj" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition="'$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') And '$(SkipFrontendBuild)' != 'true'">

@@ -19,8 +19,12 @@ using Sample.Persistence;
 namespace UnitTest.Infrastructure;
 
 /// <summary>
-/// In-memory DI setup mirroring <c>Sample/HostApplicationBuilderExtension.AddSampleDbContext</c>.
+/// In-memory DI setup mirroring <c>Sample/Extensions/SampleDbContextExtensions.AddSampleDbContext</c>.
 /// </summary>
+// CROSS-MODULE 2026-11-03 · slice Sample composition root
+// Nguyên nhân: AddSampleDbContext chuyển khỏi Sample/HostApplicationBuilderExtension.cs.
+// Lý do: sửa đường dẫn trong comment cho khớp file mới, không đổi factory.
+// Owner: UnitTest. Không đụng logic Create.
 internal static class MultitenancyEfTestServiceFactory
 {
     public static IServiceProvider Create(InMemoryDatabaseRoot? sharedRoot = null)

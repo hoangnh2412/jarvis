@@ -12,14 +12,13 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
-import { Building2, FileSpreadsheet, GraduationCap, Layers, ShieldCheck } from "lucide-react";
+import { Boxes, CalendarClock, CalendarDays, ClipboardList, FileSpreadsheet, FileType, GraduationCap, Layers, LayoutDashboard, Network } from "lucide-react";
 import {
   ACCOUNT_ROUTES,
   AdminLayout,
   AccountProfilePage,
   ChangePasswordPage,
   ForgotPasswordPage,
-  LoginPage,
   RegisterPage,
   TenantConnectionsPage,
   TenantDetailPage,
@@ -27,14 +26,9 @@ import {
   TenantFormPage,
   TenantListPage,
   configureTenantNavigate,
-  CraftPdfTemplateListPage,
-  CraftPdfEditorPage,
-  configureCraftPdfNavigate,
-  CRAFT_PDF_ROUTES,
-  DASHBOARD_ROUTES,
-  DashboardPage,
   RoleListPage,
   ROLE_ROUTES,
+  TENANT_ROUTES,
   configureRoleNavigate,
   UserListPage,
   UserFormPage,
@@ -46,25 +40,11 @@ import {
   ImportPage,
   IMPORT_ROUTES,
   configureImportNavigate,
-  PlannerPage,
-  PLANNER_ROUTES,
-  configurePlannerNavigate,
-  TimesheetPage,
-  TIMESHEET_ROUTES,
-  configureTimesheetNavigate,
-  DynamicFormBuilderPage,
-  DYNAMIC_FORM_ROUTES,
-  DYNAMIC_FORM_DEMO_ID,
-  configureDynamicFormNavigate,
-  CraftDocBuilderPage,
-  CRAFT_DOC_ROUTES,
-  configureCraftDocNavigate,
   notify,
   DEFAULT_ADMIN_MAIN_NAV,
   type AdminNavItem,
 } from "@platform/core";
-import { clearAccessToken, isAuthenticated, setAccessToken } from "./auth";
-import { NotificationBell } from "@platform/notifications";
+import { clearAccessToken, clearLoginScope, getAccessToken, getLoginOrgId, getLoginTenantId, WorkingScopeSelects } from "./auth";
 import { SettingPage } from "@platform/setting";
 import {
   OrgListPage,
@@ -72,20 +52,56 @@ import {
   configureOrgNavigate,
 } from "@platform/orgs";
 import { FilesPage, FILE_MANAGER_ROUTES } from "@platform/files";
+import {
+  DEFAULT_IDENTITY_ROUTES,
+  PolicyScopesPage,
+  RolesPage,
+  UsersPage,
+} from "@platform/identity";
+import { ORGSTRUCTURE_ROUTES, OrgStructurePage } from "@platform/orgstructure";
 import { RequireAuth } from "./auth/RequireAuth";
-import { loginWithJwt } from "./auth/loginWithJwt";
+import { SampleLoginPage } from "./auth/SampleLoginPage";
 import { OnboardingDemoPage } from "./pages/OnboardingDemoPage";
 import { AccessDemoPage } from "./pages/AccessDemoPage";
-
-const demoApiKey =
-  import.meta.env.VITE_NOTIFICATION_API_KEY ?? "dev-notifications-demo-key";
+import {
+  TIMESHEET_ROUTES,
+  TimesheetPage,
+  configureTimesheetNavigate,
+} from "./features/timesheet";
+import {
+  DASHBOARD_ROUTES,
+  DashboardPage,
+} from "./features/dashboard";
+import {
+  CRAFT_DOC_ROUTES,
+  CraftDocBuilderPage,
+  configureCraftDocNavigate,
+} from "./features/craftDoc";
+import {
+  DYNAMIC_FORM_DEMO_ID,
+  DYNAMIC_FORM_ROUTES,
+  DynamicFormBuilderPage,
+  configureDynamicFormNavigate,
+} from "./features/dynamicForm";
+import {
+  PLANNER_ROUTES,
+  PlannerPage,
+  configurePlannerNavigate,
+} from "./features/planner";
+import {
+  CRAFT_PDF_ROUTES,
+  CraftPdfEditorPage,
+  CraftPdfTemplateListPage,
+  configureCraftPdfNavigate,
+} from "./features/craftPdf";
 
 async function sendDemoNotification() {
-  const response = await fetch("/api/signalr-demo/me", {
+  const token = getAccessToken();
+  const response = await fetch("/api/notify-demo/me", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-API-KEY": demoApiKey,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({
       type: "demo",
@@ -127,8 +143,7 @@ function NotificationDemoPage() {
         Notification Demo
       </h1>
       <p className="mt-2 text-sm text-slate-600">
-        Dùng <code>X-API-KEY</code> (Development) — mở chuông để xem inbox; bấm
-        nút bên dưới để push realtime qua SignalR.
+        Mở chuông để xem inbox; bấm nút bên dưới để gửi thông báo demo.
       </p>
       <button
         type="button"
@@ -144,13 +159,31 @@ function NotificationDemoPage() {
 
 function SampleAdminLayout({ mainNav }: { mainNav: AdminNavItem[] }) {
   const navigate = useNavigate();
+  const [scopeKey, setScopeKey] = useState(
+    () => `${getLoginTenantId() ?? ""}:${getLoginOrgId() ?? ""}`,
+  );
 
   return (
     <AdminLayout
       mainNav={mainNav}
-      notificationSlot={<NotificationBell />}
+      fillPaths={[
+        TIMESHEET_ROUTES.page,
+        PLANNER_ROUTES.page,
+        DYNAMIC_FORM_ROUTES.page,
+        CRAFT_DOC_ROUTES.builder,
+        "/system/org-structure",
+      ]}
+      contentKey={scopeKey}
+      scopeSlot={
+        <WorkingScopeSelects
+          onChange={() =>
+            setScopeKey(`${getLoginTenantId() ?? ""}:${getLoginOrgId() ?? ""}`)
+          }
+        />
+      }
       onLogout={async () => {
         clearAccessToken();
+        clearLoginScope();
         navigate(ACCOUNT_ROUTES.login, { replace: true });
         return false;
       }}
@@ -158,27 +191,6 @@ function SampleAdminLayout({ mainNav }: { mainNav: AdminNavItem[] }) {
   );
 }
 
-function GuestLoginPage() {
-  if (isAuthenticated()) {
-    return <Navigate to="/" replace />;
-  }
-
-  return (
-    <LoginPage
-      callback={{
-        onSubmit: async (payload) => {
-          const result = await loginWithJwt(payload);
-          const token = result.tokens?.accessToken;
-          if (!token) {
-            throw new Error("Server không trả access token.");
-          }
-          setAccessToken(token);
-          return result;
-        },
-      }}
-    />
-  );
-}
 import {
   IMPORT_EXPORT_ROUTES,
   TemplateListPage,
@@ -352,7 +364,44 @@ export default function App() {
   const mainNav = useMemo(
     () =>
       [
-        ...DEFAULT_ADMIN_MAIN_NAV.filter((n) => n.id !== 'templates'),
+        {
+          id: "dashboard",
+          label: "Tổng quan",
+          icon: LayoutDashboard,
+          path: DASHBOARD_ROUTES.home,
+        },
+        ...DEFAULT_ADMIN_MAIN_NAV.filter(
+          (item) =>
+            item.id !== "templates" &&
+            item.id !== "users" &&
+            item.id !== "tenants" &&
+            item.id !== "roles" &&
+            item.id !== "permissions",
+        ),
+        {
+          id: "planner",
+          label: "Planner",
+          icon: CalendarDays,
+          path: PLANNER_ROUTES.page,
+        },
+        {
+          id: "dynamic-forms",
+          label: "Form",
+          icon: ClipboardList,
+          path: DYNAMIC_FORM_ROUTES.page,
+        },
+        {
+          id: "craft-doc",
+          label: "Craft DOCX",
+          icon: FileType,
+          path: CRAFT_DOC_ROUTES.builder,
+        },
+        {
+          id: 'timesheet',
+          label: 'Timesheet',
+          icon: CalendarClock,
+          path: TIMESHEET_ROUTES.page,
+        },
         {
           id: 'students',
           label: 'Học sinh',
@@ -360,10 +409,27 @@ export default function App() {
           path: '/students',
         },
         {
-          id: 'orgs',
-          label: 'Organization',
-          icon: Building2,
-          path: ORG_ROUTES.list,
+          id: 'platform',
+          label: 'Platform',
+          icon: Boxes,
+          path: '/platform',
+          children: [
+            { id: 'orgs', label: 'Organization', path: ORG_ROUTES.list },
+            { id: 'tenants', label: 'Tenant', path: TENANT_ROUTES.list },
+          ],
+        },
+        {
+          id: 'system',
+          label: 'Hệ thống',
+          icon: Network,
+          path: '/system',
+          children: [
+            { id: 'org-structure', label: 'Cơ cấu tổ chức', path: ORGSTRUCTURE_ROUTES.orgStructure },
+            { id: 'identity-users', label: 'Người dùng', path: DEFAULT_IDENTITY_ROUTES.users },
+            { id: 'identity-roles', label: 'Vai trò', path: DEFAULT_IDENTITY_ROUTES.roles },
+            { id: 'permissions', label: 'Permission', path: PERMISSION_ROUTES.list },
+            { id: 'policy-scopes', label: 'Phạm vi truy cập', path: DEFAULT_IDENTITY_ROUTES.policyScopes },
+          ],
         },
         {
           id: 'ie-templates',
@@ -376,12 +442,6 @@ export default function App() {
           label: 'Onboarding Demo',
           icon: Layers,
           path: '/onboarding-demo',
-        },
-        {
-          id: 'access-demo',
-          label: 'RBAC / ABAC',
-          icon: ShieldCheck,
-          path: '/access-demo',
         },
       ] as AdminNavItem[],
     [],
@@ -403,7 +463,7 @@ export default function App() {
       <ImportExportNavigateBridge />
 
       <Routes>
-        <Route path={ACCOUNT_ROUTES.login} element={<GuestLoginPage />} />
+        <Route path={ACCOUNT_ROUTES.login} element={<SampleLoginPage />} />
         <Route path={ACCOUNT_ROUTES.register} element={<RegisterPage />} />
         <Route
           path={ACCOUNT_ROUTES.forgotPassword}
@@ -483,7 +543,20 @@ export default function App() {
           />
           <Route path="access-demo" element={<AccessDemoPage />} />
 
-          <Route path={ORG_ROUTES.list} element={<OrgListPage locale="vi" />} />
+          <Route
+            path={ORG_ROUTES.list}
+            element={(
+              <OrgListPage
+                locale="vi"
+                tenantId={getLoginTenantId() ?? undefined}
+                orgId={getLoginOrgId() ?? undefined}
+              />
+            )}
+          />
+          <Route path={ORGSTRUCTURE_ROUTES.orgStructure} element={<OrgStructurePage />} />
+          <Route path={DEFAULT_IDENTITY_ROUTES.users} element={<UsersPage />} />
+          <Route path={DEFAULT_IDENTITY_ROUTES.roles} element={<RolesPage />} />
+          <Route path={DEFAULT_IDENTITY_ROUTES.policyScopes} element={<PolicyScopesPage />} />
 
           <Route
             path={FILE_MANAGER_ROUTES.list}

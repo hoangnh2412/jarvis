@@ -24,23 +24,19 @@ export type {
   NotificationFilter,
   NotificationItem,
   NotificationListResult,
+  NotificationRealtimeMessage,
 } from './types'
 
 // Config
 export {
   notificationApiBase,
   notificationAuthHeaders,
-  notificationHubOptions,
-  buildNotificationHubOptions,
   configureNotificationAuth,
   configureNotificationRealtime,
   configureNotificationTenant,
+  configureNotificationOrg,
   getNotificationAuthHeaders,
   getNotificationRealtimeConfig,
-  notificationHubUrl,
   notificationSseUrl,
 } from './config'
-export type {
-  NotificationRealtimeConfig,
-  NotificationTransport,
-} from './config'
+export type { NotificationRealtimeConfig } from './config'

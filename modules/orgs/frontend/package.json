@@ -16,25 +16,12 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
-  "peerDependencies": {
-    "@hookform/resolvers": "^5.0.0",
-    "@platform/core": "*",
-    "lucide-react": "^1.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-hook-form": "^7.0.0",
-    "zod": "^4.0.0"
+  "dependencies": {
+    "@platform/core": "file:../../../frameworks/frontend"
   },
   "devDependencies": {
-    "@hookform/resolvers": "^5.4.0",
-    "@platform/core": "file:../../../frameworks/frontend",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "lucide-react": "^1.28.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "react-hook-form": "^7.82.0",
-    "typescript": "~6.0.2",
-    "zod": "^4.4.3"
+    "typescript": "~6.0.2"
   }
 }

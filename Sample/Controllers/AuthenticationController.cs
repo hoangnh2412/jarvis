@@ -15,6 +15,7 @@ namespace Sample.Controllers;
 [Route("api/authentication")]
 public class AuthenticationController(
     SampleBearerLoginService bearerLogin,
+    SampleLoginCatalogService loginCatalog,
     IOptionsMonitor<AuthenticationJwtOption> jwtOptions,
     IPasswordPolicyValidator passwordPolicyValidator) : ControllerBase
 {
@@ -45,6 +46,26 @@ public class AuthenticationController(
         {
             return BadRequest(new { message = ex.Message });
         }
+    }
+
+    /// <summary>Tenant đang có trên Master — ô chọn trước khi gửi <c>X-Tenant-Id</c>.</summary>
+    [HttpGet("catalog/tenants")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IReadOnlyList<LoginScopeOption>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListLoginTenants(CancellationToken cancellationToken)
+    {
+        var items = await loginCatalog.ListTenantsAsync(cancellationToken);
+        return Ok(items);
+    }
+
+    /// <summary>Org active của một tenant — ô chọn trước khi gửi <c>X-Org-Id</c>.</summary>
+    [HttpGet("catalog/tenants/{tenantId:guid}/orgs")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IReadOnlyList<LoginScopeOption>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListLoginOrgs(Guid tenantId, CancellationToken cancellationToken)
+    {
+        var items = await loginCatalog.ListOrgsAsync(tenantId, cancellationToken);
+        return Ok(items);
     }
 
     /// <summary>

@@ -1,15 +1,16 @@
 {
   "version": 3,
-  "project_name": "Jarvis_framework",
-  "project_summary": "dự án Minipower",
-  "current_phase": "discovery",
-  "project_mode": "mvp",
+  "project_name": "Platform",
+  "project_summary": "Platform core cho các phần mềm enterprise dùng .Net và ReactJS",
+  "current_phase": "delivery",
+  "project_mode": "standard",
   "docs_provider": "local",
   "tasks_provider": "none",
   "chat_provider": "none",
   "code_provider": "local",
   "trace_store": "sqlite",
   "surfaces": [
-    "docs"
+    "docs",
+    "autotest"
   ]
 }

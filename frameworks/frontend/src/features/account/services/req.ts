@@ -20,6 +20,9 @@ instance.interceptors.response.use(
     return response
   },
   (error) => {
+    if (error?.response?.status === 401) {
+      return Promise.reject(error)
+    }
     const normalizeError = error.response?.data ?? error
     return Promise.reject(normalizeError)
   },

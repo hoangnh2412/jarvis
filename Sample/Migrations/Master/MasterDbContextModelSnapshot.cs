@@ -73,7 +73,7 @@ namespace Sample.Migrations.Master
                     b.HasIndex("TenantId", "Key")
                         .IsUnique();
 
-                    b.ToTable("Setting", (string)null);
+                    b.ToTable("setting", (string)null);
                 });
 
             modelBuilder.Entity("Sample.Entities.AppUser", b =>
@@ -108,7 +108,7 @@ namespace Sample.Migrations.Master
 
                     b.HasKey("Id");
 
-                    b.ToTable("AppUsers");
+                    b.ToTable("app-users", (string)null);
                 });
 
             modelBuilder.Entity("Sample.Entities.BusinessWorkflowMapping", b =>
@@ -157,7 +157,7 @@ namespace Sample.Migrations.Master
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("BusinessWorkflowMappings");
+                    b.ToTable("business-workflow-mappings", (string)null);
                 });
 
             modelBuilder.Entity("Sample.Entities.OnboardingStep", b =>
@@ -204,7 +204,7 @@ namespace Sample.Migrations.Master
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("OnboardingSteps");
+                    b.ToTable("onboarding-steps", (string)null);
                 });
 
             modelBuilder.Entity("Sample.Entities.Tenant", b =>
@@ -213,13 +213,32 @@ namespace Sample.Migrations.Master
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<string>("ConnectionString")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Tenant", (string)null);
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("tenant", (string)null);
                 });
 
             modelBuilder.Entity("Sample.Entities.BusinessWorkflowMapping", b =>

@@ -1,0 +1,23 @@
+using Platform.DDD.Domain.DataStorages;
+using Platform.DDD.Domain.Services;
+using Platform.ORM.EntityFramework.Repositories;
+using Microsoft.EntityFrameworkCore;
+
+namespace Sample.Persistence;
+
+public class SampleMasterUnitOfWork(
+    IServiceProvider services,
+    IDbContextFactory<SampleMasterDbContext> factory,
+    ITenantIdResolverFactory tenantIdResolverFactory,
+    ICurrentTenantAccessor currentTenantAccessor,
+    IOrgIdResolverFactory? orgIdResolverFactory = null,
+    ICurrentOrgAccessor? currentOrgAccessor = null)
+    : BaseUnitOfWork<SampleMasterDbContext>(
+        services,
+        factory,
+        tenantIdResolverFactory,
+        currentTenantAccessor,
+        orgIdResolverFactory,
+        currentOrgAccessor), ISampleMasterUnitOfWork
+{
+}

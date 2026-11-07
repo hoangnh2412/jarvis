@@ -189,7 +189,49 @@ public static class SampleAuthorizationDemoData
                 context.UserClaims.Add(new IdentityUserClaim<Guid> { UserId = user.Id, ClaimType = type, ClaimValue = value });
         }
 
+        await EnsureSampleLoginUserAsync(context, cancellationToken).ConfigureAwait(false);
         await context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// User đăng nhập SPA trên tenant/org mẫu. Mật khẩu trùng tài khoản Basic demo.
+    /// </summary>
+    private static async Task EnsureSampleLoginUserAsync(IdentityDbContextBase context, CancellationToken cancellationToken)
+    {
+        var loginUserId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var tenantId = Guid.Parse("dd348565-5d31-46bb-aef7-aa7f0c4a1866");
+        var orgId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var hasher = new PasswordHasher<User>();
+        var user = await context.Users.FirstOrDefaultAsync(row => row.Id == loginUserId, cancellationToken).ConfigureAwait(false);
+        if (user is null)
+        {
+            user = new User
+            {
+                Id = loginUserId,
+                UserName = "sampleuser",
+                NormalizedUserName = "SAMPLEUSER",
+                SecurityStamp = Guid.NewGuid().ToString("N"),
+                ConcurrencyStamp = Guid.NewGuid().ToString("N"),
+                TenantId = tenantId,
+                OrgId = orgId,
+            };
+            user.PasswordHash = hasher.HashPassword(user, "samplepass");
+            context.Users.Add(user);
+            context.UserRoles.Add(new IdentityUserRole<Guid> { UserId = loginUserId, RoleId = AdminRoleId });
+            return;
+        }
+
+        user.TenantId = tenantId;
+        user.OrgId = orgId;
+        user.NormalizedUserName = "SAMPLEUSER";
+        if (string.IsNullOrEmpty(user.PasswordHash))
+            user.PasswordHash = hasher.HashPassword(user, "samplepass");
+
+        var hasRole = await context.UserRoles.AnyAsync(
+            row => row.UserId == loginUserId && row.RoleId == AdminRoleId,
+            cancellationToken).ConfigureAwait(false);
+        if (!hasRole)
+            context.UserRoles.Add(new IdentityUserRole<Guid> { UserId = loginUserId, RoleId = AdminRoleId });
     }
 
     /// <summary>Thêm chứng từ demo còn thiếu (theo Code).</summary>

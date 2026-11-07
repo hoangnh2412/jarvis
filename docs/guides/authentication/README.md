@@ -10,7 +10,7 @@ Platform Authentication **không thay** mô hình [ASP.NET Core Authentication](
 | **Authorization (AuthZ)** | *Được làm gì?* Policy, RBAC/ABAC | `Platform.Authorization.*` |
 | **Current user** | Profile đầy đủ sau AuthN (store, tenant, …) | `Platform.Authentication` + `ICurrentUserStore` |
 
-Chi tiết AuthZ: [ADR RBAC+ABAC](../../ADRs/2026-08-14_platform_rbac-abac-authorization.md). Current user: [current-user.md](./current-user.md).
+Chi tiết AuthZ: [ADR RBAC+ABAC](../../04-platform/DOC-09-adr/2026-08-14_platform_rbac-abac-authorization.md). Current user: [current-user.md](./current-user.md).
 
 ---
 
@@ -223,8 +223,8 @@ Nhiều scheme trên một endpoint: client gửi credential khớp **một** sc
 | [appsettings.md](./appsettings.md) | Cấu trúc JSON, `Schemes`, map `AuthenticationOptions` |
 | [storage-backed-providers.md](./storage-backed-providers.md) | `Source`, bảng Sample, tenant |
 | [current-user.md](./current-user.md) | `ICurrentUser`, ambient scope |
-| [refactor-authentication.md](../../ADRs/refactor-authentication.md) | Lịch sử refactor, test matrix (có thể lệch as-built) |
-| [2026-08-01_platform_current-user-tenant.md](../../ADRs/2026-08-01_platform_current-user-tenant.md) | Current user / tenant |
+| [refactor-authentication.md](../../04-platform/DOC-09-adr/refactor-authentication.md) | Lịch sử refactor, test matrix (có thể lệch as-built) |
+| [2026-08-01_platform_current-user-tenant.md](../../04-platform/DOC-09-adr/2026-08-01_platform_current-user-tenant.md) | Current user / tenant |
 
 ---
 

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ConfirmDialog, FeatureDialog, PageHeader, Tag, notify } from '@platform/core'
+import { ConfirmDialog, FeatureDialog, Tag, notify } from '@platform/core'
 import {
   ChevronDown,
   ChevronRight,
@@ -134,12 +134,13 @@ export type OrgStructurePageProps = {
 
 export function OrgStructurePage({ canManage = true, loadUsers }: OrgStructurePageProps) {
   const queryClient = useQueryClient()
-  const unitsQuery = useQuery({ queryKey: orgStructureQueryKeys.units, queryFn: listOrgUnits })
-  const typesQuery = useQuery({ queryKey: orgStructureQueryKeys.unitTypes, queryFn: listUnitTypes })
-  const legalQuery = useQuery({ queryKey: orgStructureQueryKeys.legalEntities, queryFn: listLegalEntities })
+  const unitsQuery = useQuery({ queryKey: orgStructureQueryKeys.units, queryFn: listOrgUnits, retry: false })
+  const typesQuery = useQuery({ queryKey: orgStructureQueryKeys.unitTypes, queryFn: listUnitTypes, retry: false })
+  const legalQuery = useQuery({ queryKey: orgStructureQueryKeys.legalEntities, queryFn: listLegalEntities, retry: false })
   const memberSummaryQuery = useQuery({
     queryKey: orgStructureQueryKeys.unitMemberSummary,
     queryFn: listUnitMemberSummary,
+    retry: false,
   })
 
   const [search, setSearch] = useState('')
@@ -297,11 +298,7 @@ export function OrgStructurePage({ canManage = true, loadUsers }: OrgStructurePa
 
   return (
     <section className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4 text-sm text-slate-800 sm:p-6">
-      <PageHeader
-        title="Cơ cấu tổ chức"
-        description="Cây đơn vị của tổ chức đang chọn, loại đơn vị, pháp nhân và thành viên từng đơn vị."
-        actions={(
-          <>
+      <div className="flex flex-wrap items-center gap-2">
             <label className="relative min-w-56 flex-1 sm:max-w-sm">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden />
               <input
@@ -353,15 +350,15 @@ export function OrgStructurePage({ canManage = true, loadUsers }: OrgStructurePa
                 </button>
               </>
             ) : null}
-          </>
-        )}
-      />
+      </div>
 
       <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-slate-200 bg-white p-3 shadow-sm md:p-4">
         {unitsQuery.isLoading ? (
           <p className="px-3 py-6 text-sm text-slate-500">Đang tải cây cơ cấu…</p>
         ) : unitsQuery.isError ? (
-          <p className="px-3 py-6 text-sm text-red-600">Không tải được cơ cấu. Kiểm tra tổ chức đang chọn trên thanh trên.</p>
+          <p className="px-3 py-6 text-sm text-red-600">
+            Không tải được cơ cấu. {unitsQuery.error instanceof Error ? unitsQuery.error.message : 'Kiểm tra tổ chức đang chọn trên thanh trên.'}
+          </p>
         ) : roots.length === 0 ? (
           <div className="mx-auto mt-16 max-w-md text-center">
             <h2 className="m-0 text-base font-semibold">Chưa có đơn vị nào trên cây</h2>

@@ -1,35 +1,26 @@
 import { useState, type ReactNode } from 'react'
-import {
-  Building2,
-  CalendarClock,
-  CalendarDays,
-  ClipboardList,
-  FileStack,
-  FileText,
-  FileType,
-  FolderOpen,
-  HelpCircle,
-  KeyRound,
-  LayoutDashboard,
-  Settings,
-  Shield,
-  Users,
-} from 'lucide-react'
+import { Building2, FileStack, FileText, FolderOpen, HelpCircle, KeyRound, Settings, Shield, Users } from 'lucide-react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { ACCOUNT_ROUTES } from '../../features/account/routes/paths'
 import { FILE_MANAGER_ROUTES } from '../../features/fileManager/routes/paths'
-import { PLANNER_ROUTES } from '../../features/planner/routes/paths'
-import { TIMESHEET_ROUTES } from '../../features/timesheet/routes/paths'
-import { DYNAMIC_FORM_ROUTES } from '../../features/dynamicForm/routes/paths'
-import { CRAFT_DOC_ROUTES } from '../../features/craftDoc/routes/paths'
 import { Header } from '../Header'
 import { SideBar } from '../SideBar'
 import { findBestNavMatch } from '../navMatch'
 import type { AdminNavItem } from '../types'
 import { IMPORT_ROUTES } from '../../features'
 
+function resolveNavTitle(pathname: string, items: readonly AdminNavItem[], fallback: string) {
+  const flat: { path: string; label: string }[] = []
+  for (const item of items) {
+    flat.push({ path: item.path, label: item.label })
+    for (const child of item.children ?? []) {
+      flat.push({ path: child.path, label: child.label })
+    }
+  }
+  return findBestNavMatch(pathname, flat)?.label ?? fallback
+}
+
 export const DEFAULT_ADMIN_MAIN_NAV: AdminNavItem[] = [
-  { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard, path: '/dashboard' },
   { id: 'users', label: 'Người dùng', icon: Users, path: '/users' },
   { id: 'templates', label: 'Biểu mẫu', icon: FileStack, path: '/templates' },
   { id: 'tenants', label: 'Tenant', icon: Building2, path: '/tenants' },
@@ -38,10 +29,6 @@ export const DEFAULT_ADMIN_MAIN_NAV: AdminNavItem[] = [
   { id: 'permissions', label: 'Permission', icon: KeyRound, path: '/permissions' },
   { id: 'files', label: 'Files', icon: FolderOpen, path: FILE_MANAGER_ROUTES.list },
   // { id: 'import', label: 'Import', icon: Upload, path: IMPORT_ROUTES.page },
-  { id: 'planner', label: 'Planner', icon: CalendarDays, path: PLANNER_ROUTES.page },
-  { id: 'timesheet', label: 'Timesheet', icon: CalendarClock, path: TIMESHEET_ROUTES.page },
-  { id: 'dynamic-forms', label: 'Form', icon: ClipboardList, path: DYNAMIC_FORM_ROUTES.page },
-  { id: 'craft-doc', label: 'Craft DOCX', icon: FileType, path: CRAFT_DOC_ROUTES.builder },
 ]
 
 export const DEFAULT_ADMIN_SECONDARY_NAV: AdminNavItem[] = [
@@ -68,6 +55,12 @@ export type AdminLayoutProps = {
   logoTitle?: string
   logoSubtitle?: string
   defaultTitle?: string
+  /** Path cần vùng nội dung full height, ví dụ trang demo của host. */
+  fillPaths?: string[]
+  /** Ô phạm vi làm việc trên header (tenant, org). */
+  scopeSlot?: ReactNode
+  /** Đổi key để mount lại trang đang mở sau khi đổi phạm vi. */
+  contentKey?: string
   className?: string
   children?: ReactNode
 }
@@ -88,6 +81,9 @@ export function AdminLayout({
   logoTitle = 'FE Admin',
   logoSubtitle = 'Console',
   defaultTitle = 'Quản lý',
+  fillPaths = [],
+  scopeSlot,
+  contentKey,
   className = '',
   children,
 }: AdminLayoutProps = {}) {
@@ -97,8 +93,7 @@ export function AdminLayout({
   const navigate = useNavigate()
 
   const allNav = [...mainNav, ...secondaryNav]
-  const currentNav = findBestNavMatch(pathname, allNav)
-  const title = currentNav?.label ?? defaultTitle
+  const title = resolveNavTitle(pathname, allNav, defaultTitle)
 
   const handleProfileClick =
     onProfileClick ?? (() => navigate(profilePath))
@@ -114,18 +109,9 @@ export function AdminLayout({
   const isImportPage =
     pathname === IMPORT_ROUTES.page ||
     pathname.startsWith(`${IMPORT_ROUTES.page}/`)
-  const isPlannerPage =
-    pathname === PLANNER_ROUTES.page ||
-    pathname.startsWith(`${PLANNER_ROUTES.page}/`)
-  const isTimesheetPage =
-    pathname === TIMESHEET_ROUTES.page ||
-    pathname.startsWith(`${TIMESHEET_ROUTES.page}/`)
-  const isDynamicFormPage =
-    pathname === DYNAMIC_FORM_ROUTES.page ||
-    pathname.startsWith(`${DYNAMIC_FORM_ROUTES.page}/`)
-  const isCraftDocPage =
-    pathname === CRAFT_DOC_ROUTES.builder ||
-    pathname.startsWith(`${CRAFT_DOC_ROUTES.builder}/`)
+  const isFillPage = fillPaths.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  )
 
   return (
     <div
@@ -148,6 +134,7 @@ export function AdminLayout({
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Header
           title={title}
+          scopeSlot={scopeSlot}
           onMenuClick={() => setMobileOpen(true)}
           user={user}
           notificationCount={notificationCount}
@@ -161,11 +148,12 @@ export function AdminLayout({
         />
         <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-3 lg:p-4">
           <div
+            key={contentKey}
             className={[
               'min-h-0 flex-1',
               isImportPage
                 ? 'kit-admin-main--import kit-scrollbar-hidden overflow-y-auto'
-                : isPlannerPage || isTimesheetPage || isDynamicFormPage || isCraftDocPage
+                : isFillPage
                   ? 'flex flex-col overflow-hidden'
                   : 'overflow-y-auto',
             ]

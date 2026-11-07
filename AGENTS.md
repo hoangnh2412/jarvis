@@ -1,6 +1,6 @@
-# Jarvis framework
+# Platform
 
-Bạn là trợ lý trên dự án **Jarvis framework**. Có thư mục `.minipower/` thì làm theo Minipower: chọn đúng một skill đã cài, thông báo tên skill, việc nhiều bước thì lập kế hoạch và chờ người OK. Tài liệu chính nằm trong `docs/`. Trả lời bằng **tiếng Việt**.
+Bạn là trợ lý trên dự án **Platform**. Có thư mục `.minipower/` thì làm theo Minipower: chọn đúng một skill đã cài, thông báo tên skill, việc nhiều bước thì lập kế hoạch và chờ người OK. Tài liệu chính nằm trong `docs/`. Trả lời bằng **tiếng Việt**.
 
 SSOT máy đọc là `memory/profile.json`. Bảng trong file này chỉ là bản đọc cho agent; lệch với profile thì **tin profile**.
 
@@ -8,9 +8,9 @@ SSOT máy đọc là `memory/profile.json`. Bảng trong file này chỉ là b�
 
 | Mục | Giá trị |
 |-----|---------|
-| Dự án | Jarvis framework |
-| Mô tả | Jarvis cung cấp framework và các module để phát triển hệ thống SaaS |
-| Phạm vi | Module và in/out trong `docs/01-project/DOC-03-brd.md`. Chưa có dòng module thì phạm vi hồ sơ là `TBD`, không tự thêm module. |
+| Dự án | Platform |
+| Mô tả | Platform core cho các phần mềm enterprise dùng .Net và ReactJS |
+| Phạm vi | Module và in/out trong `docs/01-project/DOC-03-brd.md`. Chưa có dòng module thì phạm vi là `TBD`, không tự thêm module. |
 | Phiên bản hồ sơ | Schema profile **v3**. DOC trong `docs/` trước sign-off: Version `—`, Status `Draft` (`docs/00-governance/doc-versioning.md`). Sau ký: snapshot `docs/02-baseline/vX.Y/`. |
 | Chế độ | `standard` — `mvp` · `standard` · `maintain`. Đổi chế độ kèm DEC trong `memory/decision-log.md`. |
 | Phase hiện tại | `delivery` |
@@ -21,7 +21,7 @@ SSOT máy đọc là `memory/profile.json`. Bảng trong file này chỉ là b�
 
 **Phạm vi một phiên** không phải phạm vi cả dự án. Phạm vi dự án là DOC-03. Phạm vi phiên là slice người vừa giao. Phase `delivery` chỉ nói việc đang ở chặng nào, không cho phép mở mọi DOC của chặng đó.
 
-**Chung và riêng.** Cách làm chung (quy trình, quy ước code, khung DOC) nằm ở skill `minipower-*` đã cài — không chép lại vào đây. Riêng dự án (tên sản phẩm, cây code framework, `ADRs/`, scope, họ mã nghiệp vụ) nằm ở `AGENTS.md`, DOC-03 và `docs/00-governance/*-convention.md` nếu dự án có. Hai bên lệch nhau: convention dự án là lớp áp **thêm** trên skill, không thay skill; muốn đổi phần chung thì sửa ở minipower, không sửa tay trong dự án.
+**Chung và riêng.** Cách làm chung (quy trình, quy ước code, khung DOC) nằm ở skill `minipower-*` đã cài — không chép lại vào đây. Riêng dự án (tên sản phẩm, khách hàng, scope, họ mã nghiệp vụ, màu, phím tắt, ngưỡng) nằm ở `AGENTS.md`, DOC-03 và `docs/00-governance/*-convention.md` nếu dự án có. Hai bên lệch nhau: convention dự án là lớp áp **thêm** trên skill, không thay skill; muốn đổi phần chung thì sửa ở minipower, không sửa tay trong dự án.
 
 ## 1. Tổng quan
 
@@ -32,48 +32,37 @@ Bốn nhánh ở gốc. Artifact đã chốt nằm trong `docs/`. `brainstorm/` 
 | `memory/` | `profile.json` (dự án, commit được), `profile.user.json` + `memory.md` (gitignore), `decision-log.md`, `open-questions.md`, `doc-debt.md`, `trace.sql` / `trace.db` |
 | `assets/` | Bản gốc khảo sát, checklist, biên bản. `assets/archive/` là tài liệu cũ đổ vào — nguồn tham chiếu, không phải artifact. Không sửa file gốc. |
 | `brainstorm/` | Phân tích, phương án, trao đổi theo ngày. Chốt thì distill vào `docs/`, không để quyết định chỉ sống ở đây. |
-| `docs/` | Hồ sơ baseline: vision, BRD, module, nền tảng, trace, CR. Cùng cây còn `onboarding/`, `guides/`, `features/` — tài liệu framework đã có trước init |
+| `docs/` | Hồ sơ baseline: vision, BRD, module, nền tảng, trace, CR. Song song là tài liệu kỹ thuật đã có: `onboarding/`, `guides/`, `features/` |
 | `.minipower/` | Marker dự án (identity máy, SQLite local). Có mặt thì bật Minipower. |
 
-`docs/` chia sáu tầng:
+`docs/` chia sáu tầng hồ sơ:
 
 | Tầng | Chứa | Điểm đọc |
 |------|------|----------|
 | `00-governance/` | Plan (DOC-15), sổ CR (DOC-18), glossary, versioning, lịch sử baseline, `*-convention.md` riêng dự án (nếu có) | Quy tắc version, từ vựng chung, quy ước kỹ thuật riêng dự án |
 | `01-project/` | DOC-01 vision, DOC-02 stakeholder, DOC-03 BRD | Vì sao làm, ai quyết, **scope** |
-| `02-baseline/` | Snapshot đã ký `vX.Y/` | **Chỉ đọc.** Sửa bản đang soạn, không sửa snapshot. `v1.0/` hiện là khung, chưa phải snapshot đã ký. |
+| `02-baseline/` | Snapshot đã ký `vX.Y/` | **Chỉ đọc.** Sửa bản đang soạn, không sửa snapshot. |
 | `03-modules/{id}/` | DOC-04 BR, DOC-05 UC, DOC-06 FR, DOC-07 AC, DOC-16 test của module | Một module một owner |
 | `04-platform/` | DOC-08 SAD, DOC-09 ADR, DOC-10 tích hợp, DOC-11 data, DOC-12 API, DOC-13 NFR, DOC-17 deploy | SA sở hữu. BA không đè lên đây. |
 | `05-traceability/` | `doc-registry.md`, `trace-matrix.md` | Chỉ mục và trace. Không đọc cả file nếu chưa cần rollup. |
 | `06-changes/` | `CR-xxx/` + delta, `incident/` | Thay đổi sau baseline |
 
-Quyết định kiến trúc framework đã chốt nằm ở `ADRs/` (ngoài `docs/04-platform/`). Cách chạy và tích hợp nằm ở `README.md` và `docs/guides/`.
+Bề mặt hồ sơ đang có: `docs, autotest`. Autotest nằm ở `autotest/` (`core/`, `playwright/`, `sample/`, `src/`). Hồ sơ không chọn `backend`, `frontend`, `mobile`. Không giả định thư mục `backend/src/`.
 
-Tên bề mặt trong `memory/profile.json`: `docs, backend, frontend, mobile, autotest`. Đó là tên bề mặt, không phải folder gốc. Folder init `backend/`, `frontend/`, `mobile/` đã bỏ.
-
-Code framework **đang chạy**:
-
-| Bề mặt | Code đang chạy |
-|--------|----------------|
-| Backend .NET 9 | `frameworks/`, `modules/`, `Sample/`, `UnitTest/` (`Platform.sln`) |
-| Frontend React `@platform/core` | Kit `frameworks/frontend/`, `modules/*/frontend/`, SPA `Sample/clients/web/` |
-| Mobile | Chưa có app |
-| Autotest | `autotest/` — xem README trong folder |
-
-Sửa framework thì sửa đúng cây đang chạy.
+Code sản phẩm đã có trong repo, ngoài bề mặt hồ sơ: `frameworks/` (package .NET và kit React `frameworks/frontend`), `modules/`, `Sample/` (host), `UnitTest/`. ADR nằm ở `docs/04-platform/DOC-09-adr/`. Một số tài liệu kỹ thuật cũ ghi tên Jarvis; tên hồ sơ là Platform. Mục lục kỹ thuật: `docs/README.md`.
 
 ## 2. Bắt đầu làm việc từ đâu
 
-Đọc ít. Một phiên = một slice: **một module + một DOC + một section hoặc một ID**, hoặc một package/feature khi slice là code. Chưa có slice thì hỏi một lần, không search cả repo.
+Đọc ít. Một phiên = một slice: **một module + một DOC + một section hoặc một ID**. Chưa có slice thì hỏi một lần, không search cả repo.
 
 Thứ tự đầu phiên:
 
+0. Rule Cursor always-on đã **verify** `.minipower/` và (nếu có) `.codegraph/` trên disk — không dựa Glob. Có marker → tiếp các bước dưới. Việc là code mà chưa có `.codegraph/`: gợi ý cài CodeGraph một lần theo rule `codegraph-when-indexed`; `.minipower/codegraph-offer.json` đã `offered` hoặc `declined` thì không nhắc lại.
 1. `memory/profile.json` — mode, phase, bốn provider.
 2. `memory/profile.user.json` — xưng hô và vai trò.
 3. `memory/memory.md` — hiện trạng của người này, nhắc việc, con trỏ. Thiếu thì copy từ `memory.md.example`. Không nhét nguyên văn SRS vào đây.
-4. `docs/01-project/DOC-03-brd.md` — module in scope, prefix `MOD`, in/out. Việc không có trong DOC-03 thì chưa thuộc phạm vi hồ sơ. Sửa code framework đã có không tự thêm dòng module.
+4. `docs/01-project/DOC-03-brd.md` — module in scope, prefix `MOD`, in/out. Việc không có trong DOC-03 thì chưa thuộc phạm vi.
 5. Đúng **một** file đích của slice, cộng tối đa một file phụ thuộc.
-6. Slice là code: bảng quy ước kỹ thuật mục 5 trước khi viết.
 
 Đọc thêm theo việc, không đọc trước cho đủ:
 
@@ -85,15 +74,13 @@ Thứ tự đầu phiên:
 | Luồng | DOC-05 | Actor, luồng chính, luồng lỗi |
 | Yêu cầu | DOC-06 | FR `Must` trước; mỗi FR một ID `{MOD}-FR-NNN` |
 | Nghiệm thu | DOC-07 | AC Gherkin trỏ đúng FR |
-| Kiến trúc hồ sơ | `04-platform/` DOC-08, DOC-11, DOC-12 | Chỉ phần đụng module đang làm |
-| Kiến trúc framework đã chốt | `ADRs/` đúng file | Vì sao package đang như vậy |
-| Cách tích hợp | `docs/guides/` đúng chủ đề | Luồng và DI của capability đó |
+| Kiến trúc | `04-platform/` DOC-08, DOC-11, DOC-12 | Chỉ phần đụng module đang làm |
 | Quyết định đã có | `memory/decision-log.md` | Status `accepted`; cái `proposed` chưa phải luật |
 | Câu hỏi còn mở | `memory/open-questions.md` | Không trả lời hộ phần đang TBD |
 | Nợ tài liệu | `memory/doc-debt.md` | `mvp` / `maintain`: khoản bỏ qua phải có dòng ở đây |
 | Đã ký | `02-baseline/vX.Y/` | Đối chiếu, không sửa |
 | Sau ký | `06-changes/CR-xxx/` | Delta và impact, không vá thẳng baseline |
-| Viết C# / TypeScript | Mục 5 — bảng quy ước kỹ thuật | Skill convention + architecture; cây code mục 1 |
+| Hướng dẫn kỹ thuật đang chạy | `docs/guides/`, `docs/onboarding/`, `docs/04-platform/DOC-09-adr/` | Đúng vùng slice, không đọc cả cây |
 
 Thứ tự trong một module:
 
@@ -105,7 +92,7 @@ DOC-03 (dòng module) → README module → DOC-04 → DOC-05 → DOC-06 → DOC
 
 Trong từng loại file, ưu tiên: header Version/Status, ID, bảng scope hoặc FR, mục TBD, link sang ID khác. Bỏ qua lịch sử nháp và ví dụ mẫu chưa điền.
 
-Không tự đọc: cả `02-baseline/`, `03-modules/_legacy/`, toàn bộ `trace-matrix.md`, toàn bộ `doc-registry.md`, cả `brainstorm/`, cả `assets/`, cả `frameworks/`, cả `modules/`. Chỉ mở khi người chỉ đúng file hoặc đúng ID.
+Không tự đọc: cả `02-baseline/`, `03-modules/_legacy/`, toàn bộ `trace-matrix.md`, toàn bộ `doc-registry.md`, cả `brainstorm/`, cả `assets/`. Chỉ mở khi người chỉ đúng file hoặc đúng ID.
 
 Checklist ngày đầu, làm một lần rồi thôi:
 
@@ -121,11 +108,11 @@ Checklist ngày đầu, làm một lần rồi thôi:
 | BA | DOC-04 → DOC-07 của module, `open-questions.md` | Cả `04-platform/`, cả trace-matrix |
 | SA | DOC-08 và ADR liên quan, `decision-log.md` (DEC-ARC) | Sửa `03-modules/` của BA |
 | PM | DOC-15, `doc-debt.md`, sổ CR | Viết FR hộ BA |
-| DEV | DOC-06, DOC-07, slice DOC-12, bảng quy ước kỹ thuật mục 5 khi đụng code | Cả vision nếu DOC-03 đã rõ module |
+| DEV | DOC-06, DOC-07, slice DOC-12 | Cả vision nếu DOC-03 đã rõ module |
 | QC | DOC-07, DOC-16, dòng trace của module | Sinh FR mới |
 | DevOps | DOC-17, NFR (DOC-13) của bề mặt triển khai | Đổi hành vi nghiệp vụ |
 
-`maintain`: trước tài liệu mong muốn, đọc vùng đang chạy và `assets/archive/` của đúng vùng đó. `mvp`: dừng ở DOC-03 + FR/AC của module, trừ khi người yêu cầu DOC khác. Chế độ đang chạy là `standard`.
+`maintain`: trước tài liệu mong muốn, đọc vùng đang chạy và `assets/archive/` của đúng vùng đó. `mvp`: dừng ở DOC-03 + FR/AC của module, trừ khi người yêu cầu DOC khác.
 
 ## 3. Quy tắc
 
@@ -146,11 +133,11 @@ Checklist ngày đầu, làm một lần rồi thôi:
 
 1. **Người quyết, AI chuẩn bị.** Phỏng vấn, soạn, phản biện, nêu trade-off. Người chốt từng chặng. Thiếu dữ kiện thì `TBD`, không bịa số liệu, không bịa hành vi hệ thống.
 2. **Truy vết được.** UC → FR → AC → Test nối bằng ID. Cross-ref bằng ID, không copy nội dung FR sang module khác.
-3. **Giữ cách làm, không giữ dữ liệu.** Quy trình nằm ở skill đã cài. Nghiệp vụ nằm ở `docs/`. Việc nằm ở SQLite vì task provider là `none`. Code nằm ở git trên đĩa vì code provider là `local`. `memory/` không trở thành kho SRS.
+3. **Giữ cách làm, không giữ dữ liệu.** Quy trình nằm ở skill đã cài. Nghiệp vụ nằm ở `docs/` hoặc công cụ docs (`outline` khi provider là outline). Việc nằm ở provider task hoặc SQLite. Code nằm ở git. `memory/` không trở thành kho SRS.
 4. **Một owner một artifact.** Một module một owner. Một boundary một producer. Consumer bắt đầu khi đủ input tối thiểu của **đúng module đó**.
-5. **Chi phí tương xứng.** `mvp`: bộ lõi, khoản bỏ qua ghi `doc-debt.md` ngay trong phiên. `standard`: đủ tiền đề trước khi thực thi; sau baseline mọi sửa đi qua CR. `maintain`: mô tả cái đang chạy; lệch tài liệu và thực tế là câu hỏi, không tự sửa cho "đúng". Chế độ đang chạy là `standard` — áp hàng đó.
+5. **Chi phí tương xứng.** `mvp`: bộ lõi, khoản bỏ qua ghi `doc-debt.md` ngay trong phiên. `standard`: đủ tiền đề trước khi thực thi; sau baseline mọi sửa đi qua CR. `maintain`: mô tả cái đang chạy; lệch tài liệu và thực tế là câu hỏi, không tự sửa cho khớp giấy. Chế độ đang chạy là `standard` — áp hàng đó.
 6. **Tài liệu — thảo luận trước, ghi sau.** Trong lúc đang trao đổi, agent phân tích và thảo luận trong chat (phương án, trade-off, nháp nội dung) cho đến khi người **xác nhận chốt**; sau đó mới cập nhật `docs/` hoặc artifact DOC. Không ghi vào file nội dung còn đang mở hoặc chưa được người duyệt.
-7. **Code — chưa chốt thì không sửa.** Khi người chỉ ra điểm chưa rõ và đặt câu hỏi, agent trả lời và thảo luận trong chat; **không** sửa cây code mục 1 (`frameworks/`, `modules/`, `Sample/`, `UnitTest/`, frontend tương ứng) cho đến khi người xác nhận hướng xử lý. Micro đã thống nhất (typo, format) vẫn theo mục 3 khi không nằm trong luồng làm rõ đang mở.
+7. **Code — chưa chốt thì không sửa.** Khi người chỉ ra điểm chưa rõ và đặt câu hỏi, agent trả lời và thảo luận trong chat; **không** sửa `frameworks/`, `modules/`, `Sample/`, `UnitTest/`, `autotest/` hay artifact code khác cho đến khi người xác nhận hướng xử lý. Micro đã thống nhất (typo, format) vẫn theo mục 3 khi không nằm trong luồng làm rõ đang mở.
 
 | Chế độ | Tài liệu giữ | Khi bỏ bước |
 |--------|----------------|-------------|
@@ -162,7 +149,7 @@ Checklist ngày đầu, làm một lần rồi thôi:
 
 ## 5. Quy ước
 
-**ID.** `{MOD}-{UC|FR|BR|AC|NFR}-NNN` với `MOD` viết hoa, 3–6 ký tự, lấy từ DOC-03. Quyết định: `DEC-{DIS|REQ|ARC|PLN|DLV|CHG}-NNN` hoặc prefix vai `DEC-BE-` / `DEC-QA-` / `DEC-OPS-` khi pack code dùng. Kiến trúc nặng: `ADR-NNN` trong DOC-09 và/hoặc file `ADRs/`. CR: `CR-xxx` dưới `docs/06-changes/`.
+**ID.** `{MOD}-{UC|FR|BR|AC|NFR}-NNN` với `MOD` viết hoa, 3–6 ký tự, lấy từ DOC-03. Quyết định: `DEC-{DIS|REQ|ARC|PLN|DLV|CHG}-NNN` hoặc prefix vai `DEC-BE-` / `DEC-QA-` / `DEC-OPS-` khi pack code dùng. Kiến trúc: một file một quyết định trong `docs/04-platform/DOC-09-adr/`. CR: `CR-xxx` dưới `docs/06-changes/`.
 
 **DEC** trong `memory/decision-log.md`: Status `proposed` | `accepted` | `superseded-by`, Context / Options / Decision / Why, Trace tới DOC và ID, Confidence. `proposed` là nháp chờ người. `accepted` mới là quyết định đã ghi.
 
@@ -181,20 +168,20 @@ Checklist ngày đầu, làm một lần rồi thôi:
 
 Phần thiếu ghi `TBD`. Không trả cả lô vì một module chưa xong.
 
-**Song song.** Sau DOC-03, nhiều phase có thể tiến. SA không chờ SRS đủ mới được ghi `TBD` trên platform. Review theo chiều hoặc theo module; agent chính gộp finding theo `{DOC}#{section/ID}`, không tự sửa DOC của owner khác.
+**Song song.** Sau DOC-03, nhiều phase có thể tiến. SA không chờ SRS đủ mới được ghi `TBD` trên kiến trúc. Review theo chiều hoặc theo module; agent chính gộp finding theo `{DOC}#{section/ID}`, không tự sửa DOC của owner khác.
 
-**Quy ước kỹ thuật.** Trước khi soạn hoặc sửa artifact kỹ thuật, đối chiếu bảng dưới — đọc dòng *Bảo mật* trước. Phần cứng do analyzer / lint / test kiến trúc / `baseline-guard` gác; phần còn lại là lời, lệch có chủ đích ghi ADR hoặc DEC. Toàn văn convention nằm ở skill (cột *Chung*); không chép lại trong `AGENTS.md`.
+**Quy ước kỹ thuật.** Trước khi soạn hoặc sửa artifact kỹ thuật, đối chiếu bảng dưới — đọc dòng *Bảo mật* trước. Phần cứng do analyzer / lint / `ArchitectureTests` / `baseline-guard` gác; phần còn lại là lời, lệch có chủ đích ghi ADR hoặc DEC. Cột *Riêng dự án* chỉ điền khi dự án có file đó. Hồ sơ chưa có `docs/00-governance/*-convention.md`.
 
-| Việc | Chung (skill đã cài) | Riêng dự án (Jarvis framework) |
-|------|----------------------|----------------------------------|
+| Việc | Chung (skill đã cài) | Riêng dự án |
+|------|----------------------|-------------|
 | Bảo mật — mọi slice | Mục 7 file này; review bảo mật thiết kế trong `minipower-architecture-review` | — |
-| Code backend `.cs` | `minipower-backend-convention-dotnet` + `minipower-backend-architecture-dotnet` | `frameworks/`, `modules/`, `Sample/`, `UnitTest/` — không `backend/src/` |
-| Code frontend `.ts` / `.tsx` | `minipower-frontend-convention-react` + `minipower-frontend-architecture-react` | Kit `frameworks/frontend/`, `modules/*/frontend/`, SPA `Sample/clients/web/` |
-| Kiến trúc framework | `minipower-architecture-review`; ADR theo template DOC-09 | `ADRs/` ở gốc repo; tích hợp `docs/guides/` |
-| ERD, DOC-11 | Khung template DOC-11; chiều ERD của `minipower-architecture-review` | _(điền)_ |
-| API, DOC-12 | Khung template DOC-12; chiều API của `minipower-architecture-review` | _(điền)_ |
-| UI / prototype | Skill frontend | — |
-| Phân rã việc, work package | `minipower-pm-plan` › `reference/work-breakdown.md`; lá kênh `tasks` | _(điền)_ |
+| Code backend `.cs` | `minipower-backend-convention-dotnet` + `minipower-backend-architecture-dotnet` | — Code .NET đang ở `frameworks/`, `modules/`, `Sample/`. Hồ sơ không chọn bề mặt `backend`. |
+| Code frontend `.ts` / `.tsx` | `minipower-frontend-convention-react` + `minipower-frontend-architecture-react` | — Kit React ở `frameworks/frontend/`. Hồ sơ không chọn bề mặt `frontend`. |
+| ERD, DOC-11 | Khung template DOC-11; chiều ERD của `minipower-architecture-review` | — |
+| API, DOC-12 | Khung template DOC-12; chiều API của `minipower-architecture-review` | — |
+| UI / prototype | `[code] message`, số căn phải — trong skill frontend | — |
+| Autotest | — | `autotest/README.md` |
+| Phân rã việc, work package | `minipower-pm-plan` › `reference/work-breakdown.md`; ánh xạ công cụ trong lá kênh `tasks` | — tasks `none`: việc đội trong SQLite |
 
 **Ngôn ngữ.** Tiếng Việt trong tài liệu và hội thoại. ID, tên field, tên skill giữ nguyên tiếng Anh như trong file.
 
@@ -237,7 +224,7 @@ Mở cổng theo việc, không mở cả ba cho mọi prompt:
 - Không commit `memory/profile.user.json`, `memory/memory.md`, `memory/trace.db`, file SQLite trong `.minipower/`. Những file này là dữ liệu máy.
 - Không lấy danh bạ, nội dung chat, hay ticket từ MCP để nhét vào tài liệu khi người chưa chỉ đúng bản ghi.
 - Ghi ra ngoài máy (Outline, Lark, GitLab, git push) là L3: kế hoạch nêu đích, người OK rồi mới gọi.
-- `docs/02-baseline/` chỉ đọc. Không dùng quyền ghi để "sửa giúp" snapshot đã ký.
+- `docs/02-baseline/` chỉ đọc. Không dùng quyền ghi để sửa snapshot đã ký.
 - Log và ví dụ trong DOC dùng dữ liệu giả. Không dùng dữ liệu khách thật để minh hoạ.
 - Không đưa nội dung `profile.user.json` (tên, máy) vào file commit được. Persona trên git chỉ trỏ về file local.
 
@@ -255,7 +242,6 @@ Một slice xong khi tất cả dòng dưới đúng:
 - `mvp` hoặc `maintain` mà bỏ một DOC trong lõi của việc đó: đã có dòng `doc-debt.md` trong cùng phiên.
 - FR mới trong slice có AC tương ứng, hoặc AC được ghi nợ rõ ID. Không tuyên bố trace khép khi chưa có AC.
 - Header DOC vẫn đúng versioning: nháp giữ Version `—`.
-- Slice là code: đã đối chiếu bảng quy ước kỹ thuật mục 5; build hoặc test của package slice chạy được.
 
 Chưa xong nếu còn giả định chưa nói, còn secret trong diff, hoặc còn phạm vi module không có trong DOC-03.
 

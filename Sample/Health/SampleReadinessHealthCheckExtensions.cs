@@ -30,7 +30,9 @@ public static class SampleReadinessHealthCheckExtensions
         var probeTimeout = TimeSpan.FromSeconds(timeoutSeconds);
         var healthChecks = builder.Services.AddHealthChecks();
 
-        TryAddNpgSqlReadiness(healthChecks, configuration, readiness, probeTimeout);
+        TryAddNpgSqlReadiness(healthChecks, configuration, readiness, probeTimeout, "MasterDatabase", "postgresql-master");
+        TryAddNpgSqlReadiness(healthChecks, configuration, readiness, probeTimeout, "TenantDatabase", "postgresql-tenant");
+        TryAddNpgSqlReadiness(healthChecks, configuration, readiness, probeTimeout, "Database", "postgresql");
         TryAddRedisReadiness(healthChecks, configuration, readiness, probeTimeout);
 
         builder.Services.TryAddSingleton<SampleDogCeoApiHealthCheck>();
@@ -51,15 +53,17 @@ public static class SampleReadinessHealthCheckExtensions
     }
 
     /// <summary>
-    /// Reads <c>Readiness:Database</c> as a configuration key path and uses <see cref="IConfiguration.this[string]"/> to obtain the PostgreSQL connection string.
+    /// Reads a <c>HealthChecks:Readiness</c> entry as a configuration key path and uses <see cref="IConfiguration.this[string]"/> to obtain the PostgreSQL connection string.
     /// </summary>
     private static void TryAddNpgSqlReadiness(
         IHealthChecksBuilder healthChecks,
         IConfiguration configuration,
         IConfigurationSection readiness,
-        TimeSpan probeTimeout)
+        TimeSpan probeTimeout,
+        string readinessKey,
+        string checkName)
     {
-        var keyPath = readiness.GetValue<string>("Database");
+        var keyPath = readiness.GetValue<string>(readinessKey);
         if (string.IsNullOrWhiteSpace(keyPath))
             return;
 
@@ -69,7 +73,7 @@ public static class SampleReadinessHealthCheckExtensions
 
         healthChecks.AddNpgSql(
             connectionString,
-            name: "postgresql",
+            name: checkName,
             failureStatus: HealthStatus.Unhealthy,
             tags: [HealthCheckTags.Readiness],
             timeout: probeTimeout);

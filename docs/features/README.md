@@ -8,7 +8,7 @@ Tài liệu **overview** cho PM, BA, lead và dev cần bản đồ platform tr�
 |------------|------------|-------------------------|---------------------|
 | Authentication | Xác thực (JWT, ApiKey, Basic, Cognito…) | `Platform.Authentication.*` | [authentication.md](./authentication.md) → [guides/authentication/README.md](../guides/authentication/README.md) |
 | Current user / tenant | Profile user & tenant trong request / job | `Platform.Authentication`, `Platform.Multitenancy` | [current-user](../guides/authentication/current-user.md) |
-| Authorization | RBAC + ABAC, policy, data scope | `Platform.Authorization.*` | ADR [RBAC+ABAC](../../ADRs/2026-08-14_platform_rbac-abac-authorization.md) |
+| Authorization | RBAC + ABAC, policy, data scope | `Platform.Authorization.*` | ADR [RBAC+ABAC](../04-platform/DOC-09-adr/2026-08-14_platform_rbac-abac-authorization.md) |
 | Multitenancy | Tenant hiện tại, connection DB theo tenant | `Platform.Multitenancy.*` | ADR Multitenancy |
 | Caching | Memory + Redis, invalidation | `Platform.Caching.*` | *(bổ sung)* |
 | Realtime / Notifications | SignalR, SSE, inbox | `Platform.Realtime.*`, `modules/notifications` | ADR Notifications / Realtime |

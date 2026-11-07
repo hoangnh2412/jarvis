@@ -90,5 +90,16 @@ public abstract class IdentityDbContextBase : DbContext
         modelBuilder.ApplyConfiguration(new RoleConfiguration());
         modelBuilder.ApplyConfiguration(new PolicyConfiguration());
         modelBuilder.ApplyConfiguration(new PolicyRuleConfiguration());
+
+        modelBuilder.Entity<UserRefreshToken>(entity =>
+        {
+            entity.ToTable("UserRefreshTokens", "identity");
+            entity.HasKey(row => row.Id);
+            entity.Property(row => row.TokenHash).HasMaxLength(128).IsRequired();
+            entity.HasIndex(row => row.TokenHash).IsUnique();
+            entity.Property(row => row.ExpiresAtUtc).HasColumnType("timestamp without time zone");
+            entity.Property(row => row.CreatedAtUtc).HasColumnType("timestamp without time zone");
+            entity.Property(row => row.RevokedAtUtc).HasColumnType("timestamp without time zone");
+        });
     }
 }

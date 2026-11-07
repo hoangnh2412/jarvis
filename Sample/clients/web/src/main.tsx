@@ -1,10 +1,18 @@
 // import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PrimeReactProvider } from '@primereact/core'
 import { kitPrimeReactConfig, Toaster } from '@platform/core'
-import { configureNotificationAuth } from '@platform/notifications'
-import { getAccessToken, setupSampleAccountAuth } from './auth'
+import { configureIdentity } from '@platform/identity'
+import { configureOrgStructure } from '@platform/orgstructure'
+import {
+  configureNotificationAuth,
+  configureNotificationOrg,
+  configureNotificationRealtime,
+  configureNotificationTenant,
+} from '@platform/notifications'
+import { getAccessToken, getLoginOrgId, getLoginScopeHeaders, getLoginTenantId, setupSampleAccountAuth } from './auth'
 import {
   configureImportExportHttp,
   resolveImportExportTenantId,
@@ -15,7 +23,15 @@ import App from './App.tsx'
 
 configureSampleHttp()
 setupSampleAccountAuth()
+configureIdentity({ getScopeHeaders: getLoginScopeHeaders })
+configureOrgStructure({ getScopeHeaders: getLoginScopeHeaders })
+
+const queryClient = new QueryClient()
 configureNotificationAuth(getAccessToken)
+configureNotificationTenant(getLoginTenantId)
+configureNotificationOrg(getLoginOrgId)
+// Tạm tắt SSE /sse/notifications trên Sample. Bật lại bằng enabled: true.
+configureNotificationRealtime({ enabled: false })
 configureImportExportHttp({
   // Same-origin Sample API — paths are `v1/...` relative to `/api/`
   baseURL:
@@ -27,16 +43,19 @@ configureImportExportHttp({
     import.meta.env.VITE_API_KEY ||
     undefined,
   getTenantId: () =>
-    resolveImportExportTenantId(import.meta.env.VITE_TENANT_ID),
+    getLoginTenantId() || resolveImportExportTenantId(import.meta.env.VITE_TENANT_ID),
+  getOrgId: () => getLoginOrgId() ?? undefined,
 })
 
 createRoot(document.getElementById('root')!).render(
   // <StrictMode>
     <BrowserRouter>
-      <PrimeReactProvider {...kitPrimeReactConfig}>
-        <App />
-        <Toaster />
-      </PrimeReactProvider>
+      <QueryClientProvider client={queryClient}>
+        <PrimeReactProvider {...kitPrimeReactConfig}>
+          <App />
+          <Toaster />
+        </PrimeReactProvider>
+      </QueryClientProvider>
     </BrowserRouter>
   // </StrictMode>,
 )

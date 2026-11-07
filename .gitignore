@@ -300,13 +300,15 @@ modules/notifications/frontend/dist/
 modules/notifications/frontend/.env.local
 
 
-# Frontend env (secrets / local overrides) — keep *.example tracked
+# Frontend env (secrets / local overrides) — keep *.example tracked.
+# Sample web commits shared defaults in .env; .env.local still stays ignored.
 .env
 .env.local
 .env.*.local
 **/.env
 **/.env.local
 !**/.env.example
+!Sample/clients/web/.env
 
 .cursor/
 .codegraph/

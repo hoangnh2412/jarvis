@@ -24,5 +24,8 @@ public class MasterDbContext(
 
         modelBuilder.ApplyConfiguration(new TenantEntityConfiguration());
         modelBuilder.ConfigureSetting();
+        modelBuilder.Entity<AppUser>().ToTable("app-users");
+        modelBuilder.Entity<OnboardingStep>().ToTable("onboarding-steps");
+        modelBuilder.Entity<BusinessWorkflowMapping>().ToTable("business-workflow-mappings");
     }
 }

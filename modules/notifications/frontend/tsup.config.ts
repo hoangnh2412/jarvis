@@ -14,7 +14,6 @@ export default defineConfig({
     'react/jsx-runtime',
     'lucide-react',
     '@microsoft/fetch-event-source',
-    '@microsoft/signalr',
     '@platform/core',
     'primereact',
     /^primereact\//,

@@ -4,6 +4,9 @@ export const IMPORT_EXPORT_API_KEY_HEADER = 'X-Excel-Engine-Key'
 /** Host demo tenant header — host maps into ICurrentTenant; not an ImportExport DTO field */
 export const IMPORT_EXPORT_TENANT_HEADER = 'X-Tenant-Id'
 
+/** Working org — MultiOrg từ chối /api khi request chỉ có tenant. */
+export const IMPORT_EXPORT_ORG_HEADER = 'X-Org-Id'
+
 /**
  * Interim default tenant Guid while Multi-tenant module is not fully wired.
  * Prefer `VITE_TENANT_ID` from FE `.env`; this is the fallback only.

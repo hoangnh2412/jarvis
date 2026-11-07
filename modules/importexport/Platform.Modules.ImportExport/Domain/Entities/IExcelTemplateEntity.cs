@@ -1,7 +1,7 @@
 namespace Platform.Modules.ImportExport.Domain.Entities;
 
 /// <summary>
-/// Host-owned Excel template row. Consumer maps this to <c>excel_templates</c> (or renamed table).
+/// Host-owned Excel template row. Consumer maps this to <c>excel-templates</c> (or renamed table).
 /// </summary>
 public interface IExcelTemplateEntity
 {

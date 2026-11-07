@@ -1,0 +1,14 @@
+{
+  "templates": [
+    {
+      "id": "labor-contract",
+      "name": "Hợp đồng lao động",
+      "fileName": "Hop-dong-lao-dong-mau.docx"
+    },
+    {
+      "id": "sample-brief",
+      "name": "Nội dung trao đổi Sample",
+      "fileName": "Sample-Brief.docx"
+    }
+  ]
+}

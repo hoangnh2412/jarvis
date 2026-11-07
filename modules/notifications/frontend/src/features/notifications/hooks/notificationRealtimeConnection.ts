@@ -1,29 +1,18 @@
-import type { NotificationHubMessage } from './notificationHubConnection'
-import { subscribeNotificationHub } from './notificationHubConnection'
+import type { NotificationRealtimeMessage } from '../types'
 import { subscribeNotificationSse } from './notificationSseConnection'
-import { getNotificationRealtimeConfig } from '../config'
 
-export type NotificationRealtimeMessage = NotificationHubMessage
+export type { NotificationRealtimeMessage }
 
 type MessageListener = (message: NotificationRealtimeMessage) => void
 type ErrorListener = (message: string | null) => void
 
-/** Chọn SignalR hoặc SSE theo `configureNotificationRealtime` / env. */
+/** Chuông nhận realtime qua SSE. */
 export function subscribeNotificationRealtime(options: {
   onMessage: MessageListener
   onError?: ErrorListener
 }) {
-  const { transport } = getNotificationRealtimeConfig()
-
-  if (transport === 'sse') {
-    return subscribeNotificationSse({
-      onMessage: options.onMessage,
-      onError: options.onError,
-    })
-  }
-
-  return subscribeNotificationHub({
+  return subscribeNotificationSse({
     onMessage: options.onMessage,
-    onHubError: options.onError,
+    onError: options.onError,
   })
 }

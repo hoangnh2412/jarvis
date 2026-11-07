@@ -1,6 +1,6 @@
 # Multi-tenant, multi-org
 
-Mô hình phân cấp của nền tảng Jarvis: **Root → Tenant → Org → OrgStructure**.
+Mô hình phân cấp của nền tảng Jarvis: **Root → Tenant → Org → OrgStructure**. Cách gửi request: [request-scope.md](./request-scope.md).
 
 Tài liệu này là mô hình nghiệp vụ (cập nhật 2026-10-29: Org catalog `ParentId` / tập đoàn). Trên code VNA Host (2026-10-30): catalog **`platform_core`**, tenant **`ParentId`** / cột `parent_id`, org **`ParentId`** / cột `parent_id`, interface **`IOrgManagementEntity`**.
 
@@ -119,8 +119,8 @@ Hóa đơn của khách thuộc Org khách. Tenant cha cung cấp dịch vụ v�
 
 | Việc trong mô hình | ADR | Code |
 |--------------------|-----|------|
-| Tenant gốc và Tenant con | [ADR Tenants](../../ADRs/2026-08-07_platform_tenants-module.md) T11 | `ParentTenantId` trên Master catalog (đổi tên `ParentId` theo kế hoạch) |
-| Org issuer; Org con trong tenant (tập đoàn) | [ADR Orgs](../../ADRs/2026-10-17_platform_orgs-module.md) — **cần change log** | Catalog một cấp; chưa `ParentId` |
+| Tenant gốc và Tenant con | [ADR Tenants](../../04-platform/DOC-09-adr/2026-08-07_platform_tenants-module.md) T11 | `ParentTenantId` trên Master catalog (đổi tên `ParentId` theo kế hoạch) |
+| Org issuer; Org con trong tenant (tập đoàn) | [ADR Orgs](../../04-platform/DOC-09-adr/2026-10-17_platform_orgs-module.md) — **cần change log** | Catalog một cấp; chưa `ParentId` |
 | Catalog trên Master | [ADR-009](../../../docs/04-platform/DOC-09-adr/ADR-009-master-app-database-topology-platform-catalog.md) — **→ `platform_core`** | Hiện `public.tenants` / `public.orgs` |
-| Cây trong một Org; VNA dùng `Branch` | [ADR OrgStructure](../../ADRs/2026-10-17_platform_orgstructure-module.md) | Module chưa code |
-| Sự kiện sau khi ghi Org | [ADR catalog events](../../ADRs/2026-10-21_platform_orgs-catalog-events.md) | Type và publish trong `OrgManager` đã có; test publish chưa đủ |
+| Cây trong một Org; VNA dùng `Branch` | [ADR OrgStructure](../../04-platform/DOC-09-adr/2026-10-17_platform_orgstructure-module.md) | Module chưa code |
+| Sự kiện sau khi ghi Org | [ADR catalog events](../../04-platform/DOC-09-adr/2026-10-21_platform_orgs-catalog-events.md) | Type và publish trong `OrgManager` đã có; test publish chưa đủ |

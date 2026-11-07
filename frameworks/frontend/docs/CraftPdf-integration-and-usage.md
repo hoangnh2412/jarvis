@@ -26,7 +26,7 @@ import {
 @import "@platform/core/styles.css";
 ```
 
-Peer: `react-pdf`, `pdfjs-dist`, `quill`, `react-rnd`.
+Peer: `quill`, `react-rnd`. `react-pdf` và `pdfjs-dist` do Sample khai báo, không nằm trong `@platform/core`.
 
 Khởi tạo worker PDF (editor tự import side-effect):
 

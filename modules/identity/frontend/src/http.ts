@@ -11,6 +11,9 @@ export type IdentityRequestOptions = {
 }
 
 function unwrapApiBody<T>(body: unknown): T {
+  if (typeof body === 'string' && body.trimStart().startsWith('<')) {
+    throw new Error('API người dùng không trả JSON. Host chưa đăng ký dịch vụ identity.')
+  }
   if (body && typeof body === 'object' && 'code' in body && 'data' in body) {
     return (body as { data: T }).data
   }

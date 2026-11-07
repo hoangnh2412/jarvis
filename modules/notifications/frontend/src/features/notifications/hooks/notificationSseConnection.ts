@@ -3,9 +3,9 @@ import {
   getNotificationAuthHeaders,
   getNotificationRealtimeConfig,
 } from '../config'
-import type { NotificationHubMessage } from './notificationHubConnection'
+import type { NotificationRealtimeMessage } from '../types'
 
-type MessageListener = (message: NotificationHubMessage) => void
+type MessageListener = (message: NotificationRealtimeMessage) => void
 type ErrorListener = (message: string | null) => void
 
 let abortController: AbortController | null = null
@@ -32,6 +32,13 @@ function registerPageUnloadHook() {
 }
 
 async function startConnection() {
+  if (!getNotificationRealtimeConfig().enabled) {
+    abortController?.abort()
+    abortController = null
+    connectPromise = null
+    return
+  }
+
   if (connectPromise) {
     await connectPromise
     return
@@ -68,7 +75,7 @@ async function startConnection() {
       if (!event.data?.trim()) return
 
       try {
-        const message = JSON.parse(event.data) as NotificationHubMessage
+        const message = JSON.parse(event.data) as NotificationRealtimeMessage
         for (const listener of messageListeners) {
           listener(message)
         }

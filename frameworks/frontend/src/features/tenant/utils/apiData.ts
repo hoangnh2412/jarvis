@@ -21,6 +21,10 @@ export function unwrapData<T>(payload: unknown): T {
 export function unwrapTenantListResult(payload: unknown): TenantListResult {
   const body = unwrapData<unknown>(payload)
 
+  if (typeof body === 'string') {
+    throw new Error('API tenant không trả về danh sách.')
+  }
+
   if (Array.isArray(body)) {
     return { items: body, total: body.length }
   }

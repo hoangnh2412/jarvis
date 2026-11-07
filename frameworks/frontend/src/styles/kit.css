@@ -658,6 +658,8 @@ textarea:-webkit-autofill:focus {
 
 .kit-admin-header-title {
   margin: 0;
+  min-width: 0;
+  flex-shrink: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -665,6 +667,30 @@ textarea:-webkit-autofill:focus {
   font-weight: 600;
   line-height: 1.25;
   color: #0f172a;
+}
+
+.kit-admin-header-scopes {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+}
+
+.kit-admin-header-scope {
+  flex: 1 1 240px;
+  width: 240px;
+  max-width: 42vw;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .kit-admin-header-scope {
+    flex-basis: 320px;
+    width: 320px;
+    max-width: 320px;
+  }
 }
 
 .kit-admin-header-end {

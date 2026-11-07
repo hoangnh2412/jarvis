@@ -71,4 +71,11 @@ public static partial class DateTimeExtension
     {
         return (long)(datetime - new DateTime(1970, 1, 1, 0, 0, 0, kind)).TotalMilliseconds;
     }
+
+    /// <summary>
+    /// UTC để ghi vào cột PostgreSQL <c>timestamp without time zone</c>.
+    /// Npgsql từ chối <see cref="DateTimeKind.Utc"/> trên kiểu này.
+    /// </summary>
+    public static DateTime UtcTimestamp() =>
+        DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified);
 }

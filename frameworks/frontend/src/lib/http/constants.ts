@@ -7,7 +7,7 @@ export function normalizeApiBaseUrl(url: string): string {
 
 /**
  * Shared API base — host app sets `VITE_API_URL` (e.g. `/api/`).
- * Dev: same-origin + Vite `VITE_API_PROXY_TARGET` proxy.
+ * Dev: same-origin; the host Vite config proxies `/api`.
  */
 export const BASE_URL = normalizeApiBaseUrl(
   (typeof import.meta !== 'undefined'
@@ -15,12 +15,8 @@ export const BASE_URL = normalizeApiBaseUrl(
     : undefined) || '/api/',
 )
 
-export const API_KEY =
-  (typeof import.meta !== 'undefined'
-    ? import.meta.env?.VITE_API_KEY
-    : undefined) || ''
+/** Fallback khi host không truyền `apiKey` vào `configurePlatformHttp`. */
+export const API_KEY = ''
 
-export const API_KEY_HEADER =
-  (typeof import.meta !== 'undefined'
-    ? import.meta.env?.VITE_API_KEY_NAME
-    : undefined) || 'X-API-KEY'
+/** Fallback khi host không truyền `apiKeyHeader` vào `configurePlatformHttp`. */
+export const API_KEY_HEADER = 'X-API-KEY'

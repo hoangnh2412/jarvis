@@ -33,7 +33,7 @@ import {
 @import "@platform/core/planner.css";
 ```
 
-Peer: `@fullcalendar/*`, `@atlaskit/pragmatic-drag-and-drop`.
+Peer: `@atlaskit/pragmatic-drag-and-drop`. FullCalendar (`@fullcalendar/*`) do Sample khai báo, không nằm trong `@platform/core`.
 
 ---
 

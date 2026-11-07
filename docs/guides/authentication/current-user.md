@@ -6,7 +6,7 @@ Contract: `Platform.DDD.Domain` (`ICurrentUser<TUser>`, `ICurrentUserAccessor<TU
 Triển khai mặc định: `Platform.Authentication` (`CurrentUser`, `CurrentUserAccessor`).  
 Đăng ký DI: `AddCurrentUser<TUser>()` trong [`HostApplicationBuilderExtension.cs`](../../../frameworks/Platform.Authentication/HostApplicationBuilderExtension.cs).
 
-ADR liên quan: [Current user / tenant](../../ADRs/2026-08-01_platform_current-user-tenant.md).
+ADR liên quan: [Current user / tenant](../../04-platform/DOC-09-adr/2026-08-01_platform_current-user-tenant.md).
 
 ## Đăng ký DI
 

@@ -2,8 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { ConfirmDialog, FeatureDialog, PageHeader, Tag, notify, type RowActionItem } from '@platform/core'
-import { Pencil, Plus, Search, ShieldCheck, SlidersHorizontal, Trash2 } from 'lucide-react'
+import { AdminList, ConfirmDialog, FeatureDialog, Tag, notify, type AdminListColumn, type RowActionItem } from '@platform/core'
+import { Pencil, Plus, ShieldCheck, SlidersHorizontal, Trash2 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createSystemRole,
@@ -18,7 +18,6 @@ import {
 import { identityQueryKeys } from '../services/users'
 import { notifyApiError } from '../notify'
 import { searchNormalize } from '../utils'
-import { SimpleTable, type SimpleColumn } from '../components/SimpleTable'
 import { btnAuxClass, btnPrimaryClass, fieldInputClass, labelClass } from '../components/fieldStyles'
 import { RoleAuthorizationDialog } from './RoleAuthorizationDialog'
 import { RolePolicyDialog } from './RolePolicyDialog'
@@ -93,10 +92,15 @@ export type RolesPageProps = {
 /** Trang quản lý vai trò và quyền theo nhóm chức năng. */
 export function RolesPage({ permissionUsageHintFor, policyCatalogPath }: RolesPageProps) {
   const queryClient = useQueryClient()
-  const rolesQuery = useQuery({ queryKey: identityQueryKeys.roles, queryFn: listSystemRoles })
+  const rolesQuery = useQuery({ queryKey: identityQueryKeys.roles, queryFn: listSystemRoles, retry: false })
+
+  useEffect(() => {
+    if (rolesQuery.isError) notifyApiError(rolesQuery.error)
+  }, [rolesQuery.error, rolesQuery.isError])
   const catalogQuery = useQuery({
     queryKey: identityQueryKeys.permissionCatalog,
     queryFn: () => listPermissionCatalog(permissionUsageHintFor),
+    retry: false,
   })
   const roles = rolesQuery.data ?? []
   const [search, setSearch] = useState('')
@@ -180,9 +184,9 @@ export function RolesPage({ permissionUsageHintFor, policyCatalogPath }: RolesPa
     await policyMutation.mutateAsync(policyCodes)
   }, [policyRole, policyMutation])
 
-  const columns = useMemo<SimpleColumn<SystemRole>[]>(() => [
-    { key: 'name', label: 'Tên vai trò', className: 'font-semibold', value: (role) => role.name },
-    { key: 'description', label: 'Mô tả', className: 'text-slate-500', value: (role) => role.description },
+  const columns = useMemo<AdminListColumn<SystemRole>[]>(() => [
+    { key: 'name', label: 'Tên vai trò', sortable: true, sortValue: (role) => role.name, className: 'font-semibold', value: (role) => role.name },
+    { key: 'description', label: 'Mô tả', sortable: true, sortValue: (role) => role.description, className: 'text-slate-500', value: (role) => role.description },
     {
       key: 'isActive',
       label: 'Trạng thái',
@@ -232,28 +236,28 @@ export function RolesPage({ permissionUsageHintFor, policyCatalogPath }: RolesPa
   }, [roles])
 
   return (
-    <section className="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-4 text-sm text-slate-800 sm:p-6">
-      <PageHeader
-        title="Vai trò"
-        description="Quản lý vai trò, quyền chức năng và phạm vi dữ liệu."
-        actions={(
-          <>
-            <label className="relative min-w-56 flex-1 sm:max-w-sm">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden />
-              <input aria-label="Tìm vai trò" value={search} onChange={(event) => setSearch(event.currentTarget.value)} placeholder="Tìm tên hoặc mô tả vai trò..." className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none focus:border-teal-600" />
-            </label>
-            <button type="button" onClick={() => { setEditingRole(null); setDialogOpen(true) }} className={btnPrimaryClass}>
-              <Plus className="size-4" aria-hidden /> Thêm vai trò
-            </button>
-          </>
-        )}
-      />
-      <SimpleTable
+    <section className="flex h-full min-h-0 flex-col overflow-hidden p-4 text-sm text-slate-800 sm:p-6">
+      <AdminList
         items={filteredRoles}
         columns={columns}
         loading={rolesQuery.isLoading}
-        emptyMessage={rolesQuery.isLoading ? 'Đang tải danh sách vai trò…' : 'Không tìm thấy vai trò phù hợp.'}
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchLabel="Tìm vai trò"
+        searchPlaceholder="Tìm tên hoặc mô tả vai trò..."
+        emptyMessage={
+          rolesQuery.isError
+            ? 'Không tải được danh sách vai trò.'
+            : rolesQuery.isLoading
+              ? 'Đang tải danh sách vai trò…'
+              : 'Không tìm thấy vai trò phù hợp.'
+        }
         actionsFor={actionsFor}
+        primaryAction={(
+          <button type="button" onClick={() => { setEditingRole(null); setDialogOpen(true) }} className={btnPrimaryClass}>
+            <Plus className="size-4" aria-hidden /> Thêm vai trò
+          </button>
+        )}
       />
       <RoleFormDialog open={dialogOpen} item={editingRole} onClose={() => { setDialogOpen(false); setEditingRole(null) }} onSubmit={roleSave} />
       <RoleAuthorizationDialog

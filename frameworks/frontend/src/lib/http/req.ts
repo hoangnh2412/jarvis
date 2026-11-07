@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { type InternalAxiosRequestConfig } from 'axios'
 import { API_KEY, API_KEY_HEADER, BASE_URL, normalizeApiBaseUrl } from './constants'
 
 export type PlatformHttpConfig = {
@@ -7,8 +7,10 @@ export type PlatformHttpConfig = {
   apiKeyHeader?: string
   /** Host tiêm header phạm vi (tenant/org) cho mỗi request; package không tự biết khóa lưu trữ của host. */
   getScopeHeaders?: () => Record<string, string>
-  /** Nhận biết token hết hạn để host dọn phiên; gọi khi response 401. */
+  /** Nhận biết token hết hạn để host dọn phiên; gọi khi response 401 và không đổi được token. */
   onUnauthorized?: () => void
+  /** 401: trả access token mới để gửi lại request. `null` thì coi là hết phiên. */
+  tryRefresh?: () => Promise<string | null>
 }
 
 const runtime: PlatformHttpConfig = {}
@@ -44,9 +46,20 @@ const instance = axios.create({
   withCredentials: true,
 })
 
+function urlBesideApiBase(baseURL: string, url: string): string {
+  const basePath = baseURL.replace(/\/+$/, '')
+  if (basePath.endsWith('/api') && url.startsWith('/api/')) {
+    return url.slice('/api/'.length)
+  }
+  return url
+}
+
 instance.interceptors.request.use(
   (config) => {
     config.baseURL = resolveBaseURL()
+    if (typeof config.url === 'string') {
+      config.url = urlBesideApiBase(config.baseURL, config.url)
+    }
     const apiKey = resolveApiKey()
     if (apiKey) {
       config.headers = config.headers ?? {}
@@ -68,7 +81,19 @@ instance.interceptors.request.use(
 
 instance.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const config = error?.config as (InternalAxiosRequestConfig & { __retried?: boolean }) | undefined
+    const url = String(config?.url ?? '')
+    const isAuthCall = url.includes('account/login') || url.includes('account/refresh')
+    if (error?.response?.status === 401 && config && !config.__retried && !isAuthCall && runtime.tryRefresh) {
+      config.__retried = true
+      const nextToken = await runtime.tryRefresh().catch(() => null)
+      if (nextToken) {
+        config.headers.Authorization = `Bearer ${nextToken}`
+        return instance.request(config)
+      }
+    }
+
     if (error?.response?.status === 401) {
       runtime.onUnauthorized?.()
     }

@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Platform.Host.Postgresql</PackageId>
+    <AssemblyName>Platform.Host.Postgresql</AssemblyName>
+    <RootNamespace>Platform.Host.Postgresql</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>Hoang Nguyen</Authors>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.20">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Platform.Host\Platform.Host.csproj" />
+    <ProjectReference Include="..\Platform.ORM.EntityFramework\Platform.ORM.EntityFramework.csproj" />
+    <ProjectReference Include="..\..\modules\orgstructure\Platform.OrgStructure.EntityFramework\Platform.OrgStructure.EntityFramework.csproj" />
+    <ProjectReference Include="..\..\modules\tenants\Platform.Tenants.EntityFramework\Platform.Tenants.EntityFramework.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -5,9 +5,10 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { Plus, Search } from 'lucide-react'
+import { Eye, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Button } from 'primereact/button'
-import { InputText } from 'primereact/inputtext'
+import { Tag } from 'primereact/tag'
+import { AdminList, type AdminListColumn, type RowActionItem } from '../../../../common/AdminList'
 import ConfirmDialog from '../../../../common/ConfirmDialog'
 import {
   ListPagination,
@@ -213,22 +214,53 @@ export function UserListPage({
     />
   )
 
-  const toolbar = (
-    <div className="mb-4">
-      <div className="relative max-w-sm">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-        <InputText
-          unstyled
-          value={searchInput}
-          placeholder={messages.list.searchPlaceholder}
-          className="box-border h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-800 shadow-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20"
-          onChange={(event: { target: { value: string } }) =>
-            setSearchInput(event.target.value)
-          }
-        />
-      </div>
-    </div>
-  )
+  const listColumns: AdminListColumn<AdminUser>[] = [
+    {
+      key: 'username',
+      label: messages.form.username,
+      sortable: true,
+      sortValue: (user) => user.username,
+      className: 'font-mono font-medium',
+      value: (user) => user.username,
+    },
+    {
+      key: 'email',
+      label: messages.form.email,
+      sortable: true,
+      sortValue: (user) => user.email,
+      value: (user) => user.email,
+    },
+    {
+      key: 'role',
+      label: messages.form.role,
+      sortable: true,
+      sortValue: (user) => user.roleName,
+      value: (user) => user.roleName,
+    },
+    {
+      key: 'status',
+      label: messages.status.column,
+      render: (user) =>
+        user.isLocked ? (
+          <Tag severity="danger">{messages.status.locked}</Tag>
+        ) : (
+          <Tag severity="success">{messages.status.active}</Tag>
+        ),
+    },
+  ]
+
+  const listActions = (user: AdminUser): RowActionItem[] => [
+    { id: 'view', label: messages.actions.view, icon: Eye, onClick: () => openView(user) },
+    { id: 'edit', label: messages.actions.edit, icon: Pencil, onClick: () => openEdit(user) },
+    {
+      id: 'delete',
+      label: messages.actions.delete,
+      icon: Trash2,
+      danger: true,
+      separatorBefore: true,
+      onClick: () => setPendingDelete(user),
+    },
+  ]
 
   const dialogs = (
     <ConfirmDialog
@@ -249,9 +281,24 @@ export function UserListPage({
 
   const defaultContent = (
     <>
-      {toolbar}
-      {defaultTable}
-      {paginationBar}
+      <AdminList
+        items={items}
+        columns={listColumns}
+        loading={loading}
+        searchValue={searchInput}
+        onSearchChange={setSearchInput}
+        searchLabel={messages.list.searchPlaceholder}
+        searchPlaceholder={messages.list.searchPlaceholder}
+        emptyMessage={messages.list.empty}
+        actionsFor={listActions}
+        paging={{ total, page, size, onPageChange: setPage, onSizeChange: setSize }}
+        primaryAction={(
+          <Button type="button" unstyled className={btnPrimaryClass} onClick={openCreate}>
+            <Plus className="size-4" />
+            {messages.list.create}
+          </Button>
+        )}
+      />
       {dialogs}
     </>
   )
@@ -273,15 +320,6 @@ export function UserListPage({
   }
 
   const resolved = resolveUserContent(content, contentCtx, defaultContent)
-  const actions = (
-    <>
-      {headerActions}
-      <Button type="button" unstyled className={btnPrimaryClass} onClick={openCreate}>
-        <Plus className="size-4" />
-        {messages.list.create}
-      </Button>
-    </>
-  )
 
   if (!withShell) return resolved
 
@@ -289,7 +327,8 @@ export function UserListPage({
     <UserPageShell
       title={title ?? messages.routes.list}
       description={description ?? messages.list.description}
-      headerActions={actions}
+      showHeader={false}
+      headerActions={headerActions}
       className={className}
     >
       {resolved}

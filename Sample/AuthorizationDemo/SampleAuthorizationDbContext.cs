@@ -5,7 +5,7 @@ namespace Sample.AuthorizationDemo;
 
 /// <summary>
 /// Store phân quyền của Sample (bảng AspNet* + Policies/PolicyRules) trên database riêng
-/// <c>SampleAuthorization</c>, tạo bằng <c>EnsureCreated</c> — chỉ phục vụ demo.
+/// <c>SampleAuthorization</c>. Schema có sẵn tạo bằng <c>EnsureCreated</c>; bảng mới đi qua migration.
 /// Kèm bảng <c>SampleExpenses</c> để demo Data Scope (lọc danh sách bằng SQL).
 /// </summary>
 public sealed class SampleAuthorizationDbContext(DbContextOptions<SampleAuthorizationDbContext> options)

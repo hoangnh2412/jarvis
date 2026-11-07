@@ -1,6 +1,6 @@
 # Tài liệu Platform (Jarvis)
 
-Mục lục tài liệu **chung** cho monorepo. Quyết định kiến trúc nằm ở [`ADRs/`](../ADRs/README.md); tổng quan repo ở [`README.md`](../README.md).
+Mục lục tài liệu **chung** cho monorepo. Quyết định kiến trúc nằm ở [`docs/04-platform/DOC-09-adr/`](04-platform/DOC-09-adr/README.md); tổng quan repo ở [`README.md`](../README.md).
 
 ## Đọc theo vai trò
 
@@ -18,11 +18,11 @@ Mục lục tài liệu **chung** cho monorepo. Quyết định kiến trúc n�
 | [`guides/`](./guides/) | Hướng dẫn kỹ thuật, luồng, tích hợp (cho engineer) |
 | [`features/`](./features/) | Giới thiệu capability / tính năng platform (ít code) |
 
-## Tài liệu ngoài `docs/`
+## Tài liệu ngoài mục lục kỹ thuật
 
 | Nội dung | Vị trí |
 |----------|--------|
-| ADR (vì sao / quyết định) | [`ADRs/`](../ADRs/) |
+| ADR (vì sao / quyết định) | [`04-platform/DOC-09-adr/`](04-platform/DOC-09-adr/) |
 | SAD / OpenAPI module | `modules/*/doc/` |
 | Frontend kit `@platform/core` | [`frameworks/frontend/docs/`](../frameworks/frontend/docs/) |
 | Chi tiết sát một package .NET | `frameworks/*/doc/` (khi có) — `guides/` tóm tắt + link |
@@ -32,4 +32,4 @@ Mục lục tài liệu **chung** cho monorepo. Quyết định kiến trúc n�
 - Onboarding / “ngày đầu” → `onboarding/`
 - How-to, diagram, DI, Sample → `guides/` (có thể nhóm `guides/authentication/`, …)
 - Overview tính năng cho stakeholder → `features/`
-- Thay đổi kiến trúc có trade-off → ADR mới trong `ADRs/`, doc hướng dẫn chỉ link ADR
+- Thay đổi kiến trúc có trade-off → ADR mới trong `docs/04-platform/DOC-09-adr/`, doc hướng dẫn chỉ link ADR

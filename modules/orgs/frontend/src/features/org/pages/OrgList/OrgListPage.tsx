@@ -7,18 +7,21 @@ import {
   type FormEventHandler,
   type ReactNode,
 } from 'react'
-import { Plus } from 'lucide-react'
+import { Eye, Pencil, Plus, Power, PowerOff } from 'lucide-react'
 import {
+  AdminList,
   Button,
   ConfirmDialog,
   FeatureDialog,
-  InputText,
   ListPagination,
+  Tag,
   getErrorMessage,
   handleAction,
   notify,
   useListPagination,
   type ActionProps,
+  type AdminListColumn,
+  type RowActionItem,
 } from '@platform/core'
 import {
   OrgDetailView,
@@ -353,30 +356,67 @@ export function OrgListPage({
 
   const hasOrgHeader = Boolean(orgId?.trim() || import.meta.env.VITE_ORG_ID?.trim())
 
-  const toolbar = (
-    <div className="mb-4 flex flex-col gap-3 sm:flex-row">
-      <InputText
-        unstyled
-        value={searchInput}
-        placeholder={messages.list.searchPlaceholder}
-        className={fieldInputClass}
-        onChange={(event: { target: { value: string } }) =>
-          setSearchInput(event.target.value)
-        }
-      />
-      <select
-        className={`${fieldInputClass} sm:max-w-56`}
-        value={activeFilter}
-        onChange={(event) =>
-          changeActiveFilter(event.target.value as ActiveFilter)
-        }
-      >
-        <option value="all">{messages.list.statusAll}</option>
-        <option value="active">{messages.list.statusActive}</option>
-        <option value="inactive">{messages.list.statusInactive}</option>
-      </select>
-    </div>
-  )
+  const orgColumns: AdminListColumn<Org>[] = [
+    {
+      key: 'code',
+      label: messages.table.code,
+      sortable: true,
+      sortValue: (org) => org.code,
+      className: 'font-mono font-medium',
+      value: (org) => org.code,
+    },
+    {
+      key: 'name',
+      label: messages.table.name,
+      sortable: true,
+      sortValue: (org) => org.name,
+      value: (org) => org.name,
+    },
+    {
+      key: 'status',
+      label: messages.table.status,
+      render: (org) =>
+        org.isActive ? (
+          <Tag severity="success">{messages.list.statusActive}</Tag>
+        ) : (
+          <Tag severity="secondary">{messages.list.statusInactive}</Tag>
+        ),
+    },
+    {
+      key: 'tenant',
+      label: messages.detail.tenant,
+      className: 'font-mono text-xs',
+      value: (org) => org.tenantId,
+    },
+  ]
+
+  const orgActions = (org: Org): RowActionItem[] => {
+    const actions: RowActionItem[] = [
+      { id: 'view', label: messages.table.view, icon: Eye, onClick: () => void openLoaded(org, 'view') },
+    ]
+    if (canManage) {
+      actions.push({ id: 'edit', label: messages.table.edit, icon: Pencil, onClick: () => void openLoaded(org, 'edit') })
+      actions.push(
+        org.isActive
+          ? {
+              id: 'deactivate',
+              label: messages.table.deactivate,
+              icon: PowerOff,
+              danger: true,
+              separatorBefore: true,
+              onClick: () => setPendingActive({ org, next: false }),
+            }
+          : {
+              id: 'activate',
+              label: messages.table.activate,
+              icon: Power,
+              separatorBefore: true,
+              onClick: () => setPendingActive({ org, next: true }),
+            },
+      )
+    }
+    return actions
+  }
 
   const defaultTable = (
     <OrgTable
@@ -476,12 +516,43 @@ export function OrgListPage({
 
   const defaultContent = (
     <>
-      {toolbar}
       {!hasOrgHeader ? (
         <p className="mb-3 mt-0 text-sm text-amber-800">{messages.list.scopeHint}</p>
       ) : null}
-      {defaultTable}
-      {paginationBar}
+      <AdminList
+        items={items}
+        columns={orgColumns}
+        loading={loading}
+        searchValue={searchInput}
+        onSearchChange={setSearchInput}
+        searchLabel={messages.list.searchPlaceholder}
+        searchPlaceholder={messages.list.searchPlaceholder}
+        emptyMessage={messages.list.empty}
+        actionsFor={orgActions}
+        extraActions={(
+          <select
+            aria-label={messages.table.status}
+            className={`${fieldInputClass} h-10 sm:max-w-56`}
+            value={activeFilter}
+            onChange={(event) => changeActiveFilter(event.target.value as ActiveFilter)}
+          >
+            <option value="all">{messages.list.statusAll}</option>
+            <option value="active">{messages.list.statusActive}</option>
+            <option value="inactive">{messages.list.statusInactive}</option>
+          </select>
+        )}
+        primaryAction={(
+          <>
+            {headerActions}
+            {canManage ? (
+              <Button type="button" unstyled className={btnPrimaryClass} onClick={openCreate}>
+                <Plus className="size-4" />
+                {messages.list.create}
+              </Button>
+            ) : null}
+          </>
+        )}
+      />
     </>
   )
 
@@ -505,7 +576,7 @@ export function OrgListPage({
     page,
     size,
     totalPages,
-    DefaultToolbar: toolbar,
+    DefaultToolbar: null,
     DefaultTable: defaultTable,
     DefaultPagination: paginationBar,
     DefaultDialogs: dialogs,
@@ -513,18 +584,6 @@ export function OrgListPage({
   }
 
   const resolved = resolveOrgContent(content, contentCtx, defaultContent)
-
-  const actions = (
-    <>
-      {headerActions}
-      {canManage ? (
-        <Button type="button" unstyled className={btnPrimaryClass} onClick={openCreate}>
-          <Plus className="size-4" />
-          {messages.list.create}
-        </Button>
-      ) : null}
-    </>
-  )
 
   const shellDescription = description ?? messages.list.description
 
@@ -542,7 +601,7 @@ export function OrgListPage({
       <OrgPageShell
         title={title ?? messages.routes.list}
         description={shellDescription}
-        headerActions={actions}
+        showHeader={false}
         className={className}
       >
         {resolved}

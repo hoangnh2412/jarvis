@@ -79,7 +79,7 @@ function readJsonFile<T>(filePath: string): T {
 
 /**
  * Vite middleware mock `/api/v1/craft-doc/*`.
- * Seed: `@platform/core` → `features/craftDoc/mocks/*.json` + `mocks/assets/Sample-Brief.docx`
+ * Seed: Sample `clients/web/mocks/craftDoc/*.json` + `craftDoc/assets/Sample-Brief.docx`
  */
 export function craftDocApiMockPlugin(options: {
   enabled: boolean

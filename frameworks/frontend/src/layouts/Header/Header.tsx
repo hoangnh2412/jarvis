@@ -20,6 +20,8 @@ import { Toolbar } from 'primereact/toolbar'
 
 export type HeaderProps = {
   title?: string
+  /** Ô phạm vi làm việc (tenant, org) do host gắn. Khi có slot, ẩn ô tìm trên header. */
+  scopeSlot?: ReactNode
   onMenuClick?: () => void
   user?: { fullName?: string; email?: string } | null
   notificationCount?: number
@@ -68,6 +70,8 @@ function HeaderIconButton({ label, children, badge = 0, onClick }: HeaderIconBut
 }
 
 export function Header({
+  title,
+  scopeSlot,
   onMenuClick,
   user = null,
   notificationCount = 0,
@@ -97,23 +101,29 @@ export function Header({
           </Button>
         ) : null}
 
-        <div className="kit-admin-header-left-tools">
-          <button type="button" aria-label="Ứng dụng" className="kit-admin-header-apps-btn">
-            <LayoutGrid className="kit-admin-header-apps-icon" aria-hidden />
-          </button>
-          <div className="kit-admin-header-search-wrap">
-            <InputText
-              type="search"
-              value={searchValue}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                onSearchChange?.(e.target.value)
-              }
-              placeholder={searchPlaceholder}
-              unstyled
-              className="kit-admin-header-search"
-            />
+        {title ? <h1 className="kit-admin-header-title">{title}</h1> : null}
+
+        {scopeSlot ? (
+          <div className="kit-admin-header-scopes">{scopeSlot}</div>
+        ) : (
+          <div className="kit-admin-header-left-tools">
+            <button type="button" aria-label="Ứng dụng" className="kit-admin-header-apps-btn">
+              <LayoutGrid className="kit-admin-header-apps-icon" aria-hidden />
+            </button>
+            <div className="kit-admin-header-search-wrap">
+              <InputText
+                type="search"
+                value={searchValue}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  onSearchChange?.(e.target.value)
+                }
+                placeholder={searchPlaceholder}
+                unstyled
+                className="kit-admin-header-search"
+              />
+            </div>
           </div>
-        </div>
+        )}
       </Toolbar.Start>
 
       <Toolbar.End className="kit-admin-header-end">

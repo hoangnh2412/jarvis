@@ -1,4 +1,5 @@
 import { configurePlatformHttp } from '@platform/core'
+import { getLoginScopeHeaders } from '../auth/loginScope'
 
 /** Shared API base — same-origin `/api/` → Vite proxy / mock middleware */
 export const BASE_URL = import.meta.env.VITE_API_URL
@@ -81,13 +82,14 @@ export function configureSampleHttp() {
     baseURL: BASE_URL,
     apiKey: API_KEY,
     apiKeyHeader: API_KEY_HEADER,
+    getScopeHeaders: getLoginScopeHeaders,
   })
 }
 
 /**
- * Dev mock API (Vite middleware, khi `VITE_USE_MOCK` ≠ false):
- * - Planner: `vite.plugins/plannerApiMock.ts` → `features/planner/mocks/get-board.json`
- * - Timesheet: `vite.plugins/timesheetApiMock.ts` → `features/timesheet/mocks/*.json`
- * - CraftDoc: `vite.plugins/craftDocApiMock.ts` → `features/craftDoc/mocks/*.json` + `Sample-Brief.docx`
+ * Dev mock API (Vite middleware, khi `VITE_USE_MOCK` ≠ false) — seed JSON/docx trong `clients/web/mocks/`:
+ * - Planner: `vite.plugins/plannerApiMock.ts` → `mocks/planner/get-board.json`
+ * - Timesheet: `vite.plugins/timesheetApiMock.ts` → `mocks/timesheet/*.json`
+ * - CraftDoc: `vite.plugins/craftDocApiMock.ts` → `mocks/craftDoc/*.json` + `Sample-Brief.docx`
  * Axios gọi `/api/v1/planner/*`, `/api/v1/timesheet/*`, `/api/v1/craft-doc/*` — Network tab hiện XHR bình thường.
  */

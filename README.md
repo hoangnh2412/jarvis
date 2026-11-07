@@ -4,6 +4,8 @@
 
 Platform là framework xây dựng backend ASP.NET Core trên nền tảng .NET 9, kết hợp **Clean Architecture** (phân lớp trong solution) và **module Atomic** (gói chức năng độc lập). Mục tiêu của Platform là giúp đội ngũ phát triển có thể khởi tạo một solution backend chuẩn chỉnh từ một thư mục trống, chỉ với vài thao tác, và sẵn sàng chạy Swagger ngay lập tức.
 
+Platform là **core lõi**. Project khác phụ thuộc vào Platform. Platform không phụ thuộc project đó. Ví dụ: Sample chỉ phụ thuộc Platform; Platform không phụ thuộc Sample. `frameworks/` và `modules/` không reference, không `paths`, không import sang `Sample/` hay cây host. Demo và mock sống ở host.
+
 Platform tách hai trục bổ sung cho nhau — không thay thế lẫn nhau:
 
 ```text
@@ -87,8 +89,7 @@ platform/
 │   └── importexport/              ← placeholder (chưa có project trong solution)
 ├── Sample/                        ← Host demo: API + SPA (clients/web → wwwroot)
 ├── UnitTest/
-├── docs/                          ← Tài liệu platform — [docs/README.md](docs/README.md) (onboarding, guides, features)
-├── ADRs/                          ← Architecture Decision Records — [ADRs/README.md](ADRs/README.md)
+├── docs/                          ← Tài liệu — [docs/README.md](docs/README.md); ADR tại [docs/04-platform/DOC-09-adr/](docs/04-platform/DOC-09-adr/README.md)
 └── ai-skills/                     ← Pipeline AI SDLC (submodule nội bộ)
 ```
 
@@ -99,7 +100,7 @@ platform/
 | `Sample/` | App chạy thử: framework + Setting; SPA Vite/React. Chưa compose Authorization / Account / IdentityAdmin. |
 | `UnitTest/` | Unit / integration test cho framework và module |
 | `docs/` | Tài liệu chung: onboarding, guides kỹ thuật, giới thiệu tính năng — [docs/README.md](docs/README.md) |
-| `ADRs/` | Quyết định kiến trúc & tiến độ — [ADRs/README.md](ADRs/README.md) |
+| `docs/04-platform/DOC-09-adr/` | Quyết định kiến trúc & tiến độ — [docs/04-platform/DOC-09-adr/README.md](docs/04-platform/DOC-09-adr/README.md) |
 | `ai-skills/` | Skill / hook AI SDLC (submodule) — [ai-skills/README.md](ai-skills/README.md) |
 
 **Lưu ý đặt tên:** thư mục project `frameworks/Platform.Authentication.*` → NuGet **`Platform.Authentications.*`** (có chữ **s**). Monorepo dùng `ProjectReference` tới path `frameworks\...`; product bên ngoài dùng NuGet feed.
@@ -179,14 +180,14 @@ Module nghiệp vụ / portal quản trị — tách khỏi framework hạ tần
 |--------|------------|---------|
 | **settings** | ✅ | `Platform.Modules.Setting` (+ `.EntityFramework`, `.API`); quản lý cấu hình theo Group/Key; frontend demo |
 | **identity** | 🟡 | `Platform.Modules.Account` — login, logout, profile, đổi/quên mật khẩu (AuthN) · `Platform.Modules.IdentityAdmin` — CRUD user/role, gán permission/policy + Role Governance (AuthZ admin). Handler + test xong; chưa có API. User store nằm ở `Platform.Authentication.Identity` |
-| **tenants** | 📋 | Catalog/CRUD tenant ([ADR](ADRs/2026-08-07_platform_tenants-module.md)); ambient nằm `Platform.Multitenancy` |
+| **tenants** | 📋 | Catalog/CRUD tenant ([ADR](docs/04-platform/DOC-09-adr/2026-08-07_platform_tenants-module.md)); ambient nằm `Platform.Multitenancy` |
 | **files** | 📋 | Blob browser / quản lý file — placeholder |
 | **messaging** | 📋 | Event bus / realtime — placeholder |
 | **notifications** | 📋 | Đa kênh notification — placeholder |
 | **workflows** | 📋 | Quy trình / background orchestration — placeholder |
 | **importexport** | 📋 | Import/export dữ liệu — placeholder (folder, chưa trong solution) |
 
-Chi tiết Setting: [modules/settings/README.md](modules/settings/README.md). Authorization: [ADRs/2026-08-14_platform_rbac-abac-authorization.md](ADRs/2026-08-14_platform_rbac-abac-authorization.md).
+Chi tiết Setting: [modules/settings/README.md](modules/settings/README.md). Authorization: [docs/04-platform/DOC-09-adr/2026-08-14_platform_rbac-abac-authorization.md](docs/04-platform/DOC-09-adr/2026-08-14_platform_rbac-abac-authorization.md).
 
 ## Get started
 
@@ -296,7 +297,7 @@ Sau khi scaffold / chạy Sample:
 
 ## Roadmap
 
-Lộ trình phát triển Platform framework (.NET 9). Mỗi hạng mục là **cam kết chức năng** sẽ triển khai; tiến độ quyết định kiến trúc và trạng thái ADR: [ADRs/README.md](ADRs/README.md).
+Lộ trình phát triển Platform framework (.NET 9). Mỗi hạng mục là **cam kết chức năng** sẽ triển khai; tiến độ quyết định kiến trúc và trạng thái ADR: [docs/04-platform/DOC-09-adr/README.md](docs/04-platform/DOC-09-adr/README.md).
 
 **Chú thích trạng thái**
 
@@ -313,13 +314,13 @@ Nền tảng bảo mật & admin → Dữ liệu & multitenancy → Kiến trúc
 → Tích hợp (notification, blob, realtime) → Mở rộng (plug-in, chất lượng)
 ```
 
-**Ưu tiên ADR đang mở** (chi tiết [ADRs/README.md](ADRs/README.md)):
+**Ưu tiên ADR đang mở** (chi tiết [docs/04-platform/DOC-09-adr/README.md](docs/04-platform/DOC-09-adr/README.md)):
 
 1. 📋 Base CRUD AppService (`ICrudAppService` / `CrudAppService`)
-2. 📋 FluentValidation — validate input Application ([ADR](ADRs/2026-08-07_platform_fluentvalidation.md))
+2. 📋 FluentValidation — validate input Application ([ADR](docs/04-platform/DOC-09-adr/2026-08-07_platform_fluentvalidation.md))
 3. 📋 Split Phase 6 — document Host (`AddCurrentUser` + `AddCurrentTenant`)
 4. 📋 `Platform.Tenants` — module catalog/CRUD (khi có nhu cầu sản phẩm)
-5. 📋 Later — thu hồi token khi đổi quyền ([ADR](ADRs/2026-08-21_platform_authorization-token-revocation.md))
+5. 📋 Later — thu hồi token khi đổi quyền ([ADR](docs/04-platform/DOC-09-adr/2026-08-21_platform_authorization-token-revocation.md))
 
 ---
 
@@ -329,18 +330,18 @@ Nền tảng bảo mật & admin → Dữ liệu & multitenancy → Kiến trúc
 |------------|---------|--------------|
 | ✅ Foundation | JSON, CORS, WebApi, SPA, ApiResponseWrapper | `frameworks/Platform.Mvc` |
 | ✅ Application | CQRS command/query dispatcher | `frameworks/Platform.DDD.Application` |
-| ✅ Multitenancy | `ICurrentTenant` / `<TTenant>`, `AddCurrentTenant` | `frameworks/Platform.Multitenancy` · [ADR](ADRs/2026-08-06_platform_multitenancy-package.md) |
-| ✅ Multitenancy EF | Connection resolver + interceptor (opt-in) | `frameworks/Platform.Multitenancy.EntityFramework` · [ADR](ADRs/2026-08-06_platform_multitenancy-entityframework.md) |
-| ✅ Entity Framework | UoW, repository, hybrid DB | `frameworks/Platform.ORM.EntityFramework` · [ADR](ADRs/2026-08-07_platform_orm-packages.md) |
-| ✅ ORM (Dapper) | Connection factory cho read/report | `frameworks/Platform.ORM.Dapper` · [ADR](ADRs/2026-08-07_platform_orm-packages.md) |
-| ✅ Caching | Memory + Redis, invalidation pub/sub | `frameworks/Platform.Caching` · [plan](ADRs/refactor-cache-plan.md) 🟢 |
-| 🟡 Authentication | JWT, API Key, Basic ✅; Cognito stub; OIDC chưa | `frameworks/Platform.Authentication.*` · [refactor](ADRs/refactor-authentication.md) |
-| 🟡 Authorization | RBAC+ABAC engine + Role Governance ✅; data scope, snapshot cache, policy admin API, tích hợp endpoint chưa | `frameworks/Platform.Authorization` (+ `.EntityFramework`) · [ADR](ADRs/2026-08-14_platform_rbac-abac-authorization.md) |
-| 🟡 Blob storing | FileSystem, MinIO, AWS S3 — đang review | `frameworks/Platform.BlobStoring.*` · [refactor](ADRs/refactor-blob-storing.md) |
+| ✅ Multitenancy | `ICurrentTenant` / `<TTenant>`, `AddCurrentTenant` | `frameworks/Platform.Multitenancy` · [ADR](docs/04-platform/DOC-09-adr/2026-08-06_platform_multitenancy-package.md) |
+| ✅ Multitenancy EF | Connection resolver + interceptor (opt-in) | `frameworks/Platform.Multitenancy.EntityFramework` · [ADR](docs/04-platform/DOC-09-adr/2026-08-06_platform_multitenancy-entityframework.md) |
+| ✅ Entity Framework | UoW, repository, hybrid DB | `frameworks/Platform.ORM.EntityFramework` · [ADR](docs/04-platform/DOC-09-adr/2026-08-07_platform_orm-packages.md) |
+| ✅ ORM (Dapper) | Connection factory cho read/report | `frameworks/Platform.ORM.Dapper` · [ADR](docs/04-platform/DOC-09-adr/2026-08-07_platform_orm-packages.md) |
+| ✅ Caching | Memory + Redis, invalidation pub/sub | `frameworks/Platform.Caching` · [plan](docs/04-platform/DOC-09-adr/refactor-cache-plan.md) 🟢 |
+| 🟡 Authentication | JWT, API Key, Basic ✅; Cognito stub; OIDC chưa | `frameworks/Platform.Authentication.*` · [refactor](docs/04-platform/DOC-09-adr/refactor-authentication.md) |
+| 🟡 Authorization | RBAC+ABAC engine + Role Governance ✅; data scope, snapshot cache, policy admin API, tích hợp endpoint chưa | `frameworks/Platform.Authorization` (+ `.EntityFramework`) · [ADR](docs/04-platform/DOC-09-adr/2026-08-14_platform_rbac-abac-authorization.md) |
+| 🟡 Blob storing | FileSystem, MinIO, AWS S3 — đang review | `frameworks/Platform.BlobStoring.*` · [refactor](docs/04-platform/DOC-09-adr/refactor-blob-storing.md) |
 | ✅ Notification | SMTP (Mailkit) | `frameworks/Platform.Notification.Mailkit` |
 | ✅ Swashbuckle | Swagger đa version, security schemes | `frameworks/Platform.Swashbuckle` |
 | ✅ OpenTelemetry | Trace, metric, log OTLP | `frameworks/Platform.OpenTelemetry` |
-| ✅ OpenTelemetry DDD | Enrich user/tenant khỏi Domain | `frameworks/Platform.OpenTelemetry.DDD` · [ADR](ADRs/2026-08-01_platform_techdebt-otel-enrichment-out-of-ddd.md) |
+| ✅ OpenTelemetry DDD | Enrich user/tenant khỏi Domain | `frameworks/Platform.OpenTelemetry.DDD` · [ADR](docs/04-platform/DOC-09-adr/2026-08-01_platform_techdebt-otel-enrichment-out-of-ddd.md) |
 | ✅ Health checks | Liveness, readiness, startup | `frameworks/Platform.HealthChecks` |
 | ✅ Setting | Group/Key, cache, encrypt at rest | `modules/settings` |
 | ✅ Frontend UI-kit | `@platform/core` (PrimeReact) | `frameworks/frontend` |
@@ -356,7 +357,7 @@ Nền tảng bảo mật & admin → Dữ liệu & multitenancy → Kiến trúc
 | ✅ | JWT Bearer | `Platform.Authentications.Jwt`, tích hợp Swagger |
 | ✅ | API Key | Header tùy chỉnh, `IApiKeyProvider` |
 | ✅ | Basic | `Platform.Authentications.Basic` |
-| 🟡 | Cognito | Package stub — chưa đủ production ([refactor](ADRs/refactor-authentication.md)) |
+| 🟡 | Cognito | Package stub — chưa đủ production ([refactor](docs/04-platform/DOC-09-adr/refactor-authentication.md)) |
 | 📋 | OIDC | OpenID Connect / OpenIddict (Azure AD, Keycloak, …); map claim → user/tenant |
 
 #### B.2 User & Identity
@@ -373,7 +374,7 @@ Nền tảng bảo mật & admin → Dữ liệu & multitenancy → Kiến trúc
 | ✅ | RBAC | Permission trên RoleClaim, wildcard `*` / `System.All`, per-role path — `Platform.Authorization` |
 | 🟡 | ABAC | Policy/PolicyRule, operand resolver (`User.*` theo cột/claim), Role Governance ✅; data scope query filter 📋 |
 | 📋 | API & CQRS | `IAuthorizationHandler` / attribute để endpoint gọi engine; Sample chưa dùng engine (chỉ `[Authorize]` ASP.NET thuần) |
-| 📋 | Token revocation | Thu hồi JWT khi đổi permission/policy — [ADR Later](ADRs/2026-08-21_platform_authorization-token-revocation.md) |
+| 📋 | Token revocation | Thu hồi JWT khi đổi permission/policy — [ADR Later](docs/04-platform/DOC-09-adr/2026-08-21_platform_authorization-token-revocation.md) |
 
 #### B.4 Platform admin (`modules/*`)
 
@@ -384,7 +385,7 @@ Module service + (sau này) API persistence/UI cho portal quản trị (`/api/ad
 | ✅ | **Settings** | `Platform.Modules.Setting` (+ `.EntityFramework`, `.API`) — Group/Key, form types, cache, encrypt; FE demo |
 | 🟡 | **Account** | `modules/identity/Platform.Modules.Account` — login (lockout, tenant claim), logout, profile, đổi/quên mật khẩu (AuthN); handler + unit test; chưa API, email thật |
 | 🟡 | **IdentityAdmin** | `modules/identity/Platform.Modules.IdentityAdmin` — CRUD user/role, gán permission/policy, Role Governance C5/C6 (AuthZ admin); handler + unit test; chưa API admin |
-| 📋 | **Tenants** | Catalog/CRUD tenant — **không** gộp Multitenancy ([ADR](ADRs/2026-08-07_platform_tenants-module.md)) |
+| 📋 | **Tenants** | Catalog/CRUD tenant — **không** gộp Multitenancy ([ADR](docs/04-platform/DOC-09-adr/2026-08-07_platform_tenants-module.md)) |
 
 ---
 
@@ -392,11 +393,11 @@ Module service + (sau này) API persistence/UI cho portal quản trị (`/api/ad
 
 | | Hạng mục | Mô tả |
 |---|----------|--------|
-| ✅ | Ambient tenant | `Platform.Multitenancy` — `ICurrentTenant` / `<TTenant>`, `Change`, resolvers ([ADR](ADRs/2026-08-06_platform_multitenancy-package.md), [generic](ADRs/2026-08-06_platform_generic-current-tenant.md)) |
-| ✅ | Multitenancy EF | `Platform.Multitenancy.EntityFramework` — connection + interceptor opt-in ([ADR](ADRs/2026-08-06_platform_multitenancy-entityframework.md)) |
-| ✅ | ORM family | `Platform.ORM.EntityFramework` (`AddEntityFramework`) + `Platform.ORM.Dapper` (`AddOrmDapper`) — Sample dùng cả hai ([ADR](ADRs/2026-08-07_platform_orm-packages.md)) |
-| ✅ | Split user/tenant packages | `ICurrentUser` / `ICurrentTenant` khỏi Domain; Auth + Multitenancy ([ADR](ADRs/2026-08-01_platform_techdebt-split-current-user-tenant-packages.md) Phase 2–5) |
-| ✅ | Storage tenant boundary | `IStorageContext.TenantId` private — app dùng `ICurrentTenant` ([ADR](ADRs/2026-08-12_platform_storage-context-tenant-id-private.md)) |
+| ✅ | Ambient tenant | `Platform.Multitenancy` — `ICurrentTenant` / `<TTenant>`, `Change`, resolvers ([ADR](docs/04-platform/DOC-09-adr/2026-08-06_platform_multitenancy-package.md), [generic](docs/04-platform/DOC-09-adr/2026-08-06_platform_generic-current-tenant.md)) |
+| ✅ | Multitenancy EF | `Platform.Multitenancy.EntityFramework` — connection + interceptor opt-in ([ADR](docs/04-platform/DOC-09-adr/2026-08-06_platform_multitenancy-entityframework.md)) |
+| ✅ | ORM family | `Platform.ORM.EntityFramework` (`AddEntityFramework`) + `Platform.ORM.Dapper` (`AddOrmDapper`) — Sample dùng cả hai ([ADR](docs/04-platform/DOC-09-adr/2026-08-07_platform_orm-packages.md)) |
+| ✅ | Split user/tenant packages | `ICurrentUser` / `ICurrentTenant` khỏi Domain; Auth + Multitenancy ([ADR](docs/04-platform/DOC-09-adr/2026-08-01_platform_techdebt-split-current-user-tenant-packages.md) Phase 2–5) |
+| ✅ | Storage tenant boundary | `IStorageContext.TenantId` private — app dùng `ICurrentTenant` ([ADR](docs/04-platform/DOC-09-adr/2026-08-12_platform_storage-context-tenant-id-private.md)) |
 | 📋 | Host docs | Phase 6 — document `AddCurrentUser` + `AddCurrentTenant` trên Host |
 | 📋 | Tenants module | Catalog/CRUD tenant (pattern Setting) — `modules/tenants` |
 | 📋 | Partition & migrate | Tool migrate dữ liệu theo tenant; rollback; dry-run |
@@ -410,8 +411,8 @@ Module service + (sau này) API persistence/UI cho portal quản trị (`/api/ad
 | | Hạng mục | Mô tả |
 |---|----------|--------|
 | ✅ | CQRS | Command/query dispatcher |
-| 📋 | CRUD AppService | `ICrudAppService` / `CrudAppService` trong `Platform.DDD.Application` ([ADR](ADRs/2026-08-07_platform_crud-app-service.md)) |
-| 📋 | FluentValidation | Chuẩn validate input Application; map 400 `BaseResponse` ([ADR](ADRs/2026-08-07_platform_fluentvalidation.md) · [docs](https://docs.fluentvalidation.net/en/latest/)) |
+| 📋 | CRUD AppService | `ICrudAppService` / `CrudAppService` trong `Platform.DDD.Application` ([ADR](docs/04-platform/DOC-09-adr/2026-08-07_platform_crud-app-service.md)) |
+| 📋 | FluentValidation | Chuẩn validate input Application; map 400 `BaseResponse` ([ADR](docs/04-platform/DOC-09-adr/2026-08-07_platform_fluentvalidation.md) · [docs](https://docs.fluentvalidation.net/en/latest/)) |
 | 📋 | DDD | Aggregate, value object, bounded context; convention scaffold |
 | 📋 | Domain & integration events | Domain events, outbox/inbox |
 | 📋 | Event bus | `IEventBus`; provider **RabbitMQ**, **Kafka** — `modules/messaging` |
@@ -460,4 +461,4 @@ D Event bus        ──► E SignalR / Notification relay
 F Plug-and-play    ──► toàn bộ module Platform.* / modules/*
 ```
 
-Cập nhật roadmap theo [ADRs/README.md](ADRs/README.md) và khi phát hành phiên bản framework (tag / release note).
+Cập nhật roadmap theo [docs/04-platform/DOC-09-adr/README.md](docs/04-platform/DOC-09-adr/README.md) và khi phát hành phiên bản framework (tag / release note).
