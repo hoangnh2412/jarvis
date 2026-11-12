@@ -1,4 +1,5 @@
 using Platform.Modules.IdentityAdmin.Abstractions;
+using Platform.Permissions.Abstractions;
 
 namespace Platform.Modules.IdentityAdmin.Authorization;
 

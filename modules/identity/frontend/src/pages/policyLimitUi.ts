@@ -9,14 +9,14 @@ export type PolicyLimitMeta = {
 }
 
 const POLICY_SUMMARY_BY_CODE: Record<string, string> = {
-  P_SAME_TENANT: 'Chỉ truy cập dữ liệu thuộc cùng tenant (đơn vị thuê) với tài khoản đăng nhập.',
-  P_SAME_ORG: 'Chỉ truy cập dữ liệu thuộc cùng đơn vị tổ chức được gán cho user.',
-  P_OWNER_ONLY: 'Chỉ xem và thao tác trên bản ghi do chính user tạo.',
-  P_SAME_DEPARTMENT: 'Đã ngừng dùng. Policy cũ cùng phòng ban, giữ để dữ liệu đã cài vẫn đọc được.',
-  P_SAME_ORGANIZATIONAL_UNIT: 'Chỉ xem dữ liệu thuộc cùng đơn vị tổ chức (organizational unit) với user.',
-  P_SAME_LEGAL_ENTITY: 'Chỉ xem dữ liệu thuộc cùng pháp nhân với user.',
-  P_WITHIN_OU_SUBTREE: 'Chỉ xem dữ liệu nằm trong nhánh đơn vị của user.',
-  P_APPROVE_LIMIT: 'Chỉ thao tác trên bản ghi có giá trị không vượt hạn mức duyệt của user.',
+  SAME_TENANT: 'Chỉ truy cập dữ liệu thuộc cùng tenant (đơn vị thuê) với tài khoản đăng nhập.',
+  SAME_ORG: 'Chỉ truy cập dữ liệu thuộc cùng đơn vị tổ chức được gán cho user.',
+  OWNER_ONLY: 'Chỉ xem và thao tác trên bản ghi do chính user tạo.',
+  SAME_DEPARTMENT: 'Đã ngừng dùng. Policy cũ cùng phòng ban, giữ để dữ liệu đã cài vẫn đọc được.',
+  SAME_ORGANIZATIONAL_UNIT: 'Chỉ xem dữ liệu thuộc cùng đơn vị tổ chức (organizational unit) với user.',
+  SAME_LEGAL_ENTITY: 'Chỉ xem dữ liệu thuộc cùng pháp nhân với user.',
+  WITHIN_OU_SUBTREE: 'Chỉ xem dữ liệu nằm trong nhánh đơn vị của user.',
+  APPROVE_LIMIT: 'Chỉ thao tác trên bản ghi có giá trị không vượt hạn mức duyệt của user.',
 }
 
 const OPERAND_LABELS: Record<string, string> = {

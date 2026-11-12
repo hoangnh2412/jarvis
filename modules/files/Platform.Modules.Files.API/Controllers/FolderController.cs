@@ -8,7 +8,7 @@ namespace Platform.Modules.Files.API.Controllers;
 
 /// <summary>Folder tree browse API (requires matching <see cref="Platform.Modules.Files.Storage.IFileTreeProvider"/> registration).</summary>
 [ApiController]
-[ApiVersionNeutral]
+[ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/files")]
 public sealed class FolderController(IFileManager fileManager) : ControllerBase
 {

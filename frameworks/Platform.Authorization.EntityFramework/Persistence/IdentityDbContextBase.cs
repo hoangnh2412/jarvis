@@ -5,13 +5,14 @@ using Microsoft.EntityFrameworkCore;
 using Platform.Authentication.Identity.Domain;
 using Platform.Authorization.Domain;
 using Platform.Authorization.EntityFramework.Persistence.EntityConfigurations;
+using Platform.ORM.EntityFramework.DataStorages;
 
 /// <summary>
 /// DbContext cơ sở cho các mô hình ủy quyền.
 /// Mở rộng với các thuộc tính DbSet cho Role, Policy, PolicyRule.
 /// Sản phẩm nên kế thừa từ cái này và cấu hình các thực thể bổ sung.
 /// </summary>
-public abstract class IdentityDbContextBase : DbContext
+public abstract class IdentityDbContextBase : BaseStorageContext
 {
     public IdentityDbContextBase(DbContextOptions options) : base(options)
     {

@@ -1,6 +1,6 @@
 import { tenantsHttp } from '../http'
 
-const TENANTS_API = '/platform/tenants'
+const TENANTS_API = '/api/v1/platform/tenants'
 
 export const tenantQueryKeys = {
   all: ['platform', 'tenants'] as const,

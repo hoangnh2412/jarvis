@@ -33,7 +33,7 @@ async function readList(url: string, failure: string): Promise<LoginScopeOption[
 
 export function listLoginTenants(): Promise<LoginScopeOption[]> {
   return readList(
-    '/api/authentication/catalog/tenants',
+    '/api/v1/authentication/catalog/tenants',
     'Không tải được danh sách tenant.',
   )
 }
@@ -42,7 +42,7 @@ export function listLoginOrgs(tenantId: string): Promise<LoginScopeOption[]> {
   const id = tenantId.trim()
   if (!id) return Promise.resolve([])
   return readList(
-    `/api/authentication/catalog/tenants/${encodeURIComponent(id)}/orgs`,
+    `/api/v1/authentication/catalog/tenants/${encodeURIComponent(id)}/orgs`,
     'Không tải được danh sách tổ chức.',
   )
 }

@@ -1,5 +1,7 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Platform.DDD.Domain.Shared.ExceptionHandling;
 using Platform.Modules.IdentityAdmin.Abstractions;
 using Platform.Modules.IdentityAdmin.Api.Models;
 using Platform.Tenants;
@@ -7,8 +9,9 @@ using Platform.Tenants;
 namespace Platform.Modules.IdentityAdmin.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Authorize(Policy = TenantPermissions.View)]
-[Route("api/v1/platform/users")]
+[Route("api/v{version:apiVersion}/platform/users")]
 public sealed class PlatformUsersController(IPlatformUserAdminService users) : ControllerBase
 {
     [HttpGet]
@@ -22,7 +25,10 @@ public sealed class PlatformUsersController(IPlatformUserAdminService users) : C
     public async Task<IActionResult> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var item = await users.GetByIdAsync(id, cancellationToken).ConfigureAwait(false);
-        return item is null ? NotFound() : Ok(item);
+        if (item is null)
+            throw new NotFoundException(IdentityAdminErrorCode.PlatformUserNotFound);
+
+        return Ok(item);
     }
 
     [HttpPost]
@@ -42,15 +48,8 @@ public sealed class PlatformUsersController(IPlatformUserAdminService users) : C
         [FromBody] UpdatePlatformUserRequest request,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var updated = await users.UpdateAsync(id, request, cancellationToken).ConfigureAwait(false);
-            return Ok(updated);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        var updated = await users.UpdateAsync(id, request, cancellationToken).ConfigureAwait(false);
+        return Ok(updated);
     }
 
     [HttpPut("{id:guid}/lock")]
@@ -60,29 +59,15 @@ public sealed class PlatformUsersController(IPlatformUserAdminService users) : C
         [FromBody] IdentityUserLockWrite request,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var updated = await users.SetLockedAsync(id, request.IsLocked, cancellationToken).ConfigureAwait(false);
-            return Ok(updated);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        var updated = await users.SetLockedAsync(id, request.IsLocked, cancellationToken).ConfigureAwait(false);
+        return Ok(updated);
     }
 
     [HttpDelete("{id:guid}")]
     [Authorize(Policy = TenantPermissions.Manage)]
     public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        try
-        {
-            await users.DeleteAsync(id, cancellationToken).ConfigureAwait(false);
-            return Ok();
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        await users.DeleteAsync(id, cancellationToken).ConfigureAwait(false);
+        return Ok();
     }
 }

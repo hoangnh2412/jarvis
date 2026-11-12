@@ -12,7 +12,7 @@ namespace Platform.Orgs.Api.Controllers;
 /// HTTP API admin catalog Org. Tenant qua <c>ICurrentTenant</c>.
 /// Permission gợi ý: <see cref="OrgPermissions.View"/> / <see cref="OrgPermissions.Manage"/> — host map sang policy hoặc filter riêng.
 /// </summary>
-[ApiVersionNeutral]
+[ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/orgs")]
 [ApiController]
 [Authorize]

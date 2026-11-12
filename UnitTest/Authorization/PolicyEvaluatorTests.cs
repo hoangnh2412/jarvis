@@ -25,7 +25,7 @@ public sealed class PolicyEvaluatorTests
     public async Task T60_SameTenantPasses()
     {
         // Arrange
-        var policy = CreateTestPolicy("P_SAME_TENANT", "Same Tenant");
+        var policy = CreateTestPolicy("SAME_TENANT", "Same Tenant");
         var rule = CreateTestRule(policy.Id, 1, "Resource.TenantId", "==", "User.TenantId");
         policy.Rules.Add(rule);
 
@@ -51,7 +51,7 @@ public sealed class PolicyEvaluatorTests
     [Fact(DisplayName = "T61b: decimal literal on the right passes ordering rule")]
     public async Task T61b_DecimalLiteralOnRightPasses()
     {
-        var policy = CreateTestPolicy("P_AMOUNT_GT", "Amount greater than limit");
+        var policy = CreateTestPolicy("AMOUNT_GT", "Amount greater than limit");
         var rule = CreateTestRule(policy.Id, 1, "Resource.Amount", ">", "20000000");
         policy.Rules.Add(rule);
 
@@ -71,7 +71,7 @@ public sealed class PolicyEvaluatorTests
     public async Task T61_SameTenantFails()
     {
         // Arrange
-        var policy = CreateTestPolicy("P_SAME_TENANT", "Same Tenant");
+        var policy = CreateTestPolicy("SAME_TENANT", "Same Tenant");
         var rule = CreateTestRule(policy.Id, 1, "Resource.TenantId", "==", "User.TenantId");
         policy.Rules.Add(rule);
 
@@ -99,7 +99,7 @@ public sealed class PolicyEvaluatorTests
     public async Task T74_OwnerOrSameDept_OwnerPasses()
     {
         // Arrange - multi-rule policy (OR semantics)
-        var policy = CreateTestPolicy("P_OWNER_OR_SAME_DEPT", "Owner Or Same Dept");
+        var policy = CreateTestPolicy("OWNER_OR_SAME_DEPT", "Owner Or Same Dept");
         var rule1 = CreateTestRule(policy.Id, 1, "Resource.CreatedBy", "==", "User.Id");
         var rule2 = CreateTestRule(policy.Id, 2, "Resource.DepartmentId", "==", "User.DepartmentId");
         policy.Rules.Add(rule1);
@@ -129,7 +129,7 @@ public sealed class PolicyEvaluatorTests
     public async Task T75_OwnerOrSameDept_SameDeptPasses()
     {
         // Arrange
-        var policy = CreateTestPolicy("P_OWNER_OR_SAME_DEPT", "Owner Or Same Dept");
+        var policy = CreateTestPolicy("OWNER_OR_SAME_DEPT", "Owner Or Same Dept");
         var rule1 = CreateTestRule(policy.Id, 1, "Resource.CreatedBy", "==", "User.Id");
         var rule2 = CreateTestRule(policy.Id, 2, "Resource.DepartmentId", "==", "User.DepartmentId");
         policy.Rules.Add(rule1);
@@ -169,7 +169,7 @@ public sealed class PolicyEvaluatorTests
     public async Task T76_OwnerOrSameDept_BothFail()
     {
         // Arrange
-        var policy = CreateTestPolicy("P_OWNER_OR_SAME_DEPT", "Owner Or Same Dept");
+        var policy = CreateTestPolicy("OWNER_OR_SAME_DEPT", "Owner Or Same Dept");
         var rule1 = CreateTestRule(policy.Id, 1, "Resource.CreatedBy", "==", "User.Id");
         var rule2 = CreateTestRule(policy.Id, 2, "Resource.DepartmentId", "==", "User.DepartmentId");
         policy.Rules.Add(rule1);
@@ -211,7 +211,7 @@ public sealed class PolicyEvaluatorTests
     {
         // Arrange - single policy with 2 rules (OR semantics)
         // Rules in same policy → any rule passes = policy passes
-        var policy = CreateTestPolicy("P_OWNER_OR_LIMIT", "Owner Or Limit");
+        var policy = CreateTestPolicy("OWNER_OR_LIMIT", "Owner Or Limit");
         var rule1 = CreateTestRule(policy.Id, 1, "Resource.CreatedBy", "==", "User.Id");
         var rule2 = CreateTestRule(policy.Id, 2, "Resource.Amount", "<=", "User.ApproveLimit");
         policy.Rules.Add(rule1);
@@ -238,7 +238,7 @@ public sealed class PolicyEvaluatorTests
     public async Task T78_SecondRulePasses()
     {
         // Arrange
-        var policy = CreateTestPolicy("P_OWNER_OR_LIMIT", "Owner Or Limit");
+        var policy = CreateTestPolicy("OWNER_OR_LIMIT", "Owner Or Limit");
         var rule1 = CreateTestRule(policy.Id, 1, "Resource.CreatedBy", "==", "User.Id");
         var rule2 = CreateTestRule(policy.Id, 2, "Resource.Amount", "<=", "User.ApproveLimit");
         policy.Rules.Add(rule1);
@@ -276,7 +276,7 @@ public sealed class PolicyEvaluatorTests
     public async Task T80_EmptyPolicyFails()
     {
         // Arrange
-        var policy = CreateTestPolicy("P_EMPTY", "Empty Policy");
+        var policy = CreateTestPolicy("EMPTY", "Empty Policy");
         // No rules added
         var userId = Guid.NewGuid();
         var resource = new { };
@@ -292,7 +292,7 @@ public sealed class PolicyEvaluatorTests
     public async Task T81_ResolutionExceptionHandled()
     {
         // Arrange
-        var policy = CreateTestPolicy("P_TEST", "Test");
+        var policy = CreateTestPolicy("TEST", "Test");
         var rule = CreateTestRule(policy.Id, 1, "Resource.OrgId", "==", "User.OrgId");
         policy.Rules.Add(rule);
 
@@ -313,7 +313,7 @@ public sealed class PolicyEvaluatorTests
     [Fact(DisplayName = "T103: ordering comparison that cannot be made does not pass")]
     public async Task T103_IncomparableOrderingDoesNotPass()
     {
-        var policy = CreateTestPolicy("P_TEST", "Test");
+        var policy = CreateTestPolicy("TEST", "Test");
         policy.Rules.Add(CreateTestRule(policy.Id, 1, "Resource.Amount", "<=", "User.ApproveLimit"));
         var userId = Guid.NewGuid();
         var resource = new { };
@@ -331,7 +331,7 @@ public sealed class PolicyEvaluatorTests
     [Fact(DisplayName = "T104: int resource compares with decimal claim")]
     public async Task T104_IntComparesWithDecimal()
     {
-        var policy = CreateTestPolicy("P_APPROVE_LIMIT", "Limit");
+        var policy = CreateTestPolicy("APPROVE_LIMIT", "Limit");
         policy.Rules.Add(CreateTestRule(policy.Id, 1, "Resource.Amount", "<=", "User.ApproveLimit"));
         var userId = Guid.NewGuid();
         var resource = new { Amount = 8 };

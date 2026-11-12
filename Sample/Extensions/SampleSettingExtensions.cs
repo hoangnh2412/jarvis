@@ -20,7 +20,7 @@ public static class SampleSettingExtensions
         // Cache item "Setting" cấu hình qua Cache:Items (Platform.Caching).
         // Encryption:DataEncryptionKey + Cache:Items:Setting nằm trong Sample/appsettings.json.
         builder.AddCoreSetting()
-            .UseEntityFramework<IMasterUnitOfWork, CurrentTenantInfo>()
+            .UseEntityFramework<ISampleMasterUnitOfWork, CurrentTenantInfo>()
             .UseHttpApi()
             .AddProvider<DemoSettingDefinition>()
             .AddProvider<EmailSettingDefinition>()

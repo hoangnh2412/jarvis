@@ -1,8 +1,10 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Platform.Authorization.Abstractions;
 using Sample.AuthorizationDemo;
+using Sample.Persistence;
 
 namespace Sample.Controllers;
 
@@ -17,12 +19,13 @@ namespace Sample.Controllers;
 /// User lấy từ header <c>X-Demo-User</c> (tên user demo) để dễ thử; ứng dụng thật lấy userId từ ICurrentUser / claims.
 /// </summary>
 [ApiController]
-[Route("api/_authz-sample/expenses")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/_authz-sample/expenses")]
 [AllowAnonymous]
 public class ExpenseSampleController(
     IAuthorizationEngine engine,
     IDataScopeFilter scopeFilter,
-    SampleAuthorizationDbContext db) : ControllerBase
+    SampleTenantDbContext db) : ControllerBase
 {
     public const string DemoUserHeader = "X-Demo-User";
 

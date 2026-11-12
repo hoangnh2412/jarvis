@@ -15,7 +15,7 @@ namespace Platform.Modules.Files.API.Controllers;
 /// Empty <c>{bucket}</c> = provider storage root (Synology RootPath, FileSystem drive, …).
 /// </summary>
 [ApiController]
-[ApiVersionNeutral]
+[ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/files")]
 public sealed class FileController(IFileManager fileManager) : ControllerBase
 {

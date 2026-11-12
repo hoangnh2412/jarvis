@@ -1,3 +1,5 @@
+using Platform.Permissions.Abstractions;
+
 namespace Platform.Modules.IdentityAdmin.Authorization;
 
 /// <summary>Hằng và luật lọc catalog quyền dùng chung mọi host: claim type, wildcard, full-access.</summary>

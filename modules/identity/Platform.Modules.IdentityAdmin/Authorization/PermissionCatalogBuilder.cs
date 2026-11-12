@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using Platform.Permissions.Abstractions;
 
 namespace Platform.Modules.IdentityAdmin.Authorization;
 

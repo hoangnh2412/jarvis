@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -9,8 +10,9 @@ namespace Platform.Modules.CompanyProfile.Api.Controllers;
 
 /// <summary>Thông tin doanh nghiệp của tenant đang làm việc: lõi platform + khối extension do sản phẩm đăng ký.</summary>
 [ApiController]
+[ApiVersion("1.0")]
 [Authorize]
-[Route("api/v1/app/company-profile")]
+[Route("api/v{version:apiVersion}/app/company-profile")]
 public sealed class CompanyProfileController(
     ICompanyProfileService profiles,
     ICurrentTenant<TenantCatalogProfile> currentTenant) : ControllerBase

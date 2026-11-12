@@ -88,7 +88,7 @@ public sealed class PermissionProviderTests
             new IdentityUserRole<Guid> { UserId = userId, RoleId = role2 });
         ctx.RoleClaims.AddRange(
             new IdentityRoleClaim<Guid> { RoleId = role1, ClaimType = "Permission", ClaimValue = "Expense.View" },
-            new IdentityRoleClaim<Guid> { RoleId = role1, ClaimType = "Policy", ClaimValue = "P_SAME_ORG" },
+            new IdentityRoleClaim<Guid> { RoleId = role1, ClaimType = "Policy", ClaimValue = "SAME_ORG" },
             new IdentityRoleClaim<Guid> { RoleId = role2, ClaimType = "Permission", ClaimValue = "Project.View" },
             new IdentityRoleClaim<Guid> { RoleId = Guid.NewGuid(), ClaimType = "Permission", ClaimValue = "Other.Role" });
         await ctx.SaveChangesAsync();

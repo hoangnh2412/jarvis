@@ -1,10 +1,12 @@
+using Asp.Versioning;
 using Platform.Caching;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Sample.Controllers;
 
 [ApiController]
-[Route("api/cache-demo")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/cache-demo")]
 public class CacheDemoController(ICacheService cacheService) : ControllerBase
 {
     [HttpGet("product/{tenantId}/{id}")]

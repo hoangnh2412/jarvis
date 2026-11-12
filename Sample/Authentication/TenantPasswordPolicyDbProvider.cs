@@ -14,7 +14,7 @@ public sealed class TenantPasswordPolicyDbProvider(IServiceScopeFactory scopeFac
             return null;
 
         await using var diScope = scopeFactory.CreateAsyncScope();
-        var db = diScope.ServiceProvider.GetRequiredService<TenantDbContext>();
+        var db = diScope.ServiceProvider.GetRequiredService<SampleTenantDbContext>();
 
         var row = await db.TenantPasswordPolicies
             .AsNoTracking()

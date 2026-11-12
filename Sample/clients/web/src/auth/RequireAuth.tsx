@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { ACCOUNT_ROUTES } from '@platform/core'
 import { isAuthenticated } from './accessToken'
+import { SAMPLE_APP_LOGIN_PATH } from './loginPaths'
 
 export function RequireAuth({ children }: { children: ReactNode }) {
   const location = useLocation()
@@ -9,7 +9,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   if (!isAuthenticated()) {
     return (
       <Navigate
-        to={ACCOUNT_ROUTES.login}
+        to={SAMPLE_APP_LOGIN_PATH}
         replace
         state={{ from: location.pathname }}
       />

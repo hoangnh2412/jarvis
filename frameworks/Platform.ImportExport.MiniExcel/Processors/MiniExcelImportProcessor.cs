@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Platform.DDD.Domain.Shared.ExceptionHandling;
 using Platform.ImportExport.MiniExcel.Helpers;
 using Platform.ImportExport.MiniExcel.Validation;
 using Microsoft.Extensions.Logging;
@@ -128,9 +129,9 @@ public sealed class MiniExcelImportProcessor(
         {
             throw;
         }
-        catch (ExcelEngineException ex)
+        catch (BusinessException ex)
         {
-            logger.LogWarning(ex, EngineLogMessages.ImportFailed, work.FileName, ex.ErrorCode);
+            logger.LogWarning(ex, EngineLogMessages.ImportFailed, work.FileName, ex.Code);
             throw;
         }
         catch (Exception exception)

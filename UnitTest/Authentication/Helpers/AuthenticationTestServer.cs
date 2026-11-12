@@ -115,7 +115,7 @@ public sealed class AuthenticationTestServer : IAsyncDisposable
 }
 
 [ApiController]
-[Route("api/_auth-test")]
+[Route("api/v1/_auth-test")]
 public sealed class TestAuthProbeController : ControllerBase
 {
     [HttpGet("whoami")]

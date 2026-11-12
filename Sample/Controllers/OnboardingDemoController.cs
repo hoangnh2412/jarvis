@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Platform.Workflow.Abstractions;
@@ -11,7 +11,7 @@ namespace Sample.Controllers;
 [Route("api/v{version:apiVersion}/onboarding")]
 [ApiVersion("1.0")]
 public class OnboardingDemoController(
-    MasterDbContext dbContext,
+    SampleMasterDbContext dbContext,
     IWorkflowService? workflowService = null,
     IWorkflowDefinitionService? workflowDefinitionService = null,
     IWorkflowInstanceService? workflowInstanceService = null) : ControllerBase

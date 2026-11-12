@@ -11,7 +11,7 @@ public static class SampleTenantsExtensions
     public static WebApplicationBuilder AddSampleTenants(this WebApplicationBuilder builder)
     {
         builder.AddPlatformTenants<Tenant>()
-            .UseEntityFramework<Tenant, IMasterUnitOfWork>();
+            .UseEntityFramework<Tenant, ISampleMasterUnitOfWork>();
         return builder;
     }
 }

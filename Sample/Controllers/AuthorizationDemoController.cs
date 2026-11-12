@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -5,22 +6,24 @@ using Platform.Authorization.Abstractions;
 using Platform.Authorization.Operands;
 using Platform.Authorization.Services;
 using Sample.AuthorizationDemo;
+using Sample.Persistence;
 
 namespace Sample.Controllers;
 
 /// <summary>
-/// Kiểm thử trực tiếp Platform.Authorization trên Postgres thật (database <c>SampleAuthorization</c>).
+/// Kiểm thử trực tiếp Platform.Authorization trên database tenant (schema <c>identity</c> + bảng demo).
 /// Chỉ phục vụ demo: user được chọn theo tên trong request, không đi qua xác thực.
 /// </summary>
 [ApiController]
-[Route("api/_authz-demo")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/_authz-demo")]
 [AllowAnonymous]
 public class AuthorizationDemoController(
     IAuthorizationEngine engine,
     IOperandRegistry operands,
     OperandValidator validator,
     IDataScopeFilter scopeFilter,
-    SampleAuthorizationDbContext store,
+    SampleTenantDbContext store,
     IServiceProvider services) : ControllerBase
 {
     /// <summary>

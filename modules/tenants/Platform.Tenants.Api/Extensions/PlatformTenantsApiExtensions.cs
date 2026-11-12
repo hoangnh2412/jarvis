@@ -4,7 +4,7 @@ using Platform.Tenants.Extensions;
 
 namespace Platform.Tenants.Api.Extensions;
 
-/// <summary>Đăng ký HTTP API vận hành tenant tại <c>/platform/tenants</c>.</summary>
+/// <summary>Đăng ký HTTP API vận hành tenant tại <c>/api/v{version}/platform/tenants</c>.</summary>
 public static class PlatformTenantsApiExtensions
 {
     public static PlatformTenantsBuilder<TTenant> UseHttpApi<TTenant>(this PlatformTenantsBuilder<TTenant> builder)

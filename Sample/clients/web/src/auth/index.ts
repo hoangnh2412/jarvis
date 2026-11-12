@@ -16,4 +16,10 @@ export {
   setLoginScope,
 } from './loginScope'
 export { SampleLoginPage } from './SampleLoginPage'
+export {
+  SampleAppLoginPage,
+  SampleIdentityLoginPage,
+  SamplePlatformLoginPage,
+} from './SampleIdentityLoginPage'
+export { SAMPLE_APP_LOGIN_PATH, isPublicLoginPath } from './loginPaths'
 export { WorkingScopeSelects } from './WorkingScopeSelects'

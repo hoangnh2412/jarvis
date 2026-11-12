@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,8 +11,9 @@ using Platform.Tenants;
 namespace Platform.Modules.IdentityAdmin.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Authorize(Policy = TenantPermissions.View)]
-[Route("api/v1/platform/authorization")]
+[Route("api/v{version:apiVersion}/platform/authorization")]
 public sealed class PlatformAuthorizationCatalogController(
     IPermissionProvider permissions,
     IPermissionCatalogProvider catalog,

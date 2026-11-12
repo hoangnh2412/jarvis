@@ -16,7 +16,7 @@ namespace Platform.Modules.ImportExport.API.Controllers;
 /// HTTP API chuẩn CRUD template Excel.
 /// Đăng ký qua <c>AddCoreImport(...).UseHttpApi()</c> — không kèm Authorize (host tự bảo vệ nếu cần).
 /// </summary>
-[ApiVersionNeutral]
+[ApiVersion("1.0")]
 [ApiController]
 [Route("api/v{version:apiVersion}/templates")]
 public sealed class TemplatesController(

@@ -1,13 +1,15 @@
-using Platform.Modules.ImportExport.Domain.Constants;
+using System.Net;
+using Platform.DDD.Domain.Shared.Enums;
+using Platform.DDD.Domain.Shared.ExceptionHandling;
 
 namespace Platform.Modules.ImportExport.Domain.Exceptions;
 
-public sealed class InvalidTemplateException : ExcelEngineException
+public sealed class InvalidTemplateException : BusinessException
+{
+    public override HttpStatusCode HttpStatusCode { get; } = HttpStatusCode.BadRequest;
+
+    public InvalidTemplateException(string message)
+        : base(BaseErrorCode.Error, message)
     {
-        public InvalidTemplateException(string message)
-            : base(
-                ImportExportErrorCode.InvalidTemplate,
-                message)
-        {
-        }
     }
+}

@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       proxy: {
-        '/api/notifications': {
+        '/api/v1/notifications': {
           target: env.NOTIFICATION_API_URL || 'http://localhost:5167',
           changeOrigin: true,
           secure: false,

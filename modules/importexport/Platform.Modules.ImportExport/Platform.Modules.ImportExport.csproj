@@ -30,4 +30,8 @@
   <ItemGroup>
     <InternalsVisibleTo Include="UnitTest" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\frameworks\Platform.DDD.Domain.Shared\Platform.DDD.Domain.Shared.csproj" />
+  </ItemGroup>
 </Project>

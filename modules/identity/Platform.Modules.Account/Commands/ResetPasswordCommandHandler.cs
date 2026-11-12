@@ -3,6 +3,7 @@ namespace Platform.Modules.Account.Commands;
 using Microsoft.AspNetCore.Identity;
 using Platform.Authentication.Identity.Domain;
 using Platform.DDD.Application.Contracts.Commands;
+using Platform.DDD.Domain.Shared.ExceptionHandling;
 
 public sealed class ResetPasswordCommandHandler : IAsyncCommandHandler<ResetPasswordCommand>
 {
@@ -17,10 +18,12 @@ public sealed class ResetPasswordCommandHandler : IAsyncCommandHandler<ResetPass
     {
         var user = await _userManager.FindByEmailAsync(command.Email);
         if (user == null)
-            throw new InvalidOperationException("Invalid token or email");
+            throw new BusinessException(AccountErrorCode.ResetPasswordInvalid);
 
         var result = await _userManager.ResetPasswordAsync(user, command.Token, command.NewPassword);
         if (!result.Succeeded)
-            throw new InvalidOperationException($"Failed to reset password: {string.Join("; ", result.Errors.Select(e => e.Description))}");
+            throw new BusinessException(
+                AccountErrorCode.ResetPasswordFailed,
+                string.Join("; ", result.Errors.Select(e => e.Description)));
     }
 }

@@ -15,6 +15,8 @@ namespace Sample.Controllers;
 /// <para>D5: <c>user.TenantId</c> = home; <c>tenant.GetIdAsync</c> / <c>GetAsync</c> = working (có thể khác sau <c>Change</c>).</para>
 /// </remarks>
 [ApiController]
+[ApiVersion("1.0")]
+[ApiVersion("2.0")]
 [Route("api/v{version:apiVersion}/tests/current-user-tenant")]
 public class CurrentUserTenantTestController : ControllerBase
 {

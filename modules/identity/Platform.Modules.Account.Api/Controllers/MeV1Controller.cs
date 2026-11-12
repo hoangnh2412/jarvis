@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,8 +7,9 @@ using Platform.Modules.Account.Abstractions;
 namespace Platform.Modules.Account.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Authorize]
-[Route("api/v1")]
+[Route("api/v{version:apiVersion}")]
 public sealed class MeV1Controller(IAccountMeService accountMe) : ControllerBase
 {
     [HttpGet("me")]

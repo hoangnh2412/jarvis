@@ -5,6 +5,7 @@ using Platform.Authentication.Identity.Domain;
 using Platform.Authentication;
 using Platform.DDD.Application.Contracts.Queries;
 using Platform.DDD.Domain.Services;
+using Platform.DDD.Domain.Shared.ExceptionHandling;
 
 public sealed class GetMyProfileQueryHandler : IAsyncQueryHandler<GetMyProfileQuery, MyProfileResponse>
 {
@@ -23,11 +24,11 @@ public sealed class GetMyProfileQueryHandler : IAsyncQueryHandler<GetMyProfileQu
     {
         var actor = await _currentUser.GetAsync(cancellationToken);
         if (actor?.UserId == null)
-            throw new UnauthorizedAccessException("Current user not found");
+            throw new BusinessException(AccountErrorCode.SessionInvalid);
 
         var user = await _userManager.FindByIdAsync(actor.UserId.Value.ToString());
         if (user == null)
-            throw new InvalidOperationException("User not found");
+            throw new BusinessException(AccountErrorCode.UserNotFound);
 
         return new MyProfileResponse
         {

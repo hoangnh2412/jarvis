@@ -8,11 +8,11 @@ namespace Sample.Authentication;
 public sealed record LoginScopeOption(Guid Id, string Code, string Name);
 
 /// <summary>
-/// Danh mục tenant/org cho màn đăng nhập. Path nằm dưới <c>/api/authentication</c> nên không cần working org.
+/// Danh mục tenant/org cho màn đăng nhập. Path nằm dưới <c>/api/v{version}/authentication</c> nên không cần working org.
 /// </summary>
 public sealed class SampleLoginCatalogService(
-    IMasterUnitOfWork master,
-    ITenantUnitOfWork tenants)
+    ISampleMasterUnitOfWork master,
+    ISampleTenantUnitOfWork tenants)
 {
     public async Task<IReadOnlyList<LoginScopeOption>> ListTenantsAsync(CancellationToken cancellationToken)
     {

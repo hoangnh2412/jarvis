@@ -33,12 +33,15 @@ export type IdentityConfig = {
   beforeRequest?: (url: string) => Promise<void>
   /** Đường dẫn đăng nhập khi phiên hết hạn. Mặc định `/app/login`. */
   loginPath?: string
+  /** Khóa localStorage giữ refresh token sau đăng nhập (khi API trả về). */
+  refreshTokenStorageKey?: string
 }
 
 const DEFAULT_CONFIG: Required<Omit<IdentityConfig, 'loadCompanyProfile' | 'ensureDefaultScope' | 'rememberScope' | 'clearScope' | 'getScopeHeaders' | 'beforeRequest'>> = {
   tokenStorageKey: 'platform.accessToken',
   sessionStoragePrefix: '',
   loginPath: '/app/login',
+  refreshTokenStorageKey: 'platform.refreshToken',
 }
 
 let current: IdentityConfig = {}

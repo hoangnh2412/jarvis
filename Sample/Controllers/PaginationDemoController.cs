@@ -11,9 +11,9 @@ namespace Sample.Controllers;
 [Route("api/v{version:apiVersion}/pagination-demo")]
 public class PaginationDemoController : ControllerBase
 {
-    private readonly ITenantUnitOfWork _unitOfWork;
+    private readonly ISampleTenantUnitOfWork _unitOfWork;
 
-    public PaginationDemoController(ITenantUnitOfWork unitOfWork)
+    public PaginationDemoController(ISampleTenantUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
     }

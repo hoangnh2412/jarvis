@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button, InputText } from '@platform/core'
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { type ReactNode, useEffect } from 'react'
+import { useForm, type UseFormRegisterReturn } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 import type { SystemUser } from '../services/users'
@@ -43,6 +43,50 @@ const userFormDefaults: UserFormValues = {
   organizationalUnitId: '',
 }
 
+/* ------------------------------------------------------------------ */
+/*  Context — tất cả logic & state của form user                       */
+/* ------------------------------------------------------------------ */
+export type UserFormContext = {
+  item: SystemUser | null
+  roles: SystemRole[]
+  submitLabel: string
+
+  /* Spread-able register props cho từng field (giống LoginPage pattern) */
+  userNameProps: UseFormRegisterReturn<'userName'>
+  fullNameProps: UseFormRegisterReturn<'fullName'>
+  emailProps: UseFormRegisterReturn<'email'>
+  phoneProps: UseFormRegisterReturn<'phoneNumber'>
+  passwordProps: UseFormRegisterReturn<'password'>
+  orgUnitProps: UseFormRegisterReturn<'organizationalUnitId'>
+  isActiveProps: UseFormRegisterReturn<'isActive'>
+
+  /* Errors per field */
+  errors: {
+    userName?: string
+    fullName?: string
+    email?: string
+    phoneNumber?: string
+    password?: string
+    roleIds?: string
+    organizationalUnitId?: string
+  }
+
+  /* Role selection */
+  selectedRoleIds: string[]
+  toggleRole: (roleId: string, checked: boolean) => void
+
+  /* Org unit */
+  orgUnits: OrgUnitOption[]
+  orgUnitsLoading: boolean
+  selectedUnit: OrgUnitOption | undefined
+  hasOrgUnits: boolean
+
+  /* Form state */
+  isEditMode: boolean
+  handleSubmit: (e?: React.BaseSyntheticEvent) => void
+  onCancel: () => void
+}
+
 export type UserFormProps = {
   item: SystemUser | null
   roles: SystemRole[]
@@ -51,10 +95,15 @@ export type UserFormProps = {
   onSubmit: (values: UserFormValues) => void
   /** Host nạp danh sách đơn vị tổ chức để gán user; không truyền thì ẩn trường đơn vị. */
   loadOrgUnits?: () => Promise<OrgUnitOption[]>
+  /**
+   * Custom UI — host truyền JSX hoặc render function nhận `UserFormContext`.
+   * Không truyền → hiển thị giao diện mặc định (card form).
+   */
+  content?: ReactNode | ((ctx: UserFormContext) => ReactNode)
 }
 
 /** Form dùng chung cho thêm mới và cập nhật người dùng. */
-export function UserForm({ item, roles, submitLabel, onCancel, onSubmit, loadOrgUnits }: UserFormProps) {
+export function UserForm({ item, roles, submitLabel, onCancel, onSubmit, loadOrgUnits, content }: UserFormProps) {
   const {
     register,
     handleSubmit,
@@ -84,6 +133,42 @@ export function UserForm({ item, roles, submitLabel, onCancel, onSubmit, loadOrg
       ? Array.from(new Set([...selectedRoleIds, roleId]))
       : selectedRoleIds.filter((selectedId) => selectedId !== roleId)
     setValue('roleIds', nextRoleIds, { shouldDirty: true, shouldValidate: true })
+  }
+
+  /* ---------- content render-prop ---------- */
+  if (content) {
+    const ctx: UserFormContext = {
+      item,
+      roles,
+      submitLabel,
+      userNameProps: register('userName'),
+      fullNameProps: register('fullName'),
+      emailProps: register('email'),
+      phoneProps: register('phoneNumber'),
+      passwordProps: register('password'),
+      orgUnitProps: register('organizationalUnitId'),
+      isActiveProps: register('isActive'),
+      errors: {
+        userName: errors.userName?.message,
+        fullName: errors.fullName?.message,
+        email: errors.email?.message,
+        phoneNumber: errors.phoneNumber?.message,
+        password: errors.password?.message,
+        roleIds: errors.roleIds?.message,
+        organizationalUnitId: errors.organizationalUnitId?.message,
+      },
+      selectedRoleIds,
+      toggleRole: userToggleRole,
+      orgUnits: unitsQuery.data ?? [],
+      orgUnitsLoading: unitsQuery.isLoading,
+      selectedUnit,
+      hasOrgUnits: Boolean(loadOrgUnits),
+      isEditMode: Boolean(item),
+      handleSubmit: handleSubmit(onSubmit),
+      onCancel,
+    }
+    const resolved = typeof content === 'function' ? content(ctx) : content
+    return <>{resolved}</>
   }
 
   return (

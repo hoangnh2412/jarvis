@@ -14,7 +14,7 @@ namespace Platform.Modules.ImportExport.API.Controllers;
 /// <summary>
 /// HTTP façade import/export Excel — tham số giống DLL (<see cref="ImportRequest"/> / <see cref="ExportRequest{T}"/>).
 /// </summary>
-[ApiVersionNeutral]
+[ApiVersion("1.0")]
 [ApiController]
 [Route("api/v{version:apiVersion}/excel")]
 public sealed class ExcelController(

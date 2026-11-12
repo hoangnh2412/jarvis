@@ -20,7 +20,7 @@ public sealed class MultitenancyEfJobRunner(ILogger<MultitenancyEfJobRunner> log
         IServiceProvider serviceProvider,
         CancellationToken cancellationToken = default)
     {
-        var uow = serviceProvider.GetRequiredService<IMasterUnitOfWork>();
+        var uow = serviceProvider.GetRequiredService<ISampleMasterUnitOfWork>();
         var repoTenant = await uow.GetRepositoryAsync<IRepository<Tenant>>(cancellationToken).ConfigureAwait(false);
         var beforeCount = await repoTenant.GetQuery().CountAsync(cancellationToken).ConfigureAwait(false);
 
@@ -55,7 +55,7 @@ public sealed class MultitenancyEfJobRunner(ILogger<MultitenancyEfJobRunner> log
         Guid tenantId,
         CancellationToken cancellationToken = default)
     {
-        var uow = serviceProvider.GetRequiredService<ITenantUnitOfWork>();
+        var uow = serviceProvider.GetRequiredService<ISampleTenantUnitOfWork>();
         await uow.SwitchDbContextAsync(tenantId, cancellationToken).ConfigureAwait(false);
 
         var repoStudent = await uow.GetRepositoryAsync<IRepository<Student>>(cancellationToken).ConfigureAwait(false);

@@ -2,17 +2,16 @@ using Platform.Caching.Extensions;
 using Platform.Caching.Redis;
 using Platform.DDD.Domain.Services;
 using Platform.Host.Extensions;
-using Platform.MultiOrg;
+using Platform.MultiOrg.Middleware;
 using Platform.Mvc;
 using Platform.Mvc.ApplicationBuilders;
 using Platform.Mvc.ExceptionHandling;
-using Platform.OpenTelemetry.Extensions;
+using Platform.OpenTelemetry.Middleware;
 using Platform.Swashbuckle;
 using Platform.Tenants.Services;
 using Sample.AuthorizationDemo;
 using Sample.Extensions;
 using Sample.Health;
-using Sample.ImportExport.Middleware;
 using Sample.Persistence;
 using Sample.Services;
 using Sample.Telemetry;
@@ -35,7 +34,7 @@ builder.AddSampleApiVersioning();
 builder.AddSampleAuthentication();
 builder.AddSampleAuthorization();
 builder.Services.AddSingleton<ICurrentTenantStore<TenantCatalogProfile>, SampleTenantCatalogStore>();
-builder.AddPlatformHost<TenantDbContext, ITenantUnitOfWork, SampleAuthorizationDbContext>();
+builder.AddPlatformHost<SampleTenantDbContext, ISampleTenantUnitOfWork, SampleTenantDbContext>();
 builder.AddSampleWorkflow();
 builder.AddSampleNotifications();
 builder.AddCoreSwagger();
@@ -50,21 +49,21 @@ app.UseCoreSpa();
 app.UseCoreCors();
 
 app.UseAuthentication();
-app.UseMultiOrg(ignoreStartWithPaths: ["/hubs/", "/sse/", "/elsa/"]);
+app.UseCoreMiddleware<MultiOrgMiddleware>();
 app.UseAuthorization();
 
 app.UseWorkflowEndpoints();
 
 // Header demo cho OTEL (request: x-demo-request; response: x-demo-response).
-app.UseMiddleware<SampleOtlpDemoHeadersMiddleware>();
+app.UseCoreMiddleware<SampleOtlpDemoHeadersMiddleware>();
 
 // Metric tùy chỉnh — cùng meter "Sample" qua ConfigureMetric.
-app.UseMiddleware<SampleApiCallMetricsMiddleware>();
+app.UseCoreMiddleware<SampleApiCallMetricsMiddleware>();
 
 app.UseSerilogRequestLogging();
-app.UsePlatformOpenTelemetry();
+app.UseCoreMiddleware<TraceEnrichmentMiddleware>();
+app.UseCoreMiddleware<LogEnrichmentMiddleware>();
 app.UseCoreMiddleware<ApiResponseWrapperMiddleware>();
-app.UseMiddleware<ImportExportExceptionMiddleware>();
 
 app.MapControllers();
 app.MapRealtimeEndpoints();

@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Platform.Modules.Notifications.Contracts;
@@ -6,7 +7,8 @@ using System.Text.Json;
 namespace Sample.Controllers;
 
 [ApiController]
-[Route("api/notify-demo")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/notify-demo")]
 [Authorize]
 public class NotifyDemoController(INotificationAppService notifications) : ControllerBase
 {

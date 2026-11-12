@@ -2,7 +2,7 @@ namespace Platform.Authorization.Domain;
 
 /// <summary>
 /// Gốc tập hợp chính sách cho ABAC (Kiểm soát truy cập dựa trên thuộc tính).
-/// Các chính sách hệ thống (P_SAME_ORG, P_OWNER_ONLY, …) được seed và không đổi.
+/// Các chính sách hệ thống (SAME_ORG, OWNER_ONLY, …) được seed và không đổi.
 /// Các chính sách tùy chỉnh có thể được phép để tùy chỉnh sản phẩm (giai đoạn 4b+).
 /// </summary>
 public sealed class Policy
@@ -10,7 +10,7 @@ public sealed class Policy
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Định danh mã duy nhất (ví dụ: "P_SAME_ORG", "P_APPROVE_LIMIT").
+    /// Định danh mã duy nhất (ví dụ: "SAME_ORG", "APPROVE_LIMIT").
     /// Được sử dụng làm khóa để giải quyết thời gian chạy.
     /// </summary>
     public string Code { get; set; } = string.Empty;

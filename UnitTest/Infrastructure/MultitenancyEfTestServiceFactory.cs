@@ -47,14 +47,14 @@ internal static class MultitenancyEfTestServiceFactory
         var services = builder.Services;
         services.AddHttpContextAccessor();
         services.AddLogging(b => b.SetMinimumLevel(LogLevel.Warning));
-        services.AddScoped<IMasterUnitOfWork, MasterUnitOfWork>();
-        services.AddScoped<ITenantUnitOfWork, TenantUnitOfWork>();
+        services.AddScoped<ISampleMasterUnitOfWork, SampleMasterUnitOfWork>();
+        services.AddScoped<ISampleTenantUnitOfWork, SampleTenantUnitOfWork>();
         services.AddScoped<MultitenancyEfJobRunner>();
 
-        services.AddCoreDbContext<MasterDbContext>(options =>
+        services.AddCoreDbContext<SampleMasterDbContext>(options =>
             options.UseInMemoryDatabase(MultitenancyEfTestDatabaseNames.Master, root));
 
-        services.AddCoreDbContext<TenantDbContext, DbTenantConnectionStringResolver<MasterDbContext, Sample.Entities.Tenant>>(options =>
+        services.AddCoreDbContext<SampleTenantDbContext, DbTenantConnectionStringResolver<SampleMasterDbContext, Sample.Entities.Tenant>>(options =>
             options.UseInMemoryDatabase(MultitenancyEfTestDatabaseNames.TenantPlaceholder, root));
 
         return services.BuildServiceProvider();

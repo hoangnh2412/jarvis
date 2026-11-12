@@ -1,4 +1,4 @@
-﻿using Platform.ImportExport.MiniExcel.Extensions;
+using Platform.ImportExport.MiniExcel.Extensions;
 using Platform.Modules.ImportExport.API.Extensions;
 using Platform.Modules.ImportExport.DependencyInjection;
 using Platform.Modules.ImportExport.EntityFramework.Extensions;
@@ -35,7 +35,7 @@ public static class SampleImportExportExtensions
                 // options.Add<TeacherImportRow>(ImportExportEntityKeys.Teacher, "Giáo viên");
             })
             .UseMiniExcel()
-            .UseEntityFramework<SampleExcelTemplate, ITenantUnitOfWork, CurrentTenantInfo>()
+            .UseEntityFramework<SampleExcelTemplate, ISampleTenantUnitOfWork, CurrentTenantInfo>()
             .UseHttpApi();
 
         builder.AddCoreExport();

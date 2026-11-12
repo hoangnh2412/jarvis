@@ -214,7 +214,9 @@ export const authService = {
     const realm = payload.realm ?? 'app'
     const tenantId = payload.tenantId?.trim() ?? ''
     const orgId = payload.orgId?.trim() ?? ''
-    if (realm === 'app' && tenantId && orgId) {
+    if (realm === 'platform') {
+      config.clearScope?.()
+    } else if (realm === 'app' && tenantId && orgId) {
       config.rememberScope?.(tenantId, orgId, payload.tenantName)
     }
 
@@ -226,6 +228,8 @@ export const authService = {
     const login = await identityHttp.post<{
       accessToken?: string
       AccessToken?: string
+      refreshToken?: string
+      RefreshToken?: string
       userId?: string
       UserId?: string
       tenantId?: string
@@ -247,6 +251,10 @@ export const authService = {
       throw new Error('Máy chủ không trả access token.')
     }
     localStorage.setItem(config.tokenStorageKey, accessToken)
+    const refreshToken = login.refreshToken ?? login.RefreshToken
+    if (refreshToken?.trim()) {
+      localStorage.setItem(config.refreshTokenStorageKey, refreshToken.trim())
+    }
 
     const orgIdFromLogin = (login.orgId ?? login.OrgId ?? orgId).trim()
     const tenantIdFromLogin = (login.tenantId ?? login.TenantId ?? tenantId).trim()
@@ -308,6 +316,7 @@ export const authService = {
   logout(): void {
     const config = getIdentityConfig()
     localStorage.removeItem(config.tokenStorageKey)
+    localStorage.removeItem(config.refreshTokenStorageKey)
     localStorage.removeItem(sessionKey(STORAGE_KEYS.AUTH_FLAG))
     localStorage.removeItem(sessionKey(STORAGE_KEYS.USER))
     localStorage.removeItem(sessionKey(STORAGE_KEYS.COMPANY))

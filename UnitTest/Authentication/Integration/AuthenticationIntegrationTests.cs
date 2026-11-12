@@ -17,7 +17,7 @@ public class AuthenticationIntegrationTests
         var config = AuthenticationConfigurationBuilder.BuildApiKeyConfig(key: "test-secret-key");
         await using var server = await AuthenticationTestServer.CreateAsync(config, jwt: false, apiKey: true);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "/api/_auth-test/whoami");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/_auth-test/whoami");
         request.Headers.Add("X-API-KEY", "test-secret-key");
 
         var response = await server.Client.SendAsync(request);
@@ -33,11 +33,11 @@ public class AuthenticationIntegrationTests
         var config = AuthenticationConfigurationBuilder.BuildApiKeyConfig(key: "test-secret-key");
         await using var server = await AuthenticationTestServer.CreateAsync(config, jwt: false, apiKey: true);
 
-        var noHeader = await server.Client.GetAsync("/api/_auth-test/whoami");
+        var noHeader = await server.Client.GetAsync("/api/v1/_auth-test/whoami");
         noHeader.EnsureSuccessStatusCode();
         await AssertAuthenticatedAsync(noHeader, expected: false);
 
-        var wrong = new HttpRequestMessage(HttpMethod.Get, "/api/_auth-test/whoami");
+        var wrong = new HttpRequestMessage(HttpMethod.Get, "/api/v1/_auth-test/whoami");
         wrong.Headers.Add("X-API-KEY", "wrong");
         var wrongResponse = await server.Client.SendAsync(wrong);
         wrongResponse.EnsureSuccessStatusCode();
@@ -76,7 +76,7 @@ public class AuthenticationIntegrationTests
 
         await using var server = await AuthenticationTestServer.CreateAsync(config, jwt: false, apiKey: true, basic: false);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "/api/_auth-test/whoami");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/_auth-test/whoami");
         request.Headers.Add("X-API-KEY", "mix-secret");
 
         var response = await server.Client.SendAsync(request);

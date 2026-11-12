@@ -18,13 +18,13 @@ internal static class TestSeeds
             .AddRole(Role("10000000-0000-0000-0000-000000000005", "CFO", 650))
             .AddRole(Role("10000000-0000-0000-0000-000000000006", "DEPARTMENT_MANAGER", 500))
             .AddRole(Role("10000000-0000-0000-0000-000000000007", "EMPLOYEE", 100))
-            .AddPolicy(Policy("20000000-0000-0000-0000-000000000003", "P_SAME_DEPARTMENT", "Same Department",
+            .AddPolicy(Policy("20000000-0000-0000-0000-000000000003", "SAME_DEPARTMENT", "Same Department",
                 Rule("21000000-0000-0000-0000-000000000003", 1, "Resource.DepartmentId", "==", "User.DepartmentId")))
-            .AddPolicy(Policy("20000000-0000-0000-0000-000000000005", "P_APPROVE_LIMIT", "Approve Limit",
+            .AddPolicy(Policy("20000000-0000-0000-0000-000000000005", "APPROVE_LIMIT", "Approve Limit",
                 Rule("21000000-0000-0000-0000-000000000005", 1, "Resource.Amount", "<=", "User.ApproveLimit")))
-            .AddPolicy(Policy("20000000-0000-0000-0000-000000000006", "P_MANAGED_PROJECT", "Managed Project",
+            .AddPolicy(Policy("20000000-0000-0000-0000-000000000006", "MANAGED_PROJECT", "Managed Project",
                 Rule("21000000-0000-0000-0000-000000000006", 1, "Resource.DepartmentId", "IN", "User.ManagedDepartmentIds")))
-            .AddPolicy(Policy("20000000-0000-0000-0000-000000000007", "P_OWNER_OR_SAME_DEPT", "Owner Or Same Department",
+            .AddPolicy(Policy("20000000-0000-0000-0000-000000000007", "OWNER_OR_SAME_DEPT", "Owner Or Same Department",
                 Rule("21000000-0000-0000-0000-000000000007", 1, "Resource.CreatedBy", "==", "User.Id"),
                 Rule("21000000-0000-0000-0000-000000000008", 2, "Resource.DepartmentId", "==", "User.DepartmentId")));
     }

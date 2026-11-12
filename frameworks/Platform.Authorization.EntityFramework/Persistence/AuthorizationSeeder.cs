@@ -64,35 +64,6 @@ public static class AuthorizationSeeder
             catalog.Policies.Where(p => !existingPolicies.Contains(p.Code)), cancellationToken);
 
         await context.SaveChangesAsync(cancellationToken);
-        await EnsureAdminWildcardAsync(context, cancellationToken);
-    }
-
-    /// <summary>
-    /// Role ADMIN (global) nhận Permission <c>*</c> nếu chưa có wildcard.
-    /// Không gán wildcard cho TENANT_ADMIN / ORG_ADMIN — wildcard đang bỏ qua ABAC (V1).
-    /// </summary>
-    private static async Task EnsureAdminWildcardAsync(IdentityDbContextBase context, CancellationToken cancellationToken)
-    {
-        var adminId = await context.Roles
-            .Where(r => r.NormalizedName == "ADMIN")
-            .Select(r => (Guid?)r.Id)
-            .FirstOrDefaultAsync(cancellationToken);
-        if (adminId is null)
-            return;
-
-        var hasWildcard = await context.RoleClaims.AnyAsync(
-            c => c.RoleId == adminId && c.ClaimType == "Permission" && (c.ClaimValue == "*" || c.ClaimValue == "System.All"),
-            cancellationToken);
-        if (hasWildcard)
-            return;
-
-        context.RoleClaims.Add(new IdentityRoleClaim<Guid>
-        {
-            RoleId = adminId.Value,
-            ClaimType = "Permission",
-            ClaimValue = "*",
-        });
-        await context.SaveChangesAsync(cancellationToken);
     }
 
     private static void EnsureRulesValid(AuthorizationSeedCatalog catalog, OperandValidator validator)
@@ -115,96 +86,75 @@ public static class AuthorizationSeeder
     public static AuthorizationSeedCatalog AddPlatformDefaults(this AuthorizationSeedCatalog catalog)
     {
         catalog
-            .AddRole(new Role
-            {
-                Id = Guid.Parse("10000000-0000-0000-0000-000000000001"),
-                Name = "ADMIN",
-                NormalizedName = "ADMIN",
-                DisplayName = "Admin",
-                RoleLevel = 1000,
-                IsSystemRole = true,
-            })
-            .AddRole(new Role
-            {
-                Id = Guid.Parse("10000000-0000-0000-0000-000000000002"),
-                Name = "TENANT_ADMIN",
-                NormalizedName = "TENANT_ADMIN",
-                DisplayName = "TenantAdmin",
-                RoleLevel = 900,
-                IsSystemRole = true,
-            })
-            .AddRole(new Role
-            {
-                Id = Guid.Parse("10000000-0000-0000-0000-000000000003"),
-                Name = "ORG_ADMIN",
-                NormalizedName = "ORG_ADMIN",
-                DisplayName = "OrgAdmin",
-                RoleLevel = 800,
-                IsSystemRole = true,
-            });
+            .AddRole(NewSystemRole("ADMIN", "Admin", 1000))
+            .AddRole(NewSystemRole("TENANT_ADMIN", "TenantAdmin", 900))
+            .AddRole(NewSystemRole("ORG_ADMIN", "OrgAdmin", 800));
 
         catalog
-            .AddPolicy(new Policy
-            {
-                Id = Guid.Parse("20000000-0000-0000-0000-000000000001"),
-                Code = "P_SAME_TENANT",
-                Name = "Cùng tenant",
-                ResourceType = null,
-                Action = null,
-                IsSystemPolicy = true,
-                Rules = new List<PolicyRule>
+            .AddPolicy(NewSystemPolicy(
+                "SAME_TENANT",
+                "Cùng tenant",
+                new PolicyRule
                 {
-                    new PolicyRule
-                    {
-                        Id = Guid.Parse("21000000-0000-0000-0000-000000000001"),
-                        Order = 1,
-                        LeftOperand = "Resource.TenantId",
-                        Operator = "==",
-                        RightOperand = "User.TenantId",
-                    }
-                }
-            })
-            .AddPolicy(new Policy
-            {
-                Id = Guid.Parse("20000000-0000-0000-0000-000000000002"),
-                Code = "P_SAME_ORG",
-                Name = "Cùng đơn vị",
-                ResourceType = null,
-                Action = null,
-                IsSystemPolicy = true,
-                Rules = new List<PolicyRule>
+                    Order = 1,
+                    LeftOperand = "Resource.TenantId",
+                    Operator = "==",
+                    RightOperand = "User.TenantId",
+                }))
+            .AddPolicy(NewSystemPolicy(
+                "SAME_ORG",
+                "Cùng đơn vị",
+                new PolicyRule
                 {
-                    new PolicyRule
-                    {
-                        Id = Guid.Parse("21000000-0000-0000-0000-000000000002"),
-                        Order = 1,
-                        LeftOperand = "Resource.OrgId",
-                        Operator = "==",
-                        RightOperand = "User.OrgId",
-                    }
-                }
-            })
-            .AddPolicy(new Policy
-            {
-                Id = Guid.Parse("20000000-0000-0000-0000-000000000004"),
-                Code = "P_OWNER_ONLY",
-                Name = "Chỉ của mình",
-                ResourceType = null,
-                Action = null,
-                IsSystemPolicy = true,
-                Rules = new List<PolicyRule>
+                    Order = 1,
+                    LeftOperand = "Resource.OrgId",
+                    Operator = "==",
+                    RightOperand = "User.OrgId",
+                }))
+            .AddPolicy(NewSystemPolicy(
+                "OWNER_ONLY",
+                "Chỉ của mình",
+                new PolicyRule
                 {
-                    new PolicyRule
-                    {
-                        Id = Guid.Parse("21000000-0000-0000-0000-000000000004"),
-                        Order = 1,
-                        LeftOperand = "Resource.CreatedBy",
-                        Operator = "==",
-                        RightOperand = "User.Id",
-                    }
-                }
-            });
+                    Order = 1,
+                    LeftOperand = "Resource.CreatedBy",
+                    Operator = "==",
+                    RightOperand = "User.Id",
+                }));
 
         return catalog;
+    }
+
+    private static Role NewSystemRole(string normalizedName, string displayName, int roleLevel) =>
+        new()
+        {
+            Id = Guid.NewGuid(),
+            Name = normalizedName,
+            NormalizedName = normalizedName,
+            DisplayName = displayName,
+            RoleLevel = roleLevel,
+            IsSystemRole = true,
+        };
+
+    private static Policy NewSystemPolicy(string code, string name, params PolicyRule[] rules)
+    {
+        var policyId = Guid.NewGuid();
+        return new Policy
+        {
+            Id = policyId,
+            Code = code,
+            Name = name,
+            ResourceType = null,
+            Action = null,
+            IsSystemPolicy = true,
+            Rules = rules
+                .Select(rule =>
+                {
+                    rule.Id = Guid.NewGuid();
+                    rule.PolicyId = policyId;
+                    return rule;
+                })
+                .ToList(),
+        };
     }
 }

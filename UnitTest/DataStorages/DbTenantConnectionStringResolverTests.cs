@@ -23,7 +23,7 @@ public sealed class DbTenantConnectionStringResolverTests
 
             await using var scope = provider.CreateAsyncScope();
             var resolver = scope.ServiceProvider
-                .GetRequiredKeyedService<ITenantConnectionStringResolver>(typeof(TenantDbContext).Name);
+                .GetRequiredKeyedService<ITenantConnectionStringResolver>(typeof(SampleTenantDbContext).Name);
 
             var connectionString = await resolver.GetConnectionStringAsync(tenantId.ToString());
 
@@ -47,7 +47,7 @@ public sealed class DbTenantConnectionStringResolverTests
         {
             await using var scope = provider.CreateAsyncScope();
             var resolver = scope.ServiceProvider
-                .GetRequiredKeyedService<ITenantConnectionStringResolver>(typeof(TenantDbContext).Name);
+                .GetRequiredKeyedService<ITenantConnectionStringResolver>(typeof(SampleTenantDbContext).Name);
 
             var connectionString = await resolver.GetConnectionStringAsync("not-a-guid");
 

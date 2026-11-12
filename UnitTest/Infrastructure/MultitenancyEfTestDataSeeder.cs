@@ -13,7 +13,7 @@ internal static class MultitenancyEfTestDataSeeder
         CancellationToken cancellationToken = default)
     {
         await using var scope = serviceProvider.CreateAsyncScope();
-        var masterUow = scope.ServiceProvider.GetRequiredService<IMasterUnitOfWork>();
+        var masterUow = scope.ServiceProvider.GetRequiredService<ISampleMasterUnitOfWork>();
         var repoTenant = await masterUow.GetRepositoryAsync<IRepository<Tenant>>(cancellationToken);
 
         var tenant = await repoTenant

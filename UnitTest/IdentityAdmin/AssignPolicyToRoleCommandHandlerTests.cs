@@ -28,12 +28,12 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
         await using var store = new GovernanceStore();
         var actorId = store.AddUser(store.AddRole("OrgAdmin", 800));
         var role = store.AddRole("Lawyer", 100);
-        var policy = CreatePolicy("P_SAME_ORG");
+        var policy = CreatePolicy("SAME_ORG");
 
         var roleManager = IdentityMockHelpers.MockRoleManager<Role>();
         roleManager.Setup(m => m.FindByIdAsync(role.Id.ToString())).ReturnsAsync(role);
         roleManager.Setup(m => m.GetClaimsAsync(role)).ReturnsAsync(new List<Claim>());
-        roleManager.Setup(m => m.AddClaimAsync(role, It.Is<Claim>(c => c.Type == "Policy" && c.Value == "P_SAME_ORG")))
+        roleManager.Setup(m => m.AddClaimAsync(role, It.Is<Claim>(c => c.Type == "Policy" && c.Value == "SAME_ORG")))
             .ReturnsAsync(IdentityResult.Success);
 
         var handler = new AssignPolicyToRoleCommandHandler(
@@ -44,10 +44,10 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
             store.Validator);
 
         await handler.HandleAsync(
-            new AssignPolicyToRoleCommand { RoleId = role.Id, PolicyCode = "P_SAME_ORG" },
+            new AssignPolicyToRoleCommand { RoleId = role.Id, PolicyCode = "SAME_ORG" },
             CancellationToken.None);
 
-        roleManager.Verify(m => m.AddClaimAsync(role, It.Is<Claim>(c => c.Type == "Policy" && c.Value == "P_SAME_ORG")), Times.Once);
+        roleManager.Verify(m => m.AddClaimAsync(role, It.Is<Claim>(c => c.Type == "Policy" && c.Value == "SAME_ORG")), Times.Once);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
         var roleManager = IdentityMockHelpers.MockRoleManager<Role>();
 
         var policyProvider = new Mock<IPolicyProvider>();
-        policyProvider.Setup(p => p.GetPolicyByCodeAsync("P_UNKNOWN", It.IsAny<CancellationToken>()))
+        policyProvider.Setup(p => p.GetPolicyByCodeAsync("UNKNOWN", It.IsAny<CancellationToken>()))
             .ReturnsAsync((Policy?)null);
 
         var handler = new AssignPolicyToRoleCommandHandler(
@@ -69,7 +69,7 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
             store.Validator);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => handler.HandleAsync(
-            new AssignPolicyToRoleCommand { RoleId = Guid.NewGuid(), PolicyCode = "P_UNKNOWN" },
+            new AssignPolicyToRoleCommand { RoleId = Guid.NewGuid(), PolicyCode = "UNKNOWN" },
             CancellationToken.None));
     }
 
@@ -78,11 +78,11 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
     {
         await using var store = new GovernanceStore();
         var actorId = store.AddUser(store.AddRole("OrgAdmin", 800));
-        var policy = CreatePolicy("P_SAME_ORG");
+        var policy = CreatePolicy("SAME_ORG");
         var roleManager = IdentityMockHelpers.MockRoleManager<Role>();
 
         var policyProvider = new Mock<IPolicyProvider>();
-        policyProvider.Setup(p => p.GetPolicyByCodeAsync("P_SAME_ORG", It.IsAny<CancellationToken>()))
+        policyProvider.Setup(p => p.GetPolicyByCodeAsync("SAME_ORG", It.IsAny<CancellationToken>()))
             .ReturnsAsync(policy);
         policyProvider.Setup(p => p.GetPoliciesByUserAsync(actorId, It.IsAny<CancellationToken>()))
             .ReturnsAsync([]);
@@ -95,7 +95,7 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
             store.Validator);
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => handler.HandleAsync(
-            new AssignPolicyToRoleCommand { RoleId = Guid.NewGuid(), PolicyCode = "P_SAME_ORG" },
+            new AssignPolicyToRoleCommand { RoleId = Guid.NewGuid(), PolicyCode = "SAME_ORG" },
             CancellationToken.None));
     }
 
@@ -104,7 +104,7 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
     {
         await using var store = new GovernanceStore();
         var actorId = store.AddUser(store.AddRole("OrgAdmin", 800));
-        var policy = CreatePolicy("P_SAME_ORG");
+        var policy = CreatePolicy("SAME_ORG");
 
         var roleManager = IdentityMockHelpers.MockRoleManager<Role>();
         roleManager.Setup(m => m.FindByIdAsync(It.IsAny<string>())).ReturnsAsync((Role?)null);
@@ -117,7 +117,7 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
             store.Validator);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => handler.HandleAsync(
-            new AssignPolicyToRoleCommand { RoleId = Guid.NewGuid(), PolicyCode = "P_SAME_ORG" },
+            new AssignPolicyToRoleCommand { RoleId = Guid.NewGuid(), PolicyCode = "SAME_ORG" },
             CancellationToken.None));
     }
 
@@ -127,7 +127,7 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
         await using var store = new GovernanceStore();
         var actorId = store.AddUser(store.AddRole("Director", 700));
         var role = store.AddRole("OrgAdminLike", 800);
-        var policy = CreatePolicy("P_SAME_ORG");
+        var policy = CreatePolicy("SAME_ORG");
 
         var roleManager = IdentityMockHelpers.MockRoleManager<Role>();
         roleManager.Setup(m => m.FindByIdAsync(role.Id.ToString())).ReturnsAsync(role);
@@ -140,7 +140,7 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
             store.Validator);
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => handler.HandleAsync(
-            new AssignPolicyToRoleCommand { RoleId = role.Id, PolicyCode = "P_SAME_ORG" },
+            new AssignPolicyToRoleCommand { RoleId = role.Id, PolicyCode = "SAME_ORG" },
             CancellationToken.None));
 
         roleManager.Verify(m => m.AddClaimAsync(It.IsAny<Role>(), It.IsAny<Claim>()), Times.Never);
@@ -152,7 +152,7 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
         await using var store = new GovernanceStore();
         var actorId = store.AddUser(store.AddRole("Admin", 1000, permissions: ["*"]));
         var role = store.AddRole("Lawyer", 100);
-        var policy = CreatePolicy("P_SAME_ORG");
+        var policy = CreatePolicy("SAME_ORG");
 
         var roleManager = IdentityMockHelpers.MockRoleManager<Role>();
         roleManager.Setup(m => m.FindByIdAsync(role.Id.ToString())).ReturnsAsync(role);
@@ -160,7 +160,7 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
         roleManager.Setup(m => m.AddClaimAsync(role, It.IsAny<Claim>())).ReturnsAsync(IdentityResult.Success);
 
         var policyProvider = new Mock<IPolicyProvider>();
-        policyProvider.Setup(p => p.GetPolicyByCodeAsync("P_SAME_ORG", It.IsAny<CancellationToken>())).ReturnsAsync(policy);
+        policyProvider.Setup(p => p.GetPolicyByCodeAsync("SAME_ORG", It.IsAny<CancellationToken>())).ReturnsAsync(policy);
         policyProvider.Setup(p => p.GetPoliciesByUserAsync(actorId, It.IsAny<CancellationToken>())).ReturnsAsync([]);
 
         var handler = new AssignPolicyToRoleCommandHandler(
@@ -171,9 +171,9 @@ public sealed class AssignPolicyToRoleCommandHandlerTests
             store.Validator);
 
         await handler.HandleAsync(
-            new AssignPolicyToRoleCommand { RoleId = role.Id, PolicyCode = "P_SAME_ORG" },
+            new AssignPolicyToRoleCommand { RoleId = role.Id, PolicyCode = "SAME_ORG" },
             CancellationToken.None);
 
-        roleManager.Verify(m => m.AddClaimAsync(role, It.Is<Claim>(c => c.Value == "P_SAME_ORG")), Times.Once);
+        roleManager.Verify(m => m.AddClaimAsync(role, It.Is<Claim>(c => c.Value == "SAME_ORG")), Times.Once);
     }
 }

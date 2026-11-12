@@ -74,7 +74,7 @@ public sealed class GovernanceEnforcementTests
         await using var store = new GovernanceStore();
         var actorId = store.AddUser(store.AddRole("Cfo", 650));
         var cto = store.AddRole("Cto", 650);
-        var roleManager = RoleManagerFor(cto, new Claim("Policy", "P_APPROVE_LIMIT"));
+        var roleManager = RoleManagerFor(cto, new Claim("Policy", "APPROVE_LIMIT"));
 
         var handler = new RemovePolicyFromRoleCommandHandler(
             roleManager.Object,
@@ -84,7 +84,7 @@ public sealed class GovernanceEnforcementTests
             new PolicyProvider(store.Context));
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => handler.HandleAsync(
-            new RemovePolicyFromRoleCommand { RoleId = cto.Id, PolicyCode = "P_APPROVE_LIMIT" },
+            new RemovePolicyFromRoleCommand { RoleId = cto.Id, PolicyCode = "APPROVE_LIMIT" },
             CancellationToken.None));
         roleManager.Verify(m => m.RemoveClaimAsync(It.IsAny<Role>(), It.IsAny<Claim>()), Times.Never);
     }
@@ -95,7 +95,7 @@ public sealed class GovernanceEnforcementTests
         await using var store = new GovernanceStore();
         var actorId = store.AddUser(store.AddRole("OrgAdmin", 800));
         var cfo = store.AddRole("Cfo", 650);
-        var roleManager = RoleManagerFor(cfo, new Claim("Policy", "P_APPROVE_LIMIT"));
+        var roleManager = RoleManagerFor(cfo, new Claim("Policy", "APPROVE_LIMIT"));
 
         var handler = new RemovePolicyFromRoleCommandHandler(
             roleManager.Object,
@@ -105,9 +105,9 @@ public sealed class GovernanceEnforcementTests
             new PolicyProvider(store.Context));
 
         await handler.HandleAsync(
-            new RemovePolicyFromRoleCommand { RoleId = cfo.Id, PolicyCode = "P_APPROVE_LIMIT" },
+            new RemovePolicyFromRoleCommand { RoleId = cfo.Id, PolicyCode = "APPROVE_LIMIT" },
             CancellationToken.None);
-        roleManager.Verify(m => m.RemoveClaimAsync(cfo, It.Is<Claim>(c => c.Value == "P_APPROVE_LIMIT")), Times.Once);
+        roleManager.Verify(m => m.RemoveClaimAsync(cfo, It.Is<Claim>(c => c.Value == "APPROVE_LIMIT")), Times.Once);
     }
 
     [Fact(DisplayName = "T96: removing a narrowing policy is forbidden when the actor does not hold what remains")]
@@ -118,8 +118,8 @@ public sealed class GovernanceEnforcementTests
         var cfo = store.AddRole("Cfo", 650);
         var roleManager = RoleManagerFor(
             cfo,
-            new Claim("Policy", "P_SAME_ORG"),
-            new Claim("Policy", "P_APPROVE_LIMIT"));
+            new Claim("Policy", "SAME_ORG"),
+            new Claim("Policy", "APPROVE_LIMIT"));
 
         var handler = new RemovePolicyFromRoleCommandHandler(
             roleManager.Object,
@@ -129,7 +129,7 @@ public sealed class GovernanceEnforcementTests
             new PolicyProvider(store.Context));
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => handler.HandleAsync(
-            new RemovePolicyFromRoleCommand { RoleId = cfo.Id, PolicyCode = "P_SAME_ORG" },
+            new RemovePolicyFromRoleCommand { RoleId = cfo.Id, PolicyCode = "SAME_ORG" },
             CancellationToken.None));
         roleManager.Verify(m => m.RemoveClaimAsync(It.IsAny<Role>(), It.IsAny<Claim>()), Times.Never);
     }

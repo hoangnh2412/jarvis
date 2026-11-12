@@ -33,6 +33,8 @@
       "react-hook-form": ["../../../frameworks/frontend/node_modules/react-hook-form"],
       "@hookform/resolvers": ["../../../frameworks/frontend/node_modules/@hookform/resolvers"],
       "@hookform/resolvers/*": ["../../../frameworks/frontend/node_modules/@hookform/resolvers/*"],
+      "@atlaskit/pragmatic-drag-and-drop": ["../../../frameworks/frontend/node_modules/@atlaskit/pragmatic-drag-and-drop"],
+      "@atlaskit/pragmatic-drag-and-drop/*": ["../../../frameworks/frontend/node_modules/@atlaskit/pragmatic-drag-and-drop/*"],
       "axios": ["../../../frameworks/frontend/node_modules/axios"],
       "lucide-react": ["../../../frameworks/frontend/node_modules/lucide-react"],
       "primereact": ["../../../frameworks/frontend/node_modules/primereact"],

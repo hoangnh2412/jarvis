@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -12,7 +13,8 @@ namespace Sample.Controllers;
 /// Probe AuthN — ApiKey, Basic, Bearer; dùng với <c>Sample.http</c> và Swagger.
 /// </summary>
 [ApiController]
-[Route("api/authentication")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/authentication")]
 public class AuthenticationController(
     SampleBearerLoginService bearerLogin,
     SampleLoginCatalogService loginCatalog,

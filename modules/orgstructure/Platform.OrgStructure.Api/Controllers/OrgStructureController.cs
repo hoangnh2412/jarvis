@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,8 +14,9 @@ using Platform.Modules.IdentityAdmin.Services;
 namespace Platform.OrgStructure.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Authorize]
-[Route("api/v1/org-structure")]
+[Route("api/v{version:apiVersion}/org-structure")]
 public sealed class OrgStructureController(
     IOrgStructureManager structure,
     IOrgUnitTypeService unitTypes,

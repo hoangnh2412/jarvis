@@ -1,16 +1,20 @@
-using Platform.Modules.ImportExport.Domain.Constants;
+using System.Net;
+using Platform.DDD.Domain.Shared.Enums;
+using Platform.DDD.Domain.Shared.ExceptionHandling;
 
 namespace Platform.Modules.ImportExport.Domain.Exceptions;
 
-public sealed class ExcelParsingException : ExcelEngineException
+public sealed class ExcelParsingException : BusinessException
 {
+    public override HttpStatusCode HttpStatusCode { get; } = HttpStatusCode.BadRequest;
+
     public ExcelParsingException(string message)
-        : base(ImportExportErrorCode.ExcelParsingFailed, message)
+        : base(BaseErrorCode.Error, message)
     {
     }
 
     public ExcelParsingException(string message, Exception innerException)
-        : base(ImportExportErrorCode.ExcelParsingFailed, message, innerException)
+        : base(BaseErrorCode.Error, message, innerException)
     {
     }
 }

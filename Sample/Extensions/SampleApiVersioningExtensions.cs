@@ -1,5 +1,4 @@
 using Asp.Versioning;
-using Platform.Host.Extensions;
 
 namespace Sample.Extensions;
 
@@ -13,10 +12,6 @@ public static class SampleApiVersioningExtensions
                 options.DefaultApiVersion = new ApiVersion(int.Parse(Sample.ApiVersions.MajorVersion), int.Parse(Sample.ApiVersions.MinorVersion));
                 options.AssumeDefaultVersionWhenUnspecified = true;
                 options.ReportApiVersions = true;
-            })
-            .AddMvc(options =>
-            {
-                options.Conventions.Add(new PlatformModuleApiNeutralConvention());
             })
             .AddApiExplorer(options =>
             {

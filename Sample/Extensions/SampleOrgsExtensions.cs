@@ -9,7 +9,7 @@ using Sample.Persistence;
 
 namespace Sample.Extensions;
 
-/// <summary>Đăng ký catalog Org. Cột <c>TaxCode</c> map trong <c>TenantDbContext</c>.</summary>
+/// <summary>Đăng ký catalog Org. Cột <c>TaxCode</c> map trong <c>SampleTenantDbContext</c>.</summary>
 public static class SampleOrgsExtensions
 {
     public static WebApplicationBuilder AddSampleOrgs(this WebApplicationBuilder builder)
@@ -17,7 +17,7 @@ public static class SampleOrgsExtensions
         builder.AddCurrentOrg<OrgCatalogOrgProfile>();
 
         builder.AddPlatformOrgs<Sample.Entities.Org, CurrentTenantInfo>()
-            .UseEntityFramework<Sample.Entities.Org, CurrentTenantInfo, ITenantUnitOfWork>()
+            .UseEntityFramework<Sample.Entities.Org, CurrentTenantInfo, ISampleTenantUnitOfWork>()
             .UseHooks<SampleOrgCatalogHooks>()
             .UseReadModel<SampleOrgDetail, SampleOrgReadMapper>()
             .UseAsCurrentOrgStore()

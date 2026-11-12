@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Http;
 namespace Platform.MultiOrg.Middleware;
 
 /// <summary>Áp working org/tenant lên accessor theo <see cref="IRequestScopeResolver"/> (một request).</summary>
-public sealed class MultiOrgMiddleware(
-    RequestDelegate next,
-    Func<HttpContext, bool> ignore)
+/// <remarks>
+/// Path nào chạy middleware lấy từ <c>Middlewares:MultiOrg</c> qua <c>UseCoreMiddleware</c>.
+/// Request đã vào middleware thì luôn resolve scope.
+/// </remarks>
+public sealed class MultiOrgMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(
         HttpContext context,
@@ -14,12 +16,6 @@ public sealed class MultiOrgMiddleware(
         ICurrentOrgAccessor orgAccessor,
         ICurrentTenantAccessor tenantAccessor)
     {
-        if (ignore(context))
-        {
-            await next(context).ConfigureAwait(false);
-            return;
-        }
-
         var resolution = await scopeResolver.ResolveAsync(context.RequestAborted).ConfigureAwait(false);
         if (resolution.IsForbidden)
         {

@@ -20,7 +20,7 @@ public static class OrgAuthorizationSeed
         new()
         {
             Id = Guid.Parse("20000000-0000-0000-0000-000000000007"),
-            Code = "P_SAME_ORGANIZATIONAL_UNIT",
+            Code = "SAME_ORGANIZATIONAL_UNIT",
             Name = "Cùng đơn vị tổ chức",
             IsSystemPolicy = true,
             Rules =
@@ -40,7 +40,7 @@ public static class OrgAuthorizationSeed
         new()
         {
             Id = Guid.Parse("20000000-0000-0000-0000-00000000000a"),
-            Code = "P_SAME_POSITION",
+            Code = "SAME_POSITION",
             Name = "Cùng vị trí",
             IsSystemPolicy = true,
             Rules =
@@ -60,7 +60,7 @@ public static class OrgAuthorizationSeed
         new()
         {
             Id = Guid.Parse("20000000-0000-0000-0000-000000000008"),
-            Code = "P_SAME_LEGAL_ENTITY",
+            Code = "SAME_LEGAL_ENTITY",
             Name = "Cùng pháp nhân",
             IsSystemPolicy = true,
             Rules =
@@ -80,7 +80,7 @@ public static class OrgAuthorizationSeed
         new()
         {
             Id = Guid.Parse("20000000-0000-0000-0000-000000000009"),
-            Code = "P_WITHIN_OU_SUBTREE",
+            Code = "WITHIN_OU_SUBTREE",
             Name = "Trong nhánh đơn vị",
             IsSystemPolicy = true,
             Rules =
@@ -100,7 +100,7 @@ public static class OrgAuthorizationSeed
         new()
         {
             Id = Guid.Parse("20000000-0000-0000-0000-000000000006"),
-            Code = "P_APPROVE_LIMIT",
+            Code = "APPROVE_LIMIT",
             Name = "Hạn mức duyệt",
             IsSystemPolicy = true,
             Rules =

@@ -8,10 +8,10 @@ using Sample.Persistence;
 
 namespace Sample.Controllers;
 
-[ApiVersionNeutral]
+[ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/storage")]
 [ApiController]
-public class StorageController(ITenantUnitOfWork uow) : ControllerBase
+public class StorageController(ISampleTenantUnitOfWork uow) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAsync(CancellationToken cancellationToken)

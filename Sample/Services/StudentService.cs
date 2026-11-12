@@ -26,7 +26,7 @@ using Sample.Settings;
 namespace Sample.Services;
 
 public sealed class StudentService(
-    ITenantUnitOfWork unitOfWork,
+    ISampleTenantUnitOfWork unitOfWork,
     ICurrentTenant<CurrentTenantInfo> currentTenant,
     ImportExportSettingReader importExportSettingReader,
     IImportService importService,

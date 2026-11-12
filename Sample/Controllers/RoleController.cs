@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Sample.Controllers;
 
-[ApiVersionNeutral]
+[ApiVersion("1.0")]
+[ApiVersion("2.0")]
 [ApiController]
 [Route("api/v{version:apiVersion}/roles")]
 public class RoleController : ControllerBase

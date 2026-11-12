@@ -92,7 +92,7 @@ public class JwtAuthenticationTests
         await using var server = await AuthenticationTestServer.CreateAsync(config, jwt: true, apiKey: false);
 
         var token = CreateToken(signingKey, DateTime.UtcNow.AddHours(1));
-        var request = new HttpRequestMessage(HttpMethod.Get, "/api/_auth-test/whoami");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/_auth-test/whoami");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         var response = await server.Client.SendAsync(request);
@@ -110,7 +110,7 @@ public class JwtAuthenticationTests
         var config = AuthenticationConfigurationBuilder.BuildJwtSymmetricConfig(signingKey);
         await using var server = await AuthenticationTestServer.CreateAsync(config, jwt: true, apiKey: false);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "/api/_auth-test/whoami");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/_auth-test/whoami");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "not.a.valid.jwt");
 
         var response = await server.Client.SendAsync(request);

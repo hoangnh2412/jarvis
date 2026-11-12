@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Platform.Tenants;
@@ -8,12 +9,13 @@ using Platform.Tenants.Services;
 namespace Platform.Tenants.Api.Controllers;
 
 /// <summary>
-/// API vận hành catalog tenant. Route <c>/platform/tenants</c>.
+/// API vận hành catalog tenant. Route <c>/api/v{version}/platform/tenants</c>.
 /// Host gắn policy <see cref="TenantPermissions.View"/> và <see cref="TenantPermissions.Manage"/> cho user root.
 /// Request thiếu header tenant không được coi là root.
 /// </summary>
-[Route("platform/tenants")]
 [ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/platform/tenants")]
 [Authorize(Policy = TenantPermissions.View)]
 public sealed class TenantController(
     ITenantManager tenants,

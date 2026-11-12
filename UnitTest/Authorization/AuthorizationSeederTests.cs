@@ -8,6 +8,7 @@ using Platform.Authorization.EntityFramework.Persistence;
 using Platform.Authorization.Operands;
 using Platform.Authorization.Services;
 using Platform.Authorization.EntityFramework.Services;
+using Sample.Persistence;
 using UnitTest.Authorization.Helpers;
 using Xunit;
 
@@ -19,8 +20,8 @@ namespace UnitTest.Authorization;
 /// </summary>
 public sealed class AuthorizationSeederTests
 {
-    private static readonly string[] PlatformPolicyCodes = ["P_SAME_TENANT", "P_SAME_ORG", "P_OWNER_ONLY"];
-    private static readonly string[] BusinessPolicyCodes = ["P_SAME_DEPARTMENT", "P_APPROVE_LIMIT", "P_MANAGED_PROJECT", "P_OWNER_OR_SAME_DEPT"];
+    private static readonly string[] PlatformPolicyCodes = ["SAME_TENANT", "SAME_ORG", "OWNER_ONLY"];
+    private static readonly string[] BusinessPolicyCodes = ["SAME_DEPARTMENT", "APPROVE_LIMIT", "MANAGED_PROJECT", "OWNER_OR_SAME_DEPT"];
 
     private InMemoryTestDbContext CreateInMemoryDbContext()
     {
@@ -67,20 +68,20 @@ public sealed class AuthorizationSeederTests
             .Include(p => p.Rules)
             .ToListAsync();
 
-        // P_SAME_TENANT: 1 rule, Order=1
-        var sameTenant = policies.FirstOrDefault(p => p.Code == "P_SAME_TENANT");
+        // SAME_TENANT: 1 rule, Order=1
+        var sameTenant = policies.FirstOrDefault(p => p.Code == "SAME_TENANT");
         Assert.NotNull(sameTenant);
         Assert.Single(sameTenant!.Rules);
         Assert.Equal(1, sameTenant.Rules.First().Order);
 
-        // P_OWNER_OR_SAME_DEPT: 2 rules, Order=1,2
-        var ownerOrDept = policies.FirstOrDefault(p => p.Code == "P_OWNER_OR_SAME_DEPT");
+        // OWNER_OR_SAME_DEPT: 2 rules, Order=1,2
+        var ownerOrDept = policies.FirstOrDefault(p => p.Code == "OWNER_OR_SAME_DEPT");
         Assert.NotNull(ownerOrDept);
         Assert.Equal(2, ownerOrDept!.Rules.Count);
         Assert.Equal(new[] { 1, 2 }, ownerOrDept.Rules.OrderBy(r => r.Order).Select(r => r.Order));
     }
 
-    [Fact(DisplayName = "T22: IPolicyProvider.GetPolicyByCodeAsync('P_SAME_ORG') returns policy + rule")]
+    [Fact(DisplayName = "T22: IPolicyProvider.GetPolicyByCodeAsync('SAME_ORG') returns policy + rule")]
     public async Task T22_PolicyProvider_GetPolicyByCodeAsync_ReturnsPolicy()
     {
         // Arrange
@@ -90,19 +91,19 @@ public sealed class AuthorizationSeederTests
         var provider = new PolicyProvider(context);
 
         // Act
-        var policy = await provider.GetPolicyByCodeAsync("P_SAME_ORG");
+        var policy = await provider.GetPolicyByCodeAsync("SAME_ORG");
 
         // Assert
         Assert.NotNull(policy);
-        Assert.Equal("P_SAME_ORG", policy!.Code);
-        Assert.Equal("Same Organization", policy.Name);
+        Assert.Equal("SAME_ORG", policy!.Code);
+        Assert.Equal("Cùng đơn vị", policy.Name);
         Assert.Single(policy.Rules);
         Assert.Equal("Resource.OrgId", policy.Rules.First().LeftOperand);
         Assert.Equal("==", policy.Rules.First().Operator);
         Assert.Equal("User.OrgId", policy.Rules.First().RightOperand);
     }
 
-    [Fact(DisplayName = "T23: IPolicyProvider.GetPolicyByCodeAsync('P_UNKNOWN') returns null")]
+    [Fact(DisplayName = "T23: IPolicyProvider.GetPolicyByCodeAsync('UNKNOWN') returns null")]
     public async Task T23_PolicyProvider_GetPolicyByCodeAsync_UnknownPolicyReturnsNull()
     {
         // Arrange
@@ -112,7 +113,7 @@ public sealed class AuthorizationSeederTests
         var provider = new PolicyProvider(context);
 
         // Act
-        var policy = await provider.GetPolicyByCodeAsync("P_UNKNOWN");
+        var policy = await provider.GetPolicyByCodeAsync("UNKNOWN");
 
         // Assert
         Assert.Null(policy);
@@ -145,7 +146,7 @@ public sealed class AuthorizationSeederTests
         var provider = new PolicyProvider(context);
 
         // Act
-        var policy = await provider.GetPolicyByCodeAsync("P_OWNER_OR_SAME_DEPT");
+        var policy = await provider.GetPolicyByCodeAsync("OWNER_OR_SAME_DEPT");
 
         // Assert
         Assert.NotNull(policy);
@@ -194,7 +195,7 @@ public sealed class AuthorizationSeederTests
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => context.SeedAsync(AuthorizationSeeder.BuildCatalog(TestSeeds.Business), platformOnly));
 
-        Assert.Contains("P_APPROVE_LIMIT#1", ex.Message);
+        Assert.Contains("APPROVE_LIMIT#1", ex.Message);
         Assert.Contains("Resource.Amount", ex.Message);
         Assert.Equal(0, await context.Policies.CountAsync());
         Assert.Equal(0, await context.Roles.CountAsync());
@@ -206,14 +207,14 @@ public sealed class AuthorizationSeederTests
         var context = CreateInMemoryDbContext();
         await context.SeedAsync();
 
-        var sameOrg = await context.Policies.SingleAsync(p => p.Code == "P_SAME_ORG");
+        var sameOrg = await context.Policies.SingleAsync(p => p.Code == "SAME_ORG");
         sameOrg.Name = "Edited by admin";
         await context.SaveChangesAsync();
 
         // A product added later contributes business seed on an existing database.
         await context.SeedWithBusinessAsync();
 
-        Assert.Equal("Edited by admin", (await context.Policies.SingleAsync(p => p.Code == "P_SAME_ORG")).Name);
+        Assert.Equal("Edited by admin", (await context.Policies.SingleAsync(p => p.Code == "SAME_ORG")).Name);
         Assert.Equal(7, await context.Policies.CountAsync());
         Assert.Equal(7, await context.Roles.CountAsync());
     }
@@ -222,7 +223,7 @@ public sealed class AuthorizationSeederTests
     public void V5_DuplicateSeedItem_Throws()
     {
         Assert.Throws<InvalidOperationException>(() => AuthorizationSeeder.BuildCatalog(
-            seed => seed.AddPolicy(new Policy { Id = Guid.NewGuid(), Code = "P_SAME_ORG", Name = "Clash" })));
+            seed => seed.AddPolicy(new Policy { Id = Guid.NewGuid(), Code = "SAME_ORG", Name = "Clash" })));
         Assert.Throws<InvalidOperationException>(() => AuthorizationSeeder.BuildCatalog(
             seed => seed.AddRole(new Platform.Authentication.Identity.Domain.Role { Id = Guid.NewGuid(), Name = "admin" })));
     }
@@ -268,8 +269,28 @@ public sealed class AuthorizationSeederTests
         Assert.Equal(8, ruleCount); // 6 policies × 1 rule + P_OWNER_OR_SAME_DEPT × 2 rules = 8
     }
 
-    [Fact(DisplayName = "V13: ADMIN is seeded with Permission * once")]
-    public async Task AdminRole_IsSeededWithWildcard_Idempotent()
+    [Fact(DisplayName = "V13b: Sample Master gán Permission * cho ADMIN (idempotent)")]
+    public async Task Master_EnsureAdminPermissionWildcard_Idempotent()
+    {
+        var options = new DbContextOptionsBuilder<SampleMasterDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var master = new SampleMasterDbContext(options);
+        await master.SeedAsync();
+        await master.EnsureAdminPermissionWildcardAsync();
+        await master.EnsureAdminPermissionWildcardAsync();
+
+        var adminId = await master.Roles.Where(r => r.NormalizedName == "ADMIN").Select(r => r.Id).SingleAsync();
+        var wildcards = await master.RoleClaims
+            .Where(c => c.RoleId == adminId && c.ClaimType == "Permission")
+            .ToListAsync();
+
+        Assert.Single(wildcards);
+        Assert.Equal("*", wildcards[0].ClaimValue);
+    }
+
+    [Fact(DisplayName = "V13: Platform seed không gán wildcard ADMIN (trách nhiệm host / Master DB)")]
+    public async Task PlatformSeed_DoesNotAssignAdminWildcard()
     {
         var context = CreateInMemoryDbContext();
         await context.SeedAsync();
@@ -280,8 +301,7 @@ public sealed class AuthorizationSeederTests
             .Where(c => c.RoleId == adminId && c.ClaimType == "Permission")
             .ToListAsync();
 
-        Assert.Single(wildcards);
-        Assert.Equal("*", wildcards[0].ClaimValue);
+        Assert.Empty(wildcards);
     }
 
     #endregion

@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Platform.Modules.IdentityAdmin.Abstractions;
@@ -5,8 +6,9 @@ using Platform.Modules.IdentityAdmin.Abstractions;
 namespace Platform.Modules.IdentityAdmin.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Authorize]
-[Route("api/v1/app/authorization/policies")]
+[Route("api/v{version:apiVersion}/app/authorization/policies")]
 public sealed class AppAuthorizationPoliciesController(IAuthorizationPolicyAdminService policies) : ControllerBase
 {
     [HttpGet]

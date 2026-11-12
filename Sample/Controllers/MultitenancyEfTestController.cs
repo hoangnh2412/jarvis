@@ -10,13 +10,15 @@ using Sample.Persistence;
 namespace Sample.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
+[ApiVersion("2.0")]
 [Route("api/v{version:apiVersion}/tests/ef-multitenancy")]
 public class MultitenancyEfTestController : ControllerBase
 {
     [HttpGet("http/master")]
     [MapToApiVersion(2.0)]
     public async Task<IActionResult> ListMasterTenantsAsync(
-        [FromServices] IMasterUnitOfWork uowMaster,
+        [FromServices] ISampleMasterUnitOfWork uowMaster,
         CancellationToken cancellationToken)
     {
         var repoTenant = await uowMaster.GetRepositoryAsync<IRepository<Tenant>>(cancellationToken);
@@ -55,8 +57,8 @@ public class MultitenancyEfTestController : ControllerBase
     [HttpGet("http/master-tenant")]
     [MapToApiVersion(2.0)]
     public async Task<IActionResult> QueryMasterDbAsync(
-        [FromServices] IMasterUnitOfWork uowMaster,
-        [FromServices] ITenantUnitOfWork uowTenant,
+        [FromServices] ISampleMasterUnitOfWork uowMaster,
+        [FromServices] ISampleTenantUnitOfWork uowTenant,
         [FromServices] ITenantIdResolverFactory tenantIdResolverFactory,
         CancellationToken cancellationToken)
     {

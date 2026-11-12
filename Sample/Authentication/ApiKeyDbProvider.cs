@@ -34,7 +34,7 @@ public sealed class ApiKeyDbProvider(
             ?? throw new InvalidOperationException(
                 "Tenant is required for API key validation. Send a valid tenant (e.g. X-Tenant-Id header).");
 
-        var db = scope.ServiceProvider.GetRequiredService<TenantDbContext>();
+        var db = scope.ServiceProvider.GetRequiredService<SampleTenantDbContext>();
 
         var candidates = await db.ApiKeyCredentials
             .AsNoTracking()

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { type ReactNode, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button, notify } from '@platform/core'
@@ -8,11 +8,30 @@ import {
   getSystemUser,
   identityQueryKeys,
   updateSystemUser,
+  type SystemUser,
 } from '../services/users'
-import { listSystemRoles } from '../services/roles'
+import { listSystemRoles, type SystemRole } from '../services/roles'
 import { notifyApiError } from '../notify'
 import { btnSecondaryClass } from '../components/fieldStyles'
 import { UserForm, type OrgUnitOption, type UserFormValues } from './UserForm'
+
+/* ------------------------------------------------------------------ */
+/*  Context — logic & state của trang form user (route-based)          */
+/* ------------------------------------------------------------------ */
+export type UserFormPageContext = {
+  mode: 'create' | 'edit'
+  title: string
+  listPath: string
+  isLoading: boolean
+  missingUser: boolean
+  user: SystemUser | null
+  roles: SystemRole[]
+  navigateBack: () => void
+  onSubmit: (values: UserFormValues) => void
+  isSaving: boolean
+  loadOrgUnits?: () => Promise<OrgUnitOption[]>
+  saveUserOrgUnit?: (userId: string, organizationalUnitId: string) => Promise<void>
+}
 
 export type UserFormPageProps = {
   mode: 'create' | 'edit'
@@ -20,10 +39,15 @@ export type UserFormPageProps = {
   listPath: string
   loadOrgUnits?: () => Promise<OrgUnitOption[]>
   saveUserOrgUnit?: (userId: string, organizationalUnitId: string) => Promise<void>
+  /**
+   * Custom UI — host truyền JSX hoặc render function nhận `UserFormPageContext`.
+   * Không truyền → hiển thị giao diện mặc định.
+   */
+  content?: ReactNode | ((ctx: UserFormPageContext) => ReactNode)
 }
 
 /** Màn hình thêm hoặc sửa người dùng theo route được chọn. */
-export function UserFormPage({ mode, listPath, loadOrgUnits, saveUserOrgUnit }: UserFormPageProps) {
+export function UserFormPage({ mode, listPath, loadOrgUnits, saveUserOrgUnit, content }: UserFormPageProps) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { id } = useParams<{ id: string }>()
@@ -69,6 +93,26 @@ export function UserFormPage({ mode, listPath, loadOrgUnits, saveUserOrgUnit }: 
   const title = mode === 'edit' ? 'Sửa người dùng' : 'Thêm người dùng'
   const isLoading = rolesQuery.isLoading || (mode === 'edit' && userQuery.isLoading)
   const missingUser = mode === 'edit' && !userQuery.isLoading && (userQuery.isError || !userQuery.data)
+
+  /* ---------- content render-prop ---------- */
+  if (content) {
+    const ctx: UserFormPageContext = {
+      mode,
+      title,
+      listPath,
+      isLoading,
+      missingUser,
+      user: mode === 'edit' ? userQuery.data ?? null : null,
+      roles,
+      navigateBack: () => navigate(listPath),
+      onSubmit: (values: UserFormValues) => saveMutation.mutate(values),
+      isSaving: saveMutation.isPending,
+      loadOrgUnits,
+      saveUserOrgUnit,
+    }
+    const resolved = typeof content === 'function' ? content(ctx) : content
+    return <>{resolved}</>
+  }
 
   return (
     <section className="h-full min-h-0 overflow-y-auto text-sm text-slate-800">

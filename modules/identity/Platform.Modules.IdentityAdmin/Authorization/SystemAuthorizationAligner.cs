@@ -24,9 +24,9 @@ public sealed class SystemAuthorizationAligner(
 
     public const string OrgAdminRole = "ORG_ADMIN";
 
-    public const string SameTenantPolicy = "P_SAME_TENANT";
+    public const string SameTenantPolicy = "SAME_TENANT";
 
-    public const string SameOrgPolicy = "P_SAME_ORG";
+    public const string SameOrgPolicy = "SAME_ORG";
 
     public async Task AlignAsync(CancellationToken cancellationToken = default)
     {

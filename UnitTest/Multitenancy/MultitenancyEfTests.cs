@@ -25,7 +25,7 @@ public sealed class MultitenancyEfTests
         try
         {
             await using var scope = provider.CreateAsyncScope();
-            var uowMaster = scope.ServiceProvider.GetRequiredService<IMasterUnitOfWork>();
+            var uowMaster = scope.ServiceProvider.GetRequiredService<ISampleMasterUnitOfWork>();
             var repoTenant = await uowMaster.GetRepositoryAsync<IRepository<Tenant>>();
 
             var beforeGet = await repoTenant.GetQuery().ToListAsync();
@@ -69,8 +69,8 @@ public sealed class MultitenancyEfTests
             await MultitenancyEfTestDataSeeder.EnsureTenantRegisteredAsync(provider, MasterTenantId);
 
             await using var scope = provider.CreateAsyncScope();
-            var uowMaster = scope.ServiceProvider.GetRequiredService<IMasterUnitOfWork>();
-            var uowTenant = scope.ServiceProvider.GetRequiredService<ITenantUnitOfWork>();
+            var uowMaster = scope.ServiceProvider.GetRequiredService<ISampleMasterUnitOfWork>();
+            var uowTenant = scope.ServiceProvider.GetRequiredService<ISampleTenantUnitOfWork>();
 
             await uowTenant.SwitchDbContextAsync(MasterTenantId);
 
@@ -174,7 +174,7 @@ public sealed class MultitenancyEfTests
 
             await using (var scopeA = provider.CreateAsyncScope())
             {
-                var uow = scopeA.ServiceProvider.GetRequiredService<ITenantUnitOfWork>();
+                var uow = scopeA.ServiceProvider.GetRequiredService<ISampleTenantUnitOfWork>();
                 await uow.SwitchDbContextAsync(tenantA);
                 var repo = await uow.GetRepositoryAsync<IRepository<Student>>();
                 await repo.InsertAsync(new Student
@@ -188,7 +188,7 @@ public sealed class MultitenancyEfTests
 
             await using (var scopeB = provider.CreateAsyncScope())
             {
-                var uow = scopeB.ServiceProvider.GetRequiredService<ITenantUnitOfWork>();
+                var uow = scopeB.ServiceProvider.GetRequiredService<ISampleTenantUnitOfWork>();
                 await uow.SwitchDbContextAsync(tenantB);
                 var repo = await uow.GetRepositoryAsync<IRepository<Student>>();
                 var count = await repo.GetQuery().CountAsync();
@@ -197,7 +197,7 @@ public sealed class MultitenancyEfTests
 
             await using (var scopeA2 = provider.CreateAsyncScope())
             {
-                var uow = scopeA2.ServiceProvider.GetRequiredService<ITenantUnitOfWork>();
+                var uow = scopeA2.ServiceProvider.GetRequiredService<ISampleTenantUnitOfWork>();
                 await uow.SwitchDbContextAsync(tenantA);
                 var repo = await uow.GetRepositoryAsync<IRepository<Student>>();
                 var count = await repo.GetQuery().CountAsync();
@@ -218,7 +218,7 @@ public sealed class MultitenancyEfTests
         try
         {
             await using var scope = provider.CreateAsyncScope();
-            var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<TenantDbContext>>();
+            var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<SampleTenantDbContext>>();
             await using var context = await factory.CreateDbContextAsync();
 
             context.Students.Add(new Student

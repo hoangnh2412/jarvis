@@ -60,7 +60,8 @@ import {
 } from "@platform/identity";
 import { ORGSTRUCTURE_ROUTES, OrgStructurePage } from "@platform/orgstructure";
 import { RequireAuth } from "./auth/RequireAuth";
-import { SampleLoginPage } from "./auth/SampleLoginPage";
+import { SampleAppLoginPage, SamplePlatformLoginPage } from "./auth/SampleIdentityLoginPage";
+import { SAMPLE_APP_LOGIN_PATH } from "./auth/loginPaths";
 import { OnboardingDemoPage } from "./pages/OnboardingDemoPage";
 import { AccessDemoPage } from "./pages/AccessDemoPage";
 import {
@@ -97,7 +98,7 @@ import {
 
 async function sendDemoNotification() {
   const token = getAccessToken();
-  const response = await fetch("/api/notify-demo/me", {
+  const response = await fetch("/api/v1/notify-demo/me", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -184,7 +185,7 @@ function SampleAdminLayout({ mainNav }: { mainNav: AdminNavItem[] }) {
       onLogout={async () => {
         clearAccessToken();
         clearLoginScope();
-        navigate(ACCOUNT_ROUTES.login, { replace: true });
+        navigate(SAMPLE_APP_LOGIN_PATH, { replace: true });
         return false;
       }}
     />
@@ -463,7 +464,18 @@ export default function App() {
       <ImportExportNavigateBridge />
 
       <Routes>
-        <Route path={ACCOUNT_ROUTES.login} element={<SampleLoginPage />} />
+        <Route
+          path={DEFAULT_IDENTITY_ROUTES.appLogin}
+          element={<SampleAppLoginPage />}
+        />
+        <Route
+          path={DEFAULT_IDENTITY_ROUTES.platformLogin}
+          element={<SamplePlatformLoginPage />}
+        />
+        <Route
+          path={ACCOUNT_ROUTES.login}
+          element={<Navigate to={DEFAULT_IDENTITY_ROUTES.appLogin} replace />}
+        />
         <Route path={ACCOUNT_ROUTES.register} element={<RegisterPage />} />
         <Route
           path={ACCOUNT_ROUTES.forgotPassword}

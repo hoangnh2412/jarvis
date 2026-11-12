@@ -11,9 +11,9 @@ namespace Sample.Controllers;
 [ApiController]
 [Route("api/v{version:apiVersion}/company")]
 [ApiVersion("1.0")]
-public class CompanyController(TenantDbContext dbContext) : ControllerBase
+public class CompanyController(SampleTenantDbContext dbContext) : ControllerBase
 {
-    private readonly TenantDbContext _dbContext = dbContext;
+    private readonly SampleTenantDbContext _dbContext = dbContext;
     
     /// <summary>
     /// API 1: Basic Pipeline (Chỉ lấy Employee đang Active, cấm filter các cột nhạy cảm)

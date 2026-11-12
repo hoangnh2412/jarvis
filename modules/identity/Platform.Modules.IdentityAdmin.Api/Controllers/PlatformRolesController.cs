@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Platform.DDD.Application.Contracts.Commands;
@@ -10,8 +11,9 @@ using Platform.Tenants;
 namespace Platform.Modules.IdentityAdmin.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Authorize(Policy = TenantPermissions.View)]
-[Route("api/v1/platform/roles")]
+[Route("api/v{version:apiVersion}/platform/roles")]
 public sealed class PlatformRolesController(
     IAsyncCommandDispatcher commands,
     IAsyncQueryDispatcher queries) : ControllerBase

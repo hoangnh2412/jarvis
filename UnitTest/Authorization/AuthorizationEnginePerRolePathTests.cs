@@ -81,7 +81,7 @@ public sealed class AuthorizationEnginePerRolePathTests
 
     private static async Task<Guid> AddCfoAsync(InMemoryTestDbContext ctx)
     {
-        var cfo = AddRole(ctx, ["Expense.View", "Expense.Approve"], ["P_SAME_ORG", "P_APPROVE_LIMIT"]);
+        var cfo = AddRole(ctx, ["Expense.View", "Expense.Approve"], ["SAME_ORG", "APPROVE_LIMIT"]);
         return await AddUserAsync(ctx, [cfo], OrgA, DeptAcc, approveLimit: 10_000_000m);
     }
 
@@ -122,7 +122,7 @@ public sealed class AuthorizationEnginePerRolePathTests
     public async Task DeptMgr_AllThreePoliciesPass_Allows()
     {
         var (ctx, engine) = await CreateAsync();
-        var role = AddRole(ctx, ["Expense.Approve"], ["P_SAME_ORG", "P_SAME_DEPARTMENT", "P_APPROVE_LIMIT"]);
+        var role = AddRole(ctx, ["Expense.Approve"], ["SAME_ORG", "SAME_DEPARTMENT", "APPROVE_LIMIT"]);
         var userId = await AddUserAsync(ctx, [role], OrgA, DeptAcc, approveLimit: 2_000_000m);
 
         var result = await engine.EvaluatePoliciesAsync(userId, "Expense.Approve", new Expense(OrgA, DeptAcc, 1_500_000m));
@@ -134,7 +134,7 @@ public sealed class AuthorizationEnginePerRolePathTests
     public async Task DeptMgr_OtherDepartment_Denies()
     {
         var (ctx, engine) = await CreateAsync();
-        var role = AddRole(ctx, ["Expense.Approve"], ["P_SAME_ORG", "P_SAME_DEPARTMENT", "P_APPROVE_LIMIT"]);
+        var role = AddRole(ctx, ["Expense.Approve"], ["SAME_ORG", "SAME_DEPARTMENT", "APPROVE_LIMIT"]);
         var userId = await AddUserAsync(ctx, [role], OrgA, DeptAcc, approveLimit: 2_000_000m);
 
         var result = await engine.EvaluatePoliciesAsync(userId, "Expense.Approve", new Expense(OrgA, DeptTech, 1_000_000m));
@@ -146,8 +146,8 @@ public sealed class AuthorizationEnginePerRolePathTests
     public async Task MultiRole_AnyRolePathPasses_Allows()
     {
         var (ctx, engine) = await CreateAsync();
-        var role1 = AddRole(ctx, ["Expense.View"], ["P_SAME_ORG"]);
-        var role2 = AddRole(ctx, ["Expense.View"], ["P_APPROVE_LIMIT"]);
+        var role1 = AddRole(ctx, ["Expense.View"], ["SAME_ORG"]);
+        var role2 = AddRole(ctx, ["Expense.View"], ["APPROVE_LIMIT"]);
         var userId = await AddUserAsync(ctx, [role1, role2], OrgA, DeptAcc, approveLimit: 2_000_000m);
 
         var viaRole2 = await engine.EvaluatePoliciesAsync(userId, "Expense.View", new Expense(OrgB, DeptAcc, 1_000_000m));
@@ -161,8 +161,8 @@ public sealed class AuthorizationEnginePerRolePathTests
     public async Task RoleWithoutPermission_PoliciesIgnored()
     {
         var (ctx, engine) = await CreateAsync();
-        var approver = AddRole(ctx, ["Expense.Approve"], ["P_SAME_ORG", "P_APPROVE_LIMIT"]);
-        var projectViewer = AddRole(ctx, ["Project.View"], ["P_SAME_DEPARTMENT"]);
+        var approver = AddRole(ctx, ["Expense.Approve"], ["SAME_ORG", "APPROVE_LIMIT"]);
+        var projectViewer = AddRole(ctx, ["Project.View"], ["SAME_DEPARTMENT"]);
         var userId = await AddUserAsync(ctx, [approver, projectViewer], OrgA, DeptAcc, approveLimit: 10_000_000m);
 
         // SameDepartment passes, but it belongs to a role that cannot approve expenses.
@@ -195,35 +195,35 @@ public sealed class AuthorizationEnginePerRolePathTests
     public async Task PolicyProvider_UnknownCode_Throws()
     {
         var (ctx, _) = await CreateAsync();
-        var role = AddRole(ctx, ["Expense.Approve"], ["P_SAME_ORG", "P_APPROVE_LIMT"]);
+        var role = AddRole(ctx, ["Expense.Approve"], ["SAME_ORG", "APPROVE_LIMT"]);
         await ctx.SaveChangesAsync();
 
         var ex = await Assert.ThrowsAsync<UnresolvedPolicyException>(
             () => new PolicyProvider(ctx).GetPoliciesByRoleAsync(role));
 
         Assert.Equal(role, ex.RoleId);
-        Assert.Equal(new[] { "P_APPROVE_LIMT" }, ex.MissingCodes);
+        Assert.Equal(new[] { "APPROVE_LIMT" }, ex.MissingCodes);
     }
 
     [Fact(DisplayName = "Unknown policy code: path fails closed (typo'd ApproveLimit must not leave SameOrg alone)")]
     public async Task UnknownPolicyCode_PathFailsClosed()
     {
         var (ctx, engine) = await CreateAsync();
-        var role = AddRole(ctx, ["Expense.Approve"], ["P_SAME_ORG", "P_APPROVE_LIMT"]);
+        var role = AddRole(ctx, ["Expense.Approve"], ["SAME_ORG", "APPROVE_LIMT"]);
         var userId = await AddUserAsync(ctx, [role], OrgA, DeptAcc, approveLimit: 10_000_000m);
 
         var result = await engine.EvaluatePoliciesAsync(userId, "Expense.Approve", new Expense(OrgA, DeptAcc, 15_000_000m));
 
         Assert.False(result.IsAllowed);
-        Assert.Contains("P_APPROVE_LIMT", result.Reason);
+        Assert.Contains("APPROVE_LIMT", result.Reason);
     }
 
     [Fact(DisplayName = "Unknown policy code on one role does not block a valid role path")]
     public async Task UnknownPolicyCode_OtherValidRoleStillAllows()
     {
         var (ctx, engine) = await CreateAsync();
-        var broken = AddRole(ctx, ["Expense.Approve"], ["P_DOES_NOT_EXIST"]);
-        var valid = AddRole(ctx, ["Expense.Approve"], ["P_SAME_ORG", "P_APPROVE_LIMIT"]);
+        var broken = AddRole(ctx, ["Expense.Approve"], ["DOES_NOT_EXIST"]);
+        var valid = AddRole(ctx, ["Expense.Approve"], ["SAME_ORG", "APPROVE_LIMIT"]);
         var userId = await AddUserAsync(ctx, [broken, valid], OrgA, DeptAcc, approveLimit: 10_000_000m);
 
         var result = await engine.EvaluatePoliciesAsync(userId, "Expense.Approve", new Expense(OrgA, DeptAcc, 8_000_000m));
@@ -235,7 +235,7 @@ public sealed class AuthorizationEnginePerRolePathTests
     public async Task SameTenant_UsesTenantColumn()
     {
         var (ctx, engine) = await CreateAsync();
-        var role = AddRole(ctx, ["Company.Config.Edit"], ["P_SAME_TENANT"]);
+        var role = AddRole(ctx, ["Company.Config.Edit"], ["SAME_TENANT"]);
         var userId = await AddUserAsync(ctx, [role], orgId: null, DeptTech, tenantId: Tenant1);
 
         var same = await engine.EvaluatePoliciesAsync(userId, "Company.Config.Edit", new Customer(Tenant1, OrgA, DeptAcc, Guid.NewGuid()));
@@ -249,7 +249,7 @@ public sealed class AuthorizationEnginePerRolePathTests
     public async Task OwnerOnly_UsesSubjectId()
     {
         var (ctx, engine) = await CreateAsync();
-        var role = AddRole(ctx, ["SalesResult.View"], ["P_OWNER_ONLY"]);
+        var role = AddRole(ctx, ["SalesResult.View"], ["OWNER_ONLY"]);
         var userId = await AddUserAsync(ctx, [role], OrgA, DeptAcc);
 
         var mine = await engine.EvaluatePoliciesAsync(userId, "SalesResult.View", new Customer(Tenant1, OrgA, DeptAcc, userId));
@@ -263,7 +263,7 @@ public sealed class AuthorizationEnginePerRolePathTests
     public async Task OwnerOrSameDept_RealStore()
     {
         var (ctx, engine) = await CreateAsync();
-        var role = AddRole(ctx, ["Customer.View"], ["P_OWNER_OR_SAME_DEPT"]);
+        var role = AddRole(ctx, ["Customer.View"], ["OWNER_OR_SAME_DEPT"]);
         var userId = await AddUserAsync(ctx, [role], OrgA, DeptTech);
 
         var ownerOtherDept = await engine.EvaluatePoliciesAsync(userId, "Customer.View", new Customer(Tenant1, OrgA, DeptAcc, userId));
@@ -279,7 +279,7 @@ public sealed class AuthorizationEnginePerRolePathTests
     public async Task OrgIdClaim_IsIgnored()
     {
         var (ctx, engine) = await CreateAsync();
-        var role = AddRole(ctx, ["Customer.View"], ["P_SAME_ORG"]);
+        var role = AddRole(ctx, ["Customer.View"], ["SAME_ORG"]);
         var userId = await AddUserAsync(ctx, [role], OrgA, DeptAcc);
         ctx.UserClaims.Add(new IdentityUserClaim<Guid> { UserId = userId, ClaimType = "OrgId", ClaimValue = OrgB.ToString() });
         await ctx.SaveChangesAsync();
@@ -295,7 +295,7 @@ public sealed class AuthorizationEnginePerRolePathTests
     public async Task NullAttributes_DoNotMatch()
     {
         var (ctx, engine) = await CreateAsync();
-        var role = AddRole(ctx, ["Customer.View"], ["P_SAME_ORG"]);
+        var role = AddRole(ctx, ["Customer.View"], ["SAME_ORG"]);
         var userId = await AddUserAsync(ctx, [role], orgId: null, DeptAcc);
 
         var result = await engine.EvaluatePoliciesAsync(userId, "Customer.View", new Customer(Tenant1, null, DeptAcc, Guid.NewGuid()));
@@ -318,7 +318,7 @@ public sealed class AuthorizationEnginePerRolePathTests
     public async Task ManagedProject_InCollection()
     {
         var (ctx, engine) = await CreateAsync();
-        var role = AddRole(ctx, ["Project.Edit"], ["P_MANAGED_PROJECT"]);
+        var role = AddRole(ctx, ["Project.Edit"], ["MANAGED_PROJECT"]);
         var userId = await AddUserAsync(ctx, [role], OrgA, DeptTech);
         ctx.UserClaims.Add(new IdentityUserClaim<Guid> { UserId = userId, ClaimType = "ManagedDepartmentIds", ClaimValue = $"{DeptTech},{DeptAcc}" });
         await ctx.SaveChangesAsync();

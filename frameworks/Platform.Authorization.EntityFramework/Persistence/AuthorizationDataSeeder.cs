@@ -1,12 +1,13 @@
 namespace Platform.Authorization.EntityFramework.Persistence;
 
 using Platform.Authorization.Services;
+using Platform.ORM.EntityFramework.DataSeeding;
 
 /// <summary>
 /// Seed mặc định platform + mọi đóng góp <c>AddPlatformAuthorizationSeed(...)</c>, kiểm tra operand
 /// của từng rule với <see cref="Operands.IOperandRegistry"/>. Host gọi sau khi schema Identity đã được migrate.
 /// </summary>
-public sealed class AuthorizationDataSeeder
+public sealed class AuthorizationDataSeeder : IDataSeeder
 {
     private readonly IdentityDbContextBase _context;
     private readonly OperandValidator _validator;
@@ -21,6 +22,8 @@ public sealed class AuthorizationDataSeeder
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _contributions = contributions ?? throw new ArgumentNullException(nameof(contributions));
     }
+
+    public int Order => 0;
 
     public AuthorizationSeedCatalog BuildCatalog() =>
         AuthorizationSeeder.BuildCatalog(_contributions.Select(c => c.Configure));

@@ -19,7 +19,7 @@ public class BasicAuthenticationTests
         var config = AuthenticationConfigurationBuilder.BuildBasicConfig();
         await using var server = await AuthenticationTestServer.CreateAsync(config, jwt: false, apiKey: false, basic: true);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "/api/_auth-test/whoami");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/_auth-test/whoami");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
             "Basic",
             Convert.ToBase64String(Encoding.UTF8.GetBytes("testuser:testpass")));
@@ -36,11 +36,11 @@ public class BasicAuthenticationTests
         var config = AuthenticationConfigurationBuilder.BuildBasicConfig();
         await using var server = await AuthenticationTestServer.CreateAsync(config, jwt: false, apiKey: false, basic: true);
 
-        var noHeader = await server.Client.GetAsync("/api/_auth-test/whoami");
+        var noHeader = await server.Client.GetAsync("/api/v1/_auth-test/whoami");
         noHeader.EnsureSuccessStatusCode();
         await AssertAuthenticatedAsync(noHeader, expected: false);
 
-        var wrong = new HttpRequestMessage(HttpMethod.Get, "/api/_auth-test/whoami");
+        var wrong = new HttpRequestMessage(HttpMethod.Get, "/api/v1/_auth-test/whoami");
         wrong.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
             "Basic",
             Convert.ToBase64String(Encoding.UTF8.GetBytes("testuser:wrong")));
@@ -72,7 +72,7 @@ public class BasicAuthenticationTests
             apiKey: false,
             basic: true);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "/api/_auth-test/whoami");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/v1/_auth-test/whoami");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
             "Basic",
             Convert.ToBase64String(Encoding.UTF8.GetBytes("mix:mix-pass")));

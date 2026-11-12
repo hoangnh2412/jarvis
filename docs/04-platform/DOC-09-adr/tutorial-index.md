@@ -300,7 +300,7 @@ Skill chuyên **`Platform.OpenTelemetry`** — trace, metric, log OTLP.
 
 - `AddPlatformOpenTelemetry(configuration, configureServices)` → `.ConfigureResource()` → logging / trace / metric
 - Plug-in đăng ký **trong** callback `configureServices` (trước `Build()`)
-- `app.UsePlatformOpenTelemetry()` khi cần enrich trace/log
+- Enrich trace/log: `UseCoreMiddleware<TraceEnrichmentMiddleware>()` và `UseCoreMiddleware<LogEnrichmentMiddleware>()` — bật/tắt và exclude theo `Middlewares` trong appsettings
 - Config: `OTEL:Tracing`, `OTEL:Metric`, `OTEL:Logging`
 - `HttpTraceEnrichment`: allowlist header — không capture toàn bộ header
 - Không hard-code OTLP secrets; dùng env / secret store

@@ -6,8 +6,8 @@ using Platform.Modules.Notifications.Contracts;
 namespace Module.Notifications.Controllers;
 
 [ApiController]
-[ApiVersionNeutral]
-[Route("api/notifications")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/notifications")]
 public class NotificationsController(INotificationAppService notifications) : ControllerBase
 {
     /// <summary>

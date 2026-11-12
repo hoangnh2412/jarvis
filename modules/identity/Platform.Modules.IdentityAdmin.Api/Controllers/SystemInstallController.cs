@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -6,8 +7,9 @@ using Platform.Modules.IdentityAdmin.Abstractions;
 namespace Platform.Modules.IdentityAdmin.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [AllowAnonymous]
-[Route("api/system/install")]
+[Route("api/v{version:apiVersion}/system/install")]
 public sealed class SystemInstallController(ISystemInstallService install) : ControllerBase
 {
     [HttpPost]

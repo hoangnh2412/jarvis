@@ -1,6 +1,6 @@
 /** Same-origin Sample host (`SpaProxy` / publish). Override via VITE_* khi tách API. */
 export const notificationApiBase = (
-  import.meta.env.VITE_NOTIFICATION_API_URL || '/api/notifications'
+  import.meta.env.VITE_NOTIFICATION_API_URL || '/api/v1/notifications'
 ).replace(/\/+$/, '')
 
 export const notificationSseUrl =
@@ -71,7 +71,7 @@ export function getNotificationAuthHeaders(): Record<string, string> {
   if (token) headers.Authorization = `Bearer ${token}`
 
   // CROSS-MODULE 2026-11-04 · slice đăng nhập Sample (ô chọn Org/Tenant)
-  // Nguyên nhân: /api/notifications đi qua MultiOrg, thiếu X-Org-Id thì 403.
+  // Nguyên nhân: /api/v1/notifications đi qua MultiOrg, thiếu X-Org-Id thì 403.
   // Lý do: thêm header org từ scope đăng nhập. Không đổi payload notification.
   const tenantId = resolveTenantId()
   if (tenantId) headers['X-Tenant-Id'] = tenantId

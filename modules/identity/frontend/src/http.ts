@@ -75,7 +75,7 @@ function requestPath(url: string): string {
 
 function shouldAttachScopeHeaders(url: string): boolean {
   const path = requestPath(url)
-  if (path.startsWith('/platform/')) return false
+  if (path.includes('/platform/')) return false
   if (path.includes('/account/login')) return false
   if (path.includes('/account/catalog')) return false
   if (path.includes('/system/install')) return false

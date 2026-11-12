@@ -9,7 +9,7 @@ namespace Platform.Modules.ImportExport.API.Controllers;
 /// <summary>
 /// HTTP API schema discovery cho template UI (entity registry).
 /// </summary>
-[ApiVersionNeutral]
+[ApiVersion("1.0")]
 [ApiController]
 [Route("api/v{version:apiVersion}/importexport/entities")]
 public sealed class ImportExportEntitiesController(

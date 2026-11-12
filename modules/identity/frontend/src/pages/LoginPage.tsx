@@ -29,6 +29,68 @@ function formatCatalogLabel(item: LoginCatalogItem): string {
   return name ? `${item.code} — ${name}` : item.code
 }
 
+/**
+ * Context object passed to the `content` render-prop.
+ * Contains all login logic; consumer only provides UI.
+ */
+export type LoginPageContext = {
+  /** Pre-rendered tenant <select> (null when realm='platform') */
+  TenantSelect: ReactNode
+  /** Pre-rendered org <select> (null when realm='platform') */
+  OrgSelect: ReactNode
+
+  /** Spread-able props to build your OWN tenant <select> with custom styling */
+  tenantSelectProps: {
+    value: string
+    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+    disabled: boolean
+    options: LoginCatalogItem[]
+    loading: boolean
+  }
+  /** Spread-able props to build your OWN org <select> with custom styling */
+  orgSelectProps: {
+    value: string
+    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+    disabled: boolean
+    options: LoginCatalogItem[]
+    loading: boolean
+  }
+
+  /** Spread-able props for a custom username input */
+  usernameProps: {
+    value: string
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+    disabled: boolean
+  }
+  /** Spread-able props for a custom password input */
+  passwordProps: {
+    value: string
+    onChange: (val: string) => void
+    disabled: boolean
+  }
+  /** True while the login mutation is in-flight */
+  isLoading: boolean
+  /** Validation / server errors */
+  errors: {
+    username?: string
+    password?: string
+    tenantCode?: string
+    orgCode?: string
+    general?: string
+  }
+  /** Attach to <form onSubmit={ctx.handleSubmit}> */
+  handleSubmit: (e: FormEvent) => void
+
+  /** Current realm */
+  realm: 'platform' | 'app'
+  /** Path to app login page */
+  appLoginPath: string
+  /** Path to platform login page */
+  platformLoginPath: string
+  /** Path to forgot password page */
+  forgotPasswordPath: string
+}
+
 export type LoginPageProps = {
   redirectTo?: string
   realm?: 'platform' | 'app'
@@ -36,6 +98,12 @@ export type LoginPageProps = {
   appLoginPath?: string
   platformLoginPath?: string
   forgotPasswordPath?: string
+  /** Custom UI render-prop. When provided, LoginPage renders this instead of the default form. */
+  content?: ReactNode | ((ctx: LoginPageContext) => ReactNode)
+  /** Override tenant loader — khi truyền, LoginPage gọi hàm này thay vì API mặc định. */
+  loadTenants?: () => Promise<LoginCatalogItem[]>
+  /** Override org loader — khi truyền, LoginPage gọi hàm này thay vì API mặc định. */
+  loadOrgs?: (tenantId: string) => Promise<LoginCatalogItem[]>
 }
 
 export function LoginPage({
@@ -45,6 +113,9 @@ export function LoginPage({
   appLoginPath = '/app/login',
   platformLoginPath = '/platform/login',
   forgotPasswordPath = '/forgot-password',
+  content,
+  loadTenants,
+  loadOrgs,
 }: LoginPageProps) {
   const navigate = useNavigate()
   const { mutate: login, isPending: isLoading } = useLogin()
@@ -65,14 +136,14 @@ export function LoginPage({
 
   const tenantsQuery = useQuery({
     queryKey: ['app-login-catalog', 'tenants'],
-    queryFn: listAppLoginTenants,
+    queryFn: loadTenants ?? listAppLoginTenants,
     enabled: realm === 'app',
     staleTime: 60_000,
   })
 
   const orgsQuery = useQuery({
     queryKey: ['app-login-catalog', 'orgs', tenantId],
-    queryFn: () => listAppLoginOrgs(tenantId),
+    queryFn: () => (loadOrgs ?? listAppLoginOrgs)(tenantId),
     enabled: realm === 'app' && Boolean(tenantId),
     staleTime: 60_000,
   })
@@ -157,6 +228,112 @@ export function LoginPage({
         },
       },
     )
+  }
+
+  /* ── content slot: build context, render custom UI if provided ── */
+  if (content) {
+    const tenantSelectNode: ReactNode =
+      realm === 'app' ? (
+        <select
+          id="login-tenant"
+          value={tenantId}
+          onChange={(e) => {
+            setTenantId(e.target.value)
+            setOrgId('')
+            if (errors.tenantCode) setErrors((prev) => ({ ...prev, tenantCode: undefined }))
+          }}
+          className={selectClass(Boolean(errors.tenantCode))}
+          disabled={isLoading || tenantsQuery.isLoading}
+        >
+          <option value="">
+            {tenantsQuery.isLoading ? 'Đang tải…' : '— Chọn đơn vị —'}
+          </option>
+          {(tenantsQuery.data ?? []).map((tenant) => (
+            <option key={tenant.id} value={tenant.id}>
+              {formatCatalogLabel(tenant)}
+            </option>
+          ))}
+        </select>
+      ) : null
+
+    const orgSelectNode: ReactNode =
+      realm === 'app' ? (
+        <select
+          id="login-org"
+          value={orgId}
+          onChange={(e) => {
+            setOrgId(e.target.value)
+            if (errors.orgCode) setErrors((prev) => ({ ...prev, orgCode: undefined }))
+          }}
+          className={selectClass(Boolean(errors.orgCode))}
+          disabled={isLoading || !tenantId || orgsQuery.isLoading}
+        >
+          <option value="">
+            {!tenantId
+              ? '— Chọn đơn vị trước —'
+              : orgsQuery.isLoading
+                ? 'Đang tải…'
+                : '— Chọn tổ chức —'}
+          </option>
+          {(orgsQuery.data ?? []).map((org) => (
+            <option key={org.id} value={org.id}>
+              {formatCatalogLabel(org)}
+            </option>
+          ))}
+        </select>
+      ) : null
+
+    const ctx: LoginPageContext = {
+      TenantSelect: tenantSelectNode,
+      OrgSelect: orgSelectNode,
+      tenantSelectProps: {
+        value: tenantId,
+        onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
+          setTenantId(e.target.value)
+          setOrgId('')
+          if (errors.tenantCode) setErrors((prev) => ({ ...prev, tenantCode: undefined }))
+        },
+        disabled: isLoading || tenantsQuery.isLoading,
+        options: tenantsQuery.data ?? [],
+        loading: tenantsQuery.isLoading,
+      },
+      orgSelectProps: {
+        value: orgId,
+        onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
+          setOrgId(e.target.value)
+          if (errors.orgCode) setErrors((prev) => ({ ...prev, orgCode: undefined }))
+        },
+        disabled: isLoading || !tenantId || orgsQuery.isLoading,
+        options: orgsQuery.data ?? [],
+        loading: !tenantId ? false : orgsQuery.isLoading,
+      },
+      usernameProps: {
+        value: username,
+        onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+          setUsername(e.target.value)
+          if (errors.username) setErrors((prev) => ({ ...prev, username: undefined }))
+        },
+        disabled: isLoading,
+      },
+      passwordProps: {
+        value: password,
+        onChange: (val: string) => {
+          setPassword(val)
+          if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }))
+        },
+        disabled: isLoading,
+      },
+      isLoading,
+      errors,
+      handleSubmit,
+      realm,
+      appLoginPath,
+      platformLoginPath,
+      forgotPasswordPath,
+    }
+
+    const resolved = typeof content === 'function' ? content(ctx) : content
+    return <>{resolved}</>
   }
 
   const title = branding?.title ?? (realm === 'platform' ? 'Đăng nhập nền tảng' : 'Đăng nhập nghiệp vụ')

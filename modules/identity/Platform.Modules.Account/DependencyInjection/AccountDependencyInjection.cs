@@ -13,10 +13,20 @@ public static class AccountDependencyInjection
     public static IServiceCollection AddAccountApplication(this IServiceCollection services)
     {
         services.AddScoped<IEmailSender, LoggingEmailSender>();
+        services.AddScoped<IPlatformLoginCatalogService, PlatformLoginCatalogService>();
+        services.AddScoped<AccountAccessTokenIssuer>();
 
-        services.AddScoped<LoginCommandHandler>();
-        services.AddScoped<IAsyncCommandHandler<LoginCommand, LoginResponse>>(
-            provider => provider.GetRequiredService<LoginCommandHandler>());
+        services.AddScoped<PlatformLoginCommandHandler>();
+        services.AddScoped<IAsyncCommandHandler<PlatformLoginCommand, LoginResponse>>(
+            provider => provider.GetRequiredService<PlatformLoginCommandHandler>());
+
+        services.AddScoped<AppLoginCommandHandler>();
+        services.AddScoped<IAsyncCommandHandler<AppLoginCommand, AppLoginResult>>(
+            provider => provider.GetRequiredService<AppLoginCommandHandler>());
+
+        services.AddScoped<AppRefreshTokenCommandHandler>();
+        services.AddScoped<IAsyncCommandHandler<AppRefreshTokenCommand, AppLoginResult>>(
+            provider => provider.GetRequiredService<AppRefreshTokenCommandHandler>());
 
         services.AddScoped<LogoutCommandHandler>();
         services.AddScoped<IAsyncCommandHandler<LogoutCommand>>(

@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +8,8 @@ namespace Sample.Controllers;
 /// Endpoint probe kiểm tra trạng thái authentication — dùng cho demo và integration test.
 /// </summary>
 [ApiController]
-[Route("api/_auth-test")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/_auth-test")]
 public class AuthProbeController : ControllerBase
 {
     /// <summary>Trả về trạng thái authenticated, scheme và tên user hiện tại (không yêu cầu auth).</summary>

@@ -10,7 +10,7 @@ namespace Platform.Modules.Setting.API.Controllers;
 /// Đăng ký qua <c>AddCoreSetting(...).UseHttpApi()</c> — không kèm Authorize (host nội bộ tự bảo vệ nếu cần).
 /// Tenant do <c>ICurrentTenant&lt;TTenant&gt;</c> của host (middleware / R2) thiết lập trước khi vào action.
 /// </summary>
-[ApiVersionNeutral]
+[ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/settings")]
 [ApiController]
 public sealed class SettingController(ISettingManager settingManager) : ControllerBase

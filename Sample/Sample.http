@@ -6,21 +6,21 @@ Accept: application/json
 ###
 
 # Basic Auth từ DB (hash) — tenant + sampleuser / samplepass
-GET {{Sample_HostAddress}}/api/_auth-test/whoami
+GET {{Sample_HostAddress}}/api/v1/_auth-test/whoami
 X-Tenant-Id: dd348565-5d31-46bb-aef7-aa7f0c4a1866
 Authorization: Basic c2FtcGxldXNlcjpzYW1wbGVwYXNz
 
 ###
 
 # ApiKey từ DB (hash) — cùng tenant
-GET {{Sample_HostAddress}}/api/_auth-test/whoami
+GET {{Sample_HostAddress}}/api/v1/_auth-test/whoami
 X-Tenant-Id: dd348565-5d31-46bb-aef7-aa7f0c4a1866
 X-API-KEY: dev-sample-api-key
 
 ###
 
-# Bearer login — verify BasicAuthUser (DB) rồi JWT; dùng accessToken với GET /api/authentication/me/bearer
-POST {{Sample_HostAddress}}/api/authentication/bearer-token
+# Bearer login — verify BasicAuthUser (DB) rồi JWT; dùng accessToken với GET /api/v1/authentication/me/bearer
+POST {{Sample_HostAddress}}/api/v1/authentication/bearer-token
 Content-Type: application/json
 X-Tenant-Id: dd348565-5d31-46bb-aef7-aa7f0c4a1866
 
@@ -33,7 +33,7 @@ X-Tenant-Id: dd348565-5d31-46bb-aef7-aa7f0c4a1866
 ###
 
 # Password policy — scope từ X-Tenant-Id (SamplePasswordPolicyScopeProvider) hoặc tenantId trong body
-POST {{Sample_HostAddress}}/api/authentication/password-policy/validate
+POST {{Sample_HostAddress}}/api/v1/authentication/password-policy/validate
 Content-Type: application/json
 X-Tenant-Id: dd348565-5d31-46bb-aef7-aa7f0c4a1866
 
@@ -45,23 +45,23 @@ X-Tenant-Id: dd348565-5d31-46bb-aef7-aa7f0c4a1866
 
 # Phân quyền (Platform.Authorization) — database SampleAuthorization, seed lúc start
 # Chạy toàn bộ kịch bản AZ-01..AZ-13 (Expected vs Allowed, Pass)
-GET {{Sample_HostAddress}}/api/_authz-demo/scenarios
+GET {{Sample_HostAddress}}/api/v1/_authz-demo/scenarios
 Accept: application/json
 
 ###
 
 # Operand registry: mặc định platform + operand Sample đăng ký
-GET {{Sample_HostAddress}}/api/_authz-demo/operands
+GET {{Sample_HostAddress}}/api/v1/_authz-demo/operands
 
 ###
 
 # Role / policy / role claims trong store
-GET {{Sample_HostAddress}}/api/_authz-demo/store
+GET {{Sample_HostAddress}}/api/v1/_authz-demo/store
 
 ###
 
 # Kiểm tra tùy ý (Tenant: T1|T2, Department: Sales|IT|Marketing, CreatedBy: tên user demo)
-POST {{Sample_HostAddress}}/api/_authz-demo/check
+POST {{Sample_HostAddress}}/api/v1/_authz-demo/check
 Content-Type: application/json
 
 {
@@ -76,7 +76,7 @@ Content-Type: application/json
 ###
 
 # Rule dùng operand chưa đăng ký → IsValid=false
-POST {{Sample_HostAddress}}/api/_authz-demo/rules/validate
+POST {{Sample_HostAddress}}/api/v1/_authz-demo/rules/validate
 Content-Type: application/json
 
 {
@@ -88,41 +88,41 @@ Content-Type: application/json
 ###
 
 # Data Scope: danh sách chứng từ user được thấy (lọc bằng SQL WHERE, trả kèm câu SQL)
-GET {{Sample_HostAddress}}/api/_authz-demo/expenses?user=manager.sales&permission=Expense.Approve
+GET {{Sample_HostAddress}}/api/v1/_authz-demo/expenses?user=manager.sales&permission=Expense.Approve
 
 ###
 
 # Data Scope vs engine: mọi user × permission, danh sách SQL phải trùng quyết định từng chứng từ
-GET {{Sample_HostAddress}}/api/_authz-demo/scope-check
+GET {{Sample_HostAddress}}/api/v1/_authz-demo/scope-check
 
 ###
 
 # Code mẫu ExpenseSampleController — user qua header X-Demo-User
 # Danh sách trong phạm vi + lọc nghiệp vụ + phân trang (một câu SQL)
-GET {{Sample_HostAddress}}/api/_authz-sample/expenses?minAmount=2000000&page=1&pageSize=10
+GET {{Sample_HostAddress}}/api/v1/_authz-sample/expenses?minAmount=2000000&page=1&pageSize=10
 X-Demo-User: employee
 
 ###
 
 # Thống kê theo phòng ban trong phạm vi
-GET {{Sample_HostAddress}}/api/_authz-sample/expenses/summary
+GET {{Sample_HostAddress}}/api/v1/_authz-sample/expenses/summary
 X-Demo-User: regional
 
 ###
 
 # Chi tiết ngoài phạm vi → 404
-GET {{Sample_HostAddress}}/api/_authz-sample/expenses/E-03
+GET {{Sample_HostAddress}}/api/v1/_authz-sample/expenses/E-03
 X-Demo-User: manager.sales
 
 ###
 
 # Duyệt: E-01 (8M ≤ hạn mức 10M) → 200; E-02 (15M) → 403 kèm lý do
-POST {{Sample_HostAddress}}/api/_authz-sample/expenses/E-02/approve
+POST {{Sample_HostAddress}}/api/v1/_authz-sample/expenses/E-02/approve
 X-Demo-User: manager.sales
 
 ###
 
 # Xóa và tạo lại database demo
-POST {{Sample_HostAddress}}/api/_authz-demo/reset
+POST {{Sample_HostAddress}}/api/v1/_authz-demo/reset
 
 ###

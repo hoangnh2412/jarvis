@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Sample.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/tests")]
 public class TestController : ControllerBase
 {

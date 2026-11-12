@@ -22,6 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Platform.Modules.IdentityAdmin\Platform.Modules.IdentityAdmin.csproj" />
     <ProjectReference Include="..\..\..\frameworks\Platform.Authorization.EntityFramework\Platform.Authorization.EntityFramework.csproj" />
     <ProjectReference Include="..\..\tenants\Platform.Tenants\Platform.Tenants.csproj" />

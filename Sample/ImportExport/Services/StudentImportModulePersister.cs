@@ -14,7 +14,7 @@ namespace Sample.ImportExport.Services;
 /// Demo persister: maps import rows with fields <c>Name</c> / <c>Age</c> into <see cref="Student"/>.
 /// </summary>
 public sealed class StudentImportModulePersister(
-    ITenantUnitOfWork unitOfWork,
+    ISampleTenantUnitOfWork unitOfWork,
     ICurrentTenant<CurrentTenantInfo> currentTenant) : IImportModulePersister
 {
     public string EntityKey => ImportExportEntityKeys.Student;

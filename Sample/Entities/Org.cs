@@ -27,7 +27,7 @@ public class OrgEntityConfiguration : IEntityTypeConfiguration<Org>
 {
     public void Configure(EntityTypeBuilder<Org> builder)
     {
-        builder.ToTable("Org");
+        builder.ToTable("org");
         builder.Property(x => x.TaxCode).HasMaxLength(32);
     }
 }

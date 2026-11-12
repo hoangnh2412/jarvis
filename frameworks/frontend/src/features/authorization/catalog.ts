@@ -24,37 +24,37 @@ export type PolicyDefinition = {
 
 export const POLICY_CATALOG: PolicyDefinition[] = [
   {
-    code: 'P_SAME_TENANT',
+    code: 'SAME_TENANT',
     name: 'Same Tenant',
     summary: 'Resource.TenantId == User.TenantId',
   },
   {
-    code: 'P_SAME_ORG',
+    code: 'SAME_ORG',
     name: 'Same Organization',
     summary: 'Resource.OrgId == User.OrgId',
   },
   {
-    code: 'P_SAME_DEPARTMENT',
+    code: 'SAME_DEPARTMENT',
     name: 'Same Department',
     summary: 'Resource.DepartmentId == User.DepartmentId',
   },
   {
-    code: 'P_OWNER_ONLY',
+    code: 'OWNER_ONLY',
     name: 'Owner Only',
     summary: 'Resource.CreatedBy == User.Id',
   },
   {
-    code: 'P_APPROVE_LIMIT',
+    code: 'APPROVE_LIMIT',
     name: 'Approve Limit',
     summary: 'Resource.Amount <= User.ApproveLimit',
   },
   {
-    code: 'P_MANAGED_PROJECT',
+    code: 'MANAGED_PROJECT',
     name: 'Managed Project',
     summary: 'Resource.ProjectId thuộc dự án user phụ trách',
   },
   {
-    code: 'P_MANAGED_DEPARTMENT',
+    code: 'MANAGED_DEPARTMENT',
     name: 'Managed Department',
     summary: 'Resource.DepartmentId thuộc phòng user quản lý',
   },

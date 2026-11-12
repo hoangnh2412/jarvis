@@ -1,6 +1,7 @@
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import { accountHttp, configurePlatformHttp, platformHttp } from '@platform/core'
 import { clearAccessToken, getAccessToken, isAccessTokenExpired } from './accessToken'
+import { isPublicLoginPath, SAMPLE_APP_LOGIN_PATH } from './loginPaths'
 import { refreshAccessToken } from './refreshAccessToken'
 
 let configured = false
@@ -10,8 +11,8 @@ type RetriableConfig = InternalAxiosRequestConfig & { __retried?: boolean }
 /** Gắn Bearer JWT và đổi token khi access token hết hạn. */
 function redirectToLogin() {
   clearAccessToken()
-  if (!window.location.pathname.startsWith('/login')) {
-    window.location.assign('/login')
+  if (!isPublicLoginPath(window.location.pathname)) {
+    window.location.assign(SAMPLE_APP_LOGIN_PATH)
   }
 }
 

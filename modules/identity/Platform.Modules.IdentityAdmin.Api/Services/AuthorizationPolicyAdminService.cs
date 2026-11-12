@@ -13,7 +13,7 @@ namespace Platform.Modules.IdentityAdmin.Api.Services;
 
 public sealed class AuthorizationPolicyAdminService : IAuthorizationPolicyAdminService
 {
-    private static readonly Regex PolicyCodePattern = new(@"^P_[A-Z0-9_]+$", RegexOptions.CultureInvariant);
+    private static readonly Regex PolicyCodePattern = new(@"^[A-Z][A-Z0-9_]*$", RegexOptions.CultureInvariant);
 
     private readonly IdentityDbContextBase _db;
     private readonly OperandValidator _operandValidator;
@@ -247,7 +247,7 @@ public sealed class AuthorizationPolicyAdminService : IAuthorizationPolicyAdminS
     private static void ValidateCode(string code)
     {
         if (!PolicyCodePattern.IsMatch(code))
-            throw new InvalidOperationException("Mã policy phải dạng P_TEN_VIET_HOA (chữ, số, gạch dưới).");
+            throw new InvalidOperationException("Mã policy phải dạng TEN_VIET_HOA (chữ HOA, số, gạch dưới).");
     }
 
     private static string NormalizeCode(string? code) =>

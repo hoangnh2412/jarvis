@@ -21,6 +21,10 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
+  </ItemGroup>
+
   <!-- ADR C12/T13: Account.Api depends on Account only — never on Platform.Authorization. -->
   <ItemGroup>
     <ProjectReference Include="..\Platform.Modules.Account\Platform.Modules.Account.csproj" />

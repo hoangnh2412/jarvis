@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Platform.Authorization.Abstractions;
 using Platform.DDD.Domain.Services;
+using Platform.DDD.Domain.Shared.ExceptionHandling;
 using Platform.Modules.Account.Abstractions;
 using Platform.Modules.IdentityAdmin.Abstractions;
 using Platform.Modules.IdentityAdmin.Authorization;
@@ -190,11 +191,11 @@ public sealed class UserOrgScopeService(
     {
         var principal = httpContextAccessor.HttpContext?.User;
         if (principal?.Identity?.IsAuthenticated != true)
-            throw new UnauthorizedAccessException("Chưa đăng nhập.");
+            throw new BusinessException(AccountErrorCode.SessionInvalid);
 
         var raw = principal.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(raw, out var userId))
-            throw new UnauthorizedAccessException("Token không hợp lệ.");
+            throw new BusinessException(AccountErrorCode.SessionInvalid);
 
         return (userId, principal);
     }

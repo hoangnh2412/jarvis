@@ -16,7 +16,7 @@ public static class SampleLoginScopeSeed
         try
         {
             await using var scope = app.Services.CreateAsyncScope();
-            var tenants = scope.ServiceProvider.GetRequiredService<ITenantUnitOfWork>();
+            var tenants = scope.ServiceProvider.GetRequiredService<ISampleTenantUnitOfWork>();
             await tenants.SwitchDbContextAsync(SampleAuthTenants.DevTenantId, cancellationToken).ConfigureAwait(false);
             var repo = await tenants.GetRepositoryAsync<IRepository<Sample.Entities.Org>>(cancellationToken).ConfigureAwait(false);
             var exists = await repo.GetQuery()

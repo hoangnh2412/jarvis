@@ -130,7 +130,7 @@ public sealed class DataScopeFilterTests
     public async Task NoPermission_ReturnsNothing()
     {
         var f = await CreateAsync();
-        var role = AddRole(f.Ctx, ["Expense.View"], ["P_SAME_ORG"]);
+        var role = AddRole(f.Ctx, ["Expense.View"], ["SAME_ORG"]);
         var userId = await AddUserAsync(f.Ctx, [role], OrgA);
 
         Assert.Empty(await ScopeAsync(f, userId, "Expense.Approve", Rows(userId)));
@@ -161,7 +161,7 @@ public sealed class DataScopeFilterTests
     public async Task PoliciesWithinRole_AreAnded()
     {
         var f = await CreateAsync();
-        var cfo = AddRole(f.Ctx, ["Expense.Approve"], ["P_SAME_ORG", "P_APPROVE_LIMIT"]);
+        var cfo = AddRole(f.Ctx, ["Expense.Approve"], ["SAME_ORG", "APPROVE_LIMIT"]);
         var userId = await AddUserAsync(f.Ctx, [cfo], OrgA, DeptAcc, approveLimit: 10_000_000m);
 
         Assert.Equal(["A-ACC-8M", "A-SALES-OWN", "A-TECH-1M", "T2-ACC-1M"], await ScopeAsync(f, userId, "Expense.Approve", Rows(userId)));
@@ -171,8 +171,8 @@ public sealed class DataScopeFilterTests
     public async Task GrantingRoles_AreOred()
     {
         var f = await CreateAsync();
-        var deptViewer = AddRole(f.Ctx, ["Expense.View"], ["P_SAME_TENANT", "P_SAME_DEPARTMENT"]);
-        var owner = AddRole(f.Ctx, ["Expense.View"], ["P_OWNER_ONLY"]);
+        var deptViewer = AddRole(f.Ctx, ["Expense.View"], ["SAME_TENANT", "SAME_DEPARTMENT"]);
+        var owner = AddRole(f.Ctx, ["Expense.View"], ["OWNER_ONLY"]);
         var userId = await AddUserAsync(f.Ctx, [deptViewer, owner], OrgA, DeptTech);
 
         Assert.Equal(["A-SALES-OWN", "A-TECH-1M"], await ScopeAsync(f, userId, "Expense.View", Rows(userId)));
@@ -182,8 +182,8 @@ public sealed class DataScopeFilterTests
     public async Task NonGrantingRolePolicies_AreIgnored()
     {
         var f = await CreateAsync();
-        var viewer = AddRole(f.Ctx, ["Expense.View"], ["P_SAME_DEPARTMENT"]);
-        var approver = AddRole(f.Ctx, ["Expense.Approve"], ["P_APPROVE_LIMIT"]);
+        var viewer = AddRole(f.Ctx, ["Expense.View"], ["SAME_DEPARTMENT"]);
+        var approver = AddRole(f.Ctx, ["Expense.Approve"], ["APPROVE_LIMIT"]);
         var userId = await AddUserAsync(f.Ctx, [viewer, approver], OrgA, DeptAcc, approveLimit: 1m);
 
         Assert.Equal(["A-ACC-15M", "A-ACC-8M", "B-ACC-1M", "NOORG-ACC-1M", "T2-ACC-1M"], await ScopeAsync(f, userId, "Expense.View", Rows(userId)));
@@ -193,7 +193,7 @@ public sealed class DataScopeFilterTests
     public async Task RulesWithinPolicy_AreOred()
     {
         var f = await CreateAsync();
-        var employee = AddRole(f.Ctx, ["Expense.View"], ["P_SAME_TENANT", "P_OWNER_OR_SAME_DEPT"]);
+        var employee = AddRole(f.Ctx, ["Expense.View"], ["SAME_TENANT", "OWNER_OR_SAME_DEPT"]);
         var userId = await AddUserAsync(f.Ctx, [employee], OrgA, DeptTech);
 
         Assert.Equal(["A-SALES-OWN", "A-TECH-1M"], await ScopeAsync(f, userId, "Expense.View", Rows(userId)));
@@ -203,7 +203,7 @@ public sealed class DataScopeFilterTests
     public async Task InOperator_UsesCollection()
     {
         var f = await CreateAsync();
-        var manager = AddRole(f.Ctx, ["Expense.View"], ["P_SAME_ORG", "P_MANAGED_PROJECT"]);
+        var manager = AddRole(f.Ctx, ["Expense.View"], ["SAME_ORG", "MANAGED_PROJECT"]);
         var userId = await AddUserAsync(f.Ctx, [manager], OrgA, managedDepartmentIds: $"{DeptTech},{DeptSales}");
 
         Assert.Equal(["A-SALES-OWN", "A-TECH-1M"], await ScopeAsync(f, userId, "Expense.View", Rows(userId)));
@@ -213,8 +213,8 @@ public sealed class DataScopeFilterTests
     public async Task UnresolvedPolicy_FailsClosedForThatRole()
     {
         var f = await CreateAsync();
-        var broken = AddRole(f.Ctx, ["Expense.View"], ["P_DOES_NOT_EXIST"]);
-        var owner = AddRole(f.Ctx, ["Expense.View"], ["P_OWNER_ONLY"]);
+        var broken = AddRole(f.Ctx, ["Expense.View"], ["DOES_NOT_EXIST"]);
+        var owner = AddRole(f.Ctx, ["Expense.View"], ["OWNER_ONLY"]);
         var brokenOnly = await AddUserAsync(f.Ctx, [broken], OrgA);
         var both = await AddUserAsync(f.Ctx, [broken, owner], OrgA);
 
@@ -226,7 +226,7 @@ public sealed class DataScopeFilterTests
     public async Task MissingUserAttribute_ReturnsNothing()
     {
         var f = await CreateAsync();
-        var viewer = AddRole(f.Ctx, ["Expense.View"], ["P_SAME_DEPARTMENT"]);
+        var viewer = AddRole(f.Ctx, ["Expense.View"], ["SAME_DEPARTMENT"]);
         var userId = await AddUserAsync(f.Ctx, [viewer], OrgA);
 
         Assert.Empty(await ScopeAsync(f, userId, "Expense.View", Rows(userId)));
@@ -236,16 +236,16 @@ public sealed class DataScopeFilterTests
     public async Task NullResourceAttribute_NeverMatches()
     {
         var f = await CreateAsync();
-        var sameOrg = AddRole(f.Ctx, ["Expense.View"], ["P_SAME_ORG"]);
+        var sameOrg = AddRole(f.Ctx, ["Expense.View"], ["SAME_ORG"]);
         var userId = await AddUserAsync(f.Ctx, [sameOrg], OrgB);
         f.Ctx.Policies.Add(new Policy
         {
             Id = Guid.NewGuid(),
-            Code = "P_OTHER_ORG",
+            Code = "OTHER_ORG",
             Name = "Other org",
             Rules = [new PolicyRule { Id = Guid.NewGuid(), Order = 1, LeftOperand = "Resource.OrgId", Operator = "!=", RightOperand = "User.OrgId" }],
         });
-        var otherOrg = AddRole(f.Ctx, ["Expense.Audit"], ["P_OTHER_ORG"]);
+        var otherOrg = AddRole(f.Ctx, ["Expense.Audit"], ["OTHER_ORG"]);
         var auditor = await AddUserAsync(f.Ctx, [otherOrg], OrgB);
 
         Assert.Equal(["B-ACC-1M"], await ScopeAsync(f, userId, "Expense.View", Rows(userId)));
@@ -256,7 +256,7 @@ public sealed class DataScopeFilterTests
     public async Task ResourceWithoutAttribute_ReturnsNothing()
     {
         var f = await CreateAsync();
-        var viewer = AddRole(f.Ctx, ["Note.View"], ["P_SAME_DEPARTMENT"]);
+        var viewer = AddRole(f.Ctx, ["Note.View"], ["SAME_DEPARTMENT"]);
         var userId = await AddUserAsync(f.Ctx, [viewer], OrgA, DeptAcc);
 
         var notes = new[] { new NoteRow { Id = Guid.NewGuid(), OrgId = OrgA } }.AsQueryable();
@@ -271,11 +271,11 @@ public sealed class DataScopeFilterTests
         f.Ctx.Policies.Add(new Policy
         {
             Id = Guid.NewGuid(),
-            Code = "P_BY_AMOUNT_ONLY",
+            Code = "BY_AMOUNT_ONLY",
             Name = "Unregistered",
             Rules = [new PolicyRule { Id = Guid.NewGuid(), Order = 1, LeftOperand = "Resource.Code", Operator = "==", RightOperand = "User.Id" }],
         });
-        var role = AddRole(f.Ctx, ["Expense.View"], ["P_BY_AMOUNT_ONLY"]);
+        var role = AddRole(f.Ctx, ["Expense.View"], ["BY_AMOUNT_ONLY"]);
         var userId = await AddUserAsync(f.Ctx, [role], OrgA);
 
         Assert.Empty(await ScopeAsync(f, userId, "Expense.View", Rows(userId)));
@@ -285,10 +285,10 @@ public sealed class DataScopeFilterTests
     public async Task Scope_MatchesEngineDecision()
     {
         var f = await CreateAsync();
-        var cfo = AddRole(f.Ctx, ["Expense.View", "Expense.Approve"], ["P_SAME_ORG", "P_APPROVE_LIMIT"]);
-        var employee = AddRole(f.Ctx, ["Expense.View"], ["P_SAME_TENANT", "P_OWNER_OR_SAME_DEPT"]);
-        var manager = AddRole(f.Ctx, ["Expense.View"], ["P_SAME_ORG", "P_MANAGED_PROJECT"]);
-        var broken = AddRole(f.Ctx, ["Expense.Delete"], ["P_DOES_NOT_EXIST"]);
+        var cfo = AddRole(f.Ctx, ["Expense.View", "Expense.Approve"], ["SAME_ORG", "APPROVE_LIMIT"]);
+        var employee = AddRole(f.Ctx, ["Expense.View"], ["SAME_TENANT", "OWNER_OR_SAME_DEPT"]);
+        var manager = AddRole(f.Ctx, ["Expense.View"], ["SAME_ORG", "MANAGED_PROJECT"]);
+        var broken = AddRole(f.Ctx, ["Expense.Delete"], ["DOES_NOT_EXIST"]);
         var users = new[]
         {
             await AddUserAsync(f.Ctx, [cfo], OrgA, DeptAcc, approveLimit: 10_000_000m),
@@ -329,8 +329,8 @@ public sealed class DataScopeFilterTests
     public async Task Scope_TranslatesToSql()
     {
         var f = await CreateAsync();
-        var employee = AddRole(f.Ctx, ["Expense.View"], ["P_SAME_TENANT", "P_OWNER_OR_SAME_DEPT"]);
-        var manager = AddRole(f.Ctx, ["Expense.View"], ["P_SAME_ORG", "P_APPROVE_LIMIT", "P_MANAGED_PROJECT"]);
+        var employee = AddRole(f.Ctx, ["Expense.View"], ["SAME_TENANT", "OWNER_OR_SAME_DEPT"]);
+        var manager = AddRole(f.Ctx, ["Expense.View"], ["SAME_ORG", "APPROVE_LIMIT", "MANAGED_PROJECT"]);
         var userId = await AddUserAsync(f.Ctx, [employee, manager], OrgA, DeptTech, approveLimit: 10_000_000m, managedDepartmentIds: $"{DeptAcc},{DeptSales}");
 
         using var db = NpgsqlContext();

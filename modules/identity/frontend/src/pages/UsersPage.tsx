@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminList, ConfirmDialog, FeatureDialog, Tag, notify, type AdminListColumn, type RowActionItem } from '@platform/core'
 import { Lock, Pencil, Plus, Trash2, Unlock } from 'lucide-react'
@@ -10,21 +10,66 @@ import {
   updateSystemUser,
   type SystemUser,
 } from '../services/users'
-import { listSystemRoles } from '../services/roles'
+import { listSystemRoles, type SystemRole } from '../services/roles'
 import { notifyApiError } from '../notify'
 import { searchNormalize } from '../utils'
 import { btnPrimaryClass } from '../components/fieldStyles'
 import { UserForm, type OrgUnitOption, type UserFormValues } from './UserForm'
+
+/* ------------------------------------------------------------------ */
+/*  Context — tất cả logic, state & handler của trang danh sách user  */
+/* ------------------------------------------------------------------ */
+export type UsersPageContext = {
+  /* --- Data --- */
+  users: SystemUser[]
+  filteredUsers: SystemUser[]
+  roles: SystemRole[]
+  roleById: Map<string, SystemRole>
+  isLoading: boolean
+
+  /* --- Search --- */
+  search: string
+  onSearchChange: (value: string) => void
+
+  /* --- Table --- */
+  columns: AdminListColumn<SystemUser>[]
+  actionsFor: (user: SystemUser) => RowActionItem[]
+
+  /* --- Form dialog --- */
+  formOpen: boolean
+  formUser: SystemUser | null
+  openCreate: () => void
+  openEdit: (user: SystemUser) => void
+  closeForm: () => void
+  onFormSubmit: (values: UserFormValues) => void
+  isFormSaving: boolean
+
+  /* --- Delete dialog --- */
+  pendingDelete: SystemUser | null
+  requestDelete: (user: SystemUser) => void
+  confirmDelete: () => void
+  cancelDelete: () => void
+
+  /* --- Misc --- */
+  refreshUsers: () => Promise<void>
+  loadOrgUnits?: () => Promise<OrgUnitOption[]>
+  saveUserOrgUnit?: (userId: string, organizationalUnitId: string) => Promise<void>
+}
 
 export type UsersPageProps = {
   /** Host nạp danh sách đơn vị tổ chức cho form gán user. */
   loadOrgUnits?: () => Promise<OrgUnitOption[]>
   /** Host lưu gán đơn vị sau khi tạo/sửa user thành công. */
   saveUserOrgUnit?: (userId: string, organizationalUnitId: string) => Promise<void>
+  /**
+   * Custom UI — host truyền JSX hoặc render function nhận `UsersPageContext`.
+   * Không truyền → hiển thị giao diện mặc định (AdminList + FeatureDialog).
+   */
+  content?: ReactNode | ((ctx: UsersPageContext) => ReactNode)
 }
 
 /** Trang danh sách người dùng của tenant; thêm/sửa qua dialog. */
-export function UsersPage({ loadOrgUnits, saveUserOrgUnit }: UsersPageProps) {
+export function UsersPage({ loadOrgUnits, saveUserOrgUnit, content }: UsersPageProps) {
   const queryClient = useQueryClient()
   const usersQuery = useQuery({ queryKey: identityQueryKeys.users, queryFn: listSystemUsers, retry: false })
   const rolesQuery = useQuery({ queryKey: identityQueryKeys.roles, queryFn: listSystemRoles, retry: false })
@@ -138,6 +183,37 @@ export function UsersPage({ loadOrgUnits, saveUserOrgUnit }: UsersPageProps) {
     },
     { id: 'delete', label: 'Xóa người dùng', icon: Trash2, danger: true, separatorBefore: true, onClick: () => setPendingDelete(user) },
   ], [toggleMutation])
+
+  /* ---------- content render-prop ---------- */
+  if (content) {
+    const ctx: UsersPageContext = {
+      users,
+      filteredUsers,
+      roles,
+      roleById,
+      isLoading: usersQuery.isLoading,
+      search,
+      onSearchChange: setSearch,
+      columns,
+      actionsFor,
+      formOpen,
+      formUser,
+      openCreate: () => { setFormUser(null); setFormOpen(true) },
+      openEdit: (user: SystemUser) => { setFormUser(user); setFormOpen(true) },
+      closeForm: () => { setFormOpen(false); setFormUser(null) },
+      onFormSubmit: (values: UserFormValues) => saveMutation.mutate(values),
+      isFormSaving: saveMutation.isPending,
+      pendingDelete,
+      requestDelete: setPendingDelete,
+      confirmDelete: () => pendingDelete && deleteMutation.mutate(pendingDelete),
+      cancelDelete: () => setPendingDelete(null),
+      refreshUsers,
+      loadOrgUnits,
+      saveUserOrgUnit,
+    }
+    const resolved = typeof content === 'function' ? content(ctx) : content
+    return <>{resolved}</>
+  }
 
   return (
     <section className="flex h-full min-h-0 flex-col overflow-hidden p-4 text-sm text-slate-800 sm:p-6">

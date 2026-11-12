@@ -1,6 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using Platform.Host.Postgresql.Persistence;
 using Platform.Orgs.EntityFramework.Extensions;
-using Microsoft.EntityFrameworkCore;
+using Sample.AuthorizationDemo;
 using Sample.Entities;
 
 namespace Sample.Persistence;
@@ -20,6 +21,8 @@ public class SampleTenantDbContext(
 
     public DbSet<SampleExcelTemplate> ExcelTemplates => Set<SampleExcelTemplate>();
 
+    public DbSet<SampleExpenseRow> Expenses => Set<SampleExpenseRow>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -34,5 +37,13 @@ public class SampleTenantDbContext(
         modelBuilder.Entity<Department>().ToTable("departments");
         modelBuilder.Entity<Employee>().ToTable("employees");
         modelBuilder.Entity<Position>().ToTable("positions");
+
+        modelBuilder.Entity<SampleExpenseRow>(entity =>
+        {
+            entity.ToTable("sample_expenses");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).HasMaxLength(32);
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+        });
     }
 }

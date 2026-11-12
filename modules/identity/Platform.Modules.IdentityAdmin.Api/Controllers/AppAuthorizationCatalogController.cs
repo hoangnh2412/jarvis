@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,8 +10,9 @@ using Platform.Modules.IdentityAdmin.Abstractions;
 namespace Platform.Modules.IdentityAdmin.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Authorize]
-[Route("api/v1/app/authorization")]
+[Route("api/v{version:apiVersion}/app/authorization")]
 public sealed class AppAuthorizationCatalogController(
     IPermissionProvider permissions,
     IPermissionCatalogProvider catalog,

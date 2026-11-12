@@ -97,10 +97,10 @@ export {
   listAppLoginTenants,
   type LoginCatalogItem,
 } from './services/loginCatalog'
-export { LoginPage, type LoginBranding, type LoginPageProps } from './pages/LoginPage'
-export { UsersPage, type UsersPageProps } from './pages/UsersPage'
-export { UserFormPage, type UserFormPageProps } from './pages/UserFormPage'
-export { UserForm, type OrgUnitOption, type UserFormProps, type UserFormValues } from './pages/UserForm'
+export { LoginPage, type LoginBranding, type LoginPageProps, type LoginPageContext } from './pages/LoginPage'
+export { UsersPage, type UsersPageContext, type UsersPageProps } from './pages/UsersPage'
+export { UserFormPage, type UserFormPageContext, type UserFormPageProps } from './pages/UserFormPage'
+export { UserForm, type UserFormContext, type OrgUnitOption, type UserFormProps, type UserFormValues } from './pages/UserForm'
 export { RolesPage, type RolesPageProps } from './pages/RolesPage'
 export { RoleAuthorizationDialog } from './pages/RoleAuthorizationDialog'
 export { RolePolicyDialog, type RolePolicyDialogProps } from './pages/RolePolicyDialog'

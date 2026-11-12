@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PrimeReactProvider } from '@primereact/core'
 import { kitPrimeReactConfig, Toaster } from '@platform/core'
-import { configureIdentity } from '@platform/identity'
+import { DEFAULT_IDENTITY_ROUTES, configureIdentity } from '@platform/identity'
 import { configureOrgStructure } from '@platform/orgstructure'
 import {
   configureNotificationAuth,
@@ -12,7 +12,15 @@ import {
   configureNotificationRealtime,
   configureNotificationTenant,
 } from '@platform/notifications'
-import { getAccessToken, getLoginOrgId, getLoginScopeHeaders, getLoginTenantId, setupSampleAccountAuth } from './auth'
+import {
+  clearLoginScope,
+  getAccessToken,
+  getLoginOrgId,
+  getLoginScopeHeaders,
+  getLoginTenantId,
+  setLoginScope,
+  setupSampleAccountAuth,
+} from './auth'
 import {
   configureImportExportHttp,
   resolveImportExportTenantId,
@@ -23,7 +31,12 @@ import App from './App.tsx'
 
 configureSampleHttp()
 setupSampleAccountAuth()
-configureIdentity({ getScopeHeaders: getLoginScopeHeaders })
+configureIdentity({
+  getScopeHeaders: getLoginScopeHeaders,
+  loginPath: DEFAULT_IDENTITY_ROUTES.appLogin,
+  rememberScope: (tenantId, orgId) => setLoginScope({ tenantId, orgId }),
+  clearScope: clearLoginScope,
+})
 configureOrgStructure({ getScopeHeaders: getLoginScopeHeaders })
 
 const queryClient = new QueryClient()

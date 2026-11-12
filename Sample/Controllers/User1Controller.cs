@@ -20,7 +20,7 @@ namespace Sample.Controllers;
 [Route("api/v{version:apiVersion}/users")]
 public class User1Controller(
     ILogger<User1Controller> logger,
-    ITenantUnitOfWork unitOfWork,
+    ISampleTenantUnitOfWork unitOfWork,
     [FromKeyedServices("Default")] IConnectionMultiplexer redis) : ControllerBase
 {
     /// <summary>Must match <c>AddSource("Sample")</c> in Platform OpenTelemetry defaults.</summary>

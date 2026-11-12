@@ -9,12 +9,12 @@ namespace Sample.Controllers;
 
 /// <summary>
 /// Sample CRUD against Master <c>Tenant</c> via <c>Platform.ORM.EntityFramework</c>
-/// (<see cref="IMasterUnitOfWork"/> + <see cref="IRepository{TEntity}"/>).
+/// (<see cref="ISampleMasterUnitOfWork"/> + <see cref="IRepository{TEntity}"/>).
 /// </summary>
 [ApiController]
 [Route("api/v{version:apiVersion}/orm/ef/tenants")]
 [ApiVersion("1.0")]
-public class EntityFrameworkController(IMasterUnitOfWork uow) : ControllerBase
+public class EntityFrameworkController(ISampleMasterUnitOfWork uow) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> ListAsync(CancellationToken cancellationToken)

@@ -3,6 +3,7 @@ namespace Platform.Modules.Account.Commands;
 using Platform.Authentication;
 using Platform.DDD.Application.Contracts.Commands;
 using Platform.DDD.Domain.Services;
+using Platform.DDD.Domain.Shared.ExceptionHandling;
 
 public sealed class LogoutCommandHandler : IAsyncCommandHandler<LogoutCommand>
 {
@@ -17,6 +18,6 @@ public sealed class LogoutCommandHandler : IAsyncCommandHandler<LogoutCommand>
     {
         var actor = await _currentUser.GetAsync(cancellationToken);
         if (actor?.UserId == null)
-            throw new UnauthorizedAccessException("Current user not found");
+            throw new BusinessException(AccountErrorCode.SessionInvalid);
     }
 }

@@ -5,6 +5,7 @@ using Platform.Authentication.Identity.Domain;
 using Platform.Authorization.Domain;
 using Platform.Authorization.EntityFramework.Persistence;
 using Platform.Authorization.Operands;
+using Sample.Persistence;
 
 namespace Sample.AuthorizationDemo;
 
@@ -55,7 +56,8 @@ public static class SampleAuthorizationDemoData
         ["Marketing"] = Guid.Parse("41000000-0000-0000-0000-000000000003"),
     };
 
-    private static readonly Guid AdminRoleId = Guid.Parse("10000000-0000-0000-0000-000000000001");
+    /// <summary>Role platform ADMIN — Id lấy từ DB sau catalog seed, không cố định.</summary>
+    private static readonly Guid PlatformAdminRoleSentinel = Guid.Empty;
     private static readonly Guid ViewerRoleId = Guid.Parse("50000000-0000-0000-0000-000000000001");
     private static readonly Guid ApproverRoleId = Guid.Parse("50000000-0000-0000-0000-000000000002");
     private static readonly Guid RegionalRoleId = Guid.Parse("50000000-0000-0000-0000-000000000003");
@@ -89,11 +91,11 @@ public static class SampleAuthorizationDemoData
     /// <summary>Role → (permission, policy). Policy AND trong một role; các role cấp permission OR với nhau.</summary>
     private static readonly (Guid RoleId, string[] Permissions, string[] Policies)[] RoleGrants =
     [
-        (AdminRoleId, ["*"], []),
-        (ViewerRoleId, ["Expense.View"], ["P_SAME_TENANT", "SAMPLE_SAME_DEPARTMENT"]),
-        (ApproverRoleId, ["Expense.Approve"], ["P_SAME_TENANT", "SAMPLE_SAME_DEPARTMENT", "SAMPLE_APPROVE_LIMIT"]),
-        (RegionalRoleId, ["Expense.View"], ["P_SAME_TENANT", "SAMPLE_MANAGED_DEPARTMENT"]),
-        (EmployeeRoleId, ["Expense.View"], ["P_OWNER_ONLY"]),
+        (PlatformAdminRoleSentinel, ["*"], []),
+        (ViewerRoleId, ["Expense.View"], ["SAME_TENANT", "SAMPLE_SAME_DEPARTMENT"]),
+        (ApproverRoleId, ["Expense.Approve"], ["SAME_TENANT", "SAMPLE_SAME_DEPARTMENT", "SAMPLE_APPROVE_LIMIT"]),
+        (RegionalRoleId, ["Expense.View"], ["SAME_TENANT", "SAMPLE_MANAGED_DEPARTMENT"]),
+        (EmployeeRoleId, ["Expense.View"], ["OWNER_ONLY"]),
         (MisconfiguredRoleId, ["Expense.Delete"], ["SAMPLE_POLICY_NOT_SEEDED"]),
     ];
 
@@ -101,7 +103,7 @@ public static class SampleAuthorizationDemoData
 
     public static readonly IReadOnlyList<DemoUser> Users =
     [
-        new(Guid.Parse("30000000-0000-0000-0000-000000000001"), "admin", "T1", [AdminRoleId], new Dictionary<string, string>()),
+        new(Guid.Parse("30000000-0000-0000-0000-000000000001"), "admin", "T1", [PlatformAdminRoleSentinel], new Dictionary<string, string>()),
         new(Guid.Parse("30000000-0000-0000-0000-000000000002"), "manager.sales", "T1", [ViewerRoleId, ApproverRoleId],
             new Dictionary<string, string> { ["DepartmentId"] = Dept("Sales"), ["ApproveLimit"] = Money(10_000_000m) }),
         new(Guid.Parse("30000000-0000-0000-0000-000000000003"), "manager.it", "T1", [ViewerRoleId, ApproverRoleId],
@@ -155,6 +157,15 @@ public static class SampleAuthorizationDemoData
     /// <summary>Thêm role claims, user, user roles, user claims còn thiếu (idempotent).</summary>
     public static async Task EnsureDemoDataAsync(IdentityDbContextBase context, CancellationToken cancellationToken = default)
     {
+        var adminRoleId = await context.Roles
+            .Where(r => r.NormalizedName == "ADMIN")
+            .Select(r => r.Id)
+            .SingleAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        static Guid ResolveRoleId(Guid roleId, Guid adminId) =>
+            roleId == PlatformAdminRoleSentinel ? adminId : roleId;
+
         var existingRoleClaims = (await context.RoleClaims
                 .Select(rc => new { rc.RoleId, rc.ClaimType, rc.ClaimValue })
                 .ToListAsync(cancellationToken))
@@ -163,11 +174,12 @@ public static class SampleAuthorizationDemoData
 
         foreach (var (roleId, permissions, policies) in RoleGrants)
         {
+            var resolvedRoleId = ResolveRoleId(roleId, adminRoleId);
             var claims = permissions.Select(p => (PermissionClaim, p)).Concat(policies.Select(p => (PolicyClaim, p)));
             foreach (var (type, value) in claims)
             {
-                if (existingRoleClaims.Add((roleId, type, value)))
-                    context.RoleClaims.Add(new IdentityRoleClaim<Guid> { RoleId = roleId, ClaimType = type, ClaimValue = value });
+                if (existingRoleClaims.Add((resolvedRoleId, type, value)))
+                    context.RoleClaims.Add(new IdentityRoleClaim<Guid> { RoleId = resolvedRoleId, ClaimType = type, ClaimValue = value });
             }
         }
 
@@ -184,19 +196,19 @@ public static class SampleAuthorizationDemoData
                 OrgId = DefaultOrgForTenant(user.Tenant),
             });
             foreach (var roleId in user.Roles)
-                context.UserRoles.Add(new IdentityUserRole<Guid> { UserId = user.Id, RoleId = roleId });
+                context.UserRoles.Add(new IdentityUserRole<Guid> { UserId = user.Id, RoleId = ResolveRoleId(roleId, adminRoleId) });
             foreach (var (type, value) in user.Claims)
                 context.UserClaims.Add(new IdentityUserClaim<Guid> { UserId = user.Id, ClaimType = type, ClaimValue = value });
         }
 
-        await EnsureSampleLoginUserAsync(context, cancellationToken).ConfigureAwait(false);
+        await EnsureSampleLoginUserAsync(context, adminRoleId, cancellationToken).ConfigureAwait(false);
         await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <summary>
     /// User đăng nhập SPA trên tenant/org mẫu. Mật khẩu trùng tài khoản Basic demo.
     /// </summary>
-    private static async Task EnsureSampleLoginUserAsync(IdentityDbContextBase context, CancellationToken cancellationToken)
+    private static async Task EnsureSampleLoginUserAsync(IdentityDbContextBase context, Guid adminRoleId, CancellationToken cancellationToken)
     {
         var loginUserId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var tenantId = Guid.Parse("dd348565-5d31-46bb-aef7-aa7f0c4a1866");
@@ -217,7 +229,7 @@ public static class SampleAuthorizationDemoData
             };
             user.PasswordHash = hasher.HashPassword(user, "samplepass");
             context.Users.Add(user);
-            context.UserRoles.Add(new IdentityUserRole<Guid> { UserId = loginUserId, RoleId = AdminRoleId });
+            context.UserRoles.Add(new IdentityUserRole<Guid> { UserId = loginUserId, RoleId = adminRoleId });
             return;
         }
 
@@ -228,14 +240,14 @@ public static class SampleAuthorizationDemoData
             user.PasswordHash = hasher.HashPassword(user, "samplepass");
 
         var hasRole = await context.UserRoles.AnyAsync(
-            row => row.UserId == loginUserId && row.RoleId == AdminRoleId,
+            row => row.UserId == loginUserId && row.RoleId == adminRoleId,
             cancellationToken).ConfigureAwait(false);
         if (!hasRole)
-            context.UserRoles.Add(new IdentityUserRole<Guid> { UserId = loginUserId, RoleId = AdminRoleId });
+            context.UserRoles.Add(new IdentityUserRole<Guid> { UserId = loginUserId, RoleId = adminRoleId });
     }
 
     /// <summary>Thêm chứng từ demo còn thiếu (theo Code).</summary>
-    public static async Task EnsureExpensesAsync(SampleAuthorizationDbContext context, CancellationToken cancellationToken = default)
+    public static async Task EnsureExpensesAsync(SampleTenantDbContext context, CancellationToken cancellationToken = default)
     {
         var existing = (await context.Expenses.Select(e => e.Code).ToListAsync(cancellationToken)).ToHashSet();
         foreach (var (code, tenant, department, amount, createdBy) in ExpenseSeed.Where(e => !existing.Contains(e.Code)))

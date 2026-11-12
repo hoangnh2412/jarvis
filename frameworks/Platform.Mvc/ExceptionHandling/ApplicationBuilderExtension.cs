@@ -1,4 +1,4 @@
-using Platform.Mvc.Attributes;
+using Platform.DDD.Domain.Shared.Attributes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -73,8 +73,8 @@ public static class ApplicationBuilderExtension
             if (endpoint == null)
                 return true;
 
-            var attributes = endpoint.Metadata.OfType<IgnoreMiddlewareAttribute>();
-            if (attributes.Any(x => x.Name == typeof(T).Name))
+            var middlewareName = typeof(T).Name;
+            if (endpoint.Metadata.OfType<IgnoreMiddlewareAttribute>().Any(x => x.Name == middlewareName))
                 return false;
 
             return true;

@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Platform.DDD.Application.Contracts.Commands;
@@ -7,70 +8,53 @@ using Platform.Modules.Account.Commands;
 namespace Platform.Modules.Account.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/app/account")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/app/account")]
 public sealed class AppAccountController(
-    IAppLoginService login,
+    IAsyncCommandHandler<AppLoginCommand, AppLoginResult> login,
+    IAsyncCommandHandler<AppRefreshTokenCommand, AppLoginResult> refresh,
     IAsyncCommandDispatcher commands) : ControllerBase
 {
     [HttpPost("login")]
     [AllowAnonymous]
-    public async Task<IActionResult> Login([FromBody] LoginBody body, CancellationToken cancellationToken)
+    public async Task<IActionResult> Login([FromBody] AppLoginBody body, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(body.UserName)
-            || string.IsNullOrWhiteSpace(body.Password)
-            || string.IsNullOrWhiteSpace(body.TenantCode)
-            || string.IsNullOrWhiteSpace(body.OrgCode))
+        var result = await login.HandleAsync(
+                new AppLoginCommand
+                {
+                    TenantCode = body.TenantCode ?? string.Empty,
+                    OrgCode = body.OrgCode ?? string.Empty,
+                    UserName = body.UserName,
+                    Password = body.Password,
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
+        return Ok(new
         {
-            return BadRequest(new { message = "Thiếu mã tenant, mã organization, tên đăng nhập hoặc mật khẩu." });
-        }
-
-        try
-        {
-            var result = await login.LoginAsync(
-                    body.TenantCode,
-                    body.OrgCode,
-                    body.UserName,
-                    body.Password,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            return Ok(new
-            {
-                accessToken = result.AccessToken,
-                refreshToken = result.RefreshToken,
-                userId = result.UserId,
-                tenantId = result.TenantId,
-                orgId = result.OrgId,
-            });
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Unauthorized();
-        }
+            accessToken = result.AccessToken,
+            refreshToken = result.RefreshToken,
+            userId = result.UserId,
+            tenantId = result.TenantId,
+            orgId = result.OrgId,
+        });
     }
 
     [HttpPost("refresh")]
     [AllowAnonymous]
-    public async Task<IActionResult> Refresh([FromBody] RefreshBody body, CancellationToken cancellationToken)
+    public async Task<IActionResult> Refresh([FromBody] AppRefreshBody body, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(body.RefreshToken))
-            return Unauthorized();
-
-        try
+        var result = await refresh.HandleAsync(
+                new AppRefreshTokenCommand { RefreshToken = body.RefreshToken ?? string.Empty },
+                cancellationToken)
+            .ConfigureAwait(false);
+        return Ok(new
         {
-            var result = await login.RefreshAsync(body.RefreshToken, cancellationToken).ConfigureAwait(false);
-            return Ok(new
-            {
-                accessToken = result.AccessToken,
-                refreshToken = result.RefreshToken,
-                userId = result.UserId,
-                tenantId = result.TenantId,
-                orgId = result.OrgId,
-            });
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Unauthorized();
-        }
+            accessToken = result.AccessToken,
+            refreshToken = result.RefreshToken,
+            userId = result.UserId,
+            tenantId = result.TenantId,
+            orgId = result.OrgId,
+        });
     }
 
     [HttpPost("logout")]
@@ -83,7 +67,7 @@ public sealed class AppAccountController(
 
     [HttpPut("password")]
     [Authorize]
-    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordBody body, CancellationToken cancellationToken)
+    public async Task<IActionResult> ChangePassword([FromBody] AppChangePasswordBody body, CancellationToken cancellationToken)
     {
         await commands.DispatchAsync(
             new ChangePasswordCommand
@@ -97,7 +81,7 @@ public sealed class AppAccountController(
 
     [HttpPut("profile")]
     [Authorize]
-    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileBody body, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateProfile([FromBody] AppUpdateProfileBody body, CancellationToken cancellationToken)
     {
         await commands.DispatchAsync(
             new UpdateProfileCommand
@@ -109,11 +93,11 @@ public sealed class AppAccountController(
         return Ok();
     }
 
-    public sealed record LoginBody(string UserName, string Password, string? TenantCode, string? OrgCode);
+    public sealed record AppLoginBody(string UserName, string Password, string? TenantCode, string? OrgCode);
 
-    public sealed record RefreshBody(string? RefreshToken);
+    public sealed record AppRefreshBody(string? RefreshToken);
 
-    public sealed record ChangePasswordBody(string CurrentPassword, string NewPassword);
+    public sealed record AppChangePasswordBody(string CurrentPassword, string NewPassword);
 
-    public sealed record UpdateProfileBody(string? Email, string? PhoneNumber);
+    public sealed record AppUpdateProfileBody(string? Email, string? PhoneNumber);
 }

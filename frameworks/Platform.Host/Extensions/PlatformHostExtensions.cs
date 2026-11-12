@@ -1,8 +1,10 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Platform.Authentication.Identity.Domain;
 using Platform.Authorization.EntityFramework.Persistence;
 using Platform.DDD.Application;
@@ -10,10 +12,8 @@ using Platform.DDD.Domain.Repositories;
 using Platform.DDD.Domain.Services;
 using Platform.Host.Entities;
 using Platform.Host.Persistence;
-using Platform.Modules.Account.Abstractions;
 using Platform.Modules.Account.Api.Extensions;
 using Platform.Modules.Account.DependencyInjection;
-using Platform.Modules.Account.Services;
 using Platform.Modules.IdentityAdmin.Abstractions;
 using Platform.Modules.IdentityAdmin.Api.Extensions;
 using Platform.Modules.IdentityAdmin.Authorization;
@@ -31,8 +31,8 @@ namespace Platform.Host.Extensions;
 /// <summary>Đăng ký identity admin và org-structure với entity cùng DbContext mặc định.</summary>
 public static class PlatformHostExtensions
 {
-    public static WebApplicationBuilder AddPlatformHost<TTenantContext, TUnitOfWork, TIdentityContext>(
-        this WebApplicationBuilder builder)
+    public static IHostApplicationBuilder AddPlatformHost<TTenantContext, TUnitOfWork, TIdentityContext>(
+        this IHostApplicationBuilder builder)
         where TTenantContext : DbContext
         where TUnitOfWork : class, IUnitOfWork
         where TIdentityContext : IdentityDbContextBase
@@ -42,7 +42,9 @@ public static class PlatformHostExtensions
         return builder;
     }
 
-    public static WebApplicationBuilder AddPlatformIdentityAdmin<TIdentityContext>(this WebApplicationBuilder builder)
+    public static IHostApplicationBuilder AddPlatformIdentityAdmin<TIdentityContext>(
+        this IHostApplicationBuilder builder,
+        params Assembly[] permissionAssemblies)
         where TIdentityContext : IdentityDbContextBase
     {
         builder.AddCoreApplication();
@@ -53,21 +55,25 @@ public static class PlatformHostExtensions
             .AddRoles<Role>()
             .AddEntityFrameworkStores<TIdentityContext>();
 
+        var assemblies = new[] { typeof(SystemPermissions).Assembly }
+            .Concat(permissionAssemblies)
+            .Distinct()
+            .ToArray();
+
         builder.Services.TryAddSingleton<IPermissionCatalogProvider>(_ =>
             new DefaultPermissionCatalogProvider(
-                PermissionCatalogBuilder.Build(typeof(SystemPermissions).Assembly)));
+                PermissionCatalogBuilder.Build(assemblies)));
         builder.Services.AddScoped<IAppIdentityStore>(serviceProvider =>
             new PlatformAppIdentityStore(serviceProvider.GetRequiredService<TIdentityContext>()));
         builder.Services.AddScoped<RealmUserOperations>();
         builder.Services.AddAccountApplication();
-        builder.Services.AddScoped<IAppLoginService, AppLoginService>();
         builder.Services.AddAccountApi();
 
         return builder;
     }
 
-    public static WebApplicationBuilder AddPlatformOrgStructure<TTenantContext, TUnitOfWork>(
-        this WebApplicationBuilder builder)
+    public static IHostApplicationBuilder AddPlatformOrgStructure<TTenantContext, TUnitOfWork>(
+        this IHostApplicationBuilder builder)
         where TTenantContext : DbContext
         where TUnitOfWork : class, IUnitOfWork
     {

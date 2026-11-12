@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,8 +12,9 @@ using Platform.Modules.IdentityAdmin.Queries;
 namespace Platform.Modules.IdentityAdmin.Api.Controllers;
 
 [ApiController]
+[ApiVersion("1.0")]
 [Authorize]
-[Route("api/v1/app/users")]
+[Route("api/v{version:apiVersion}/app/users")]
 public sealed class AppIdentityUsersController(
     IAsyncCommandDispatcher commands,
     IAsyncQueryDispatcher queries,

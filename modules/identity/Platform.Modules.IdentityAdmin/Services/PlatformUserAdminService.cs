@@ -3,6 +3,7 @@ using Platform.Authorization.EntityFramework.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Platform.Authentication.Identity.Domain;
+using Platform.DDD.Domain.Shared.ExceptionHandling;
 using Platform.Modules.IdentityAdmin.Abstractions;
 using Platform.Modules.IdentityAdmin.Authorization;
 
@@ -204,7 +205,7 @@ public sealed class PlatformUserAdminService(
                 candidate => candidate.Id == id && candidate.TenantId == null && candidate.OrgId == null,
                 cancellationToken)
             .ConfigureAwait(false)
-            ?? throw new KeyNotFoundException("Không tìm thấy user nền tảng.");
+            ?? throw new NotFoundException(IdentityAdminErrorCode.PlatformUserNotFound);
 
         if (!string.IsNullOrWhiteSpace(request.Email))
         {
@@ -293,7 +294,7 @@ public sealed class PlatformUserAdminService(
                 candidate => candidate.Id == id && candidate.TenantId == null && candidate.OrgId == null,
                 cancellationToken)
             .ConfigureAwait(false)
-            ?? throw new KeyNotFoundException("Không tìm thấy user nền tảng.");
+            ?? throw new NotFoundException(IdentityAdminErrorCode.PlatformUserNotFound);
 
         if (isLocked)
             await userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue).ConfigureAwait(false);
@@ -325,12 +326,13 @@ public sealed class PlatformUserAdminService(
                 candidate => candidate.Id == id && candidate.TenantId == null && candidate.OrgId == null,
                 cancellationToken)
             .ConfigureAwait(false)
-            ?? throw new KeyNotFoundException("Không tìm thấy user nền tảng.");
+            ?? throw new NotFoundException(IdentityAdminErrorCode.PlatformUserNotFound);
 
         var deleted = await userManager.DeleteAsync(user).ConfigureAwait(false);
         if (!deleted.Succeeded)
         {
-            throw new InvalidOperationException(
+            throw new BusinessException(
+                IdentityAdminErrorCode.PlatformUserDeleteFailed,
                 string.Join("; ", deleted.Errors.Select(error => error.Description)));
         }
     }

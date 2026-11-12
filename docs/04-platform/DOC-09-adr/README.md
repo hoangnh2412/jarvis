@@ -33,6 +33,7 @@ Chỉ mục Architecture Decision Records và tài liệu kế hoạch trong `do
 | 🔴 Proposed · catalog + MultiOrg 🟡 | 2026-10-17 | [Module quản lý Organization (`Platform.Orgs`)](./2026-10-17_platform_orgs-module.md) — catalog, `Platform.MultiOrg`, hooks, `UseReadModel`; không gộp OrgStructure |
 | 🟡 Accepted (chưa implement code) | 2026-10-21 | [Catalog Org events (`OrgCreated` / `Updated` / `Deleted`)](./2026-10-21_platform_orgs-catalog-events.md) — contract Abstractions + publisher sau commit; đồng bộ Later |
 | 🔴 Proposed | 2026-10-17 | [Module cơ cấu tổ chức (`Platform.OrgStructure`)](./2026-10-17_platform_orgstructure-module.md) — cây OU + LegalEntity + JobTitle + Position; SME template + tập đoàn |
+| 🟢 Accepted + Implemented | 2026-11-10 | [Lọc path `MultiOrgMiddleware` bằng `Middlewares:MultiOrg`](./2026-11-10_platform_multiorg-path-filter.md) — bỏ predicate / `MultiOrgScopePaths`; host khai báo `Includes` / `Excludes`. Resolve D16 của ADR Orgs giữ nguyên |
 
 ### Ưu tiên đang mở
 

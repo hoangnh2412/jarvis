@@ -2,16 +2,16 @@
 
 Mô hình nghiệp vụ Root → Tenant → Org: [multi-tenant-multi-org.md](./multi-tenant-multi-org.md).
 
-Luật HTTP khi bật working org: [ADR Orgs](../../04-platform/DOC-09-adr/2026-10-17_platform_orgs-module.md) §5.1.1 (D16).
+Luật HTTP khi bật working org: [ADR Orgs](../../04-platform/DOC-09-adr/2026-10-17_platform_orgs-module.md) §5.1.1 (D16). Path nào chạy middleware: [ADR lọc path MultiOrg](../../04-platform/DOC-09-adr/2026-11-10_platform_multiorg-path-filter.md).
 
-Host chọn **một** chế độ. Không gắn `UseMultiOrg` rồi gửi request kiểu chỉ tenant.
+Host chọn **một** chế độ. Không gắn `MultiOrgMiddleware` rồi gửi request kiểu chỉ tenant.
 
 ## Chọn chế độ
 
 | Chế độ | Đăng ký | Pipeline | Request nghiệp vụ |
 |--------|---------|----------|-------------------|
-| Chỉ tenant | `AddCurrentTenant<TTenant>()` | Không gọi `UseMultiOrg` | `X-Tenant-Id`. Không bắt `X-Org-Id` |
-| Tenant và Org | `AddCurrentTenant<TTenant>()` và `AddCurrentOrg<TOrg>()` | `UseAuthentication()` rồi `UseMultiOrg()` | `X-Org-Id` bắt buộc. `X-Tenant-Id` theo bảng bên dưới |
+| Chỉ tenant | `AddCurrentTenant<TTenant>()` | Không gọi `UseCoreMiddleware<MultiOrgMiddleware>` | `X-Tenant-Id`. Không bắt `X-Org-Id` |
+| Tenant và Org | `AddCurrentTenant<TTenant>()` và `AddCurrentOrg<TOrg>()` | `UseAuthentication()` rồi `UseCoreMiddleware<MultiOrgMiddleware>()` | `X-Org-Id` bắt buộc. `X-Tenant-Id` theo bảng bên dưới |
 
 Sample đăng ký cả hai: [`SampleWebExtensions.cs`](../../../Sample/Extensions/SampleWebExtensions.cs) (`AddCurrentTenant`) và [`SampleOrgsExtensions.cs`](../../../Sample/Extensions/SampleOrgsExtensions.cs) (`AddCurrentOrg`). Pipeline: [`Sample/Program.cs`](../../../Sample/Program.cs).
 
@@ -44,7 +44,7 @@ X-Tenant-Id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
 
 ## Tenant và Org
 
-`UseMultiOrg()` sau `UseAuthentication()`, trước `UseAuthorization()`. Middleware gọi `IRequestScopeResolver`. Kết quả cấm thì **403** và dừng pipeline. Kết quả Allowed thì `BeginScope` cả org và tenant cho phần request còn lại.
+`UseCoreMiddleware<MultiOrgMiddleware>()` sau `UseAuthentication()`, trước `UseAuthorization()`. Middleware gọi `IRequestScopeResolver`. Kết quả cấm thì **403** và dừng pipeline. Kết quả Allowed thì `BeginScope` cả org và tenant cho phần request còn lại.
 
 `X-Org-Id` là hằng `HeaderOrgIdResolver.HeaderName`. `X-Tenant-Id` trong chế độ này là hằng `OrgFirstRequestScopeResolver.TenantHeaderName`. Config `TenantHeaderKey` **không** đổi header mà middleware org đọc.
 
@@ -79,19 +79,23 @@ X-Org-Id: 6ba7b810-9dad-11d1-80b4-00c04fd430c8
 
 ### Path không cần org
 
-`UseMultiOrg()` không tham số dùng `MultiOrgScopePaths.IgnoresScope`:
+`UseCoreMiddleware<MultiOrgMiddleware>()` đọc `Middlewares:MultiOrg`. `IsEnable` tắt thì không gắn middleware. `Includes` có phần tử thì chỉ path khớp ít nhất một regex mới vào middleware. Path khớp `Excludes` thì bỏ qua. Request đã vào middleware thì luôn resolve scope.
+
+Sample khai báo `Includes` là `^/api/`, `^/hubs/`, `^/sse/`, `^/elsa/`, và `Excludes` cho API có version:
 
 | Path | Working scope |
 |------|----------------|
-| `/api/authentication…` | Bỏ qua (login trước khi client biết org) |
+| `/api/v…/authentication…`, `/api/v…/system/install…`, `/api/v…/platform/…` | Bỏ qua |
+| `/api/v…/…/account/login`, `/api/v…/…/account/catalog` | Bỏ qua |
+| `/api/v…/account/login`, `/api/authentication` (không có segment version) | Bắt buộc |
 | `/api/…` còn lại | Bắt buộc |
 | `/hubs/…`, `/sse/…`, `/elsa/…` | Bắt buộc |
 | SPA, swagger, health, static, path rỗng | Bỏ qua |
 
-Host truyền hàm `ignore` khi muốn bộ path khác. Hàm trả `true` thì request không cần working scope.
+Đổi bộ path trong `appsettings`, section `Middlewares:MultiOrg`.
 
 ```csharp
 app.UseAuthentication();
-app.UseMultiOrg();
+app.UseCoreMiddleware<MultiOrgMiddleware>();
 app.UseAuthorization();
 ```
